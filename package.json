@@ -7,8 +7,9 @@
     "start": "node local-server/server.mjs",
     "start:local": "node local-server/server.mjs",
     "package:windows": "node scripts/build-windows-exe.mjs",
+    "package:windows:release": "node scripts/package-windows-release.mjs",
     "sync:data": "node tools/sync-web-data.mjs",
     "verify": "node tools/verify-web-data.mjs",
-    "test": "node --test test/web-sync.test.mjs sync-extension/test/protocol.test.js test/local-server.test.mjs test/ai-service.test.mjs test/chapter-navigation.test.mjs"
+    "test": "node --test test/web-sync.test.mjs sync-extension/test/protocol.test.js test/local-server.test.mjs test/ai-service.test.mjs test/chapter-navigation.test.mjs test/ui-contract.test.mjs"
   }
 }

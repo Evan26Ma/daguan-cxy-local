@@ -16,7 +16,7 @@
   const AI_PREFS_KEY = "daguan_ai_preferences_v1";
   const AI_WIDTH_KEY = "daguan_ai_drawer_width_v1";
   const UI_BACKGROUND_KEY = "ui-background";
-  const APP_VERSION = "2026.09.06-r5";
+  const APP_VERSION = "2026.09.07-r7";
   const POSITION_KEY = "daguan_learning_position_v2";
   const UI_THEMES = ["official-light", "official-dark", "eye-care", "custom"];
   const DEFAULT_UI_PREFS = Object.freeze({
@@ -90,6 +90,9 @@
   const $ = (sel) => document.querySelector(sel);
   const els = {
     sidebar: $("#sidebar"),
+    main: $("#main"),
+    workspaceLearning: $("#workspace-learning"),
+    workspaceTools: $("#workspace-tools"),
     catTree: $("#cat-tree"),
     stats: $("#stats-line"),
     crumb: $("#crumb"),
@@ -131,7 +134,6 @@
     metricMastered: $("#metric-mastered"),
     metricForgot: $("#metric-forgot"),
     aiDrawer: $("#ai-drawer"),
-    aiEdgeTab: $("#ai-edge-tab"),
     aiMessages: $("#ai-messages"),
     aiPrompt: $("#ai-prompt"),
     aiProfileSelect: $("#ai-profile-select"),
@@ -142,6 +144,7 @@
     chapterTriggerLabel: $("#chapter-trigger-label"),
     chapterMenu: $("#chapter-menu"),
     chapterMenuTitle: $("#chapter-menu-title"),
+    chapterMenuBack: $("#chapter-menu-back"),
     chapterMenuPath: $("#chapter-menu-path"),
     chapterColumns: $("#chapter-columns"),
     chapterMenuFeedback: $("#chapter-menu-feedback"),
@@ -914,6 +917,11 @@
     els.searchView.classList.toggle("hidden", name !== "search");
     els.feature?.classList.toggle("hidden", name !== "feature");
     document.body.dataset.view = name;
+    const toolsWorkspace = name === "feature" && state.feature === "tools";
+    els.workspaceLearning?.classList.toggle("active", !toolsWorkspace);
+    els.workspaceTools?.classList.toggle("active", toolsWorkspace);
+    els.workspaceLearning?.setAttribute("aria-current", toolsWorkspace ? "false" : "page");
+    els.workspaceTools?.setAttribute("aria-current", toolsWorkspace ? "page" : "false");
     document.querySelectorAll(".side-link").forEach((el) => {
       const specialNav = state.specialQueue === "todo" ? "mastery" : state.specialQueue === "forgot" ? "retest" : "";
       const active =
@@ -1069,16 +1077,19 @@
     let path = [];
     let depth = 0;
     while (nodes.length) {
+      const columnDepth = depth;
+      const columnPath = path.slice();
       const column = document.createElement("div");
       column.className = "chapter-column";
       column.setAttribute("role", "listbox");
-      column.setAttribute("aria-label", depth === 0 ? "学科" : `${path[path.length - 1]?.name || "章节"}下级`);
+      column.dataset.chapterDepth = String(columnDepth);
+      column.setAttribute("aria-label", columnDepth === 0 ? "学科" : `${columnPath[columnPath.length - 1]?.name || "章节"}下级`);
       const heading = document.createElement("div");
       heading.className = "chapter-column-title";
-      heading.textContent = depth === 0 ? "学科" : path[path.length - 1]?.name || "章节";
+      heading.textContent = columnDepth === 0 ? "学科" : columnPath[columnPath.length - 1]?.name || "章节";
       column.appendChild(heading);
 
-      const selectedId = state.chapterPathIds[depth];
+      const selectedId = state.chapterPathIds[columnDepth];
       let selectedNode = null;
       nodes.forEach((node) => {
         const button = document.createElement("button");
@@ -1086,7 +1097,7 @@
         button.className = "chapter-item";
         button.setAttribute("role", "option");
         button.dataset.chapterId = String(node.id);
-        const children = categoryChildren(node, depth === 0);
+        const children = categoryChildren(node, columnDepth === 0);
         const branch = children.length > 0;
         button.classList.toggle("has-children", branch);
         button.classList.toggle("active", String(node.id) === String(selectedId));
@@ -1106,37 +1117,72 @@
         }
         if (branch) button.insertAdjacentHTML("beforeend", '<svg class="ui-icon chapter-item-chevron" aria-hidden="true"><use href="#icon-chevron"></use></svg>');
         button.addEventListener("click", () => {
-          state.chapterPathIds = state.chapterPathIds.slice(0, depth).concat(String(node.id));
+          state.chapterPathIds = state.chapterPathIds.slice(0, columnDepth).concat(String(node.id));
           if (branch) {
             state.chapterMenuRootId = String(node.id);
             renderChapterMenu();
           } else {
-            selectChapterLeaf(node, path.concat(node));
+            selectChapterLeaf(node, columnPath.concat(node));
           }
         });
         column.appendChild(button);
         if (String(node.id) === String(selectedId)) selectedNode = node;
       });
       columns.appendChild(column);
-      if (!selectedNode || !categoryChildren(selectedNode, depth === 0).length) break;
+      if (!selectedNode || !categoryChildren(selectedNode, columnDepth === 0).length) break;
       path = path.concat(selectedNode);
-      nodes = categoryChildren(selectedNode, depth === 0);
+      nodes = categoryChildren(selectedNode, columnDepth === 0);
       depth += 1;
     }
     els.chapterColumns.replaceChildren(columns);
     syncChapterScopeUI();
     if (els.chapterMenuPath) {
       const names = chapterPathNames();
-      els.chapterMenuPath.textContent = names.length ? names.join(" / ") : "选择父级目录展开下一层";
+      const fragment = document.createDocumentFragment();
+      const addPathButton = (label, length, current = false) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "chapter-path-button";
+        button.textContent = label;
+        button.dataset.chapterPathLength = String(length);
+        if (current) button.setAttribute("aria-current", "page");
+        button.addEventListener("click", () => setChapterPathLength(length));
+        fragment.appendChild(button);
+      };
+      addPathButton("学科", 0, names.length === 0);
+      names.forEach((name, index) => {
+        const separator = document.createElement("span");
+        separator.className = "chapter-path-separator";
+        separator.textContent = "/";
+        separator.setAttribute("aria-hidden", "true");
+        fragment.appendChild(separator);
+        addPathButton(name, index + 1, index === names.length - 1);
+      });
+      els.chapterMenuPath.replaceChildren(fragment);
     }
+    if (els.chapterMenuBack) els.chapterMenuBack.disabled = state.chapterPathIds.length === 0;
     if (els.chapterMenuTitle) {
       const names = chapterPathNames();
       els.chapterMenuTitle.textContent = names[names.length - 1] || "选择一个小节";
     }
     requestAnimationFrame(() => {
       if (els.chapterColumns) els.chapterColumns.scrollLeft = els.chapterColumns.scrollWidth;
-      const active = els.chapterColumns?.querySelector(".chapter-item.active");
+      const activeItems = [...(els.chapterColumns?.querySelectorAll(".chapter-item.active") || [])];
+      const active = activeItems[activeItems.length - 1];
       active?.scrollIntoView({ block: "nearest", inline: "nearest" });
+    });
+  }
+
+  function setChapterPathLength(length, { focus = true } = {}) {
+    const nextLength = Math.max(0, Math.min(state.chapterPathIds.length, Number(length) || 0));
+    state.chapterPathIds = state.chapterPathIds.slice(0, nextLength);
+    state.chapterMenuRootId = state.chapterPathIds[state.chapterPathIds.length - 1] || null;
+    renderChapterMenu();
+    if (!focus) return;
+    requestAnimationFrame(() => {
+      const last = els.chapterColumns?.lastElementChild;
+      const selected = last?.querySelector(".chapter-item.active");
+      (selected || last?.querySelector(".chapter-item"))?.focus();
     });
   }
 
@@ -1200,14 +1246,7 @@
     if (event.key === "ArrowLeft") {
       event.preventDefault();
       if (state.chapterPathIds.length) {
-        state.chapterPathIds = state.chapterPathIds.slice(0, -1);
-        state.chapterMenuRootId = state.chapterPathIds[state.chapterPathIds.length - 1] || null;
-        renderChapterMenu();
-        requestAnimationFrame(() => {
-          const last = els.chapterColumns?.lastElementChild;
-          const selected = last?.querySelector(".chapter-item.active");
-          (selected || last?.querySelector(".chapter-item"))?.focus();
-        });
+        setChapterPathLength(state.chapterPathIds.length - 1);
       }
       return;
     }
@@ -2507,11 +2546,13 @@
         "工具区",
         "把题库之外的准备工作，收进一个清爽的工作台。",
         "",
-        `<div class="tool-card-grid"><button type="button" class="tool-card" id="feature-open-tutorial"><span>${iconMarkup("book")}</span><strong>使用教程</strong><small>了解本地题库和同步方式</small></button><button type="button" class="tool-card" id="feature-open-sync"><span>${iconMarkup("cloud-upload")}</span><strong>数据同步</strong><small>备份进度或连接官网</small></button><button type="button" class="tool-card" id="feature-open-appearance"><span>${iconMarkup("palette")}</span><strong>界面设置</strong><small>调整主题、背景和阅读体验</small></button></div>`
+        `<div class="tool-card-grid"><button type="button" class="tool-card" id="feature-open-tutorial"><span>${iconMarkup("book")}</span><strong>使用教程</strong><small>了解本地题库的基本操作</small></button><button type="button" class="tool-card" id="feature-open-sync-guide"><span>${iconMarkup("book")}</span><strong>官网同步教程</strong><small>首次连接与日常同步的完整步骤</small></button><button type="button" class="tool-card" id="feature-open-sync"><span>${iconMarkup("cloud-upload")}</span><strong>打开同步中心</strong><small>检查变化并确认同步</small></button><button type="button" class="tool-card" id="feature-open-appearance"><span>${iconMarkup("palette")}</span><strong>界面设置</strong><small>调整主题、背景和阅读体验</small></button></div>`
       );
     }
 
     els.feature.innerHTML = html;
+    const featureEyebrow = els.feature.querySelector(".eyebrow");
+    if (featureEyebrow) featureEyebrow.textContent = kind === "tools" ? "工具区" : "学习区";
     if (kind === "favorites") $("#feature-open-favorites")?.addEventListener("click", openFavoritesQueue);
     if (kind === "mastery") $("#feature-practice-mastery")?.addEventListener("click", () => openSpecial("todo"));
     if (kind === "retest") $("#feature-start-retest")?.addEventListener("click", () => openSpecial("forgot"));
@@ -2541,7 +2582,8 @@
     if (kind === "learning-records") $("#feature-records-home")?.addEventListener("click", goHome);
     if (kind === "tools") {
       $("#feature-open-tutorial")?.addEventListener("click", () => openSheet("dlg-tutorial"));
-      $("#feature-open-sync")?.addEventListener("click", () => openSetupWizard());
+      $("#feature-open-sync-guide")?.addEventListener("click", (event) => openSheet("dlg-sync-guide", event.currentTarget));
+      $("#feature-open-sync")?.addEventListener("click", () => $("#btn-online-sync")?.click());
       $("#feature-open-appearance")?.addEventListener("click", () => openSheet("dlg-appearance"));
     }
   }
@@ -2554,6 +2596,14 @@
     setView("feature");
     paintTree();
     renderFeaturePage(kind);
+    els.main?.scrollTo({ top: 0, behavior: "auto" });
+    requestAnimationFrame(() => {
+      const heading = els.feature?.querySelector("h1");
+      if (heading) {
+        heading.tabIndex = -1;
+        heading.focus({ preventScroll: true });
+      }
+    });
     if (window.innerWidth <= 900) els.sidebar.classList.remove("open");
   }
 
@@ -2598,14 +2648,14 @@
   }
 
   function refreshHomeSyncCard() {
-    setHomeSyncCard("setup", "正在检查本地中控台", "首次使用完成一次大观园登录配置，之后在同步中心手动对账。\n");
+    setHomeSyncCard("setup", "正在检查本地中控台", "首次使用完成一次登录配置，之后点击“同步进度”即可。\n");
     syncRequest("status").then((result) => {
       if (result.authenticated) {
-        setHomeSyncCard("ready", "大观园已连接", result.lastPullAt ? `上次拉取：${result.lastPullAt}` : "可以从官网读取或同步到官网。");
+        setHomeSyncCard(result.needsFirstSync ? "warning" : "ready", result.needsFirstSync ? "需要首次同步" : "大观园已连接", result.needsFirstSync ? "官网进度还没有导入本地，点击“同步进度”开始。" : result.lastPullAt ? `上次同步：${result.lastPullAt}` : "点击“同步进度”检查两边变化。");
       } else if (result.configured) {
         setHomeSyncCard("warning", "需要重新登录", "本地中控台还在运行，但大观园 Token 已失效。");
       } else {
-        setHomeSyncCard("setup", "尚未完成登录配置", "点击“设置同步”，输入一次大观园登录信息即可。");
+        setHomeSyncCard("setup", "尚未完成登录配置", "点击“同步进度”开始首次配置，输入一次大观园登录信息即可。");
       }
     }).catch(() => {
       setHomeSyncCard("warning", "本地中控台未连接", "请重新双击启动脚本，或检查 8080 端口是否被占用。");
@@ -2635,10 +2685,10 @@
     if (fill) fill.style.width = `${(setupStep / 5) * 100}%`;
   }
 
-  function openSetupWizard() {
+  function openSetupWizard(step = 1) {
     openSheet("dlg-setup-wizard");
-    showSetupStep(1);
-    checkLocalHealth();
+    showSetupStep(step);
+    if (step === 1) checkLocalHealth();
   }
 
   async function checkLocalHealth() {
@@ -2727,13 +2777,13 @@
         state.annotations = applied.state.annotations || state.annotations;
         serverRevision = Number(applied.state.revision) || serverRevision;
       }
-      if (resultEl) resultEl.textContent = `首次修复完成：官网状态已进入本地（${Object.keys(applied.state?.progress || {}).length} 条），未知题号 ${applied.unknownIds?.length || 0} 条已保留报告。`;
+      if (resultEl) resultEl.textContent = `首次同步完成：官网状态已进入本地（${Object.keys(applied.state?.progress || {}).length} 条），未知题号 ${applied.unknownIds?.length || 0} 条已保留报告。`;
       showSetupStep(5);
       refreshHomeSyncCard();
     } catch (error) {
       if (resultEl) { resultEl.textContent = `迁移失败：${error.message || String(error)}`; resultEl.dataset.error = "1"; }
     } finally {
-      if (button) { button.disabled = false; button.textContent = "备份并完成首次修复"; }
+      if (button) { button.disabled = false; button.textContent = "导入官网进度"; }
     }
   }
 
@@ -2781,7 +2831,13 @@
     const text = await response.text();
     let data = null;
     try { data = text ? JSON.parse(text) : null; } catch { data = null; }
-    if (!response.ok) throw new Error(data?.error || `本地中控台请求失败（HTTP ${response.status}）`);
+    if (!response.ok) {
+      const error = new Error(data?.error || `本地中控台请求失败（HTTP ${response.status}）`);
+      error.status = response.status;
+      error.code = data?.code || "";
+      error.current = data?.current || null;
+      throw error;
+    }
     return data;
   }
 
@@ -2826,7 +2882,8 @@
   function showSyncResult(text, error = false) {
     const el = $("#sync-result");
     if (!el) return;
-    el.hidden = false;
+    const details = $("#sync-result-details");
+    if (details) details.hidden = false;
     el.dataset.error = error ? "1" : "0";
     el.textContent = text;
   }
@@ -2891,19 +2948,78 @@
     const s = preview.summary || {};
     const mastery = s.masteryChanges || {};
     const localMastery = s.localMasteryChanges || {};
+    const remoteQuestions = Number(s.remoteQuestionCount ?? new Set((preview.localChanges || []).map((item) => String(item.questionId))).size);
+    const localQuestions = Number(s.localQuestionCount ?? new Set((preview.remoteOperations || []).map((item) => String(item.questionId))).size);
+    const conflictQuestions = Number(s.conflictQuestionCount ?? s.conflicts ?? 0);
+    const summary = $("#sync-summary");
+    const note = $("#sync-summary-note");
+    const card = $("#sync-flow-card");
+    const applyButton = $("#btn-sync-push");
+    const winnerWrap = $("#sync-winner-wrap");
+    if (card) card.dataset.state = remoteQuestions || localQuestions ? "ready" : "no_changes";
+    if (summary) {
+      summary.textContent = remoteQuestions && localQuestions
+        ? `官网将更新本地 ${remoteQuestions} 道题；本地将上传官网 ${localQuestions} 道题。`
+        : remoteQuestions
+          ? `官网有 ${remoteQuestions} 道题的新进度，将更新到本地。`
+          : localQuestions
+            ? `本地有 ${localQuestions} 道题的新进度，将上传到官网。`
+            : "两边进度已经一致，无需同步。";
+    }
+    if (note) note.textContent = remoteQuestions && localQuestions
+      ? "两边都会更新；确认前不会写入任何数据。"
+      : remoteQuestions
+        ? "这次不会修改官网。确认后只更新本地。"
+        : localQuestions
+          ? `确认后会上传官网，可能计入官网今日刷题数 ${preview.activityImpact?.possibleTodayWrites || 0} 项。`
+          : "你可以直接关闭此窗口。";
+    if (applyButton) {
+      applyButton.hidden = !(remoteQuestions || localQuestions);
+      applyButton.disabled = !(remoteQuestions || localQuestions);
+      applyButton.textContent = remoteQuestions && localQuestions ? "确认同步两边进度" : remoteQuestions ? "更新本地" : localQuestions ? "上传到官网" : "无需同步";
+    }
+    if (winnerWrap) winnerWrap.hidden = conflictQuestions === 0;
     return [
-      preview.firstRepair ? "首次修复：官网状态将覆盖本地状态（已安排双侧备份）" : "对账预览：默认按字段更新时间决定方向",
-      `官网状态：${s.remoteEntries || 0} 条`,
-      `官网 → 本地：${s.remoteToLocal || 0} 项（掌握/收藏）`,
-      `本地 → 官网：${s.localToRemote || 0} 项（掌握/收藏）`,
-      `冲突：${s.conflicts || 0} 项；未知题号：${s.unknown || 0} 项`,
-      `本地 → 官网掌握：已掌握 ${mastery.mastered || 0}、学习中 ${mastery.needs_practice || 0}、易错 ${mastery.not_known || 0}、未开始 ${mastery.not_started || 0}`,
-      `官网 → 本地掌握：已掌握 ${localMastery.mastered || 0}、学习中 ${localMastery.needs_practice || 0}、易错 ${localMastery.not_known || 0}、未开始 ${localMastery.not_started || 0}`,
+      `检查完成：官网 ${s.remoteEntries || 0} 条状态`,
+      `官网 → 本地：${remoteQuestions} 道题（掌握 ${Object.values(localMastery).reduce((a, b) => a + Number(b || 0), 0)} 项字段变化）`,
+      `本地 → 官网：${localQuestions} 道题（掌握 ${Object.values(mastery).reduce((a, b) => a + Number(b || 0), 0)} 项字段变化）`,
+      `冲突：${conflictQuestions} 道题；未知题号：${s.unknown || 0} 项`,
       `收藏字段变化：${s.favoriteChanges || 0} 项`,
-      `活动日历：已读取 ${preview.activityImpact?.remoteActivityDays ?? "未知"} 天；本次官网写入可能计入今日刷题数 ${preview.activityImpact?.possibleTodayWrites || 0} 项`,
+      `活动日历：已读取 ${preview.activityImpact?.remoteActivityDays ?? "未知"} 天；官网写入可能计入今日刷题数 ${preview.activityImpact?.possibleTodayWrites || 0} 项`,
       `题库：${preview.catalog?.total || "未知"} 题（${preview.catalog?.version || "未标记版本"}）`,
       preview.unknownIds?.length ? `未知题号将保留并报告：${preview.unknownIds.slice(0, 12).join(", ")}${preview.unknownIds.length > 12 ? "…" : ""}` : "没有未知题号",
     ].join("\n");
+  }
+
+  async function runReconcilePreview() {
+    const pullButton = $("#btn-sync-pull");
+    const applyButton = $("#btn-sync-push");
+    const card = $("#sync-flow-card");
+    const summary = $("#sync-summary");
+    const note = $("#sync-summary-note");
+    const winner = $("#sync-conflict-winner")?.value || "latest";
+    if (pullButton) { pullButton.disabled = true; pullButton.textContent = "正在检查…"; }
+    if (applyButton) { applyButton.hidden = true; applyButton.disabled = true; }
+    if (card) card.dataset.state = "checking";
+    if (summary) summary.textContent = "正在检查官网和本地进度…";
+    if (note) note.textContent = "这是只读检查，不会修改任何数据。";
+    showSyncResult("正在读取官网掌握状态、收藏、最近学习和活动日历…");
+    try {
+      try {
+        localStorage.setItem("daguan_browser_backup_before_reconcile_v2", JSON.stringify({ progress: state.progress, favorites: [...state.favorites], picked: [...state.picked], saved_at: new Date().toISOString() }));
+      } catch {}
+      reconcilePreview = await syncRequest("reconcilePreview", { winner });
+      showSyncResult(formatReconcilePreview(reconcilePreview));
+      return reconcilePreview;
+    } catch (error) {
+      if (card) card.dataset.state = "error";
+      if (summary) summary.textContent = "检查失败";
+      if (note) note.textContent = error.message || String(error);
+      showSyncResult(String(error.message || error), true);
+      throw error;
+    } finally {
+      if (pullButton) { pullButton.disabled = false; pullButton.textContent = "重新检查同步内容"; }
+    }
   }
 
   function remoteMasteryToLocal(value) {
@@ -3540,8 +3656,6 @@
     const width = Math.max(340, Math.min(620, Number(localStorage.getItem(AI_WIDTH_KEY)) || 400));
     document.documentElement.style.setProperty("--ai-drawer-width", `${width}px`);
     els.aiDrawer?.setAttribute("aria-hidden", "false");
-    els.aiEdgeTab?.classList.remove("hidden");
-    els.aiEdgeTab?.setAttribute("aria-expanded", "true");
     setAiTab(tab);
     loadAiHistory();
     renderQuestionNote();
@@ -3555,7 +3669,6 @@
     state.aiOpen = false;
     document.body.classList.remove("ai-drawer-open");
     els.aiDrawer?.setAttribute("aria-hidden", "true");
-    els.aiEdgeTab?.setAttribute("aria-expanded", "false");
   }
 
   function bindAiDrawerResize() {
@@ -3807,6 +3920,9 @@
       else openChapterMenu();
     });
     $("#chapter-menu-close")?.addEventListener("click", () => closeChapterMenu());
+    $("#chapter-menu-back")?.addEventListener("click", () => {
+      if (state.chapterPathIds.length) setChapterPathLength(state.chapterPathIds.length - 1);
+    });
     $("#chapter-empty-open")?.addEventListener("click", () => openChapterMenu(state.chapterMenuRootId || state.chapterPathIds[state.chapterPathIds.length - 1] || null));
     $("#chapter-menu")?.addEventListener("click", (event) => event.stopPropagation());
     $("#chapter-menu")?.addEventListener("keydown", handleChapterMenuKeydown);
@@ -3952,6 +4068,10 @@
           openSetupWizard();
           return;
         }
+        if (status.needsFirstSync) {
+          openSetupWizard(4);
+          return;
+        }
         refreshSyncStats();
         openSheet("dlg-online-sync", trigger);
         if (actionId) window.setTimeout(() => $("#" + actionId)?.click(), 0);
@@ -4000,6 +4120,23 @@
         openSetupWizard();
       });
     }
+    $("#btn-tutorial-sync-guide")?.addEventListener("click", () => {
+      closeSheet("dlg-tutorial");
+      openSheet("dlg-sync-guide");
+    });
+    $("#btn-home-sync-guide")?.addEventListener("click", (event) => openSheet("dlg-sync-guide", event.currentTarget));
+    $("#btn-online-sync-guide")?.addEventListener("click", () => {
+      closeSheet("dlg-online-sync");
+      openSheet("dlg-sync-guide");
+    });
+    $("#btn-sync-guide-setup")?.addEventListener("click", () => {
+      closeSheet("dlg-sync-guide");
+      openSetupWizard();
+    });
+    $("#btn-sync-guide-center")?.addEventListener("click", () => {
+      closeSheet("dlg-sync-guide");
+      openOnlineSyncPanel();
+    });
 
     document.querySelectorAll("[data-setup-next]").forEach((btn) => {
       btn.addEventListener("click", () => showSetupStep(btn.dataset.setupNext));
@@ -4022,12 +4159,8 @@
         openSetupWizard();
       });
     }
-    const btnHomePull = $("#btn-home-pull");
-    if (btnHomePull) btnHomePull.addEventListener("click", () => openOnlineSyncPanel("btn-sync-pull"));
-    const btnHomePush = $("#btn-home-push");
-    if (btnHomePush) btnHomePush.addEventListener("click", () => openOnlineSyncPanel("btn-sync-pull"));
-    const btnHomeSyncSetup = $("#btn-home-sync-setup");
-    if (btnHomeSyncSetup) btnHomeSyncSetup.addEventListener("click", openSetupWizard);
+    const btnHomeSync = $("#btn-home-sync");
+    if (btnHomeSync) btnHomeSync.addEventListener("click", (event) => openOnlineSyncPanel("btn-sync-pull", event.currentTarget));
     $("#btn-export").addEventListener("click", () => {
       refreshExportCounts();
       openSheet("dlg-export");
@@ -4060,7 +4193,7 @@
         setHomeSyncCard(
           result.authenticated ? "ready" : "warning",
           result.authenticated ? "大观园已连接" : "需要重新配置",
-          result.authenticated ? "可以从这里读取或上传。" : "点击“设置同步”完成登录。"
+          result.authenticated ? "可以从这里读取或上传。" : "点击“同步进度”开始首次配置。"
         );
         showSyncResult(JSON.stringify(result, null, 2));
       } catch (error) {
@@ -4071,35 +4204,39 @@
     });
     $("#btn-sync-pull").addEventListener("click", async () => {
       try {
-        const button = $("#btn-sync-pull");
-        button.disabled = true;
-        button.textContent = "正在检查…";
-        try {
-          localStorage.setItem("daguan_browser_backup_before_reconcile_v2", JSON.stringify({ progress: state.progress, favorites: [...state.favorites], picked: [...state.picked], saved_at: new Date().toISOString() }));
-        } catch {}
-        showSyncResult("正在增量读取题库、官网掌握图、收藏、最近学习和活动日历…");
-        reconcilePreview = await syncRequest("reconcilePreview");
-        showSyncResult(formatReconcilePreview(reconcilePreview));
-        toast("差异检查完成，请确认后应用对账计划");
+        await runReconcilePreview();
+        toast("检查完成，请确认同步内容");
       } catch (error) {
-        setHomeSyncCard("warning", "对账检查失败", "请检查本地中控台和大观园登录状态后重试。");
-        showSyncResult(String(error.message || error), true);
-      } finally {
-        const button = $("#btn-sync-pull");
-        button.disabled = false;
-        button.textContent = "检查差异";
+        setHomeSyncCard("warning", "同步检查失败", "请检查本地中控台和官网登录状态后重试。");
       }
     });
+    $("#sync-conflict-winner")?.addEventListener("change", async () => {
+      if (!reconcilePreview) return;
+      try {
+        await runReconcilePreview();
+        toast("同步策略已更新，请重新确认");
+      } catch {}
+    });
     $("#btn-sync-push").addEventListener("click", async () => {
+      const applyButton = $("#btn-sync-push");
       try {
         if (!reconcilePreview?.previewId) {
-          toast("请先点击“检查差异”");
+          toast("请先检查同步内容");
           return;
         }
-        const winner = $("#sync-conflict-winner")?.value || "latest";
-        if (!window.confirm("确认应用这次对账计划吗？应用前会生成本地与官网双侧备份。")) return;
-        showSyncResult("正在先写入本地，再同步官网并重新校验…");
-        const result = await syncRequest("reconcileApply", { previewId: reconcilePreview.previewId, winner: winner === "latest" ? null : winner });
+        const s = reconcilePreview.summary || {};
+        const remoteQuestions = Number(s.remoteQuestionCount ?? new Set((reconcilePreview.localChanges || []).map((item) => String(item.questionId))).size);
+        const localQuestions = Number(s.localQuestionCount ?? new Set((reconcilePreview.remoteOperations || []).map((item) => String(item.questionId))).size);
+        const writesOfficial = localQuestions > 0;
+        if (writesOfficial && !window.confirm(`本地有 ${localQuestions} 道题将上传到官网，同时官网会更新本地 ${remoteQuestions} 道题。确认继续吗？`)) return;
+        applyButton.disabled = true;
+        $("#btn-sync-pull").disabled = true;
+        $("#sync-flow-card").dataset.state = "syncing";
+        $("#sync-flow-step").textContent = "第 2 步 · 正在同步";
+        $("#sync-summary").textContent = "正在同步进度…";
+        $("#sync-summary-note").textContent = "正在先保存本地，再更新官网并重新检查结果，请不要重复点击。";
+        showSyncResult("正在先保存本地，再同步官网并重新校验…");
+        const result = await syncRequest("reconcileApply", { previewId: reconcilePreview.previewId, winner: reconcilePreview.winner || "latest" });
         reconcilePreview = null;
         if (result.state) {
           state.progress = result.state.progress || state.progress;
@@ -4110,12 +4247,35 @@
           renderHome();
           refreshFavoriteUI();
         }
-        showSyncResult(`对账完成\n本地应用：${result.appliedLocal || 0}\n官网成功：${result.succeeded || 0}\n失败：${result.failed || 0}\n未知题号：${result.unknownIds?.length || 0}\n${result.verified ? "官网复读校验成功" : "官网复读校验失败，请稍后重试"}`);
-        setHomeSyncCard("ready", result.failed ? "对账部分完成" : "对账完成", `本地 ${result.appliedLocal || 0} 项，官网成功 ${result.succeeded || 0} 项。`);
-        toast(result.failed ? "对账完成，但有失败项已保留待同步" : "官网与本地已完成对账");
+        const partial = result.failed || result.unknownIds?.length;
+        applyButton.hidden = true;
+        const card = $("#sync-flow-card");
+        if (card) card.dataset.state = partial ? "partial" : "success";
+        $("#sync-flow-step").textContent = partial ? "同步未完成" : "同步完成";
+        $("#sync-summary").textContent = partial ? `同步未完成：官网成功 ${result.succeeded || 0} 项，${result.failed || 0} 项失败。` : "两边进度已同步。";
+        $("#sync-summary-note").textContent = partial ? "失败项已保留，点击“重新检查同步内容”可以继续。" : `本地更新 ${result.appliedLocal || 0} 项，官网更新 ${result.succeeded || 0} 项。`;
+        showSyncResult(`${partial ? "同步未完成" : "同步完成"}\n本地更新：${result.appliedLocal || 0} 项\n官网更新：${result.succeeded || 0} 项\n失败：${result.failed || 0}\n未知题号：${result.unknownIds?.length || 0}\n${result.verified ? "官网校验成功" : "官网校验失败，请重新检查"}`);
+        setHomeSyncCard(partial ? "warning" : "ready", partial ? "同步未完成" : "同步完成", partial ? "有失败项，点击同步进度重新检查并继续。" : `本地 ${result.appliedLocal || 0} 项，官网 ${result.succeeded || 0} 项。`);
+        toast(partial ? "同步未完成，请重新检查并继续" : "两边进度已同步");
       } catch (error) {
-        setHomeSyncCard("warning", "对账失败", "预览可能已过期或状态发生变化，请重新检查差异。");
+        if (error.status === 409 || ["STATE_CONFLICT", "PREVIEW_STRATEGY_CHANGED"].includes(error.code) || /过期|发生变化|策略已改变/.test(error.message || "")) {
+          reconcilePreview = null;
+          try {
+            await runReconcilePreview();
+            $("#sync-flow-step").textContent = "第 2 步 · 请再次确认";
+            $("#sync-summary-note").textContent = "进度刚刚发生变化，已重新检查；确认前不会写入任何数据。";
+            toast("进度有新变化，请再次确认");
+            return;
+          } catch {}
+        }
+        setHomeSyncCard("warning", "同步失败", "请重新检查同步内容后重试。");
+        $("#sync-flow-card").dataset.state = "error";
+        $("#sync-summary").textContent = "同步失败";
+        $("#sync-summary-note").textContent = error.message || String(error);
         showSyncResult(String(error.message || error), true);
+      } finally {
+        applyButton.disabled = false;
+        $("#btn-sync-pull").disabled = false;
       }
     });
     $("#btn-sync-export-local").addEventListener("click", () => {
@@ -4224,7 +4384,6 @@
       if (!q) return;
       setFavorite(q.id, !isFavorite(q.id));
     });
-    $("#ai-edge-tab")?.addEventListener("click", () => openAiDrawer(currentAiQuestion(), "chat"));
     $("#btn-ai-close")?.addEventListener("click", closeAiDrawer);
     bindAiDrawerResize();
     document.querySelectorAll("[data-ai-tab]").forEach((button) => button.addEventListener("click", () => setAiTab(button.dataset.aiTab)));

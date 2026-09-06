@@ -13,7 +13,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const WEB_ROOT = path.join(ROOT, "web");
 const PORT = Number(process.env.PORT || 8080);
 const HOST = process.env.HOST || "127.0.0.1";
-const BUILD_VERSION = "2026.09.06-r5";
+const BUILD_VERSION = "2026.09.07-r7";
 const MAX_BODY = 10 * 1024 * 1024;
 
 const store = createStore(ROOT, process.env.DAGUAN_DATA_DIR);
@@ -151,7 +151,7 @@ async function applyPush(previewId) {
   return { succeeded, failed: failures.length, failures: failures.slice(0, 20), summary: plan.summary };
 }
 
-async function reconcilePreview() {
+async function reconcilePreview(options = {}) {
   const catalogTask = startCatalogRefresh();
   while (catalogTask.status === "running") await new Promise((resolve) => setTimeout(resolve, 120));
   if (catalogTask.status === "failed") throw new Error(`题库更新失败：${catalogTask.error}`);
@@ -160,7 +160,12 @@ async function reconcilePreview() {
   await store.writeBackup("local-state-before-reconcile-preview", local);
   await store.writeBackup("cxyonly-before-reconcile-preview", remote.document);
   const firstRepair = !local.remote_seeded_at;
-  const plan = buildReconcilePlan(local, remote.states, await knownIds(), { remoteAuthoritative: firstRepair });
+  const requestedWinner = ["latest", "remote", "local"].includes(options.winner) ? options.winner : "latest";
+  const winner = firstRepair ? "remote" : requestedWinner;
+  const plan = buildReconcilePlan(local, remote.states, await knownIds(), {
+    remoteAuthoritative: firstRepair || winner === "remote",
+    ...(winner !== "latest" && !firstRepair ? { forceWinner: winner } : {}),
+  });
   const previewId = randomUUID();
   const createdAt = Date.now();
   const expiresAt = new Date(createdAt + 30 * 60 * 1000).toISOString();
@@ -172,6 +177,7 @@ async function reconcilePreview() {
     remote,
     plan,
     firstRepair,
+    winner,
     catalog: { ...(await catalogInfo()), refreshed: catalogTask.result },
   };
   previews.set(previewId, value);
@@ -181,6 +187,7 @@ async function reconcilePreview() {
     expiresAt,
     revision: local.revision,
     firstRepair,
+    winner,
     summary: plan.summary,
     localChanges: plan.localChanges,
     remoteOperations: plan.remoteOperations,
@@ -196,7 +203,7 @@ async function reconcilePreview() {
 
 async function applyReconcile(previewId, bodyValue = {}) {
   const preview = previews.get(previewId);
-  if (!preview || preview.type !== "reconcile" || Date.now() > Date.parse(preview.expiresAt)) throw new Error("对账预览已过期，请重新检查差异");
+  if (!preview || preview.type !== "reconcile" || Date.now() > Date.parse(preview.expiresAt)) throw new Error("同步预览已过期，请重新检查");
   return withLock(async () => {
     const current = await store.readState();
     if (current.revision !== preview.revision) {
@@ -208,10 +215,14 @@ async function applyReconcile(previewId, bodyValue = {}) {
     }
     await store.writeBackup("local-state-before-reconcile", current);
     await store.writeBackup("cxyonly-before-reconcile", preview.remote.document);
-    const winner = bodyValue.winner === "local" || bodyValue.winner === "remote" ? bodyValue.winner : null;
-    const plan = winner
-      ? buildReconcilePlan(current, preview.remote.states, await knownIds(), { remoteAuthoritative: winner === "remote", forceWinner: winner })
-      : preview.plan;
+    const requestedWinner = ["latest", "remote", "local"].includes(bodyValue.winner) ? bodyValue.winner : preview.winner;
+    if (!preview.firstRepair && requestedWinner !== preview.winner) {
+      const error = new Error("同步策略已改变，请重新检查同步内容");
+      error.code = "PREVIEW_STRATEGY_CHANGED";
+      error.status = 409;
+      throw error;
+    }
+    const plan = preview.plan;
     let next = applyLocalChanges(current, plan.localChanges, {
       remoteActivity: preview.remote.activity,
       remoteLastStudy: preview.remote.lastStudy,
@@ -389,14 +400,21 @@ async function route(req, res) {
     const parts = pathname.slice("/api/ai/conversations/".length).split("/");
     return json(res, 200, await ai.clearConversation(parts[0], parts[1]));
   }
-  if (pathname === "/api/integrations/cxyonly/status" && method === "GET") return json(res, 200, await client.status());
+  if (pathname === "/api/integrations/cxyonly/status" && method === "GET") {
+    const status = await client.status();
+    const local = await store.readState();
+    return json(res, 200, { ...status, needsFirstSync: !local.remote_seeded_at });
+  }
   if (pathname === "/api/integrations/cxyonly/login" && method === "POST") return json(res, 200, { ok: true, ...(await client.login(await body(req))) });
   if (pathname === "/api/integrations/cxyonly/logout" && method === "POST") { await store.clearIntegration(); return json(res, 200, { ok: true }); }
   if (pathname === "/api/integrations/cxyonly/pull/preview" && method === "POST") return json(res, 200, await pullPreview());
   if (pathname === "/api/integrations/cxyonly/pull/apply" && method === "POST") return json(res, 200, await applyPull((await body(req)).previewId));
   if (pathname === "/api/integrations/cxyonly/push/preview" && method === "POST") return json(res, 200, await pushPreview());
   if (pathname === "/api/integrations/cxyonly/push/apply" && method === "POST") return json(res, 200, await applyPush((await body(req)).previewId));
-  if (pathname === "/api/integrations/cxyonly/reconcile/preview" && method === "POST") return json(res, 200, await reconcilePreview());
+  if (pathname === "/api/integrations/cxyonly/reconcile/preview" && method === "POST") {
+    const incoming = await body(req);
+    return json(res, 200, await reconcilePreview(incoming));
+  }
   if (pathname === "/api/integrations/cxyonly/reconcile/apply" && method === "POST") {
     const incoming = await body(req);
     return json(res, 200, await applyReconcile(incoming.previewId, incoming));

@@ -130,6 +130,20 @@ test("对账默认按字段更新时间决定方向，并允许取消收藏", ()
   assert.equal(next.favorites.includes("2"), false);
 });
 
+test("同步预览按唯一题号统计双向变化", () => {
+  const result = buildReconcilePlan(
+    { progress: { "1": { mastery: "learning", mastery_updated_at: "2026-01-03T00:00:00Z" }, "2": { mastery: "learning", mastery_updated_at: "2026-01-01T00:00:00Z", favorite_updated_at: "2026-01-01T00:00:00Z" } }, favorites: ["2"] },
+    [
+      { question_id: "1", mastery: "mastered", updated_at: "2026-01-02T00:00:00Z" },
+      { question_id: "2", mastery: "not_started", favorite: false, updated_at: "2026-01-03T00:00:00Z" },
+    ],
+    new Set(["1", "2"]),
+  );
+  assert.equal(result.summary.localQuestionCount, 1);
+  assert.equal(result.summary.remoteQuestionCount, 1);
+  assert.equal(result.summary.conflictQuestionCount, 2);
+});
+
 test("首次修复由官网覆盖本地，并保留未知题号", () => {
   const result = buildReconcilePlan(
     { progress: { "1": { mastery: "mastered" }, "99": { mastery: "forgot" } }, favorites: ["1", "99"] },

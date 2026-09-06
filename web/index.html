@@ -7,7 +7,7 @@
   <meta name="description" content="大观园数学题库本地静态刷题站" />
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="stylesheet" href="./vendor/katex.min.css" />
-    <link rel="stylesheet" href="./styles.css?v=21" />
+    <link rel="stylesheet" href="./styles.css?v=24" />
   <script>
     (() => {
       try {
@@ -122,7 +122,13 @@
                 <button type="button" class="chapter-scope-btn" data-chapter-scope="core">核心</button>
                 <button type="button" class="chapter-scope-btn" data-chapter-scope="real">真题</button>
               </div>
-              <div class="chapter-menu-path" id="chapter-menu-path" aria-live="polite">选择父级目录展开下一层</div>
+              <div class="chapter-menu-navigation">
+                <button type="button" class="btn ghost chapter-menu-back" id="chapter-menu-back" disabled>
+                  <svg class="ui-icon" aria-hidden="true"><use href="#icon-chevron"></use></svg>
+                  <span>上一级</span>
+                </button>
+                <nav class="chapter-menu-path" id="chapter-menu-path" aria-label="当前目录路径" aria-live="polite"></nav>
+              </div>
               <div class="chapter-columns" id="chapter-columns"></div>
               <p class="chapter-menu-feedback" id="chapter-menu-feedback" role="status" aria-live="polite"></p>
             </div>
@@ -189,22 +195,18 @@
               </div>
             </div>
             <div class="home-sync-actions">
-              <button type="button" class="sync-action sync-action-primary" id="btn-home-pull">
-                <span class="sync-action-kicker">官网 → 本地</span>
-                <strong>检查官网差异</strong>
-                <span class="sync-action-desc">读取掌握、收藏、最近学习和活动，生成双向计划</span>
-                <span class="sync-action-arrow" aria-hidden="true">→</span>
-              </button>
-              <button type="button" class="sync-action sync-action-secondary" id="btn-home-push">
-                <span class="sync-action-kicker">本地 → 官网</span>
-                <strong>统一对账</strong>
-                <span class="sync-action-desc">确认后先写本地，再按计划同步官网</span>
+              <button type="button" class="sync-action sync-action-primary" id="btn-home-sync">
+                <span class="sync-action-kicker">官网同步</span>
+                <strong>同步进度</strong>
+                <span class="sync-action-desc">先检查两边变化，确认后再同步</span>
                 <span class="sync-action-arrow" aria-hidden="true">→</span>
               </button>
             </div>
             <div class="home-sync-foot">
-              <span class="muted" id="home-sync-detail">首次使用只需完成一次大观园登录配置，之后在同步中心手动对账。</span>
-              <button type="button" class="btn ghost" id="btn-home-sync-setup">设置同步</button>
+              <span class="muted" id="home-sync-detail">首次使用只需完成一次登录配置，之后点击“同步进度”即可。</span>
+              <div class="home-sync-foot-actions">
+                <button type="button" class="btn ghost" id="btn-home-sync-guide">同步教程</button>
+              </div>
             </div>
           </section>
 
@@ -333,7 +335,6 @@
     </div>
   </div>
 
-  <button type="button" class="ai-edge-tab" id="ai-edge-tab" aria-controls="ai-drawer" aria-expanded="false"><svg class="ui-icon"><use href="#icon-spark"></use></svg><span>AI 解答</span></button>
   <aside class="ai-drawer" id="ai-drawer" aria-hidden="true" aria-labelledby="ai-drawer-title">
     <div class="ai-resize-handle" id="ai-resize-handle" role="separator" aria-label="调整 AI 抽屉宽度" tabindex="0"></div>
     <div class="ai-drawer-head">
@@ -367,7 +368,7 @@
     <ol class="tutorial-steps compact">
       <li><span class="tutorial-step-no">1</span><div><strong>先刷题</strong><p>点击“从高等数学开始”，在题目卡片上展开答案并标记掌握状态。</p></div></li>
       <li><span class="tutorial-step-no">2</span><div><strong>要换设备，再备份</strong><p>打开“进度备份”下载 JSON；在另一台设备选择文件即可恢复。</p></div></li>
-      <li><span class="tutorial-step-no">3</span><div><strong>要和官网互通，再同步</strong><p>在“设置同步”里输入一次大观园登录码，之后在同步中心手动检查差异并应用。</p></div></li>
+      <li><span class="tutorial-step-no">3</span><div><strong>要和官网互通，再同步</strong><p>点击“同步进度”开始首次配置，输入一次大观园登录码，之后每次先检查再确认。</p></div></li>
     </ol>
     <div class="sheet-actions">
       <button type="button" class="btn" id="btn-welcome-later">以后再看</button>
@@ -391,7 +392,7 @@
       </li>
       <li>
         <span class="tutorial-step-no">2</span>
-        <div><h3>开始刷题</h3><p>点左侧分类进入题目；列表模式适合连续刷，单题模式支持快捷键 <kbd>←</kbd> <kbd>→</kbd>、<kbd>A</kbd> 和 <kbd>1-4</kbd>。每次标记会自动保存到当前浏览器。</p></div>
+        <div><h3>开始刷题</h3><p>从首页进入学科，再用刷题页顶部的章节选择器进入最末级小节；列表模式适合连续刷，单题模式支持快捷键。每次标记都会增量保存到本机中控台。</p></div>
       </li>
       <li>
         <span class="tutorial-step-no">3</span>
@@ -399,11 +400,11 @@
       </li>
       <li>
         <span class="tutorial-step-no">4</span>
-        <div><h3>第一次官网同步</h3><p>点击首页“设置同步”，在配置向导中输入大观园登录码。中控台会在本机保存状态并直接访问官网 API，不需要安装扩展或保持官网标签页打开。</p><div class="tutorial-actions"><button type="button" class="btn primary" id="btn-tutorial-sync-card">去设置官网同步</button></div></div>
+        <div><h3>第一次官网同步</h3><p>点击首页“同步教程”查看登录、只读检查、首次备份和正式应用的完整顺序。中控台会在本机保存状态并直接访问官网 API。</p><div class="tutorial-actions"><button type="button" class="btn" id="btn-tutorial-sync-guide">查看同步教程</button><button type="button" class="btn primary" id="btn-tutorial-sync-card">开始配置</button></div></div>
       </li>
       <li>
         <span class="tutorial-step-no">5</span>
-        <div><h3>检查并应用</h3><p>点击“检查差异”会先更新题库并读取官网状态；确认后应用统一对账计划，先写本地、再写官网并复读校验，失败项会保留。</p></div>
+        <div><h3>检查并同步</h3><p>点击“同步进度”会先更新题库并读取官网状态；看清两边会更新多少题后再确认，失败项会保留。</p></div>
       </li>
     </ol>
     <details class="tutorial-details">
@@ -412,7 +413,49 @@
     </details>
     <div class="sheet-actions">
       <button type="button" class="btn" data-close="dlg-tutorial">关闭</button>
-      <button type="button" class="btn primary" id="btn-tutorial-sync">去设置官网同步</button>
+      <button type="button" class="btn primary" id="btn-tutorial-sync">开始首次配置</button>
+    </div>
+  </dialog>
+
+  <dialog id="dlg-sync-guide" class="sheet sheet-wide sync-guide-sheet">
+    <div class="sheet-head">
+      <div>
+        <p class="dialog-kicker">官网同步教程</p>
+        <h2>首次连接一次，之后同步进度</h2>
+      </div>
+      <button type="button" class="icon-btn" data-close="dlg-sync-guide" aria-label="关闭官网同步教程"><svg class="ui-icon"><use href="#icon-close"></use></svg></button>
+    </div>
+    <p class="sheet-lead">同步不会在启动时自动运行。请先完成下面的首次配置；以后每次点击“同步进度”，先检查再确认。</p>
+
+    <section class="sync-guide-section" aria-labelledby="sync-guide-first-title">
+      <div class="sync-guide-heading"><span>首次配置</span><h3 id="sync-guide-first-title">只需要完成一次</h3></div>
+      <ol class="tutorial-steps compact sync-guide-steps">
+        <li><span class="tutorial-step-no">1</span><div><strong>启动本地中控台</strong><p>Windows 双击 <code>启动本地题库.cmd</code>，浏览器打开后保持启动窗口运行。</p></div></li>
+        <li><span class="tutorial-step-no">2</span><div><strong>点击“同步进度”</strong><p>首次使用会自动进入配置页面。登录方式二选一：优先填写大观园登录码；没有登录码时填写官网账号和密码。</p></div></li>
+        <li><span class="tutorial-step-no">3</span><div><strong>保存并测试读取</strong><p>点击“保存并登录”，再点击“测试读取”。测试阶段只读取官网掌握状态和收藏，不会修改官网。</p></div></li>
+        <li><span class="tutorial-step-no">4</span><div><strong>首次同步官网数据</strong><p>点击“导入官网进度”。系统先备份浏览器、本地文件和官网快照，再把官网状态安全导入本地。</p></div></li>
+      </ol>
+    </section>
+
+    <section class="sync-guide-section" aria-labelledby="sync-guide-daily-title">
+      <div class="sync-guide-heading"><span>日常同步</span><h3 id="sync-guide-daily-title">每次严格按这三步</h3></div>
+      <ol class="tutorial-steps compact sync-guide-steps">
+        <li><span class="tutorial-step-no">1</span><div><strong>检查同步内容</strong><p>点击“检查同步内容”。这一步只读，会更新题库并告诉你官网和本地各有多少题需要更新。</p></div></li>
+        <li><span class="tutorial-step-no">2</span><div><strong>看清变化</strong><p>默认保留更新时间较新的状态；如果有冲突，可以在“高级选项”中改变方向。</p></div></li>
+        <li><span class="tutorial-step-no">3</span><div><strong>确认同步</strong><p>确认后点击“确认同步”。系统会再次备份，先写本地，再写官网，最后重新读取官网校验。</p></div></li>
+      </ol>
+    </section>
+
+    <div class="sync-guide-boundaries">
+      <div><strong>会双向同步</strong><p>掌握状态、收藏、最近学习位置。</p></div>
+      <div><strong>只从官网读取</strong><p>历史活动日历和官网活动快照。</p></div>
+      <div><strong>绝不会上传</strong><p>易错标记、题目批注、AI Key、AI 服务档案和聊天历史。</p></div>
+    </div>
+    <p class="hint-note">登录 Token 只保存在本机 <code>data/cxyonly-integration.json</code>，不会返回网页、进入进度导出或写入仓库。</p>
+    <div class="sheet-actions">
+      <button type="button" class="btn" data-close="dlg-sync-guide">关闭</button>
+      <button type="button" class="btn" id="btn-sync-guide-center">已配置，打开同步中心</button>
+      <button type="button" class="btn primary" id="btn-sync-guide-setup">开始首次配置</button>
     </div>
   </dialog>
 
@@ -549,12 +592,12 @@
     <section class="setup-step" data-setup-step="4" hidden>
       <span class="setup-step-number">4</span>
       <div class="setup-step-content">
-        <h3>备份并完成首次修复</h3>
-        <p>先备份旧浏览器和本地状态，再以官网完整掌握图覆盖本地旧记录；未知题号会单独保留并报告。</p>
+        <h3>首次同步官网数据</h3>
+        <p>将官网掌握状态和收藏导入本地。操作前会自动备份现有本地数据；未知题号会单独保留并报告。</p>
         <div class="setup-feedback setup-feedback-box" id="setup-migration-result" role="status" aria-live="polite">等待迁移。</div>
         <div class="tutorial-actions">
           <button type="button" class="btn" data-setup-prev="3">返回修改</button>
-          <button type="button" class="btn primary" id="btn-setup-migrate">备份并完成首次修复</button>
+          <button type="button" class="btn primary" id="btn-setup-migrate">导入官网进度</button>
         </div>
       </div>
     </section>
@@ -563,7 +606,7 @@
       <span class="setup-step-number">5</span>
       <div class="setup-step-content">
         <h3>配置完成</h3>
-        <p>本地状态已经由中控台保存。之后启动本地题库只检查登录状态；官网变化请在同步中心手动对账。</p>
+        <p>本地状态已经由中控台保存。之后点击“同步进度”即可先检查，再确认同步。</p>
         <div class="setup-feedback setup-feedback-box" id="setup-finish-result" role="status" aria-live="polite">可以开始刷题了。</div>
         <div class="tutorial-actions">
           <button type="button" class="btn" data-setup-prev="4">返回修改</button>
@@ -578,26 +621,43 @@
       <h2>官网同步</h2>
       <button type="button" class="icon-btn" data-close="dlg-online-sync" aria-label="关闭"><svg class="ui-icon"><use href="#icon-close"></use></svg></button>
     </div>
-    <p class="sheet-lead">本地中控台直接访问大观园 API。官网与本地的掌握、收藏、最近学习位置和活动记录统一在这里手动对账。</p>
+    <p class="sheet-lead">这里会先检查官网和本地的变化。只有你确认后，才会更新本地或上传官网。</p>
     <p class="muted" id="sync-connection-status">正在检查本地中控台…</p>
-    <div class="sheet-actions inline">
+    <section class="sync-flow-card" id="sync-flow-card" data-state="idle" aria-live="polite">
+      <span class="sync-flow-step" id="sync-flow-step">第 1 步 · 只读检查</span>
+      <strong id="sync-summary">还没有检查</strong>
+      <p id="sync-summary-note">点击下面的按钮，先看看官网和本地分别有什么变化。</p>
+    </section>
+    <div class="sheet-actions inline sync-primary-actions">
       <button type="button" class="btn" id="btn-sync-status">检查连接</button>
-      <button type="button" class="btn primary" id="btn-sync-pull">检查差异</button>
-      <button type="button" class="btn primary" id="btn-sync-push">应用对账计划</button>
-      <button type="button" class="btn" id="btn-sync-export-local">导出本地数据</button>
-      <button type="button" class="btn" id="btn-sync-export-remote">导出官网快照</button>
-      <button type="button" class="btn" id="btn-sync-export-android">导出 Android 兼容包</button>
+      <button type="button" class="btn primary" id="btn-sync-pull">检查同步内容</button>
+      <button type="button" class="btn primary" id="btn-sync-push" hidden disabled>确认同步</button>
     </div>
-    <label class="sync-winner-choice">冲突批量处理
-      <select id="sync-conflict-winner">
-        <option value="latest">按更新时间较新者</option>
-        <option value="remote">官网优先</option>
-        <option value="local">本地优先</option>
-      </select>
-    </label>
-    <pre class="sync-result" id="sync-result" hidden aria-live="polite"></pre>
-    <p class="hint-note">检查阶段只读；应用前会分别备份本地和官网快照，先写本地，再写官网并重新读取校验。失败项会保留待同步标记。</p>
+    <details class="sync-advanced" id="sync-advanced">
+      <summary>高级选项</summary>
+      <div class="sync-advanced-body">
+        <label class="sync-winner-choice" id="sync-winner-wrap" hidden>冲突处理
+          <select id="sync-conflict-winner">
+            <option value="latest">自动保留更新时间较新的状态</option>
+            <option value="remote">全部以官网为准</option>
+            <option value="local">全部以本地为准</option>
+          </select>
+          <small>修改后会重新检查同步内容。</small>
+        </label>
+        <div class="sheet-actions inline sync-export-actions">
+          <button type="button" class="btn" id="btn-sync-export-local">导出本地数据</button>
+          <button type="button" class="btn" id="btn-sync-export-remote">导出官网快照</button>
+          <button type="button" class="btn" id="btn-sync-export-android">导出 Android 兼容包</button>
+        </div>
+      </div>
+    </details>
+    <details class="sync-result-details" id="sync-result-details" hidden>
+      <summary>查看详细变化</summary>
+      <pre class="sync-result" id="sync-result" aria-live="polite"></pre>
+    </details>
+    <p class="hint-note">同步前会自动备份本地状态和官网快照。易错、批注和 AI 配置不会上传。</p>
     <div class="sheet-actions inline setup-reopen-actions">
+      <button type="button" class="btn ghost" id="btn-online-sync-guide">查看同步教程</button>
       <button type="button" class="btn ghost" id="btn-reopen-setup-wizard">重新运行配置向导</button>
     </div>
   </dialog>
@@ -678,6 +738,6 @@
 
   <script defer src="./vendor/marked.min.js"></script>
   <script defer src="./vendor/katex.min.js"></script>
-    <script defer src="./app.js?v=24"></script>
+    <script defer src="./app.js?v=27"></script>
 </body>
 </html>

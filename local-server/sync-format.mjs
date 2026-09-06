@@ -344,11 +344,15 @@ export function buildReconcilePlan(localValue, remoteEntries, knownIds = null, o
   const masteryChanges = { mastered: 0, needs_practice: 0, not_known: 0, not_started: 0 };
   const localMasteryChanges = { mastered: 0, needs_practice: 0, not_known: 0, not_started: 0 };
   let favoriteChanges = 0;
+  const remoteQuestionIds = new Set();
+  const localQuestionIds = new Set();
   for (const operation of remoteOperations) {
+    remoteQuestionIds.add(String(operation.questionId));
     if (operation.payload.mastery) masteryChanges[operation.payload.mastery] += 1;
     if (Object.prototype.hasOwnProperty.call(operation.payload, "is_favorite")) favoriteChanges += 1;
   }
   for (const change of localChanges) {
+    localQuestionIds.add(String(change.questionId));
     if (change.field !== "mastery") continue;
     const remoteValue = localMasteryToRemote(change.value);
     localMasteryChanges[remoteValue] += 1;
@@ -364,6 +368,9 @@ export function buildReconcilePlan(localValue, remoteEntries, knownIds = null, o
       remoteEntries: remote.length,
       localToRemote: remoteOperations.length,
       remoteToLocal: localChanges.length,
+      localQuestionCount: remoteQuestionIds.size,
+      remoteQuestionCount: localQuestionIds.size,
+      conflictQuestionCount: new Set(conflicts.map((item) => String(item.questionId))).size,
       conflicts: conflicts.length,
       unknown: new Set(unknownIds).size,
       masteryChanges,

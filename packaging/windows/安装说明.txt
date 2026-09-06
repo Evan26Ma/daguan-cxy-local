@@ -1,0 +1,24 @@
+大观园数学题库 Windows 一键安装包
+
+适用范围
+- Windows 10 22H2 或 Windows 11，64 位 x64 处理器。
+- Microsoft Edge 或 Google Chrome 最新稳定版。
+- 建议 8 GB 内存和至少 2 GB 可用磁盘空间。
+- 不需要预装 Node.js；安装包内含本地运行程序。
+
+安装方法
+1. 从 GitHub Release 下载并解压完整 ZIP 文件。
+2. 双击“安装大观园数学题库.cmd”。
+3. 安装器会复制程序、创建桌面和开始菜单快捷方式，并自动启动。
+4. 第一次使用点击首页“同步进度”，按页面提示完成首次官网配置。
+
+数据位置
+- 进度、登录配置、同步备份保存在当前 Windows 用户的 %LOCALAPPDATA%\DaguanMath\data。
+- 这些数据不会上传到 GitHub，也不会进入安装包。
+
+卸载
+- 删除桌面/开始菜单快捷方式。
+- 删除 %LOCALAPPDATA%\DaguanMath 前，请先导出本地数据并确认不再需要本地进度和登录配置。
+
+安全提示
+- Windows SmartScreen 第一次运行可能显示未知发布者提示，这是未购买代码签名证书导致的；请核对 GitHub Release 的 SHA256 后再运行。
