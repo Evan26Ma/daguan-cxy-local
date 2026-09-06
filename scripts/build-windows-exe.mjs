@@ -112,6 +112,14 @@ await fsp.writeFile(configPath, JSON.stringify({
 run(process.execPath, ["--experimental-sea-config", configPath]);
 await fsp.copyFile(process.execPath, OUT);
 run(process.platform === "win32" ? "npx.cmd" : "npx", ["--yes", "postject", OUT, "NODE_SEA_BLOB", blobPath, "--sentinel-fuse", NODE_SEA_FUSE]);
-run(OUT, ["--check"]);
+const checkRoot = path.join(BUILD, "runtime-check");
+const previousCheckRoot = process.env.DAGUAN_RUNTIME_ROOT;
+process.env.DAGUAN_RUNTIME_ROOT = checkRoot;
+try {
+  run(OUT, ["--check"]);
+} finally {
+  if (previousCheckRoot === undefined) delete process.env.DAGUAN_RUNTIME_ROOT;
+  else process.env.DAGUAN_RUNTIME_ROOT = previousCheckRoot;
+}
 console.log(`单文件程序已生成：${OUT}`);
 console.log(`内置文件：${bundleInfo.files} 个，压缩资源：${(bundleInfo.bytes / 1024 / 1024).toFixed(1)} MB`);

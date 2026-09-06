@@ -2,6 +2,16 @@
 
 本项目采用日期加修订号标识本地构建版本。尚未完成浏览器验收的内容放在“待发布”版本中。
 
+## 2026.09.07-r8
+
+### Windows 发布修复
+
+- 修复部分 Windows PowerShell 5.1 环境下安装脚本的解析失败；
+- 安装脚本改为纯 ASCII 内容，并用系统 API 获取开始菜单和桌面路径；
+- GitHub Release 新增可直接运行的 `DaguanMath-windows-x64.exe` 及独立 SHA256；
+- ZIP 发布包改用 ASCII 文件名，构建时自动解压并复查 PowerShell 语法；
+- 统一将运行数据保存到 `%LOCALAPPDATA%\DaguanMath`，避免直接运行 EXE 时在下载目录产生数据副本。
+
 ## 2026.09.07-r7（待发布）
 
 ### 同步流程简化

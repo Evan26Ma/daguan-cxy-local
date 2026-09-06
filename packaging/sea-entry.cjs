@@ -1,4 +1,3 @@
-const fs = require("node:fs");
 const fsp = require("node:fs/promises");
 const path = require("node:path");
 const os = require("node:os");
@@ -14,15 +13,14 @@ const APP_NAME = "DaguanMath";
 const SUBPATH = "daguan-math";
 
 function appRoot() {
-  const portable = path.join(path.dirname(process.execPath), `.${APP_NAME}`);
-  try {
-    fs.mkdirSync(portable, { recursive: true });
-    fs.accessSync(portable, fs.constants.W_OK);
-    return portable;
-  } catch {
-    const base = process.env.LOCALAPPDATA || path.dirname(process.execPath);
-    return path.join(base, APP_NAME);
+  if (process.env.DAGUAN_RUNTIME_ROOT) {
+    return path.resolve(process.env.DAGUAN_RUNTIME_ROOT);
   }
+  if (process.env.DAGUAN_PORTABLE === "1") {
+    return path.join(path.dirname(process.execPath), `.${APP_NAME}`);
+  }
+  const base = process.env.LOCALAPPDATA || os.homedir();
+  return path.join(base, APP_NAME);
 }
 
 function readString(buffer, offset, length) {

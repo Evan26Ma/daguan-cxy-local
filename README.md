@@ -16,7 +16,7 @@
 
 AI 能力取决于你配置的服务：普通文本模型不能自动获得视觉或绘图能力；API 费用、速率限制、内容策略和服务稳定性由对应厂商或中转站负责。
 
-更新记录见 [CHANGELOG.md](CHANGELOG.md)，当前版本为 r7 简明官网同步流程。
+更新记录见 [CHANGELOG.md](CHANGELOG.md)，当前版本为 r8 Windows 发布修复版。
 
 `android/` 保留原 Flutter 客户端和兼容数据格式，`web/` 是刷题页面，`local-server/` 是本地中控台，`sync-extension/` 仅作为旧版浏览器桥接兼容方案保留。
 
@@ -34,13 +34,15 @@ AI 能力取决于你配置的服务：普通文本模型不能自动获得视�
 
 第一次进入页面后，点击“同步进度”，再按引导完成登录、只读测试和首次同步。
 
-普通用户建议直接从 [GitHub Releases](https://github.com/Evan26Ma/daguan-local/releases) 下载 `大观园数学题库-windows-x64.zip`：
+普通用户建议直接从 [GitHub Releases](https://github.com/Evan26Ma/daguan-local/releases) 下载 `DaguanMath-windows-x64.exe`，双击即可运行，不需要 Node.js。
+
+如果希望安装到系统并创建桌面、开始菜单快捷方式，下载 `DaguanMath-windows-x64.zip`：
 
 1. 解压完整 ZIP 文件；
 2. 双击 `安装大观园数学题库.cmd`；
 3. 安装器会创建桌面和开始菜单快捷方式，并自动启动。
 
-该安装包不需要 Node.js，详细说明见 [Windows 安装说明](packaging/windows/安装说明.txt)。
+两种发布包都不需要 Node.js，详细说明见 [Windows 安装说明](packaging/windows/安装说明.txt)。
 
 如果需要自行构建 Windows 单文件程序，可在本机执行：
 
@@ -49,7 +51,7 @@ npm run package:windows
 npm run package:windows:release
 ```
 
-生成的 `dist/大观园数学题库-windows-x64.zip` 是可分发的一键安装包。运行数据保存在当前 Windows 用户的 `%LOCALAPPDATA%\DaguanMath\data`，升级程序不会覆盖进度和登录配置。
+生成的 `dist/DaguanMath-windows-x64.exe` 是可直接运行的单文件版，`dist/DaguanMath-windows-x64.zip` 是会创建快捷方式的安装包。运行数据统一保存在当前 Windows 用户的 `%LOCALAPPDATA%\DaguanMath\data`，升级程序不会覆盖进度和登录配置。
 
 ### 适用设备
 
