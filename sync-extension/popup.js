@@ -77,6 +77,25 @@
   }
 
   async function initialize() {
+    const extId = chrome.runtime?.id || "";
+    const extIdEl = document.getElementById("extension-id-text");
+    if (extIdEl) extIdEl.textContent = extId || "无法获取";
+    const copyBtn = document.getElementById("copy-extension-id-btn");
+    if (copyBtn) {
+      copyBtn.addEventListener("click", async () => {
+        if (!extId) return;
+        try {
+          await navigator.clipboard.writeText(extId);
+          copyBtn.textContent = "已复制 ✓";
+          setTimeout(() => {
+            copyBtn.textContent = "复制 ID";
+          }, 1500);
+        } catch {
+          copyBtn.textContent = "复制失败";
+        }
+      });
+    }
+
     const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
     const tab = tabs[0];
     if (!tab || !isSupportedUrl(tab.url)) {

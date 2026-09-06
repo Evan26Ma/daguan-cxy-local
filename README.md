@@ -1,12 +1,24 @@
 # 大观园数学题库本地版
 
-本项目提供一个可部署到 Linux 服务器的本地 Web/PWA 刷题站，并通过浏览器扩展与大观园官网同步掌握状态和收藏。
+本项目提供一个可离线运行或部署到服务器的本地 Web/PWA 刷题站，并通过浏览器扩展安全地与大观园官网同步掌握状态和收藏。
 
-目录中的 `android/` 保留原 Flutter 客户端，作为移动端进度格式和题图资源参考；Linux 部署入口是 `web/`。
+目录中的 `android/` 保留原 Flutter 客户端，作为移动端进度格式和题图资源参考；Web 端刷题入口是 `web/`。
 
-## 本地启动
+---
+
+## ⚡ 最快开始（快速上手）
+
+### Windows 用户（推荐一键启动）
+直接双击仓库根目录下的 **`启动本地题库.cmd`** 即可自动运行本地服务并拉起浏览器打开 `http://localhost:8080/`。
+
+> 详细图文与进阶使用说明，请参阅 📖 **[完整使用教程](docs/使用教程.md)**。
+
+---
+
+## 本地启动（手动方式）
 
 ```bash
+# Python 3
 python3 -m http.server 8080 --directory web
 ```
 
@@ -17,6 +29,7 @@ python3 -m http.server 8080 --directory web
 ```bash
 docker compose -f deploy/docker-compose.yml up -d --build
 ```
+Windows 用户亦可双击 `启动本地题库-Docker.cmd` 启动。
 
 ## 官网同步
 

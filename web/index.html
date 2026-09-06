@@ -46,6 +46,7 @@
 
       <div class="sidebar-foot">
         <div id="stats-line">加载中…</div>
+        <button type="button" class="linkish" id="btn-tutorial">使用教程</button>
         <button type="button" class="linkish" id="btn-sync">进度备份</button>
         <button type="button" class="linkish" id="btn-online-sync">官网同步</button>
         <button type="button" class="linkish" id="btn-reset-progress">清除本地进度</button>
@@ -76,7 +77,10 @@
               <h1>打开一章就开始</h1>
               <p class="muted hero-desc">点左侧分类，列表往下刷。答案、掌握、导出都在本题上。进度只记在这台设备。</p>
             </div>
-            <button type="button" class="btn primary hero-cta" id="btn-start">从高等数学开始 →</button>
+            <div class="hero-actions">
+              <button type="button" class="btn primary hero-cta" id="btn-start">从高等数学开始 →</button>
+              <button type="button" class="btn hero-cta" id="btn-hero-tutorial">先看使用教程</button>
+            </div>
           </div>
 
           <div class="metric-strip" id="metric-strip">
@@ -186,6 +190,67 @@
 
   <div id="toast" class="toast hidden" role="status"></div>
 
+  <dialog id="dlg-welcome" class="sheet sheet-wide">
+    <div class="sheet-head">
+      <div>
+        <p class="dialog-kicker">第一次打开</p>
+        <h2>1 分钟开始使用</h2>
+      </div>
+      <button type="button" class="icon-btn" data-close="dlg-welcome" aria-label="关闭">×</button>
+    </div>
+    <p class="sheet-lead">这是本地优先版本：题库和刷题进度默认留在当前浏览器，断网也能继续刷。只有点击“官网同步”时，才会通过扩展访问大观园官网。</p>
+    <ol class="tutorial-steps compact">
+      <li><span class="tutorial-step-no">1</span><div><strong>先刷题</strong><p>点击“从高等数学开始”，在题目卡片上展开答案并标记掌握状态。</p></div></li>
+      <li><span class="tutorial-step-no">2</span><div><strong>要换设备，再备份</strong><p>打开“进度备份”下载 JSON；在另一台设备选择文件即可恢复。</p></div></li>
+      <li><span class="tutorial-step-no">3</span><div><strong>要和官网互通，再同步</strong><p>安装同步扩展、登录官网，然后在“官网同步”中读取或上传状态。</p></div></li>
+    </ol>
+    <div class="sheet-actions">
+      <button type="button" class="btn" id="btn-welcome-later">以后再看</button>
+      <button type="button" class="btn primary" id="btn-welcome-tutorial">查看完整教程</button>
+    </div>
+  </dialog>
+
+  <dialog id="dlg-tutorial" class="sheet sheet-wide">
+    <div class="sheet-head">
+      <div>
+        <p class="dialog-kicker">使用教程</p>
+        <h2>本地刷题 + 官网同步</h2>
+      </div>
+      <button type="button" class="icon-btn" data-close="dlg-tutorial" aria-label="关闭">×</button>
+    </div>
+    <p class="sheet-lead">日常只需要两个动作：双击启动脚本打开本地题库，刷完后按需点击“官网同步”。</p>
+    <ol class="tutorial-steps">
+      <li>
+        <span class="tutorial-step-no">1</span>
+        <div><h3>一键启动本地题库</h3><p>Windows 双击仓库根目录的 <code>启动本地题库.cmd</code>，脚本会启动本地服务并打开浏览器。Linux 可运行 <code>python3 -m http.server 8080 --directory web</code>。</p></div>
+      </li>
+      <li>
+        <span class="tutorial-step-no">2</span>
+        <div><h3>开始刷题</h3><p>点左侧分类进入题目；列表模式适合连续刷，单题模式支持快捷键 <kbd>←</kbd> <kbd>→</kbd>、<kbd>A</kbd> 和 <kbd>1-4</kbd>。每次标记会自动保存到当前浏览器。</p></div>
+      </li>
+      <li>
+        <span class="tutorial-step-no">3</span>
+        <div><h3>备份或迁移进度</h3><p>打开侧栏“进度备份”→“下载备份”。换设备时在同一处选择 JSON 文件，写入前不会覆盖题库内容。</p></div>
+      </li>
+      <li>
+        <span class="tutorial-step-no">4</span>
+        <div><h3>第一次官网同步</h3><p>安装 <code>sync-extension/</code> 未打包扩展，在官网登录并保持官网题库标签页打开。再打开“官网同步”，从扩展弹窗复制扩展 ID，粘贴一次并保存。</p><div class="tutorial-actions"><button type="button" class="btn" id="btn-open-extension-page">打开扩展管理页</button><button type="button" class="btn" id="btn-open-official-site">打开大观园官网</button></div></div>
+      </li>
+      <li>
+        <span class="tutorial-step-no">5</span>
+        <div><h3>读取或上传</h3><p>点击“从官网读取”会先显示变更预览，再合并到本地；点击“预览并同步到官网”会先读取官网状态并自动备份，确认后才写入。默认不会清空官网已有记录。</p></div>
+      </li>
+    </ol>
+    <details class="tutorial-details">
+      <summary>同步安全吗？</summary>
+      <p>本地页面不会接触登录令牌。扩展只访问大观园官网，并且仅传输题号、掌握状态、收藏和更新时间；写入官网前会自动下载备份。</p>
+    </details>
+    <div class="sheet-actions">
+      <button type="button" class="btn" data-close="dlg-tutorial">关闭</button>
+      <button type="button" class="btn primary" id="btn-tutorial-sync">去设置官网同步</button>
+    </div>
+  </dialog>
+
   <dialog id="dlg-export" class="sheet">
     <div class="sheet-head">
       <h2>导出 PDF</h2>
@@ -255,16 +320,20 @@
       <h2>官网同步</h2>
       <button type="button" class="icon-btn" data-close="dlg-online-sync" aria-label="关闭">×</button>
     </div>
-    <p class="sheet-lead">同步扩展负责访问已登录的官网标签页。本地页面不会接触登录令牌。</p>
+    <p class="sheet-lead">同步扩展负责访问已登录的官网标签页。本地页面不会接触登录令牌。第一次配置约 1 分钟，之后就是一键读取或上传。</p>
+    <div class="sync-setup" aria-label="官网同步准备步骤">
+      <div class="sync-setup-step"><span class="tutorial-step-no">1</span><div><strong>登录官网并保持标签页打开</strong><div class="tutorial-actions"><button type="button" class="btn compact-btn" id="btn-open-official-site-sync">打开官网</button></div></div></div>
+      <div class="sync-setup-step"><span class="tutorial-step-no">2</span><div><strong>安装扩展后复制 ID</strong><p class="hint-note">点击扩展图标，在弹窗中复制 ID；只需粘贴一次。</p><div class="tutorial-actions"><button type="button" class="btn compact-btn" id="btn-open-extension-page-sync">打开扩展管理</button></div></div></div>
+    </div>
     <label class="field-label" for="sync-extension-id">同步扩展 ID</label>
-    <input id="sync-extension-id" class="import-area sync-extension-id" placeholder="从 chrome://extensions 复制扩展 ID" />
+    <input id="sync-extension-id" class="import-area sync-extension-id" placeholder="从扩展弹窗复制，例如 abcdefghijklmnop" autocomplete="off" spellcheck="false" />
     <p class="muted" id="sync-connection-status">尚未连接同步扩展。</p>
     <div class="sheet-actions inline">
       <button type="button" class="btn" id="btn-sync-status">检查连接</button>
       <button type="button" class="btn primary" id="btn-sync-pull">从官网读取</button>
       <button type="button" class="btn primary" id="btn-sync-push">预览并同步到官网</button>
     </div>
-    <pre class="sync-result" id="sync-result" hidden></pre>
+    <pre class="sync-result" id="sync-result" hidden aria-live="polite"></pre>
     <p class="hint-note">默认只合并非空掌握状态和已收藏，不会清空官网记录。写入前扩展会自动下载官网备份。</p>
   </dialog>
 
@@ -285,6 +354,6 @@
 
   <script defer src="./vendor/marked.min.js"></script>
   <script defer src="./vendor/katex.min.js"></script>
-  <script defer src="./app.js?v=4"></script>
+  <script defer src="./app.js?v=5"></script>
 </body>
 </html>

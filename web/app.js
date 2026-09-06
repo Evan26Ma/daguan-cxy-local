@@ -1534,6 +1534,8 @@
   }
 
   const SYNC_EXTENSION_KEY = "daguan_sync_extension_id_v1";
+  const TUTORIAL_SEEN_KEY = "daguan_tutorial_seen_v1";
+  const OFFICIAL_SITE_URL = ["https:", "", "www.cxyonly.fans", "math"].join("/");
 
   function syncExtensionId() {
     return String(localStorage.getItem(SYNC_EXTENSION_KEY) || "").trim();
@@ -2145,6 +2147,74 @@
     document.querySelectorAll("[data-close]").forEach((el) => {
       el.addEventListener("click", () => closeSheet(el.dataset.close));
     });
+
+    document.querySelectorAll("dialog.sheet").forEach((dialog) => {
+      dialog.addEventListener("click", (e) => {
+        const rect = dialog.getBoundingClientRect();
+        const isInDialog =
+          rect.top <= e.clientY &&
+          e.clientY <= rect.top + rect.height &&
+          rect.left <= e.clientX &&
+          e.clientX <= rect.left + rect.width;
+        if (!isInDialog && typeof dialog.close === "function") {
+          dialog.close();
+        }
+      });
+    });
+
+    const openOfficialSite = () => window.open(OFFICIAL_SITE_URL, "_blank", "noreferrer");
+    const openExtensionPage = () => {
+      try {
+        window.open("chrome://extensions/", "_blank");
+      } catch {
+        // ignored
+      }
+      toast("如果浏览器拦截，请在新标签页地址栏输入 chrome://extensions 并回车");
+    };
+
+    const btnTutorial = $("#btn-tutorial");
+    if (btnTutorial) btnTutorial.addEventListener("click", () => openSheet("dlg-tutorial"));
+
+    const btnHeroTutorial = $("#btn-hero-tutorial");
+    if (btnHeroTutorial) btnHeroTutorial.addEventListener("click", () => openSheet("dlg-tutorial"));
+
+    const btnWelcomeLater = $("#btn-welcome-later");
+    if (btnWelcomeLater) {
+      btnWelcomeLater.addEventListener("click", () => {
+        localStorage.setItem(TUTORIAL_SEEN_KEY, "1");
+        closeSheet("dlg-welcome");
+      });
+    }
+
+    const btnWelcomeTutorial = $("#btn-welcome-tutorial");
+    if (btnWelcomeTutorial) {
+      btnWelcomeTutorial.addEventListener("click", () => {
+        localStorage.setItem(TUTORIAL_SEEN_KEY, "1");
+        closeSheet("dlg-welcome");
+        openSheet("dlg-tutorial");
+      });
+    }
+
+    const btnTutorialSync = $("#btn-tutorial-sync");
+    if (btnTutorialSync) {
+      btnTutorialSync.addEventListener("click", () => {
+        closeSheet("dlg-tutorial");
+        const input = $("#sync-extension-id");
+        if (input) input.value = syncExtensionId();
+        refreshSyncStats();
+        openSheet("dlg-online-sync");
+      });
+    }
+
+    const btnOpenOfficial = $("#btn-open-official-site");
+    if (btnOpenOfficial) btnOpenOfficial.addEventListener("click", openOfficialSite);
+    const btnOpenOfficialSync = $("#btn-open-official-site-sync");
+    if (btnOpenOfficialSync) btnOpenOfficialSync.addEventListener("click", openOfficialSite);
+
+    const btnOpenExt = $("#btn-open-extension-page");
+    if (btnOpenExt) btnOpenExt.addEventListener("click", openExtensionPage);
+    const btnOpenExtSync = $("#btn-open-extension-page-sync");
+    if (btnOpenExtSync) btnOpenExtSync.addEventListener("click", openExtensionPage);
     $("#btn-export").addEventListener("click", () => {
       refreshExportCounts();
       openSheet("dlg-export");
@@ -2407,6 +2477,9 @@
       renderHome();
       setView("home");
       refreshPickUI();
+      if (!localStorage.getItem(TUTORIAL_SEEN_KEY)) {
+        openSheet("dlg-welcome");
+      }
       indexesReady.then(() => renderHome()).catch(() => {});
     } catch (err) {
       console.error(err);

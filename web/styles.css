@@ -453,6 +453,13 @@ kbd {
   font-size: 0.92rem;
   line-height: 1.55;
 }
+.hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
 .hero-cta {
   flex-shrink: 0;
   min-height: 2.7rem;
@@ -1077,6 +1084,14 @@ kbd {
   gap: 0.75rem;
   margin-bottom: 0.35rem;
 }
+.dialog-kicker {
+  margin: 0 0 0.2rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--brand);
+}
 .sheet-head h2 {
   margin: 0;
   font-family: var(--serif);
@@ -1089,6 +1104,141 @@ kbd {
   color: var(--muted);
   font-size: 0.88rem;
   line-height: 1.6;
+}
+
+.tutorial-steps {
+  list-style: none;
+  margin: 0 0 1rem;
+  padding: 0;
+  display: grid;
+  gap: 0.85rem;
+}
+.tutorial-steps > li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem 0.85rem;
+  background: var(--bg-subtle);
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius);
+}
+.tutorial-step-no {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  flex-shrink: 0;
+  border-radius: 999px;
+  background: var(--brand);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1;
+}
+.tutorial-steps h3 {
+  margin: 0 0 0.25rem;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+.tutorial-steps p {
+  margin: 0;
+  font-size: 0.84rem;
+  line-height: 1.55;
+  color: var(--muted);
+}
+.tutorial-steps p code {
+  font-family: var(--mono);
+  font-size: 0.8em;
+  padding: 0.15em 0.35em;
+  border-radius: 4px;
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  color: var(--ink);
+}
+.tutorial-steps p kbd {
+  display: inline-block;
+  padding: 0.1em 0.35em;
+  font-family: var(--mono);
+  font-size: 0.75em;
+  line-height: 1.2;
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.08);
+  color: var(--ink);
+}
+.tutorial-steps.compact {
+  gap: 0.55rem;
+}
+.tutorial-steps.compact > li {
+  padding: 0.6rem 0.75rem;
+}
+.tutorial-steps.compact strong {
+  display: block;
+  font-size: 0.88rem;
+  color: var(--ink);
+  margin-bottom: 0.15rem;
+}
+
+.tutorial-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.55rem;
+}
+.compact-btn {
+  min-height: 2rem;
+  padding: 0.25rem 0.65rem;
+  font-size: 0.8rem;
+}
+
+.tutorial-details {
+  margin: 0.75rem 0 1rem;
+  padding: 0.6rem 0.8rem;
+  background: var(--bg-subtle);
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius);
+  font-size: 0.82rem;
+}
+.tutorial-details summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--brand);
+  user-select: none;
+}
+.tutorial-details p {
+  margin: 0.45rem 0 0;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+.sync-setup {
+  display: grid;
+  gap: 0.6rem;
+  margin: 0 0 1rem;
+}
+.sync-setup-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  padding: 0.65rem 0.75rem;
+  background: var(--bg-subtle);
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius);
+  font-size: 0.84rem;
+}
+.sync-setup-step strong {
+  display: block;
+  color: var(--ink);
+  font-size: 0.86rem;
+}
+.sync-setup-step p {
+  margin: 0.2rem 0 0;
+}
+.sync-setup-step .tutorial-actions {
+  margin-top: 0.4rem;
 }
 .choice-set {
   border: 1px solid var(--line-subtle);
@@ -1432,4 +1582,21 @@ body.print-preview .print-stage {
   .mode-toggle { order: 3; width: 100%; }
   .mode-btn { flex: 1; }
   .pill { max-width: 8.5rem; }
+  .hero-actions { width: 100%; }
+  .hero-actions .hero-cta { width: 100%; }
+  .sync-setup { grid-template-columns: 1fr; }
+  .sheet-actions {
+    flex-direction: column-reverse;
+  }
+  .sheet-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+  .sheet-actions.inline {
+    flex-direction: column;
+  }
+  .tutorial-actions .btn {
+    flex: 1;
+    justify-content: center;
+  }
 }

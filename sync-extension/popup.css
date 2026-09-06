@@ -166,3 +166,52 @@ footer a {
   font-weight: 700;
   text-decoration: none;
 }
+
+.extension-id-section {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border: 1px solid #dbe3ef;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 4px 16px rgba(28, 45, 78, 0.04);
+}
+
+.extension-id-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.extension-id-label {
+  display: block;
+  font-size: 11px;
+  color: #5d687a;
+  margin-bottom: 3px;
+  font-weight: 600;
+}
+
+.extension-id-code {
+  display: block;
+  font-family: Consolas, Monaco, monospace;
+  font-size: 12px;
+  color: #172033;
+  font-weight: 700;
+  word-break: break-all;
+  user-select: all;
+}
+
+.compact-btn {
+  width: auto;
+  min-height: 32px;
+  padding: 6px 12px;
+  font-size: 12px;
+  background: #2563eb;
+  color: #fff;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.compact-btn:hover:not(:disabled) {
+  background: #1d4ed8;
+}
