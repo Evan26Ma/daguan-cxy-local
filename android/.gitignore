@@ -1,0 +1,29 @@
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+build/
+android/.gradle/
+android/.kotlin/
+android/local.properties
+android/key.properties
+*.iml
+
+# Generated visual-test diagnostics
+test/failures/
+
+# Generated release artifacts
+*.apk
+*.apk.sha1
+
+# Release signing material must remain local
+*.keystore
+*.jks
+
+# Editors and local release files
+.idea/
+.vscode/
+*.log
+*.zip
+*.sha256
+release/

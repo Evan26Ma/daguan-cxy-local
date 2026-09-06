@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="LaunchTheme" parent="@android:style/Theme.Material.NoActionBar">
+        <item name="android:windowSplashScreenBackground">#171715</item>
+        <item name="android:statusBarColor">#171715</item>
+        <item name="android:navigationBarColor">#171715</item>
+    </style>
+    <style name="NormalTheme" parent="@android:style/Theme.Material.NoActionBar">
+        <item name="android:windowActionModeOverlay">true</item>
+        <item name="android:fontFamily">sans</item>
+        <item name="android:colorAccent">#D99B8F</item>
+        <item name="android:statusBarColor">#171715</item>
+        <item name="android:navigationBarColor">#171715</item>
+    </style>
+</resources>

@@ -1,0 +1,168 @@
+:root {
+  color-scheme: light;
+  font-family: "Microsoft YaHei", system-ui, sans-serif;
+  color: #172033;
+  background: #f3f6fb;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  width: 380px;
+  margin: 0;
+  background: #f3f6fb;
+}
+
+main {
+  padding: 18px;
+}
+
+header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+h1,
+h2,
+p {
+  margin-top: 0;
+}
+
+h1 {
+  margin-bottom: 0;
+  font-size: 24px;
+}
+
+h2 {
+  margin-bottom: 6px;
+  font-size: 16px;
+}
+
+.eyebrow {
+  margin-bottom: 2px;
+  color: #2563eb;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.intro,
+section p,
+footer {
+  color: #5d687a;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.status-pill {
+  flex: none;
+  border-radius: 999px;
+  padding: 5px 9px;
+  background: #e5e7eb;
+  color: #4b5563;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.status-pill.ready {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status-pill.error {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+section {
+  margin-top: 12px;
+  padding: 15px;
+  border: 1px solid #dbe3ef;
+  border-radius: 13px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(28, 45, 78, 0.05);
+}
+
+button,
+.file-button {
+  display: inline-flex;
+  width: 100%;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 9px;
+  padding: 10px 14px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+button:disabled,
+input:disabled + .file-button {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.primary {
+  background: #2563eb;
+  color: #fff;
+}
+
+.danger {
+  margin-top: 10px;
+  background: #b45309;
+  color: #fff;
+}
+
+.file-button {
+  border: 1px solid #b9c6d8;
+  background: #f8fafc;
+  color: #1f3f73;
+}
+
+input[type="file"] {
+  position: fixed;
+  left: -10000px;
+}
+
+.preview {
+  margin-top: 12px;
+  border-radius: 9px;
+  padding: 11px 12px;
+  background: #f1f5f9;
+  color: #334155;
+  font-size: 12px;
+  line-height: 1.65;
+  white-space: pre-line;
+}
+
+.message {
+  min-height: 22px;
+  margin-top: 12px;
+  color: #1d4ed8;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.message.error {
+  color: #b91c1c;
+}
+
+footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+footer a {
+  color: #2563eb;
+  font-weight: 700;
+  text-decoration: none;
+}

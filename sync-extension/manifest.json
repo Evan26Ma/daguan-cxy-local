@@ -1,0 +1,18 @@
+{
+  "manifest_version": 3,
+  "name": "大观园数据桥接",
+  "version": "0.2.0",
+  "description": "在大观园数学题库原站、本地 Web 客户端和 Android 客户端之间安全同步掌握状态和收藏。",
+  "permissions": ["scripting", "tabs"],
+  "host_permissions": ["https://www.cxyonly.fans/*"],
+  "externally_connectable": {
+    "matches": ["http://localhost:*/*", "http://127.0.0.1:*/*"]
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "大观园数据桥接",
+    "default_popup": "popup.html"
+  }
+}

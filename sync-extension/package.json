@@ -1,0 +1,11 @@
+{
+  "name": "daguan-math-browser-bridge",
+  "version": "0.1.1",
+  "private": true,
+  "description": "大观园数学题库原站与离线 Android 客户端的数据桥接扩展",
+  "scripts": {
+    "test": "node --test",
+    "verify": "node tool/verify-extension.js"
+  },
+  "license": "GPL-3.0-only"
+}

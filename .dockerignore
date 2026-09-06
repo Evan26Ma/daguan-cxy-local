@@ -1,0 +1,10 @@
+.git
+.gitignore
+_source.tar.gz
+android/
+sync-extension/
+shared/
+test/
+tools/
+README.md
+package.json

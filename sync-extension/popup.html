@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>大观园数据桥接</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <p class="eyebrow">大观园数学题库</p>
+        <h1>数据桥接</h1>
+      </div>
+      <span id="connection" class="status-pill">正在检查</span>
+    </header>
+
+    <p class="intro">只同步掌握状态和收藏。不会读取或导出密码、登录令牌、账号资料、文字笔记或手写画布。</p>
+
+    <section>
+      <h2>导出原站标记</h2>
+      <p>生成移动端可以直接导入的安全合并 JSON。</p>
+      <button id="export-button" class="primary" type="button" disabled>导出到移动端</button>
+    </section>
+
+    <section>
+      <h2>导入移动端标记</h2>
+      <p>默认只写入非空掌握状态和已收藏，不会用缺失项清空原站。</p>
+      <input id="import-file" type="file" accept="application/json,.json" disabled>
+      <label class="file-button" for="import-file">选择移动端 JSON</label>
+
+      <div id="preview" class="preview" hidden></div>
+      <button id="import-button" class="danger" type="button" disabled>备份并导入</button>
+    </section>
+
+    <div id="message" class="message" role="status" aria-live="polite"></div>
+
+    <footer>
+      <a id="open-site" href="https://www.cxyonly.fans/math" target="_blank" rel="noreferrer">打开原站</a>
+      <span>仅在当前原站页面主动运行</span>
+    </footer>
+  </main>
+
+  <script src="protocol.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

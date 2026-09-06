@@ -1,0 +1,59 @@
+name: Build Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.44.8"
+          channel: stable
+          cache: true
+
+      - name: Resolve packages
+        run: flutter pub get
+
+      - name: Verify offline assets
+        run: node tool/verify_project.js
+
+      - name: Analyze source
+        run: flutter analyze
+
+      - name: Run tests
+        run: flutter test
+
+      - name: Build community APK
+        run: flutter build apk --release
+
+      - name: Prepare artifact
+        shell: powershell
+        run: Copy-Item build/app/outputs/flutter-apk/app-release.apk daguan-math-community-v1.1.6.apk
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: daguan-math-community-v1.1.6
+          path: daguan-math-community-v1.1.6.apk
+          if-no-files-found: error

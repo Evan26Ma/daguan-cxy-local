@@ -1,0 +1,14 @@
+_source.tar.gz
+
+# Local/runtime files
+web/.cache/
+web/data/assets/.download-tmp/
+
+# Flutter outputs (the Android project has its own ignore rules too)
+android/.dart_tool/
+android/build/
+android/.flutter-plugins
+android/.flutter-plugins-dependencies
+android/.packages
+android/android/.gradle/
+android/android/app/build/
