@@ -4,7 +4,7 @@
   "lang": "zh-CN",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#ece7dc",
-  "theme_color": "#1e4a5c",
+  "background_color": "#f5f7fa",
+  "theme_color": "#356fe5",
   "icons": []
 }

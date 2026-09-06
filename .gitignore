@@ -4,6 +4,16 @@ _source.tar.gz
 web/.cache/
 web/data/assets/.download-tmp/
 
+# Local Node console state and credentials
+data/*.json
+data/*.jsonl
+data/cxyonly-backups/
+data/.runtime/
+
+# Generated Windows single-file package
+.build/
+dist/
+
 # Flutter outputs (the Android project has its own ignore rules too)
 android/.dart_tool/
 android/build/

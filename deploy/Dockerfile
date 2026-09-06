@@ -1,6 +1,14 @@
-FROM nginx:1.27-alpine
+FROM node:20.19.3-alpine
 
-COPY web/ /usr/share/nginx/html/
-COPY deploy/nginx.conf /etc/nginx/conf.d/default.conf
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci --ignore-scripts --no-audit --no-fund
+COPY web/ ./web/
+COPY local-server/ ./local-server/
+RUN mkdir -p /app/data/cxyonly-backups
 
-EXPOSE 80
+ENV HOST=0.0.0.0
+ENV PORT=8080
+ENV DAGUAN_PULL_INTERVAL_MINUTES=30
+EXPOSE 8080
+CMD ["node", "local-server/server.mjs"]

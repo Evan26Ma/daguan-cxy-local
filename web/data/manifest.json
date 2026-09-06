@@ -36,7 +36,8 @@
       "count": 8
     }
   },
+  "asset_base_remote": "https://cxyonly.fans/api/v1/question-assets/",
   "asset_count": 1288,
   "asset_base": "./data/assets/",
-  "synced_at": "2026-09-06T06:47:53.230Z"
+  "synced_at": "2026-09-06T12:35:02.916Z"
 }

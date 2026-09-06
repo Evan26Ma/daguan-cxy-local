@@ -7,23 +7,71 @@
   <meta name="description" content="大观园数学题库本地静态刷题站" />
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="stylesheet" href="./vendor/katex.min.css" />
-  <link rel="stylesheet" href="./styles.css?v=2" />
+    <link rel="stylesheet" href="./styles.css?v=21" />
+  <script>
+    (() => {
+      try {
+        const value = JSON.parse(localStorage.getItem("daguan_ui_preferences_v1") || "{}");
+        const themes = ["official-light", "official-dark", "eye-care", "custom"];
+        const theme = themes.includes(value.theme) ? value.theme : "official-light";
+        document.documentElement.dataset.theme = theme;
+        document.documentElement.style.colorScheme = theme === "official-dark" ? "dark" : "light";
+      } catch {
+        document.documentElement.dataset.theme = "official-light";
+      }
+    })();
+  </script>
 </head>
 <body>
-  <div id="app">
-    <aside class="sidebar" id="sidebar">
-      <div class="sidebar-head">
-        <a class="brand" href="#" id="btn-brand">
+  <svg class="icon-sprite" aria-hidden="true" focusable="false">
+    <symbol id="icon-menu" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" /></symbol>
+    <symbol id="icon-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18" /></symbol>
+    <symbol id="icon-settings" viewBox="0 0 24 24"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" /><path d="m19.4 15 .1.1a1.8 1.8 0 0 1-2.5 2.5l-.1-.1a1.8 1.8 0 0 0-3.1 1.3v.2a1.8 1.8 0 0 1-3.6 0v-.2a1.8 1.8 0 0 0-3.1-1.3l-.1.1a1.8 1.8 0 0 1-2.5-2.5l.1-.1A1.8 1.8 0 0 0 3.3 12a1.8 1.8 0 0 0-1.3-3.1h-.2a1.8 1.8 0 0 1 0-3.6H2A1.8 1.8 0 0 0 3.3 2.2l-.1-.1a1.8 1.8 0 0 1 2.5-2.5l.1.1A1.8 1.8 0 0 0 8.9-1.6v-.2a1.8 1.8 0 0 1 3.6 0v.2a1.8 1.8 0 0 0 3.1 1.3l.1-.1a1.8 1.8 0 0 1 2.5 2.5l-.1.1A1.8 1.8 0 0 0 19.4 5h.2a1.8 1.8 0 0 1 0 3.6h-.2a1.8 1.8 0 0 0 0 6.4Z" transform="translate(1 1) scale(.92)" /></symbol>
+    <symbol id="icon-palette" viewBox="0 0 24 24"><path d="M12 3a9 9 0 0 0 0 18h1.5a2 2 0 0 0 0-4H12a2 2 0 0 1 0-4h3a6 6 0 0 0 0-12h-3Z" /><path d="M7.5 10h.01M9 6.5h.01M14 6.5h.01M17 10h.01" /></symbol>
+    <symbol id="icon-moon" viewBox="0 0 24 24"><path d="M20.2 14.2A8.5 8.5 0 0 1 9.8 3.8 8.5 8.5 0 1 0 20.2 14.2Z" /></symbol>
+    <symbol id="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.5" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></symbol>
+    <symbol id="icon-cloud-download" viewBox="0 0 24 24"><path d="M7.5 18H6a4 4 0 1 1 1.7-7.6A5.5 5.5 0 0 1 18 12.5 3.5 3.5 0 1 1 18 19h-2.5" /><path d="M12 11v8M8.8 15.8 12 19l3.2-3.2" /></symbol>
+    <symbol id="icon-cloud-upload" viewBox="0 0 24 24"><path d="M7.5 18H6a4 4 0 1 1 1.7-7.6A5.5 5.5 0 0 1 18 12.5 3.5 3.5 0 1 1 18 19h-2.5" /><path d="M12 19v-8M8.8 14.2 12 11l3.2 3.2" /></symbol>
+    <symbol id="icon-home" viewBox="0 0 24 24"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V10Z" /><path d="M9 21v-6h6v6" /></symbol>
+    <symbol id="icon-star" viewBox="0 0 24 24"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-2.9-5.6 2.9 1.1-6.2L3 9.6l6.2-.9L12 3Z" /></symbol>
+    <symbol id="icon-chart" viewBox="0 0 24 24"><path d="M4 19V5M4 19h16" /><path d="m7 15 3-4 3 2 4-6" /></symbol>
+    <symbol id="icon-book" viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2V5Z" /><path d="M4 19a2 2 0 0 1 2-2h13M9 7h6" /></symbol>
+    <symbol id="icon-grid" viewBox="0 0 24 24"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z" /></symbol>
+    <symbol id="icon-gauge" viewBox="0 0 24 24"><path d="M4 13a8 8 0 1 1 16 0" /><path d="m12 13 3-3M5 18h14" /></symbol>
+    <symbol id="icon-file" viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6z" /><path d="M14 3v5h4M9 13h6M9 17h6" /></symbol>
+    <symbol id="icon-note" viewBox="0 0 24 24"><path d="M6 4h12v16H6z" /><path d="M9 4v16M12 8h3M12 12h3" /></symbol>
+    <symbol id="icon-tool" viewBox="0 0 24 24"><path d="m14.5 6.5 3-3 3 3-3 3" /><path d="m17.5 6.5-7 7" /><path d="M5 5h5v5H5zM14 14h5v5h-5z" /></symbol>
+    <symbol id="icon-spark" viewBox="0 0 24 24"><path d="m12 2 1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2Z" /><path d="m19 16 .8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8L19 16Z" /></symbol>
+    <symbol id="icon-calendar" viewBox="0 0 24 24"><path d="M5 5h14v15H5zM8 3v4M16 3v4M5 10h14" /><path d="M11 15h2" /></symbol>
+    <symbol id="icon-trend" viewBox="0 0 24 24"><path d="m4 16 5-5 4 3 6-7" /><path d="M14 7h5v5" /></symbol>
+    <symbol id="icon-flame" viewBox="0 0 24 24"><path d="M12 21a6 6 0 0 0 6-6c0-4-3-6-4-9-2 2-3 4-3 6-2-1-3-3-3-5-2 2-4 5-4 8a6 6 0 0 0 8 6Z" /></symbol>
+    <symbol id="icon-bell" viewBox="0 0 24 24"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4" /></symbol>
+    <symbol id="icon-collapse" viewBox="0 0 24 24"><path d="M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zM9 4v16M15 10l-2 2 2 2" /></symbol>
+    <symbol id="icon-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></symbol>
+    <symbol id="icon-chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6" /></symbol>
+    <symbol id="icon-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.4" /><circle cx="12" cy="12" r="1.4" /><circle cx="19" cy="12" r="1.4" /></symbol>
+    <symbol id="icon-check" viewBox="0 0 24 24"><path d="m5 12 4.5 4.5L19 7" /></symbol>
+  </svg>
+  <div id="app" class="learning-shell">
+    <aside class="sidebar learning-shell__sidebar" id="sidebar">
+      <div class="sidebar-head learning-shell__brand-row">
+        <a class="brand learning-shell__brand" href="#" id="btn-brand" aria-label="大观园学习首页">
           <strong>大观园</strong>
-          <span>本地刷题</span>
+          <span>学习区</span>
         </a>
-        <button type="button" class="icon-btn" id="btn-close-sidebar" aria-label="关闭侧栏">×</button>
+        <button type="button" class="icon-btn sidebar-collapse" id="btn-collapse-sidebar" aria-label="收起侧栏"><svg class="ui-icon"><use href="#icon-collapse"></use></svg></button>
+        <button type="button" class="icon-btn" id="btn-close-sidebar" aria-label="关闭侧栏"><svg class="ui-icon"><use href="#icon-close"></use></svg></button>
       </div>
 
-      <div class="sidebar-nav">
-        <button type="button" class="side-link active" id="nav-home" data-nav="home">首页</button>
-        <button type="button" class="side-link" id="nav-todo" data-nav="todo">未掌握</button>
-        <button type="button" class="side-link" id="nav-forgot" data-nav="forgot">易错题</button>
+      <div class="sidebar-nav learning-shell__chapter-shortcuts">
+        <button type="button" class="side-link active" id="nav-home" data-nav="home"><svg class="ui-icon"><use href="#icon-home"></use></svg><span>首页</span></button>
+        <button type="button" class="side-link" id="nav-favorites" data-nav="favorites"><svg class="ui-icon"><use href="#icon-star"></use></svg><span>收藏本</span></button>
+        <button type="button" class="side-link" id="nav-todo" data-nav="mastery"><svg class="ui-icon"><use href="#icon-chart"></use></svg><span>掌握地图</span></button>
+        <button type="button" class="side-link" id="nav-forgot" data-nav="retest"><svg class="ui-icon"><use href="#icon-gauge"></use></svg><span>错题复测</span></button>
+        <button type="button" class="side-link" id="nav-paper" data-nav="paper"><svg class="ui-icon"><use href="#icon-file"></use></svg><span>智能组卷</span></button>
+        <button type="button" class="side-link" id="nav-notes" data-nav="notes"><svg class="ui-icon"><use href="#icon-note"></use></svg><span>题目笔记</span></button>
+        <button type="button" class="side-link utility-link" id="nav-sync" data-nav="sync"><svg class="ui-icon"><use href="#icon-cloud-upload"></use></svg><span>同步</span></button>
+        <button type="button" class="side-link utility-link" id="nav-settings" data-nav="settings"><svg class="ui-icon"><use href="#icon-palette"></use></svg><span>外观</span></button>
       </div>
 
       <div class="sidebar-tools">
@@ -39,6 +87,7 @@
         <div class="scope-toggle" role="group" aria-label="题库范围">
           <button type="button" class="scope-btn active" data-scope="all">完整</button>
           <button type="button" class="scope-btn" data-scope="core">核心</button>
+          <button type="button" class="scope-btn" data-scope="real">真题</button>
         </div>
       </div>
 
@@ -53,33 +102,77 @@
       </div>
     </aside>
 
-    <div class="main-wrap">
-      <header class="topbar">
-        <button type="button" class="icon-btn" id="btn-open-sidebar" aria-label="打开侧栏">☰</button>
+    <div class="main-wrap learning-shell__workspace">
+      <header class="topbar learning-shell__topbar">
+        <button type="button" class="icon-btn" id="btn-open-sidebar" aria-label="打开侧栏"><svg class="ui-icon"><use href="#icon-menu"></use></svg></button>
+        <div class="browse-nav-leading" id="browse-nav-leading">
+          <button type="button" class="icon-btn browse-back" id="btn-browse-back" aria-label="返回学习首页" title="返回学习首页"><svg class="ui-icon"><use href="#icon-chevron"></use></svg></button>
+          <div class="chapter-picker" id="chapter-picker">
+            <button type="button" class="chapter-trigger" id="chapter-trigger" aria-haspopup="dialog" aria-expanded="false" aria-controls="chapter-menu">
+              <span class="chapter-trigger-label" id="chapter-trigger-label">选择小节</span>
+              <svg class="ui-icon" aria-hidden="true"><use href="#icon-chevron-down"></use></svg>
+            </button>
+            <div class="chapter-menu hidden" id="chapter-menu" role="dialog" aria-label="选择章节">
+              <div class="chapter-menu-head">
+                <div><span class="chapter-menu-kicker">章节导航</span><strong id="chapter-menu-title">选择一个小节</strong></div>
+                <button type="button" class="icon-btn" id="chapter-menu-close" aria-label="关闭章节导航"><svg class="ui-icon"><use href="#icon-close"></use></svg></button>
+              </div>
+              <div class="chapter-menu-scopes" role="group" aria-label="题库范围">
+                <button type="button" class="chapter-scope-btn active" data-chapter-scope="all">完整</button>
+                <button type="button" class="chapter-scope-btn" data-chapter-scope="core">核心</button>
+                <button type="button" class="chapter-scope-btn" data-chapter-scope="real">真题</button>
+              </div>
+              <div class="chapter-menu-path" id="chapter-menu-path" aria-live="polite">选择父级目录展开下一层</div>
+              <div class="chapter-columns" id="chapter-columns"></div>
+              <p class="chapter-menu-feedback" id="chapter-menu-feedback" role="status" aria-live="polite"></p>
+            </div>
+          </div>
+        </div>
+        <nav class="workspace-nav" aria-label="学习工作区">
+          <button type="button" class="workspace-link active" id="workspace-learning"><svg class="ui-icon"><use href="#icon-book"></use></svg><span>学习区</span></button>
+          <button type="button" class="workspace-link" id="workspace-tools"><svg class="ui-icon"><use href="#icon-tool"></use></svg><span>工具区</span></button>
+        </nav>
         <div class="crumb" id="crumb">选择左侧分类开始</div>
         <div class="top-actions">
           <div class="mode-toggle" role="group" aria-label="浏览模式">
             <button type="button" class="mode-btn active" id="mode-list" data-mode="list" title="列表模式：一页多题">列表</button>
             <button type="button" class="mode-btn" id="mode-single" data-mode="single" title="单题模式">单题</button>
           </div>
-          <button type="button" class="btn ghost" id="btn-shuffle" title="打乱当前列表顺序">打乱</button>
-          <button type="button" class="btn ghost" id="btn-expand-all" title="展开当前已加载题目的答案">全开答案</button>
-          <button type="button" class="btn ghost" id="btn-export" title="导出当前题目为 PDF">导出 PDF</button>
-          <button type="button" class="btn ghost" id="btn-home">首页</button>
+          <div class="chapter-section-nav" id="chapter-section-nav" hidden>
+            <span class="chapter-progress-top" id="chapter-progress-top">0 / 0</span>
+            <button type="button" class="btn ghost" id="btn-prev-section" title="上一小节">上一节</button>
+            <button type="button" class="btn primary" id="btn-next-section" title="下一小节">下一节</button>
+          </div>
+          <div class="topbar-more-wrap">
+            <button type="button" class="icon-btn topbar-more-trigger" id="btn-more" aria-label="更多操作" aria-haspopup="menu" aria-expanded="false"><svg class="ui-icon"><use href="#icon-more"></use></svg><span>更多</span></button>
+            <div class="topbar-more-menu hidden" id="topbar-more-menu" role="menu" aria-label="更多操作">
+              <button type="button" class="btn ghost" id="btn-shuffle" title="打乱当前列表顺序" role="menuitem">打乱</button>
+              <button type="button" class="btn ghost" id="btn-expand-all" title="展开当前已加载题目的答案" role="menuitem" style="display:inline-flex">全开答案</button>
+              <button type="button" class="btn ghost" id="btn-export" title="导出当前题目为 PDF" role="menuitem">导出 PDF</button>
+              <button type="button" class="btn ghost" id="btn-home" role="menuitem">首页</button>
+              <button type="button" class="btn ghost theme-toggle" id="btn-theme-toggle" aria-label="切换深色" title="切换深色" role="menuitem"><svg class="ui-icon"><use href="#icon-moon"></use></svg><span>切换深色</span></button>
+              <button type="button" class="btn ghost topbar-appearance" id="btn-appearance" role="menuitem"><svg class="ui-icon"><use href="#icon-palette"></use></svg><span>设置</span></button>
+              <button type="button" class="btn primary topbar-sync" id="btn-top-online-sync" role="menuitem" style="display:inline-flex"><svg class="ui-icon"><use href="#icon-cloud-upload"></use></svg><span>同步</span></button>
+            </div>
+          </div>
         </div>
       </header>
+      <div id="update-banner" role="status" aria-live="polite">
+        <span>本地题库有新版本，刷新后会恢复当前章节、题号和滚动位置。</span>
+        <button type="button" class="btn primary" id="btn-update-refresh">立即刷新</button>
+      </div>
 
-      <main class="main" id="main">
+      <main class="main learning-shell__main" id="main">
         <section class="home" id="view-home">
-          <div class="hero">
+          <div class="hero hero-learning">
             <div class="hero-copy">
-              <p class="hero-kicker">澄潇宇大观题库 · 本机</p>
-              <h1>打开一章就开始</h1>
-              <p class="muted hero-desc">点左侧分类，列表往下刷。答案、掌握、导出都在本题上。进度只记在这台设备。</p>
+              <h1>继续学习</h1>
+              <div class="hero-meta"><strong id="hero-chapter">选择一个章节开始学习</strong><span id="hero-date">最近作答 —</span></div>
+              <div class="hero-progress"><span>章节进度</span><strong id="hero-done">已完成 0 题</strong><span id="hero-remaining">还剩 — 题</span><div class="progress-track"><i id="hero-progress-fill"></i></div></div>
             </div>
             <div class="hero-actions">
-              <button type="button" class="btn primary hero-cta" id="btn-start">从高等数学开始 →</button>
-              <button type="button" class="btn hero-cta" id="btn-hero-tutorial">先看使用教程</button>
+               <button type="button" class="btn primary hero-cta" id="btn-start">继续学习</button>
+               <button type="button" class="btn hero-cta" id="btn-hero-tutorial">使用教程</button>
             </div>
           </div>
 
@@ -88,7 +181,7 @@
               <div>
                 <p class="home-sync-kicker">数据同步中心</p>
                 <h2 id="home-sync-title">本地刷题，官网一键互通</h2>
-                <p class="muted home-sync-desc">刷题留在本地，准备好后从这里读取官网，或把本地进度安全同步回官网。</p>
+                <p class="muted home-sync-desc">刷题留在本地，中控台负责读取官网状态、保存进度和安全同步。</p>
               </div>
               <div class="sync-status-badge" id="home-sync-badge" data-state="setup" role="status">
                 <span class="sync-status-dot" aria-hidden="true"></span>
@@ -98,41 +191,54 @@
             <div class="home-sync-actions">
               <button type="button" class="sync-action sync-action-primary" id="btn-home-pull">
                 <span class="sync-action-kicker">官网 → 本地</span>
-                <strong>从官网读取</strong>
-                <span class="sync-action-desc">把官网的掌握状态和收藏合并到本地</span>
+                <strong>检查官网差异</strong>
+                <span class="sync-action-desc">读取掌握、收藏、最近学习和活动，生成双向计划</span>
                 <span class="sync-action-arrow" aria-hidden="true">→</span>
               </button>
               <button type="button" class="sync-action sync-action-secondary" id="btn-home-push">
                 <span class="sync-action-kicker">本地 → 官网</span>
-                <strong>同步到官网</strong>
-                <span class="sync-action-desc">先预览、自动备份，再确认写入官网</span>
+                <strong>统一对账</strong>
+                <span class="sync-action-desc">确认后先写本地，再按计划同步官网</span>
                 <span class="sync-action-arrow" aria-hidden="true">→</span>
               </button>
             </div>
             <div class="home-sync-foot">
-              <span class="muted" id="home-sync-detail">首次使用只需安装同步扩展并粘贴一次扩展 ID。</span>
+              <span class="muted" id="home-sync-detail">首次使用只需完成一次大观园登录配置，之后在同步中心手动对账。</span>
               <button type="button" class="btn ghost" id="btn-home-sync-setup">设置同步</button>
             </div>
           </section>
 
           <div class="metric-strip" id="metric-strip">
             <div class="metric">
-              <span class="metric-label">题库总量</span>
+                <span class="metric-label"><svg class="ui-icon"><use href="#icon-calendar"></use></svg>考研倒计时</span>
               <strong id="metric-total">—</strong>
             </div>
             <div class="metric">
-              <span class="metric-label">已看过</span>
+                <span class="metric-label"><svg class="ui-icon"><use href="#icon-trend"></use></svg>今日刷题数</span>
               <strong id="metric-seen">—</strong>
             </div>
             <div class="metric">
-              <span class="metric-label">已掌握</span>
+                <span class="metric-label"><svg class="ui-icon"><use href="#icon-flame"></use></svg>连续学习</span>
               <strong id="metric-mastered">—</strong>
             </div>
             <div class="metric">
-              <span class="metric-label">易错</span>
+                <span class="metric-label"><svg class="ui-icon"><use href="#icon-chart"></use></svg>题库总量</span>
               <strong id="metric-forgot">—</strong>
             </div>
           </div>
+
+          <section class="activity-surface" aria-label="学习活动">
+            <div class="activity-main">
+              <header class="activity-header"><h2>学习活动</h2><button type="button" class="btn ghost" id="btn-learning-records">查看更多</button></header>
+              <div class="activity-heatmap">
+                <div class="heatmap-summary-head"><strong>长期活跃度</strong><span id="heatmap-summary">已记录 0 个作答日</span></div>
+                <div class="heatmap-months"><span>7月</span><span>8月</span><span>9月</span></div>
+                <div class="heatmap-body"><div class="heatmap-weekdays"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div><div class="heatmap-grid" id="heatmap-grid" aria-label="刷题强度热力图（按作答判定次数）"></div></div>
+                <div class="heatmap-legend"><span>刷题强度</span><i data-level="0"></i><i data-level="1"></i><i data-level="2"></i><i data-level="3"></i><i data-level="4"></i><span>无</span><span>轻</span><span>中</span><span>高</span><span>很高</span></div>
+              </div>
+            </div>
+            <aside class="activity-notices"><header><h3>通知</h3><svg class="ui-icon"><use href="#icon-bell"></use></svg></header><p>登录后查看通知</p></aside>
+          </section>
 
           <h2 class="section-title">题库分区</h2>
           <div class="home-cards" id="home-cards"></div>
@@ -158,6 +264,12 @@
             <button type="button" class="btn ghost" id="btn-pick-queue">全选当前列表</button>
             <button type="button" class="btn ghost" id="btn-pick-clear">清空勾选</button>
           </div>
+          <div class="chapter-empty-state hidden" id="chapter-empty-state">
+            <svg class="ui-icon" aria-hidden="true"><use href="#icon-book"></use></svg>
+            <h3>请选择一个小节</h3>
+            <p id="chapter-empty-copy">父级章节只用于展开目录，选择最末级小节后开始刷题。</p>
+            <button type="button" class="btn primary" id="chapter-empty-open">打开章节导航</button>
+          </div>
 
           <!-- list mode -->
           <div id="list-mode">
@@ -170,32 +282,32 @@
 
           <!-- single mode -->
           <div id="single-mode" class="hidden">
-            <div class="practice-meta">
-              <div id="q-pos">—</div>
-              <div class="meta-right">
-                <span id="q-source" class="pill"></span>
-                <span id="q-type" class="pill soft"></span>
-                <span id="q-id" class="pill soft"></span>
-              </div>
-            </div>
+            <div class="practice-meta"><div id="q-pos">—</div><div class="meta-line"><span id="q-source"></span><span id="q-type"></span><span id="q-id"></span></div></div>
             <article class="q-card" id="single-card">
+              <div class="q-card-head">
+                <div class="q-card-index"><span class="q-num" id="q-single-num">—</span><span class="mastery-badge" id="single-mastery-badge" data-mastery="not_started">未开始</span><button type="button" class="attention-mark hidden" id="single-error-badge">易错</button></div>
+                <div class="q-card-meta" id="q-card-meta"></div>
+              </div>
               <div class="q-path" id="q-path"></div>
               <div class="md q-stem" id="q-stem"></div>
-              <div class="options" id="q-options"></div>
+              <div class="question-options" id="q-options"></div>
               <div class="q-actions">
-                <button type="button" class="btn" id="btn-prev">上一题</button>
-                <button type="button" class="btn primary" id="btn-toggle-answer">显示答案</button>
-                <button type="button" class="btn" id="btn-next">下一题</button>
-                <button type="button" class="btn ghost" id="btn-copy-md" title="复制本题源 Markdown">复制 Markdown</button>
-                <button type="button" class="btn ghost" id="btn-toggle-favorite" data-favorite-id="">收藏</button>
+                <button type="button" class="btn" id="btn-prev" data-shortcut-label="up">上一题<kbd class="shortcut-hint" data-shortcut-hint="up">↑</kbd></button>
+                <button type="button" class="btn primary" id="btn-toggle-answer" data-shortcut-label="answer">显示答案<kbd class="shortcut-hint" data-shortcut-hint="answer">Space</kbd></button>
+                <button type="button" class="btn" id="btn-next" data-shortcut-label="down">下一题<kbd class="shortcut-hint" data-shortcut-hint="down">↓</kbd></button>
+                <button type="button" class="btn secondary" id="btn-focus-mode" data-shortcut-label="focus">焦点模式<kbd class="shortcut-hint" data-shortcut-hint="focus">F6</kbd></button>
+                <button type="button" class="btn ai-action" id="btn-single-ai" data-shortcut-label="ai"><svg class="ui-icon"><use href="#icon-spark"></use></svg><span class="action-label">AI 解答</span><kbd class="shortcut-hint" data-shortcut-hint="ai">A</kbd></button>
+                <button type="button" class="btn ghost" id="btn-copy-md" data-shortcut-label="copy" title="复制本题源 Markdown">复制 Markdown<kbd class="shortcut-hint" data-shortcut-hint="copy">C</kbd></button>
+                <button type="button" class="btn ghost" id="btn-toggle-favorite" data-favorite-id="" data-shortcut-label="favorite"><span class="action-label">收藏</span><kbd class="shortcut-hint" data-shortcut-hint="favorite">F</kbd></button>
+                <button type="button" class="btn ghost" id="btn-single-note" data-shortcut-label="note"><svg class="ui-icon"><use href="#icon-note"></use></svg><span class="action-label">批注</span><kbd class="shortcut-hint" data-shortcut-hint="note">N</kbd></button>
                 <label class="check pick-single"><input type="checkbox" id="single-pick" /> 勾选本题</label>
               </div>
               <div class="mastery-row" id="single-mastery">
-                <span class="muted">掌握</span>
-                <button type="button" class="chip" data-mastery="not_started">未开始</button>
-                <button type="button" class="chip" data-mastery="learning">学习中</button>
-                <button type="button" class="chip" data-mastery="mastered">已掌握</button>
-                <button type="button" class="chip danger" data-mastery="forgot">易错</button>
+                <span class="mastery-label">掌握程度</span>
+                <button type="button" class="chip" data-mastery="not_started" data-shortcut-label="mastery1">未开始<kbd class="shortcut-hint" data-shortcut-hint="mastery1">1</kbd></button>
+                <button type="button" class="chip" data-mastery="learning" data-shortcut-label="mastery2">学习中<kbd class="shortcut-hint" data-shortcut-hint="mastery2">2</kbd></button>
+                <button type="button" class="chip" data-mastery="mastered" data-shortcut-label="mastery3">已掌握<kbd class="shortcut-hint" data-shortcut-hint="mastery3">3</kbd></button>
+                <button type="button" class="chip danger" id="single-error-toggle" data-shortcut-label="error" aria-pressed="false">易错<kbd class="shortcut-hint" data-shortcut-hint="error">E</kbd></button>
               </div>
               <div class="answer-box hidden" id="answer-box">
                 <div class="answer-block">
@@ -216,9 +328,30 @@
           <h2>搜索结果 <span class="muted" id="search-count"></span></h2>
           <div id="search-results"></div>
         </section>
+        <section class="feature-view hidden" id="view-feature" aria-live="polite"></section>
       </main>
     </div>
   </div>
+
+  <button type="button" class="ai-edge-tab" id="ai-edge-tab" aria-controls="ai-drawer" aria-expanded="false"><svg class="ui-icon"><use href="#icon-spark"></use></svg><span>AI 解答</span></button>
+  <aside class="ai-drawer" id="ai-drawer" aria-hidden="true" aria-labelledby="ai-drawer-title">
+    <div class="ai-resize-handle" id="ai-resize-handle" role="separator" aria-label="调整 AI 抽屉宽度" tabindex="0"></div>
+    <div class="ai-drawer-head">
+      <div><p class="dialog-kicker">学习助手</p><h2 id="ai-drawer-title">AI 解答</h2><p class="ai-context-line" id="ai-context-line">先选择一道题</p></div>
+      <button type="button" class="icon-btn" id="btn-ai-close" aria-label="关闭 AI 解答"><svg class="ui-icon"><use href="#icon-close"></use></svg></button>
+    </div>
+    <div class="ai-tabs" role="tablist"><button type="button" class="ai-tab active" id="ai-tab-chat" data-ai-tab="chat" role="tab" aria-selected="true">AI 解答</button><button type="button" class="ai-tab" id="ai-tab-note" data-ai-tab="note" role="tab" aria-selected="false">题目批注</button></div>
+    <div class="ai-drawer-body">
+      <section class="ai-panel" id="ai-chat-panel" data-ai-panel="chat">
+        <div class="ai-profile-row"><label for="ai-profile-select">服务</label><select id="ai-profile-select"><option value="">未配置 AI</option></select><button type="button" class="btn ghost" id="btn-ai-settings">设置</button></div>
+        <div class="ai-privacy-note" id="ai-privacy-note">已附带题干、选项、答案和解析；本地批注与掌握状态不会发送。</div>
+        <div class="ai-messages" id="ai-messages" aria-live="polite"><div class="ai-empty"><svg class="ui-icon"><use href="#icon-spark"></use></svg><strong>先问一个问题</strong><p>题目上下文已经准备好，选择下方提示或直接输入你的疑问。</p></div></div>
+        <div class="ai-suggestions" id="ai-suggestions"><button type="button" class="ai-suggestion" data-ai-prompt="请给出这道题的完整解答，分步说明关键理由。">完整解答</button><button type="button" class="ai-suggestion" data-ai-prompt="先不要直接跳到结论，给我一个解题提示。">给我提示</button><button type="button" class="ai-suggestion" data-ai-prompt="请指出这道题最容易犯的错误。">易错点</button><button type="button" class="ai-suggestion" data-ai-prompt="请判断这道题是否适合画图，并用图形解释。">画图解释</button></div>
+        <form class="ai-compose" id="ai-compose"><textarea id="ai-prompt" rows="3" placeholder="问问这道题…" aria-label="向 AI 提问"></textarea><div class="ai-compose-foot"><label class="check"><input type="checkbox" id="ai-include-private" /> 包含我的批注与学习状态</label><span class="ai-compose-buttons"><button type="button" class="btn ghost" id="btn-ai-stop" hidden>停止</button><button type="submit" class="btn primary" id="btn-ai-send">发送</button></span></div></form>
+      </section>
+      <section class="ai-panel hidden" id="ai-note-panel" data-ai-panel="note"><div class="note-toolbar"><span class="muted">本机保存 · 停止输入后自动保存</span><span class="note-status" id="question-note-status"></span></div><textarea id="question-note-editor" class="question-note-editor" placeholder="记录这道题的思路、易错点和下次复习提醒…" aria-label="题目批注"></textarea><div class="note-history-row"><button type="button" class="btn ghost" id="btn-note-history">查看历史</button><button type="button" class="btn ghost" id="btn-note-restore" hidden>恢复选中版本</button></div><div class="note-history hidden" id="question-note-history"></div></section>
+    </div>
+  </aside>
 
   <div id="toast" class="toast hidden" role="status"></div>
 
@@ -228,13 +361,13 @@
         <p class="dialog-kicker">第一次打开</p>
         <h2>1 分钟开始使用</h2>
       </div>
-      <button type="button" class="icon-btn" data-close="dlg-welcome" aria-label="关闭">×</button>
+      <button type="button" class="icon-btn" data-close="dlg-welcome" aria-label="关闭"><svg class="ui-icon"><use href="#icon-close"></use></svg></button>
     </div>
-    <p class="sheet-lead">这是本地优先版本：题库和刷题进度默认留在当前浏览器，断网也能继续刷。只有点击“官网同步”时，才会通过扩展访问大观园官网。</p>
+    <p class="sheet-lead">这是本地优先版本：题库和刷题进度由本机中控台保存，断网也能继续刷。只有同步时才会访问大观园 API。</p>
     <ol class="tutorial-steps compact">
       <li><span class="tutorial-step-no">1</span><div><strong>先刷题</strong><p>点击“从高等数学开始”，在题目卡片上展开答案并标记掌握状态。</p></div></li>
       <li><span class="tutorial-step-no">2</span><div><strong>要换设备，再备份</strong><p>打开“进度备份”下载 JSON；在另一台设备选择文件即可恢复。</p></div></li>
-      <li><span class="tutorial-step-no">3</span><div><strong>要和官网互通，再同步</strong><p>安装同步扩展、登录官网，然后在“官网同步”中读取或上传状态。</p></div></li>
+      <li><span class="tutorial-step-no">3</span><div><strong>要和官网互通，再同步</strong><p>在“设置同步”里输入一次大观园登录码，之后在同步中心手动检查差异并应用。</p></div></li>
     </ol>
     <div class="sheet-actions">
       <button type="button" class="btn" id="btn-welcome-later">以后再看</button>
@@ -248,13 +381,13 @@
         <p class="dialog-kicker">使用教程</p>
         <h2>本地刷题 + 官网同步</h2>
       </div>
-      <button type="button" class="icon-btn" data-close="dlg-tutorial" aria-label="关闭">×</button>
+      <button type="button" class="icon-btn" data-close="dlg-tutorial" aria-label="关闭"><svg class="ui-icon"><use href="#icon-close"></use></svg></button>
     </div>
     <p class="sheet-lead">日常只需要两个动作：双击启动脚本打开本地题库，刷完后按需点击“官网同步”。</p>
     <ol class="tutorial-steps">
       <li>
         <span class="tutorial-step-no">1</span>
-        <div><h3>一键启动本地题库</h3><p>Windows 双击仓库根目录的 <code>启动本地题库.cmd</code>，脚本会启动本地服务并打开浏览器。Linux 可运行 <code>python3 -m http.server 8080 --directory web</code>。</p></div>
+        <div><h3>一键启动本地题库</h3><p>Windows 双击仓库根目录的 <code>启动本地题库.cmd</code>，脚本会自动准备 Node.js、启动中控台并打开浏览器。Linux 可运行 <code>./scripts/install-linux.sh</code>。</p></div>
       </li>
       <li>
         <span class="tutorial-step-no">2</span>
@@ -266,16 +399,16 @@
       </li>
       <li>
         <span class="tutorial-step-no">4</span>
-        <div><h3>第一次官网同步</h3><p>安装 <code>sync-extension/</code> 未打包扩展，在官网登录并保持官网题库标签页打开。再打开“官网同步”，从扩展弹窗复制扩展 ID，粘贴一次并保存。</p><div class="tutorial-actions"><button type="button" class="btn" id="btn-open-extension-page">打开扩展管理页</button><button type="button" class="btn" id="btn-open-official-site">打开大观园官网</button></div></div>
+        <div><h3>第一次官网同步</h3><p>点击首页“设置同步”，在配置向导中输入大观园登录码。中控台会在本机保存状态并直接访问官网 API，不需要安装扩展或保持官网标签页打开。</p><div class="tutorial-actions"><button type="button" class="btn primary" id="btn-tutorial-sync-card">去设置官网同步</button></div></div>
       </li>
       <li>
         <span class="tutorial-step-no">5</span>
-        <div><h3>读取或上传</h3><p>点击“从官网读取”会先显示变更预览，再合并到本地；点击“预览并同步到官网”会先读取官网状态并自动备份，确认后才写入。默认不会清空官网已有记录。</p></div>
+        <div><h3>检查并应用</h3><p>点击“检查差异”会先更新题库并读取官网状态；确认后应用统一对账计划，先写本地、再写官网并复读校验，失败项会保留。</p></div>
       </li>
     </ol>
     <details class="tutorial-details">
       <summary>同步安全吗？</summary>
-      <p>本地页面不会接触登录令牌。扩展只访问大观园官网，并且仅传输题号、掌握状态、收藏和更新时间；写入官网前会自动下载备份。</p>
+      <p>本地页面不会接触登录令牌。Node 中控台只向大观园发送题号、掌握状态、收藏和更新时间；写入官网前会自动保存备份。</p>
     </details>
     <div class="sheet-actions">
       <button type="button" class="btn" data-close="dlg-tutorial">关闭</button>
@@ -286,7 +419,7 @@
   <dialog id="dlg-export" class="sheet">
     <div class="sheet-head">
       <h2>导出 PDF</h2>
-      <button type="button" class="icon-btn" data-close="dlg-export" aria-label="关闭">×</button>
+      <button type="button" class="icon-btn" data-close="dlg-export" aria-label="关闭"><svg class="ui-icon"><use href="#icon-close"></use></svg></button>
     </div>
     <p class="sheet-lead">题目卡片左侧可勾选。生成预览后，用浏览器「打印 → 另存为 PDF」。</p>
     <fieldset class="choice-set">
@@ -311,7 +444,7 @@
   <dialog id="dlg-sync" class="sheet sheet-wide">
     <div class="sheet-head">
       <h2>进度</h2>
-      <button type="button" class="icon-btn" data-close="dlg-sync" aria-label="关闭">×</button>
+      <button type="button" class="icon-btn" data-close="dlg-sync" aria-label="关闭"><svg class="ui-icon"><use href="#icon-close"></use></svg></button>
     </div>
     <div class="sync-tabs" role="tablist">
       <button type="button" class="sync-tab active" data-progress-tab="local">本机备份</button>
@@ -319,7 +452,7 @@
     </div>
 
     <div id="sync-panel-local">
-      <p class="sheet-lead">进度记在这台设备的浏览器里，手机电脑都能用，不必登录，也不必连大观园。换设备或清站点数据会丢，导出一份 JSON 即可带走。</p>
+      <p class="sheet-lead">进度优先保存在本机中控台的 data/ 目录，浏览器只保留缓存。关闭网页或重启电脑不会丢失；导出一份 JSON 还可以带到新设备。</p>
       <ul class="sync-stats" id="local-stats">
         <li>已掌握 <strong id="local-n-mastered">0</strong></li>
         <li>易错 <strong id="local-n-forgot">0</strong></li>
@@ -353,22 +486,22 @@
         <p class="dialog-kicker">首次配置</p>
         <h2>配置官网同步</h2>
       </div>
-      <button type="button" class="icon-btn" data-close="dlg-setup-wizard" aria-label="关闭">×</button>
+      <button type="button" class="icon-btn" data-close="dlg-setup-wizard" aria-label="关闭"><svg class="ui-icon"><use href="#icon-close"></use></svg></button>
     </div>
     <div class="setup-progress" aria-live="polite">
-      <div class="setup-progress-meta"><span id="setup-progress-label">第 1 步，共 4 步</span><span id="setup-progress-name">安装扩展</span></div>
+      <div class="setup-progress-meta"><span id="setup-progress-label">第 1 步，共 5 步</span><span id="setup-progress-name">检查中控台</span></div>
       <div class="setup-progress-track"><i id="setup-progress-fill"></i></div>
     </div>
 
     <section class="setup-step" data-setup-step="1">
       <span class="setup-step-number">1</span>
       <div class="setup-step-content">
-        <h3>安装同步扩展</h3>
-        <p>普通网页不能替你静默安装浏览器扩展。请在扩展管理页开启“开发者模式”，选择项目里的 <code>sync-extension</code> 文件夹。</p>
-        <div class="setup-path"><span>扩展目录</span><code>sync-extension</code></div>
+        <h3>检查本地中控台</h3>
+        <p>当前页面由 Node 中控台提供服务。它会在本机保存学习状态，并负责和大观园 API 通信，不需要浏览器扩展。</p>
+        <div class="setup-feedback setup-feedback-box" id="setup-health-result" role="status" aria-live="polite">正在检查本地服务…</div>
         <div class="tutorial-actions">
-          <button type="button" class="btn" id="btn-setup-open-extension">打开扩展管理页</button>
-          <button type="button" class="btn primary" data-setup-next="2">我已加载，下一步</button>
+          <button type="button" class="btn" id="btn-setup-health">重新检查</button>
+          <button type="button" class="btn primary" data-setup-next="2">服务正常，下一步</button>
         </div>
       </div>
     </section>
@@ -376,11 +509,26 @@
     <section class="setup-step" data-setup-step="2" hidden>
       <span class="setup-step-number">2</span>
       <div class="setup-step-content">
-        <h3>登录大观园官网</h3>
-        <p>在同一个 Chrome 或 Edge 浏览器中打开官网并完成登录，保持官网数学题库标签页打开。扩展只能通过这个已登录标签页读取数据。</p>
+        <h3>配置大观园登录</h3>
+        <p>登录信息只提交给本机中控台，由中控台调用大观园登录接口。Token 不会返回给网页，也不会进入导出文件。</p>
+        <div class="setup-form-grid">
+          <div>
+            <label class="field-label" for="setup-login-code">登录码</label>
+            <input id="setup-login-code" class="import-area" type="password" placeholder="输入大观园登录码" autocomplete="one-time-code" />
+          </div>
+          <div>
+            <label class="field-label" for="setup-login-username">账号（可选）</label>
+            <input id="setup-login-username" class="import-area" placeholder="接口要求账号时填写" autocomplete="username" />
+          </div>
+          <div>
+            <label class="field-label" for="setup-login-password">密码（可选）</label>
+            <input id="setup-login-password" class="import-area" type="password" placeholder="接口要求密码时填写" autocomplete="current-password" />
+          </div>
+        </div>
+        <p class="setup-feedback" id="setup-login-feedback" role="status" aria-live="polite"></p>
         <div class="tutorial-actions">
-          <button type="button" class="btn" id="btn-setup-open-official">打开大观园官网</button>
-          <button type="button" class="btn primary" data-setup-next="3">我已登录，下一步</button>
+          <button type="button" class="btn" data-setup-prev="1">上一步</button>
+          <button type="button" class="btn primary" id="btn-setup-login">保存并登录</button>
         </div>
       </div>
     </section>
@@ -388,14 +536,12 @@
     <section class="setup-step" data-setup-step="3" hidden>
       <span class="setup-step-number">3</span>
       <div class="setup-step-content">
-        <h3>绑定扩展并检查连接</h3>
-        <p>点击浏览器扩展图标，在“大观园数据桥接”弹窗中点击“复制 ID”，然后粘贴到下面。ID 只需保存一次。</p>
-        <label class="field-label" for="setup-extension-id">同步扩展 ID</label>
-        <input id="setup-extension-id" class="import-area sync-extension-id" placeholder="例如 abcdefghijklmnop" autocomplete="off" spellcheck="false" />
-        <p class="setup-feedback" id="setup-feedback" role="status" aria-live="polite"></p>
+        <h3>测试官网连接</h3>
+        <p>中控台会直接读取大观园掌握状态和收藏数量，只读不修改官网。</p>
+        <div class="setup-feedback setup-feedback-box" id="setup-connection-result" role="status" aria-live="polite">等待测试。</div>
         <div class="tutorial-actions">
           <button type="button" class="btn" data-setup-prev="2">上一步</button>
-          <button type="button" class="btn primary" id="btn-setup-check">保存并检查连接</button>
+          <button type="button" class="btn primary" id="btn-setup-test-connection">测试读取</button>
         </div>
       </div>
     </section>
@@ -403,13 +549,25 @@
     <section class="setup-step" data-setup-step="4" hidden>
       <span class="setup-step-number">4</span>
       <div class="setup-step-content">
-        <h3>测试读取官网数据</h3>
-        <p>点击测试后，扩展会从已登录官网读取当前掌握状态和收藏数量，只读不修改官网和本地进度。</p>
-        <div class="setup-feedback setup-feedback-box" id="setup-test-result" role="status" aria-live="polite">等待测试。</div>
+        <h3>备份并完成首次修复</h3>
+        <p>先备份旧浏览器和本地状态，再以官网完整掌握图覆盖本地旧记录；未知题号会单独保留并报告。</p>
+        <div class="setup-feedback setup-feedback-box" id="setup-migration-result" role="status" aria-live="polite">等待迁移。</div>
         <div class="tutorial-actions">
           <button type="button" class="btn" data-setup-prev="3">返回修改</button>
-          <button type="button" class="btn" id="btn-setup-test-read">测试读取官网数据</button>
-          <button type="button" class="btn primary" data-close="dlg-setup-wizard">完成配置</button>
+          <button type="button" class="btn primary" id="btn-setup-migrate">备份并完成首次修复</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="setup-step" data-setup-step="5" hidden>
+      <span class="setup-step-number">5</span>
+      <div class="setup-step-content">
+        <h3>配置完成</h3>
+        <p>本地状态已经由中控台保存。之后启动本地题库只检查登录状态；官网变化请在同步中心手动对账。</p>
+        <div class="setup-feedback setup-feedback-box" id="setup-finish-result" role="status" aria-live="polite">可以开始刷题了。</div>
+        <div class="tutorial-actions">
+          <button type="button" class="btn" data-setup-prev="4">返回修改</button>
+          <button type="button" class="btn primary" data-close="dlg-setup-wizard">开始刷题</button>
         </div>
       </div>
     </section>
@@ -418,25 +576,88 @@
   <dialog id="dlg-online-sync" class="sheet sheet-wide">
     <div class="sheet-head">
       <h2>官网同步</h2>
-      <button type="button" class="icon-btn" data-close="dlg-online-sync" aria-label="关闭">×</button>
+      <button type="button" class="icon-btn" data-close="dlg-online-sync" aria-label="关闭"><svg class="ui-icon"><use href="#icon-close"></use></svg></button>
     </div>
-    <p class="sheet-lead">同步扩展负责访问已登录的官网标签页。本地页面不会接触登录令牌。第一次配置约 1 分钟，之后就是一键读取或上传。</p>
-    <div class="sync-setup" aria-label="官网同步准备步骤">
-      <div class="sync-setup-step"><span class="tutorial-step-no">1</span><div><strong>登录官网并保持标签页打开</strong><div class="tutorial-actions"><button type="button" class="btn compact-btn" id="btn-open-official-site-sync">打开官网</button></div></div></div>
-      <div class="sync-setup-step"><span class="tutorial-step-no">2</span><div><strong>安装扩展后复制 ID</strong><p class="hint-note">点击扩展图标，在弹窗中复制 ID；只需粘贴一次。</p><div class="tutorial-actions"><button type="button" class="btn compact-btn" id="btn-open-extension-page-sync">打开扩展管理</button></div></div></div>
-    </div>
-    <label class="field-label" for="sync-extension-id">同步扩展 ID</label>
-    <input id="sync-extension-id" class="import-area sync-extension-id" placeholder="从扩展弹窗复制，例如 abcdefghijklmnop" autocomplete="off" spellcheck="false" />
-    <p class="muted" id="sync-connection-status">尚未连接同步扩展。</p>
+    <p class="sheet-lead">本地中控台直接访问大观园 API。官网与本地的掌握、收藏、最近学习位置和活动记录统一在这里手动对账。</p>
+    <p class="muted" id="sync-connection-status">正在检查本地中控台…</p>
     <div class="sheet-actions inline">
       <button type="button" class="btn" id="btn-sync-status">检查连接</button>
-      <button type="button" class="btn primary" id="btn-sync-pull">从官网读取</button>
-      <button type="button" class="btn primary" id="btn-sync-push">预览并同步到官网</button>
+      <button type="button" class="btn primary" id="btn-sync-pull">检查差异</button>
+      <button type="button" class="btn primary" id="btn-sync-push">应用对账计划</button>
+      <button type="button" class="btn" id="btn-sync-export-local">导出本地数据</button>
+      <button type="button" class="btn" id="btn-sync-export-remote">导出官网快照</button>
+      <button type="button" class="btn" id="btn-sync-export-android">导出 Android 兼容包</button>
     </div>
+    <label class="sync-winner-choice">冲突批量处理
+      <select id="sync-conflict-winner">
+        <option value="latest">按更新时间较新者</option>
+        <option value="remote">官网优先</option>
+        <option value="local">本地优先</option>
+      </select>
+    </label>
     <pre class="sync-result" id="sync-result" hidden aria-live="polite"></pre>
-    <p class="hint-note">默认只合并非空掌握状态和已收藏，不会清空官网记录。写入前扩展会自动下载官网备份。</p>
+    <p class="hint-note">检查阶段只读；应用前会分别备份本地和官网快照，先写本地，再写官网并重新读取校验。失败项会保留待同步标记。</p>
     <div class="sheet-actions inline setup-reopen-actions">
       <button type="button" class="btn ghost" id="btn-reopen-setup-wizard">重新运行配置向导</button>
+    </div>
+  </dialog>
+
+  <dialog id="dlg-appearance" class="sheet sheet-wide appearance-sheet">
+    <div class="sheet-head">
+      <div>
+        <p class="dialog-kicker">界面设置</p>
+        <h2>把本地题库调成你喜欢的样子</h2>
+      </div>
+      <button type="button" class="icon-btn" data-close="dlg-appearance" aria-label="关闭界面设置"><svg class="ui-icon"><use href="#icon-close"></use></svg></button>
+    </div>
+    <p class="sheet-lead">外观设置只保存在当前设备，不会进入官网同步包，也不会上传背景图片。</p>
+    <fieldset class="appearance-group">
+      <legend>主题</legend>
+      <div class="theme-choice-grid" role="listbox" aria-label="选择主题">
+        <button type="button" class="theme-choice" data-theme-choice="official-light" role="option">
+          <span class="theme-preview theme-preview-light" aria-hidden="true"><i></i><b></b><em></em></span>
+          <strong>官网浅色</strong><small>默认工作台</small>
+        </button>
+        <button type="button" class="theme-choice" data-theme-choice="official-dark" role="option">
+          <span class="theme-preview theme-preview-dark" aria-hidden="true"><i></i><b></b><em></em></span>
+          <strong>官网深色</strong><small>夜间刷题</small>
+        </button>
+        <button type="button" class="theme-choice" data-theme-choice="eye-care" role="option">
+          <span class="theme-preview theme-preview-eye" aria-hidden="true"><i></i><b></b><em></em></span>
+          <strong>米黄色护眼</strong><small>当前护眼配色</small>
+        </button>
+        <button type="button" class="theme-choice" data-theme-choice="custom" role="option">
+          <span class="theme-preview theme-preview-custom" aria-hidden="true"><i></i><b></b><em></em></span>
+          <strong>自定义</strong><small>颜色与本地图片</small>
+        </button>
+      </div>
+    </fieldset>
+    <div class="appearance-custom-grid">
+      <label class="appearance-field" for="ui-bg-color"><span>背景颜色</span><input id="ui-bg-color" type="color" value="#f5f7fa" /></label>
+      <label class="appearance-field appearance-file" for="ui-bg-image"><span>本地背景图片 <small>PNG / JPG / WEBP，最大 5MB</small></span><input id="ui-bg-image" type="file" accept="image/png,image/jpeg,image/webp" /></label>
+      <label class="appearance-field" for="ui-bg-position"><span>图片位置</span><select id="ui-bg-position"><option value="center">居中</option><option value="top">顶部</option><option value="bottom">底部</option><option value="left">左侧</option><option value="right">右侧</option></select></label>
+      <label class="appearance-field" for="ui-bg-overlay"><span>背景遮罩 <output id="ui-bg-overlay-value">78%</output></span><input id="ui-bg-overlay" type="range" min="0.55" max="0.95" step="0.01" value="0.78" /></label>
+    </div>
+    <section class="ai-settings-section" aria-labelledby="ai-settings-title">
+      <div class="ai-settings-heading"><div><p class="dialog-kicker">可选连接</p><h3 id="ai-settings-title">AI 服务档案</h3><p class="muted">支持 OpenAI 兼容接口。密钥只保存在本机 Node 配置，不进入进度导出。</p></div><button type="button" class="btn primary" id="btn-ai-add-profile">添加服务</button></div>
+      <div class="ai-profile-list" id="ai-profile-list"><div class="empty-state compact"><p>尚未配置 AI 服务。</p></div></div>
+      <form class="ai-profile-form hidden" id="ai-profile-form">
+        <input type="hidden" id="ai-profile-id" />
+        <div class="ai-profile-form-grid"><label class="appearance-field"><span>名称</span><input id="ai-profile-name" required placeholder="例如：本地模型" /></label><label class="appearance-field"><span>模型</span><input id="ai-profile-model" required placeholder="填写模型名或先获取列表" /></label><label class="appearance-field ai-profile-url"><span>API 根地址 <small>例如 https://api.example.com/v1</small></span><input id="ai-profile-url" type="url" required placeholder="https://…/v1" /></label><label class="appearance-field ai-profile-key"><span>API Key <small>留空表示保持原 Key</small></span><input id="ai-profile-key" type="password" autocomplete="new-password" placeholder="sk-…" /></label></div>
+        <div class="ai-profile-actions"><button type="button" class="btn" id="btn-ai-fetch-models">获取模型列表</button><button type="button" class="btn" id="btn-ai-test-text">测试连接与文本</button><button type="button" class="btn" id="btn-ai-test-vision">测试视觉能力</button><button type="submit" class="btn primary">保存服务</button><button type="button" class="btn ghost" id="btn-ai-cancel-profile">取消</button></div>
+        <div class="ai-test-result" id="ai-test-result" role="status" aria-live="polite"></div>
+      </form>
+    </section>
+    <section class="shortcut-settings" aria-labelledby="shortcut-settings-title">
+      <div class="ai-settings-heading"><div><p class="dialog-kicker">沉浸操作</p><h3 id="shortcut-settings-title">焦点模式快捷键</h3><p class="muted">点击按键后直接按下新键。输入框、批注和 AI 对话中会自动停用题目快捷键。</p></div><button type="button" class="btn ghost" id="btn-shortcuts-reset">恢复默认</button></div>
+      <div id="shortcut-list" class="shortcut-list"></div>
+      <p class="setup-feedback" id="shortcut-feedback" role="status" aria-live="polite"></p>
+    </section>
+    <div class="appearance-status" id="ui-theme-feedback" role="status" aria-live="polite"></div>
+    <div class="sheet-actions">
+      <button type="button" class="btn" id="btn-appearance-reset">恢复官网默认</button>
+      <button type="button" class="btn ghost" id="btn-appearance-eye">恢复米黄色护眼</button>
+      <button type="button" class="btn primary" data-close="dlg-appearance">完成</button>
     </div>
   </dialog>
 
@@ -457,6 +678,6 @@
 
   <script defer src="./vendor/marked.min.js"></script>
   <script defer src="./vendor/katex.min.js"></script>
-  <script defer src="./app.js?v=6"></script>
+    <script defer src="./app.js?v=24"></script>
 </body>
 </html>

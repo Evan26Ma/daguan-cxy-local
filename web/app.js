@@ -10,6 +10,23 @@
   const MODE_KEY = "daguan_local_mode_v1";
   const PICK_KEY = "daguan_local_picked_v1";
   const FAVORITE_KEY = "daguan_local_favorites_v1";
+  const ANNOTATION_KEY = "daguan_question_annotations_v1";
+  const UI_PREFS_KEY = "daguan_ui_preferences_v1";
+  const SHORTCUTS_KEY = "daguan_focus_shortcuts_v1";
+  const AI_PREFS_KEY = "daguan_ai_preferences_v1";
+  const AI_WIDTH_KEY = "daguan_ai_drawer_width_v1";
+  const UI_BACKGROUND_KEY = "ui-background";
+  const APP_VERSION = "2026.09.06-r5";
+  const POSITION_KEY = "daguan_learning_position_v2";
+  const UI_THEMES = ["official-light", "official-dark", "eye-care", "custom"];
+  const DEFAULT_UI_PREFS = Object.freeze({
+    version: 1,
+    theme: "official-light",
+    backgroundColor: "#f5f7fa",
+    backgroundImageKey: "",
+    backgroundPosition: "center",
+    overlayOpacity: 0.78,
+  });
   const PAGE_SIZE = 20;
   const TYPE_LABEL = {
     subjective: "主观题",
@@ -20,8 +37,12 @@
     not_started: "未开始",
     learning: "学习中",
     mastered: "已掌握",
-    forgot: "易错",
   };
+  const SHORTCUT_DEFAULTS = Object.freeze({ up: "ArrowUp", down: "ArrowDown", answer: " ", mastery1: "1", mastery2: "2", mastery3: "3", error: "e", favorite: "f", ai: "a", note: "n", copy: "c", help: "?", escape: "Escape", focus: "F6" });
+
+  let uiPrefs = loadUiPrefs();
+  let uiBackgroundUrl = "";
+  let lastDialogTrigger = null;
 
   const state = {
     manifest: null,
@@ -37,17 +58,33 @@
     // per-question UI in list mode: { showAnswer, selected:Set }
     cardUI: new Map(),
     progress: loadProgress(),
+    annotations: loadAnnotations(),
     currentCatId: null,
+    chapterPathIds: [],
+    chapterMenuOpen: false,
+    chapterMenuRootId: null,
     crumb: "",
     filterCore: false,
     filterTodo: false,
-    scope: "all", // all | core
-    view: "home", // home | browse | search
+    scope: "all", // all | core | real
+    view: "home", // home | browse | search | feature
+    feature: "favorites",
     mode: loadMode(), // list | single
     renderedCount: 0,
     specialQueue: null, // null | 'todo' | 'forgot'
     picked: loadPicked(),
     favorites: loadFavorites(),
+    remote_activity: null,
+    last_study: null,
+    focusMode: false,
+    focusSnapshot: null,
+    aiOpen: false,
+    aiTab: "chat",
+    aiQuestionId: null,
+    aiProfiles: [],
+    aiRuns: new Map(),
+    aiProfileId: "",
+    noteHistory: [],
   };
 
   const $ = (sel) => document.querySelector(sel);
@@ -59,6 +96,7 @@
     home: $("#view-home"),
     browse: $("#view-browse"),
     searchView: $("#view-search"),
+    feature: $("#view-feature"),
     homeCards: $("#home-cards"),
     search: $("#search"),
     searchResults: $("#search-results"),
@@ -92,14 +130,116 @@
     metricSeen: $("#metric-seen"),
     metricMastered: $("#metric-mastered"),
     metricForgot: $("#metric-forgot"),
+    aiDrawer: $("#ai-drawer"),
+    aiEdgeTab: $("#ai-edge-tab"),
+    aiMessages: $("#ai-messages"),
+    aiPrompt: $("#ai-prompt"),
+    aiProfileSelect: $("#ai-profile-select"),
+    noteEditor: $("#question-note-editor"),
+    browseNavLeading: $("#browse-nav-leading"),
+    chapterPicker: $("#chapter-picker"),
+    chapterTrigger: $("#chapter-trigger"),
+    chapterTriggerLabel: $("#chapter-trigger-label"),
+    chapterMenu: $("#chapter-menu"),
+    chapterMenuTitle: $("#chapter-menu-title"),
+    chapterMenuPath: $("#chapter-menu-path"),
+    chapterColumns: $("#chapter-columns"),
+    chapterMenuFeedback: $("#chapter-menu-feedback"),
+    chapterEmpty: $("#chapter-empty-state"),
+    chapterEmptyCopy: $("#chapter-empty-copy"),
+    chapterSectionNav: $("#chapter-section-nav"),
+    chapterProgressTop: $("#chapter-progress-top"),
+    prevSection: $("#btn-prev-section"),
+    nextSection: $("#btn-next-section"),
+    pickBar: $("#pick-bar"),
+    topbarMore: $("#topbar-more-menu"),
+    moreTrigger: $("#btn-more"),
   };
 
   function loadProgress() {
     try {
-      return JSON.parse(localStorage.getItem(PROGRESS_KEY) || "{}") || {};
+      const raw = JSON.parse(localStorage.getItem(PROGRESS_KEY) || "{}") || {};
+      const out = {};
+      for (const [id, value] of Object.entries(raw)) {
+        if (!value || typeof value !== "object") continue;
+        const legacy = value.mastery === "forgot";
+        out[String(id)] = { ...value, mastery: legacy ? "learning" : ["not_started", "learning", "mastered"].includes(value.mastery) ? value.mastery : "not_started", error_prone: value.error_prone === true || legacy };
+      }
+      return out;
     } catch {
       return {};
     }
+  }
+
+  function loadAnnotations() {
+    try {
+      const raw = JSON.parse(localStorage.getItem(ANNOTATION_KEY) || "{}");
+      return raw && typeof raw === "object" ? raw : {};
+    } catch { return {}; }
+  }
+
+  function loadShortcuts() {
+    try { return { ...SHORTCUT_DEFAULTS, ...(JSON.parse(localStorage.getItem(SHORTCUTS_KEY) || "{}") || {}) }; }
+    catch { return { ...SHORTCUT_DEFAULTS }; }
+  }
+
+  const shortcuts = loadShortcuts();
+  const SHORTCUT_LABELS = Object.freeze({ focus: "进入 / 退出焦点模式", up: "上一题", down: "下一题", answer: "显示 / 隐藏答案", mastery1: "标记未开始", mastery2: "标记学习中", mastery3: "标记已掌握", error: "切换易错", favorite: "切换收藏", ai: "打开 AI 解答", note: "打开题目批注", copy: "复制本题 Markdown", help: "显示快捷键帮助", escape: "关闭抽屉 / 退出焦点" });
+
+  function shortcutDisplay(key) {
+    if (key === " ") return "Space";
+    if (key === "ArrowUp") return "↑";
+    if (key === "ArrowDown") return "↓";
+    if (key === "Escape") return "Esc";
+    return key.length === 1 ? key.toUpperCase() : key;
+  }
+
+  function shortcutButtonMarkup(label, action, icon = "") {
+    return `${icon}<span class="action-label">${escapeHtml(label)}</span><kbd class="shortcut-hint" data-shortcut-hint="${action}">${escapeHtml(shortcutDisplay(shortcuts[action] || ""))}</kbd>`;
+  }
+
+  function renderShortcutHints() {
+    document.querySelectorAll("[data-shortcut-label]").forEach((button) => {
+      const hint = button.querySelector("[data-shortcut-hint]");
+      if (!hint) return;
+      const action = button.dataset.shortcutLabel;
+      const value = shortcuts[action] || "";
+      const display = shortcutDisplay(value);
+      hint.textContent = display;
+      hint.hidden = !value;
+      if (value) {
+        button.setAttribute("aria-keyshortcuts", value === " " ? "Space" : value);
+        button.title = `${button.querySelector(".action-label")?.textContent || button.textContent.trim()}（快捷键：${display}）`;
+      } else {
+        button.removeAttribute("aria-keyshortcuts");
+      }
+    });
+  }
+
+  function renderShortcutSettings() {
+    const root = $("#shortcut-list");
+    if (!root) return;
+    root.innerHTML = Object.keys(SHORTCUT_LABELS).map((action) => `<label class="shortcut-row"><span>${escapeHtml(SHORTCUT_LABELS[action])}</span><button type="button" class="shortcut-key" data-shortcut-action="${action}" aria-label="${escapeHtml(SHORTCUT_LABELS[action])}快捷键">${escapeHtml(shortcutDisplay(shortcuts[action]))}</button></label>`).join("");
+    root.querySelectorAll("[data-shortcut-action]").forEach((button) => {
+      button.addEventListener("keydown", (event) => {
+        event.preventDefault();
+        if (["Tab", "Shift", "Control", "Alt", "Meta"].includes(event.key)) return;
+        const action = button.dataset.shortcutAction;
+        const next = event.key === " " ? " " : event.key;
+        const duplicate = Object.entries(shortcuts).find(([name, value]) => name !== action && value.toLowerCase?.() === next.toLowerCase?.());
+        if (duplicate) {
+          const feedback = $("#shortcut-feedback");
+          if (feedback) feedback.textContent = `按键 ${shortcutDisplay(next)} 已被“${SHORTCUT_LABELS[duplicate[0]]}”占用。`;
+          return;
+        }
+        shortcuts[action] = next;
+        localStorage.setItem(SHORTCUTS_KEY, JSON.stringify(shortcuts));
+        renderShortcutSettings();
+        renderShortcutHints();
+        $("#shortcut-feedback")?.replaceChildren(document.createTextNode(`已绑定：${SHORTCUT_LABELS[action]} → ${shortcutDisplay(next)}`));
+        button.focus();
+      });
+    });
   }
 
   function loadPicked() {
@@ -136,13 +276,30 @@
     const key = String(id);
     if (on) state.favorites.add(key);
     else state.favorites.delete(key);
+    const cur = state.progress[key] || {};
+    state.progress[key] = { ...cur, favorite: !!on, favorite_updated_at: Date.now(), updated_at: Date.now() };
+    queueQuestionSync(key, { favorite: !!on });
     saveFavorites();
+    refreshCardChrome(id);
+  }
+
+  function setErrorProne(id, on) {
+    const key = String(id);
+    const cur = state.progress[key] || {};
+    const at = Date.now();
+    state.progress[key] = { ...cur, error_prone: !!on, error_prone_updated_at: at, updated_at: at, seen: true };
+    queueQuestionSync(key, { error_prone: !!on, seen: true });
+    saveProgress();
+    refreshCardChrome(id);
+    if (currentQ()?.id != null && String(currentQ().id) === key) renderSingle();
   }
 
   function refreshFavoriteUI() {
     document.querySelectorAll("[data-favorite-id]").forEach((el) => {
       const on = isFavorite(el.dataset.favoriteId);
-      el.textContent = on ? "已收藏" : "收藏";
+      const label = el.querySelector(".action-label");
+      if (label) label.textContent = on ? "已收藏" : "收藏";
+      else el.textContent = on ? "已收藏" : "收藏";
       el.classList.toggle("active", on);
       el.setAttribute("aria-pressed", String(on));
     });
@@ -204,6 +361,13 @@
   const IDB_VER = 1;
   let idbPromise = null;
   let persistTimer = 0;
+  let serverPersistTimer = 0;
+  let serverStateHydrated = false;
+  let serverStateAvailable = false;
+  let serverStateSyncing = false;
+  let serverRevision = 0;
+  const serverQuestionQueue = new Map();
+  let serverQuestionTimer = 0;
 
   function openIdb() {
     if (idbPromise) return idbPromise;
@@ -261,6 +425,161 @@
     );
   }
 
+  function idbDelete(key) {
+    return openIdb().then(
+      (db) =>
+        new Promise((resolve) => {
+          if (!db) return resolve();
+          try {
+            const req = db.transaction("kv", "readwrite").objectStore("kv").delete(key);
+            req.onsuccess = () => resolve();
+            req.onerror = () => resolve();
+          } catch {
+            resolve();
+          }
+        })
+    );
+  }
+
+  function loadUiPrefs() {
+    try {
+      const raw = JSON.parse(localStorage.getItem(UI_PREFS_KEY) || "{}");
+      const value = { ...DEFAULT_UI_PREFS, ...(raw && typeof raw === "object" ? raw : {}) };
+      if (!UI_THEMES.includes(value.theme)) value.theme = DEFAULT_UI_PREFS.theme;
+      if (!/^#[0-9a-f]{6}$/i.test(String(value.backgroundColor || ""))) {
+        value.backgroundColor = DEFAULT_UI_PREFS.backgroundColor;
+      }
+      const overlay = Number(value.overlayOpacity);
+      value.overlayOpacity = Number.isFinite(overlay)
+        ? Math.min(0.95, Math.max(0.55, overlay))
+        : DEFAULT_UI_PREFS.overlayOpacity;
+      if (!["center", "top", "bottom", "left", "right"].includes(value.backgroundPosition)) {
+        value.backgroundPosition = DEFAULT_UI_PREFS.backgroundPosition;
+      }
+      value.backgroundImageKey = value.backgroundImageKey === UI_BACKGROUND_KEY ? UI_BACKGROUND_KEY : "";
+      return value;
+    } catch {
+      return { ...DEFAULT_UI_PREFS };
+    }
+  }
+
+  function saveUiPrefs() {
+    try {
+      localStorage.setItem(UI_PREFS_KEY, JSON.stringify(uiPrefs));
+    } catch {
+      /* A full localStorage must not stop the question bank. */
+    }
+  }
+
+  function iconMarkup(name) {
+    return `<svg class="ui-icon" aria-hidden="true"><use href="#icon-${name}"></use></svg>`;
+  }
+
+  function applyUiPreferences() {
+    const root = document.documentElement;
+    root.dataset.theme = uiPrefs.theme;
+    root.style.colorScheme = uiPrefs.theme === "official-dark" ? "dark" : "light";
+    root.style.setProperty("--custom-bg-color", uiPrefs.backgroundColor || DEFAULT_UI_PREFS.backgroundColor);
+    root.style.setProperty("--custom-overlay-opacity", String(uiPrefs.overlayOpacity));
+    root.style.setProperty("--custom-background-position", uiPrefs.backgroundPosition || "center");
+    root.style.setProperty("--custom-background-image", uiBackgroundUrl ? `url("${uiBackgroundUrl}")` : "none");
+    updateAppearanceUI();
+    const toggle = $("#btn-theme-toggle");
+    if (toggle) {
+      const dark = uiPrefs.theme === "official-dark";
+      toggle.innerHTML = `${iconMarkup(dark ? "sun" : "moon")}<span>${dark ? "切换浅色" : "切换深色"}</span>`;
+      toggle.setAttribute("aria-label", dark ? "切换浅色主题" : "切换深色主题");
+      toggle.title = dark ? "切换浅色主题" : "切换深色主题";
+    }
+  }
+
+  function updateAppearanceUI() {
+    document.querySelectorAll("[data-theme-choice]").forEach((button) => {
+      const active = button.dataset.themeChoice === uiPrefs.theme;
+      button.classList.toggle("active", active);
+      button.setAttribute("aria-selected", String(active));
+    });
+    const color = $("#ui-bg-color");
+    const position = $("#ui-bg-position");
+    const overlay = $("#ui-bg-overlay");
+    const output = $("#ui-bg-overlay-value");
+    if (color) color.value = uiPrefs.backgroundColor;
+    if (position) position.value = uiPrefs.backgroundPosition;
+    if (overlay) overlay.value = String(uiPrefs.overlayOpacity);
+    if (output) output.textContent = `${Math.round(uiPrefs.overlayOpacity * 100)}%`;
+  }
+
+  function setThemeFeedback(message, error = false) {
+    const el = $("#ui-theme-feedback");
+    if (!el) return;
+    el.textContent = message;
+    el.dataset.error = error ? "1" : "0";
+  }
+
+  function setUiTheme(theme) {
+    if (!UI_THEMES.includes(theme)) return;
+    uiPrefs.theme = theme;
+    saveUiPrefs();
+    applyUiPreferences();
+    setThemeFeedback(`已切换到${theme === "official-light" ? "官网浅色" : theme === "official-dark" ? "官网深色" : theme === "eye-care" ? "米黄色护眼" : "自定义"}主题。`);
+  }
+
+  async function loadUiBackground() {
+    if (uiPrefs.backgroundImageKey !== UI_BACKGROUND_KEY) {
+      applyUiPreferences();
+      return;
+    }
+    const value = await idbGet(UI_BACKGROUND_KEY);
+    if (!(value instanceof Blob)) {
+      uiPrefs.backgroundImageKey = "";
+      saveUiPrefs();
+      applyUiPreferences();
+      return;
+    }
+    if (uiBackgroundUrl) URL.revokeObjectURL(uiBackgroundUrl);
+    uiBackgroundUrl = URL.createObjectURL(value);
+    applyUiPreferences();
+  }
+
+  async function setUiBackground(file) {
+    if (!file) return;
+    const allowed = ["image/png", "image/jpeg", "image/webp"];
+    if (!allowed.includes(file.type)) {
+      setThemeFeedback("背景图片只支持 PNG、JPG 或 WEBP。", true);
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setThemeFeedback("背景图片不能超过 5MB。", true);
+      return;
+    }
+    await idbSet(UI_BACKGROUND_KEY, file);
+    if (uiBackgroundUrl) URL.revokeObjectURL(uiBackgroundUrl);
+    uiBackgroundUrl = URL.createObjectURL(file);
+    uiPrefs.backgroundImageKey = UI_BACKGROUND_KEY;
+    uiPrefs.theme = "custom";
+    saveUiPrefs();
+    applyUiPreferences();
+    setThemeFeedback("本地背景图片已保存，只在当前设备显示。");
+  }
+
+  async function clearUiBackground() {
+    await idbDelete(UI_BACKGROUND_KEY);
+    if (uiBackgroundUrl) URL.revokeObjectURL(uiBackgroundUrl);
+    uiBackgroundUrl = "";
+    uiPrefs.backgroundImageKey = "";
+    saveUiPrefs();
+    applyUiPreferences();
+    setThemeFeedback("已清除本地背景图片。", false);
+  }
+
+  async function resetUiPreferences(theme = "official-light") {
+    await clearUiBackground();
+    uiPrefs = { ...DEFAULT_UI_PREFS, theme };
+    saveUiPrefs();
+    applyUiPreferences();
+    setThemeFeedback(theme === "eye-care" ? "已恢复米黄色护眼主题。" : "已恢复官网浅色主题。", false);
+  }
+
   function mergeProgress(a, b) {
     const out = { ...(a || {}) };
     for (const [id, p] of Object.entries(b || {})) {
@@ -289,10 +608,17 @@
     } catch {
       /* ignore */
     }
+    try {
+      localStorage.setItem(ANNOTATION_KEY, JSON.stringify(state.annotations));
+    } catch {
+      /* ignore */
+    }
     idbSet("progress", state.progress);
     idbSet("picked", [...state.picked]);
     idbSet("favorites", [...state.favorites]);
+    idbSet("annotations", state.annotations);
     idbSet("saved_at", Date.now());
+    // Node 状态文件是权威源；浏览器存储只负责离线缓存。
   }
 
   function schedulePersist() {
@@ -307,18 +633,93 @@
         idbGet("picked"),
         idbGet("saved_at"),
       ]);
-      if (p && typeof p === "object") state.progress = mergeProgress(state.progress, p);
-      if (Array.isArray(pick)) {
+      if (!serverStateAvailable && p && typeof p === "object") state.progress = mergeProgress(state.progress, p);
+      if (!serverStateAvailable && Array.isArray(pick)) {
         for (const id of pick) state.picked.add(String(id));
       }
       const favorites = await idbGet("favorites");
-      if (Array.isArray(favorites)) {
+      if (!serverStateAvailable && Array.isArray(favorites)) {
         for (const id of favorites) state.favorites.add(String(id));
       }
+      const annotations = await idbGet("annotations");
+      if (!serverStateAvailable && annotations && typeof annotations === "object") state.annotations = { ...state.annotations, ...annotations };
       if (savedAt) state.savedAt = savedAt;
       flushPersist();
     } catch {
       /* stay on localStorage */
+    }
+  }
+
+  async function hydrateServerState() {
+    try {
+      const response = await fetch("./api/state", { cache: "no-store" });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const remote = await response.json();
+      if (remote?.progress && typeof remote.progress === "object") state.progress = remote.progress;
+      if (Array.isArray(remote?.favorites)) state.favorites = new Set(remote.favorites.map(String));
+      if (Array.isArray(remote?.picked)) state.picked = new Set(remote.picked.map(String));
+      if (remote?.annotations && typeof remote.annotations === "object") state.annotations = remote.annotations;
+      state.remote_activity = remote.remote_activity || null;
+      state.last_study = remote.last_study || null;
+      serverRevision = Number(remote.revision) || 0;
+      serverStateAvailable = true;
+      flushPersist();
+    } catch {
+      serverStateAvailable = false;
+    } finally {
+      serverStateHydrated = true;
+    }
+  }
+
+  function scheduleServerStatePersist() {
+    // 兼容旧调用点：不再使用整份 PUT。
+  }
+
+  async function persistServerState() {
+    return null;
+  }
+
+  function queueQuestionSync(id, patch) {
+    if (!serverStateAvailable || !serverStateHydrated) return;
+    const key = String(id);
+    serverQuestionQueue.set(key, { ...(serverQuestionQueue.get(key) || {}), ...patch });
+    if (serverQuestionTimer) clearTimeout(serverQuestionTimer);
+    serverQuestionTimer = setTimeout(flushQuestionSync, 350);
+  }
+
+  async function flushQuestionSync() {
+    serverQuestionTimer = 0;
+    if (!serverStateAvailable || serverStateSyncing || !serverQuestionQueue.size) return;
+    serverStateSyncing = true;
+    const entries = [...serverQuestionQueue.entries()];
+    serverQuestionQueue.clear();
+    try {
+      for (const [id, patch] of entries) {
+        const response = await fetch(`./api/state/questions/${encodeURIComponent(id)}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json", "If-Match": String(serverRevision) },
+          body: JSON.stringify({ ...patch, revision: serverRevision, updated_at: new Date().toISOString() }),
+        });
+        if (response.status === 409) {
+          const conflict = await response.json().catch(() => ({}));
+          if (conflict.current) {
+            serverRevision = Number(conflict.current.revision) || serverRevision;
+            state.progress = conflict.current.progress || state.progress;
+            state.favorites = new Set((conflict.current.favorites || []).map(String));
+            if (conflict.current.annotations && typeof conflict.current.annotations === "object") state.annotations = conflict.current.annotations;
+          }
+          entries.forEach(([queuedId, queuedPatch]) => serverQuestionQueue.set(queuedId, queuedPatch));
+          break;
+        }
+        if (!response.ok) throw new Error(`状态写入失败（HTTP ${response.status}）`);
+        const result = await response.json();
+        serverRevision = Number(result.revision) || serverRevision;
+      }
+    } catch {
+      entries.forEach(([queuedId, queuedPatch]) => serverQuestionQueue.set(queuedId, queuedPatch));
+    } finally {
+      serverStateSyncing = false;
+      if (serverQuestionQueue.size && !serverQuestionTimer) serverQuestionTimer = setTimeout(flushQuestionSync, 900);
     }
   }
 
@@ -342,12 +743,25 @@
     const vals = Object.values(state.progress);
     const done = vals.filter((p) => p.mastery === "mastered").length;
     const seen = vals.filter((p) => p.seen).length;
-    const forgot = vals.filter((p) => p.mastery === "forgot").length;
+    const forgot = vals.filter((p) => p.error_prone === true).length;
+    const today = isoDate(new Date());
+    const activeDates = new Set(vals.filter((p) => p.updated_at).map((p) => isoDate(new Date(Number(p.updated_at)))));
+    const todayCount = vals.filter((p) => p.updated_at && isoDate(new Date(Number(p.updated_at))) === today).length;
+    let streak = 0;
+    const cursor = new Date();
+    while (activeDates.has(isoDate(cursor))) {
+      streak += 1;
+      cursor.setDate(cursor.getDate() - 1);
+    }
     els.stats.textContent = `共 ${state.manifest.total} 题 · 看过 ${seen} · 掌握 ${done}`;
-    if (els.metricTotal) els.metricTotal.textContent = String(state.manifest.total);
-    if (els.metricSeen) els.metricSeen.textContent = String(seen);
-    if (els.metricMastered) els.metricMastered.textContent = String(done);
-    if (els.metricForgot) els.metricForgot.textContent = String(forgot);
+    if (els.metricTotal) {
+      const exam = new Date(2026, 11, 19);
+      const days = Math.max(0, Math.ceil((exam.setHours(0, 0, 0, 0) - new Date().setHours(0, 0, 0, 0)) / 86400000));
+      els.metricTotal.textContent = String(days);
+    }
+    if (els.metricSeen) els.metricSeen.textContent = String(todayCount);
+    if (els.metricMastered) els.metricMastered.textContent = String(streak);
+    if (els.metricForgot) els.metricForgot.textContent = String(state.manifest.total || forgot);
     updateBrowseProgress();
   }
 
@@ -493,28 +907,35 @@
   }
 
   function setView(name) {
+    if (name !== "browse" && state.chapterMenuOpen) closeChapterMenu({ restoreFocus: false });
     state.view = name;
     els.home.classList.toggle("hidden", name !== "home");
     els.browse.classList.toggle("hidden", name !== "browse");
     els.searchView.classList.toggle("hidden", name !== "search");
+    els.feature?.classList.toggle("hidden", name !== "feature");
+    document.body.dataset.view = name;
     document.querySelectorAll(".side-link").forEach((el) => {
-      el.classList.toggle("active", el.dataset.nav === "home" && name === "home");
+      const specialNav = state.specialQueue === "todo" ? "mastery" : state.specialQueue === "forgot" ? "retest" : "";
+      const active =
+        (name === "home" && el.dataset.nav === "home") ||
+        (name === "feature" && el.dataset.nav === state.feature) ||
+        (name === "browse" && specialNav && el.dataset.nav === specialNav);
+      el.classList.toggle("active", active);
     });
-    if (name === "home") {
-      $("#nav-home")?.classList.add("active");
-      $("#nav-todo")?.classList.remove("active");
-      $("#nav-forgot")?.classList.remove("active");
-    }
+    updateChapterHeader();
   }
 
   function applyModeUI() {
     const list = state.mode === "list";
-    els.listMode.classList.toggle("hidden", !list);
-    els.singleMode.classList.toggle("hidden", list);
+    const emptyChapter = state.view === "browse" && !state.specialQueue && !state.queue.length;
+    els.listMode.classList.toggle("hidden", !list || emptyChapter);
+    els.singleMode.classList.toggle("hidden", list || emptyChapter);
+    setChapterEmptyState(emptyChapter);
     document.querySelectorAll(".mode-btn").forEach((b) => {
       b.classList.toggle("active", b.dataset.mode === state.mode);
     });
     document.body.dataset.mode = state.mode;
+    updateChapterHeader();
   }
 
   function setMode(mode) {
@@ -538,6 +959,288 @@
     return null;
   }
 
+  function categoryChildren(node, isRoot = false) {
+    const children = Array.isArray(node?.children) ? node.children : [];
+    if (isRoot && ["836", "2500"].includes(String(node.id))) {
+      return children.filter((child) => child.name === "数三");
+    }
+    return children;
+  }
+
+  function isCategoryLeaf(node) {
+    return categoryChildren(node).length === 0;
+  }
+
+  function flattenCategoryLeaves(nodes = state.categories, trail = [], isRoot = true, output = []) {
+    for (const node of Array.isArray(nodes) ? nodes : []) {
+      if (isRoot && String(node.id) === "orphan") continue;
+      const nextTrail = trail.concat(node);
+      const children = categoryChildren(node, isRoot);
+      if (children.length) flattenCategoryLeaves(children, nextTrail, false, output);
+      else if (String(node.id) !== "orphan") output.push({ node, trail: nextTrail });
+    }
+    return output;
+  }
+
+  function categoryLeafEntry(id) {
+    return flattenCategoryLeaves().find((entry) => String(entry.node.id) === String(id)) || null;
+  }
+
+  function chapterRootForTrail(trail) {
+    return trail?.[1] || trail?.[0] || null;
+  }
+
+  function chapterLeavesFor(id) {
+    const trail = findCat(id);
+    if (!trail?.length) return [];
+    const root = chapterRootForTrail(trail);
+    if (!root) return [];
+    return flattenCategoryLeaves([root], trail.slice(0, trail.indexOf(root)), false);
+  }
+
+  function chapterPathIdsFor(id) {
+    return (findCat(id) || []).map((node) => String(node.id));
+  }
+
+  function chapterPathNames(ids = state.chapterPathIds) {
+    const names = [];
+    let nodes = state.categories;
+    for (const id of ids) {
+      const node = (Array.isArray(nodes) ? nodes : []).find((item) => String(item.id) === String(id));
+      if (!node) break;
+      names.push(node.name === "模拟哥专区" ? "模拟卷" : node.name);
+      nodes = categoryChildren(node, names.length === 1);
+    }
+    return names;
+  }
+
+  function chapterScopedQuestionIds(id) {
+    return state.catQuestions[String(id)] || [];
+  }
+
+  function setChapterEmptyState(visible, copy = "父级章节只用于展开目录，选择最末级小节后开始刷题。") {
+    const empty = Boolean(visible);
+    els.chapterEmpty?.classList.toggle("hidden", !empty);
+    els.pickBar?.classList.toggle("hidden", empty);
+    if (els.chapterEmptyCopy) els.chapterEmptyCopy.textContent = copy;
+    if (empty) {
+      els.listMode?.classList.add("hidden");
+      els.singleMode?.classList.add("hidden");
+    }
+  }
+
+  function updateChapterHeader() {
+    const browsingLeaf = state.view === "browse" && state.currentCatId != null && !state.specialQueue;
+    const browsePage = state.view === "browse";
+    els.browseNavLeading?.classList.toggle("hidden", state.view !== "browse");
+    els.chapterPicker?.classList.toggle("hidden", !browsePage);
+    if (els.chapterTrigger) els.chapterTrigger.disabled = !browsePage;
+    if (els.chapterTriggerLabel) {
+      const entry = browsingLeaf ? categoryLeafEntry(state.currentCatId) : null;
+      els.chapterTriggerLabel.textContent = entry?.node?.name || (state.specialQueue === "forgot" ? "错题复测" : state.specialQueue === "todo" ? "掌握地图" : "选择小节");
+    }
+
+    const showSectionNav = browsingLeaf && state.queue.length > 0;
+    if (els.chapterSectionNav) els.chapterSectionNav.hidden = !showSectionNav;
+    if (!showSectionNav) return;
+
+    const leaves = chapterLeavesFor(state.currentCatId);
+    const currentIndex = leaves.findIndex((entry) => String(entry.node.id) === String(state.currentCatId));
+    const completed = state.queue.filter((question) => {
+      const progress = progressOf(question.id);
+      return progress.seen === true || progress.mastery !== "not_started";
+    }).length;
+    if (els.chapterProgressTop) els.chapterProgressTop.textContent = `${completed} / ${state.queue.length}`;
+    if (els.prevSection) els.prevSection.disabled = currentIndex <= 0;
+    if (els.nextSection) els.nextSection.disabled = currentIndex < 0 || currentIndex >= leaves.length - 1;
+  }
+
+  function syncChapterScopeUI() {
+    document.querySelectorAll("[data-chapter-scope]").forEach((button) => {
+      button.classList.toggle("active", button.dataset.chapterScope === state.scope);
+      button.setAttribute("aria-pressed", String(button.dataset.chapterScope === state.scope));
+    });
+  }
+
+  function renderChapterMenu() {
+    if (!els.chapterColumns) return;
+    const columns = document.createDocumentFragment();
+    let nodes = state.categories.filter((node) => String(node.id) !== "orphan");
+    let path = [];
+    let depth = 0;
+    while (nodes.length) {
+      const column = document.createElement("div");
+      column.className = "chapter-column";
+      column.setAttribute("role", "listbox");
+      column.setAttribute("aria-label", depth === 0 ? "学科" : `${path[path.length - 1]?.name || "章节"}下级`);
+      const heading = document.createElement("div");
+      heading.className = "chapter-column-title";
+      heading.textContent = depth === 0 ? "学科" : path[path.length - 1]?.name || "章节";
+      column.appendChild(heading);
+
+      const selectedId = state.chapterPathIds[depth];
+      let selectedNode = null;
+      nodes.forEach((node) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "chapter-item";
+        button.setAttribute("role", "option");
+        button.dataset.chapterId = String(node.id);
+        const children = categoryChildren(node, depth === 0);
+        const branch = children.length > 0;
+        button.classList.toggle("has-children", branch);
+        button.classList.toggle("active", String(node.id) === String(selectedId));
+        button.setAttribute("aria-selected", String(String(node.id) === String(selectedId)));
+        if (branch) button.setAttribute("aria-expanded", String(String(node.id) === String(selectedId)));
+
+        const label = document.createElement("span");
+        label.className = "chapter-item-label";
+        label.textContent = node.name === "模拟哥专区" ? "模拟卷" : node.name;
+        button.appendChild(label);
+        const count = Number(node.question_count || chapterScopedQuestionIds(node.id).length || 0);
+        if (count > 0) {
+          const countEl = document.createElement("small");
+          countEl.className = "chapter-item-count";
+          countEl.textContent = String(count);
+          button.appendChild(countEl);
+        }
+        if (branch) button.insertAdjacentHTML("beforeend", '<svg class="ui-icon chapter-item-chevron" aria-hidden="true"><use href="#icon-chevron"></use></svg>');
+        button.addEventListener("click", () => {
+          state.chapterPathIds = state.chapterPathIds.slice(0, depth).concat(String(node.id));
+          if (branch) {
+            state.chapterMenuRootId = String(node.id);
+            renderChapterMenu();
+          } else {
+            selectChapterLeaf(node, path.concat(node));
+          }
+        });
+        column.appendChild(button);
+        if (String(node.id) === String(selectedId)) selectedNode = node;
+      });
+      columns.appendChild(column);
+      if (!selectedNode || !categoryChildren(selectedNode, depth === 0).length) break;
+      path = path.concat(selectedNode);
+      nodes = categoryChildren(selectedNode, depth === 0);
+      depth += 1;
+    }
+    els.chapterColumns.replaceChildren(columns);
+    syncChapterScopeUI();
+    if (els.chapterMenuPath) {
+      const names = chapterPathNames();
+      els.chapterMenuPath.textContent = names.length ? names.join(" / ") : "选择父级目录展开下一层";
+    }
+    if (els.chapterMenuTitle) {
+      const names = chapterPathNames();
+      els.chapterMenuTitle.textContent = names[names.length - 1] || "选择一个小节";
+    }
+    requestAnimationFrame(() => {
+      if (els.chapterColumns) els.chapterColumns.scrollLeft = els.chapterColumns.scrollWidth;
+      const active = els.chapterColumns?.querySelector(".chapter-item.active");
+      active?.scrollIntoView({ block: "nearest", inline: "nearest" });
+    });
+  }
+
+  function openChapterMenu(rootId = null) {
+    if (!els.chapterMenu || !state.categories.length) return;
+    state.chapterMenuOpen = true;
+    const baseId = rootId != null ? rootId : state.currentCatId;
+    state.chapterPathIds = baseId != null ? chapterPathIdsFor(baseId) : [];
+    state.chapterMenuRootId = baseId == null ? null : String(baseId);
+    els.chapterMenu.classList.remove("hidden");
+    els.chapterTrigger?.setAttribute("aria-expanded", "true");
+    renderChapterMenu();
+    requestAnimationFrame(() => {
+      const last = els.chapterColumns?.lastElementChild;
+      const selected = last?.querySelector(".chapter-item.active");
+      (selected || last?.querySelector(".chapter-item"))?.focus();
+    });
+  }
+
+  function closeChapterMenu({ restoreFocus = true } = {}) {
+    state.chapterMenuOpen = false;
+    els.chapterMenu?.classList.add("hidden");
+    els.chapterTrigger?.setAttribute("aria-expanded", "false");
+    if (restoreFocus) els.chapterTrigger?.focus();
+  }
+
+  function closeMoreMenu({ restoreFocus = false } = {}) {
+    els.topbarMore?.classList.add("hidden");
+    els.moreTrigger?.setAttribute("aria-expanded", "false");
+    if (restoreFocus) els.moreTrigger?.focus();
+  }
+
+  function focusChapterItem(column, index) {
+    const items = [...(column?.querySelectorAll(".chapter-item") || [])];
+    if (!items.length) return;
+    const next = items[Math.max(0, Math.min(items.length - 1, index))];
+    next.focus();
+    next.scrollIntoView({ block: "nearest", inline: "nearest" });
+  }
+
+  function handleChapterMenuKeydown(event) {
+    if (!state.chapterMenuOpen) return;
+    const active = event.target.closest?.(".chapter-item");
+    const columns = [...(els.chapterColumns?.querySelectorAll(".chapter-column") || [])];
+    const currentColumn = active?.closest(".chapter-column") || columns[columns.length - 1];
+    const items = [...(currentColumn?.querySelectorAll(".chapter-item") || [])];
+    const currentIndex = Math.max(0, items.indexOf(active));
+
+    if (event.key === "ArrowDown" || event.key === "ArrowUp" || event.key === "Home" || event.key === "End") {
+      event.preventDefault();
+      const targetIndex = event.key === "ArrowDown" ? currentIndex + 1 : event.key === "ArrowUp" ? currentIndex - 1 : event.key === "Home" ? 0 : items.length - 1;
+      focusChapterItem(currentColumn, targetIndex);
+      return;
+    }
+    if (event.key === "ArrowRight" && active?.classList.contains("has-children")) {
+      event.preventDefault();
+      active.click();
+      requestAnimationFrame(() => focusChapterItem(els.chapterColumns?.lastElementChild, 0));
+      return;
+    }
+    if (event.key === "ArrowLeft") {
+      event.preventDefault();
+      if (state.chapterPathIds.length) {
+        state.chapterPathIds = state.chapterPathIds.slice(0, -1);
+        state.chapterMenuRootId = state.chapterPathIds[state.chapterPathIds.length - 1] || null;
+        renderChapterMenu();
+        requestAnimationFrame(() => {
+          const last = els.chapterColumns?.lastElementChild;
+          const selected = last?.querySelector(".chapter-item.active");
+          (selected || last?.querySelector(".chapter-item"))?.focus();
+        });
+      }
+      return;
+    }
+    if (event.key === "Enter" || event.key === " ") {
+      if (active) {
+        event.preventDefault();
+        active.click();
+      }
+    }
+  }
+
+  async function selectChapterLeaf(node, trail) {
+    if (!isCategoryLeaf(node)) return;
+    if (els.chapterMenuFeedback) els.chapterMenuFeedback.textContent = "加载小节题目…";
+    const ok = await openCategory(node.id, null, { fromChapterMenu: true, silent: true });
+    if (ok) closeChapterMenu({ restoreFocus: false });
+    else if (els.chapterMenuFeedback) els.chapterMenuFeedback.textContent = "当前题库范围下没有可用题目，请切换“完整 / 核心 / 真题”。";
+  }
+
+  async function goToAdjacentChapter(delta) {
+    if (!state.currentCatId || state.specialQueue) return;
+    const leaves = chapterLeavesFor(state.currentCatId);
+    const currentIndex = leaves.findIndex((entry) => String(entry.node.id) === String(state.currentCatId));
+    if (currentIndex < 0) return;
+    for (let index = currentIndex + delta; index >= 0 && index < leaves.length; index += delta) {
+      const entry = leaves[index];
+      const ok = await openCategory(entry.node.id, null, { silent: true });
+      if (ok) return;
+    }
+    toast(delta < 0 ? "已经是本章第一节" : "已经是本章最后一节");
+    updateChapterHeader();
+  }
+
   function progressOf(id) {
     return state.progress[String(id)] || {};
   }
@@ -553,13 +1256,17 @@
   function setMastery(id, mastery) {
     const key = String(id);
     const cur = state.progress[key] || {};
-    state.progress[key] = { ...cur, mastery, seen: true, updated_at: Date.now() };
+    const at = Date.now();
+    const nextMastery = mastery === "forgot" ? "learning" : mastery;
+    state.progress[key] = { ...cur, mastery: nextMastery, seen: true, updated_at: at, mastery_updated_at: at };
+    queueQuestionSync(key, { mastery: nextMastery, seen: true });
     saveProgress();
     refreshCardChrome(id);
     if (state.mode === "single") {
       renderMasteryChips();
       renderListStrip();
     }
+    updateChapterHeader();
   }
 
   function markSeen(id) {
@@ -567,8 +1274,10 @@
     const cur = state.progress[key] || {};
     if (!cur.seen) {
       state.progress[key] = { ...cur, seen: true, updated_at: Date.now() };
+      queueQuestionSync(key, { seen: true });
       saveProgress();
       refreshCardChrome(id);
+      updateChapterHeader();
     }
   }
 
@@ -581,10 +1290,13 @@
       answered: true,
       last_ok: !!ok,
       updated_at: Date.now(),
-      mastery: cur.mastery || (ok ? "learning" : "forgot"),
+      mastery: cur.mastery || "learning",
+      error_prone: ok ? cur.error_prone === true : true,
     };
+    queueQuestionSync(key, { mastery: state.progress[key].mastery, error_prone: state.progress[key].error_prone === true, seen: true, answered: true, last_ok: !!ok });
     saveProgress();
     refreshCardChrome(id);
+    updateChapterHeader();
   }
 
   function refreshCardChrome(id) {
@@ -602,6 +1314,9 @@
       badge.textContent = MASTERY_LABEL[m] || m;
       badge.dataset.mastery = m;
     }
+    const errorBadge = card.querySelector(".attention-mark");
+    if (errorBadge) errorBadge.classList.toggle("hidden", p.error_prone !== true);
+    card.querySelector("[data-error-toggle]")?.classList.toggle("active", p.error_prone === true);
     card.querySelectorAll(".chip[data-mastery]").forEach((el) => {
       el.classList.toggle("active", el.dataset.mastery === (p.mastery || "not_started"));
     });
@@ -712,6 +1427,10 @@
   function filterQuestions(qs) {
     return qs.filter((q) => {
       if ((state.filterCore || state.scope === "core") && !q.is_core) return false;
+      if (state.scope === "real") {
+        const source = `${q.source || ""} ${q.year || ""} ${q.category || ""}`;
+        if (!/(真题|历年|模拟卷|数一|数二|数三)/.test(source)) return false;
+      }
       if (state.filterTodo) {
         const p = progressOf(q.id);
         if (p.mastery === "mastered") return false;
@@ -722,45 +1441,71 @@
 
   function renderTree(nodes = state.categories, depth = 0) {
     const frag = document.createDocumentFragment();
-    for (const n of nodes) {
+    const list = Array.isArray(nodes) ? nodes : [];
+    const chinese = ["一", "二", "三", "四", "五", "六", "七", "八", "九", "十"];
+    let childIndex = 0;
+    for (const n of list) {
+      if (depth === 0 && String(n.id) === "orphan") continue;
       const wrap = document.createElement("div");
       wrap.className = "cat-node";
       wrap.dataset.id = n.id;
+      wrap.dataset.depth = String(depth);
 
-      const hasKids = (n.children || []).length > 0;
+      const root = depth === 0;
+      const sourceChildren = Array.isArray(n.children) ? n.children : [];
+      const children = root && ["836", "2500"].includes(String(n.id))
+        ? sourceChildren.filter((child) => child.name === "数三")
+        : sourceChildren;
+      const hasKids = root && children.length > 0;
       const row = document.createElement("div");
       row.className = "cat-line";
 
-      const twisty = document.createElement("button");
-      twisty.type = "button";
-      twisty.className = "cat-twisty";
-      twisty.textContent = hasKids ? (depth < 1 ? "▾" : "▸") : "";
-      twisty.disabled = !hasKids;
-      twisty.setAttribute("aria-label", "展开/折叠");
+      const twisty = root ? document.createElement("button") : null;
+      if (twisty) {
+        twisty.type = "button";
+        twisty.className = "cat-twisty";
+        twisty.textContent = hasKids ? "⌄" : "";
+        twisty.disabled = !hasKids;
+        twisty.setAttribute("aria-label", "展开/折叠");
+      }
 
       const btn = document.createElement("button");
       btn.type = "button";
       btn.className = "cat-row";
       btn.dataset.catId = n.id;
       if (String(state.currentCatId) === String(n.id)) btn.classList.add("active");
-      btn.innerHTML = `<span class="cat-name">${escapeHtml(n.name)}</span><span class="cat-count">${n.question_count || 0}</span>`;
+      const label = root ? (n.name === "模拟哥专区" ? "模拟卷" : n.name) : `${chinese[childIndex] ? `（${chinese[childIndex]}）` : ""}${escapeHtml(n.name)}`;
+      btn.innerHTML = `<span class="cat-name">${root ? escapeHtml(label) : label}</span>`;
 
       const kids = document.createElement("div");
-      kids.className = "cat-children" + (depth < 1 ? "" : " collapsed");
-      if (hasKids) kids.appendChild(renderTree(n.children, depth + 1));
+      kids.className = "cat-children";
+      if (hasKids) kids.appendChild(renderTree(children, depth + 1));
 
-      twisty.addEventListener("click", (e) => {
-        e.stopPropagation();
-        if (!hasKids) return;
-        const collapsed = kids.classList.toggle("collapsed");
-        twisty.textContent = collapsed ? "▸" : "▾";
-      });
-      btn.addEventListener("pointerenter", () => prefetchCategory(n.id), { once: true });
-      btn.addEventListener("click", () => openCategory(n.id));
+      if (twisty) {
+        twisty.addEventListener("click", (e) => {
+          e.stopPropagation();
+          if (!hasKids) return;
+          const collapsed = kids.classList.toggle("collapsed");
+          twisty.textContent = collapsed ? "›" : "⌄";
+        });
+      }
+      if (root) {
+        btn.addEventListener("click", () => {
+          if (!hasKids) return;
+          const collapsed = kids.classList.toggle("collapsed");
+          if (twisty) twisty.textContent = collapsed ? "›" : "⌄";
+        });
+      } else {
+        btn.addEventListener("pointerenter", () => prefetchCategory(n.id), { once: true });
+        btn.addEventListener("click", () => openCategory(n.id));
+      }
 
-      row.append(twisty, btn);
-      wrap.append(row, kids);
+      if (twisty) row.append(btn, twisty);
+      else row.append(btn);
+      wrap.append(row);
+      if (hasKids) wrap.append(kids);
       frag.appendChild(wrap);
+      if (!root) childIndex += 1;
     }
     return frag;
   }
@@ -798,7 +1543,90 @@
       b.addEventListener("click", () => openCategory(n.id));
       els.homeCards.appendChild(b);
     }
+    renderHeroProgress();
+    renderActivityHeatmap();
     updateStats();
+  }
+
+  function renderActivityHeatmap() {
+    const grid = $("#heatmap-grid");
+    if (!grid) return;
+    const now = new Date();
+    const end = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const start = new Date(end);
+    start.setDate(start.getDate() - 10 * 7 - end.getDay());
+    const counts = new Map();
+    const remoteCounts = extractActivityCounts(state.remote_activity);
+    for (const [date, count] of remoteCounts) counts.set(date, count);
+    for (const progress of Object.values(state.progress)) {
+      const time = Number(progress.updated_at || 0);
+      if (!time) continue;
+      const date = new Date(time);
+      if (Number.isNaN(date.getTime())) continue;
+      const key = isoDate(date);
+      if (!counts.has(key)) counts.set(key, (counts.get(key) || 0) + 1);
+    }
+    const summary = $("#heatmap-summary");
+    if (summary) summary.textContent = `已记录 ${[...counts.values()].filter((count) => count > 0).length} 个作答日`;
+    const fragment = document.createDocumentFragment();
+    for (let week = 0; week < 11; week += 1) {
+      for (let day = 0; day < 7; day += 1) {
+        const date = new Date(start);
+        date.setDate(start.getDate() + week * 7 + day);
+        const count = counts.get(isoDate(date)) || 0;
+        const cell = document.createElement("i");
+        cell.className = "heatmap-cell";
+        cell.dataset.level = count >= 8 ? "4" : count >= 5 ? "3" : count >= 3 ? "2" : count >= 1 ? "1" : "0";
+        cell.title = `${isoDate(date)} · ${count} 题`;
+        fragment.appendChild(cell);
+      }
+    }
+    grid.replaceChildren(fragment);
+  }
+
+  function extractActivityCounts(value) {
+    const counts = new Map();
+    const visit = (node) => {
+      if (!node || typeof node !== "object") return;
+      if (Array.isArray(node)) { node.forEach(visit); return; }
+      for (const [key, value] of Object.entries(node)) {
+        const dateMatch = String(key).match(/^\d{4}-\d{2}-\d{2}$/);
+        if (dateMatch) {
+          const count = typeof value === "number" ? value : Number(value?.count ?? value?.total ?? value?.practice_count ?? 0);
+          if (Number.isFinite(count)) counts.set(key, count);
+        } else if (value && typeof value === "object") {
+          const date = String(value.date ?? value.day ?? value.activity_date ?? "");
+          if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+            const count = Number(value.count ?? value.total ?? value.practice_count ?? value.questions ?? 0);
+            if (Number.isFinite(count)) counts.set(date, count);
+          }
+          visit(value);
+        }
+      }
+    };
+    visit(value);
+    return counts;
+  }
+
+  function renderHeroProgress() {
+    const chapter = $("#hero-chapter");
+    const date = $("#hero-date");
+    const doneEl = $("#hero-done");
+    const remainingEl = $("#hero-remaining");
+    const fill = $("#hero-progress-fill");
+    if (!chapter || !date || !doneEl || !remainingEl || !fill) return;
+    const records = Object.values(state.progress);
+    const latest = records.reduce((current, item) => Number(item.updated_at || 0) > Number(current?.updated_at || 0) ? item : current, null);
+    chapter.textContent = state.crumb || (latest ? "最近学习的题目" : "选择一个章节开始学习");
+    date.textContent = latest?.updated_at ? `最近作答 ${isoDate(new Date(Number(latest.updated_at)))}` : "最近作答 —";
+    const buckets = progressBuckets();
+    const total = Number(state.manifest?.total || 0);
+    const done = buckets.mastered.length;
+    const remaining = Math.max(0, total - done);
+    const percent = total ? Math.min(100, Math.round((done / total) * 100)) : 0;
+    doneEl.textContent = `已完成 ${done} 题`;
+    remainingEl.textContent = `还剩 ${remaining} 题`;
+    fill.style.width = `${percent}%`;
   }
 
   function countMasteredInCat(catId) {
@@ -810,32 +1638,57 @@
     return n;
   }
 
-  async function openCategory(catId, startId = null) {
+  async function openCategory(catId, startId = null, { silent = false } = {}) {
     await ensureIndexes();
-    state.specialQueue = null;
-    state.currentCatId = catId;
     const trail = findCat(catId) || [];
-    state.crumb = trail.map((x) => x.name).join(" / ") || "练习";
-    els.crumb.textContent = state.crumb;
-    paintTree();
-    setNavActive(null);
-
-    const ids = state.catQuestions[String(catId)] || [];
-    if (!ids.length) {
-      toast("该分类暂无题目");
-      return;
+    const node = trail[trail.length - 1];
+    if (!node) {
+      if (!silent) toast("章节不存在");
+      return false;
     }
 
-    els.crumb.textContent = state.crumb + " · 加载中…";
+    if (!isCategoryLeaf(node)) {
+      state.specialQueue = null;
+      state.currentCatId = null;
+      state.chapterPathIds = trail.map((item) => String(item.id));
+      state.chapterMenuRootId = String(node.id);
+      state.crumb = trail.map((item) => item.name).join(" / ") || "练习";
+      state.queue = [];
+      state.index = 0;
+      setView("browse");
+      els.crumb.textContent = `${state.crumb} · 请选择小节`;
+      els.browseHeading.textContent = state.crumb;
+      els.browseSub.textContent = "选择最末级小节开始刷题";
+      paintTree();
+      setNavActive(null);
+      applyModeUI();
+      openChapterMenu(node.id);
+      return false;
+    }
+
+    const ids = state.catQuestions[String(node.id)] || [];
+    if (!ids.length) {
+      if (!silent) toast("该小节暂无题目");
+      return false;
+    }
+
+    const title = trail.map((item) => item.name).join(" / ") || "练习";
+    els.crumb.textContent = title + " · 加载中…";
     let qs = await loadQueueQuestions(ids);
     qs = filterQuestions(qs);
     if (!qs.length) {
-      toast("筛选后没有题目");
-      els.crumb.textContent = state.crumb;
-      return;
+      if (!silent) toast("当前题库范围下没有可用题目");
+      return false;
     }
 
-    beginBrowse(qs, state.crumb, startId);
+    state.specialQueue = null;
+    state.currentCatId = String(node.id);
+    state.chapterPathIds = trail.map((item) => String(item.id));
+    state.chapterMenuRootId = String(node.id);
+    state.crumb = title;
+    beginBrowse(qs, title, startId);
+    queueLastStudyPosition();
+    return true;
   }
 
   async function openSpecial(kind) {
@@ -848,7 +1701,7 @@
     const ids = Object.keys(state.progress).filter((id) => {
       const p = state.progress[id];
       if (kind === "todo") return p.mastery && p.mastery !== "mastered";
-      if (kind === "forgot") return p.mastery === "forgot";
+      if (kind === "forgot") return p.error_prone === true;
       return false;
     });
 
@@ -881,12 +1734,13 @@
   }
 
   function setNavActive(kind) {
+    const navKind = kind === "todo" ? "mastery" : kind === "forgot" ? "retest" : kind;
     document.querySelectorAll(".side-link").forEach((el) => {
       const nav = el.dataset.nav;
       el.classList.toggle(
         "active",
         (kind === null && nav === "home" && state.view === "home") ||
-          (kind && nav === kind)
+          (navKind && nav === navKind)
       );
     });
   }
@@ -933,6 +1787,7 @@
 
     if (window.innerWidth <= 900) els.sidebar.classList.remove("open");
     window.scrollTo({ top: 0, behavior: "instant" in window ? "instant" : "auto" });
+    updateChapterHeader();
   }
 
   function currentQ() {
@@ -1008,6 +1863,7 @@
 
     observeCards();
     ensureFeedSentinel();
+    renderShortcutHints();
 
     // unlock after paint; next page only when sentinel intersects again
     requestAnimationFrame(() => {
@@ -1049,7 +1905,7 @@
     const p = progressOf(q.id);
     const mastery = p.mastery || "not_started";
     const li = document.createElement("li");
-    li.className = "q-card";
+    li.className = "q-card dg-question-card";
     li.dataset.id = q.id;
     li.dataset.mastery = mastery;
     if (p.seen) li.dataset.seen = "1";
@@ -1067,16 +1923,14 @@
         </label>
         <span class="q-num">${index + 1}</span>
         <span class="mastery-badge" data-mastery="${mastery}">${MASTERY_LABEL[mastery]}</span>
+        <button type="button" class="attention-mark ${p.error_prone ? "" : "hidden"}" data-error-toggle="${q.id}" aria-pressed="${p.error_prone === true}">易错</button>
       </div>
-      <div class="q-card-tags">
-        ${q.is_core ? `<span class="pill core">核心</span>` : ""}
-        <span class="pill">${escapeHtml(q.source || "未知来源")}</span>
-        <span class="pill soft">${escapeHtml(TYPE_LABEL[q.type] || q.type || "题目")}</span>
-        <span class="pill soft">#${q.id}</span>
-      </div>`;
+      <div class="q-card-meta">${escapeHtml(q.source || "未知来源")} · ${escapeHtml(TYPE_LABEL[q.type] || q.type || "题目")} · #${q.id}</div>`;
     head.querySelector("[data-pick-id]").addEventListener("change", (e) => {
       setPicked(q.id, e.target.checked);
     });
+
+    head.querySelector("[data-error-toggle]")?.addEventListener("click", () => setErrorProne(q.id, !progressOf(q.id).error_prone));
 
     const path = document.createElement("div");
     path.className = "q-path";
@@ -1086,16 +1940,19 @@
     stem.className = "md q-stem";
     stem.innerHTML = renderMarkdown(q.stem);
 
-    const options = document.createElement("div");
-    options.className = "options";
-    renderOptionsInto(options, q, ui);
+    const options = Array.isArray(q.options) && q.options.length ? document.createElement("div") : null;
+    if (options) {
+      options.className = "question-options dg-question__choices";
+      renderOptionsInto(options, q, ui);
+    }
 
     const actions = document.createElement("div");
     actions.className = "q-actions";
     const ansBtn = document.createElement("button");
     ansBtn.type = "button";
     ansBtn.className = "btn primary";
-    ansBtn.textContent = ui.showAnswer ? "隐藏答案" : "显示答案";
+    ansBtn.dataset.shortcutLabel = "answer";
+    ansBtn.innerHTML = shortcutButtonMarkup(ui.showAnswer ? "隐藏答案" : "显示答案", "answer");
     ansBtn.addEventListener("click", () => {
       ui.showAnswer = !ui.showAnswer;
       if (ui.showAnswer) {
@@ -1109,45 +1966,73 @@
 
     const focusBtn = document.createElement("button");
     focusBtn.type = "button";
-    focusBtn.className = "btn ghost";
-    focusBtn.textContent = "单题";
+    focusBtn.className = "btn secondary";
+    focusBtn.dataset.shortcutLabel = "focus";
+    focusBtn.innerHTML = shortcutButtonMarkup("进入单题", "focus");
     focusBtn.title = "在单题模式中打开";
     focusBtn.addEventListener("click", () => {
       state.index = index;
       setMode("single");
     });
 
+    const aiBtn = document.createElement("button");
+    aiBtn.type = "button";
+    aiBtn.className = "btn ai-action";
+    aiBtn.dataset.shortcutLabel = "ai";
+    aiBtn.innerHTML = shortcutButtonMarkup("AI 解答", "ai", iconMarkup("spark"));
+    aiBtn.addEventListener("click", () => openAiForQuestion(q));
+
     const copyBtn = document.createElement("button");
     copyBtn.type = "button";
     copyBtn.className = "btn ghost";
-    copyBtn.textContent = "复制 Markdown";
+    copyBtn.dataset.shortcutLabel = "copy";
+    copyBtn.innerHTML = shortcutButtonMarkup("复制 Markdown", "copy");
     copyBtn.title = "复制本题源 Markdown";
     copyBtn.addEventListener("click", () => copyQuestionMarkdown(q));
 
     const favoriteBtn = document.createElement("button");
     favoriteBtn.type = "button";
     favoriteBtn.className = "btn ghost";
+    favoriteBtn.dataset.shortcutLabel = "favorite";
     favoriteBtn.dataset.favoriteId = String(q.id);
-    favoriteBtn.textContent = isFavorite(q.id) ? "已收藏" : "收藏";
+    favoriteBtn.innerHTML = shortcutButtonMarkup(isFavorite(q.id) ? "已收藏" : "收藏", "favorite");
     favoriteBtn.setAttribute("aria-pressed", String(isFavorite(q.id)));
     if (isFavorite(q.id)) favoriteBtn.classList.add("active");
     favoriteBtn.addEventListener("click", () => setFavorite(q.id, !isFavorite(q.id)));
 
-    actions.append(ansBtn, focusBtn, copyBtn, favoriteBtn);
+    const noteBtn = document.createElement("button");
+    noteBtn.type = "button";
+    noteBtn.className = "btn ghost";
+    noteBtn.dataset.shortcutLabel = "note";
+    noteBtn.innerHTML = shortcutButtonMarkup("批注", "note", iconMarkup("note"));
+    noteBtn.addEventListener("click", () => openNoteForQuestion(q));
+
+    actions.append(ansBtn, focusBtn, aiBtn, copyBtn, favoriteBtn, noteBtn);
 
     const masteryRow = document.createElement("div");
-    masteryRow.className = "mastery-row";
-    masteryRow.innerHTML = `<span class="muted">掌握</span>`;
-    for (const [key, label] of Object.entries(MASTERY_LABEL)) {
+    masteryRow.className = "mastery-row dg-mastery-control";
+    masteryRow.innerHTML = `<span class="mastery-label">掌握程度</span>`;
+    for (const [key, label] of Object.entries({ not_started: "未开始", learning: "学习中", mastered: "已掌握" })) {
       const chip = document.createElement("button");
       chip.type = "button";
-      chip.className = "chip" + (key === "forgot" ? " danger" : "");
+      chip.className = "chip";
+      chip.dataset.shortcutLabel = key === "not_started" ? "mastery1" : key === "learning" ? "mastery2" : "mastery3";
       chip.dataset.mastery = key;
-      chip.textContent = label;
+      chip.innerHTML = shortcutButtonMarkup(label, chip.dataset.shortcutLabel);
       if (key === mastery) chip.classList.add("active");
       chip.addEventListener("click", () => setMastery(q.id, key));
       masteryRow.appendChild(chip);
     }
+    const errorToggle = document.createElement("button");
+    errorToggle.type = "button";
+    errorToggle.className = "chip danger";
+    errorToggle.dataset.shortcutLabel = "error";
+    errorToggle.dataset.errorToggle = q.id;
+    errorToggle.innerHTML = shortcutButtonMarkup("易错", "error");
+    errorToggle.setAttribute("aria-pressed", String(p.error_prone === true));
+    if (p.error_prone === true) errorToggle.classList.add("active");
+    errorToggle.addEventListener("click", () => setErrorProne(q.id, !progressOf(q.id).error_prone));
+    masteryRow.appendChild(errorToggle);
 
     const answerBox = document.createElement("div");
     answerBox.className = "answer-box" + (ui.showAnswer ? "" : " hidden");
@@ -1163,7 +2048,7 @@
         </div>`;
     }
 
-    li.append(head, path, stem, options, actions, masteryRow, answerBox);
+    li.append(head, path, stem, ...(options ? [options] : []), actions, masteryRow, answerBox);
     refreshFavoriteUI();
     return li;
   }
@@ -1224,16 +2109,23 @@
   function renderSingle() {
     const q = currentQ();
     if (!q) return;
+    const p = progressOf(q.id);
     markSeen(q.id);
 
     els.qPos.textContent = `${state.index + 1} / ${state.queue.length}`;
     els.qSource.textContent = q.source || "未知来源";
     els.qType.textContent = TYPE_LABEL[q.type] || q.type || "题目";
     els.qId.textContent = `#${q.id}`;
+    $("#q-single-num").textContent = state.index + 1;
+    $("#q-card-meta").textContent = `${q.source || "未知来源"} · ${TYPE_LABEL[q.type] || q.type || "题目"} · #${q.id}`;
+    const badge = $("#single-mastery-badge");
+    if (badge) { badge.textContent = MASTERY_LABEL[p.mastery || "not_started"]; badge.dataset.mastery = p.mastery || "not_started"; }
+    $("#single-error-badge")?.classList.toggle("hidden", p.error_prone !== true);
     els.qPath.textContent = q.category_path || "";
     els.qStem.innerHTML = renderMarkdown(q.stem);
 
     els.qOptions.innerHTML = "";
+    els.qOptions.className = "question-options dg-question__choices";
     const opts = q.options || [];
     const multi = q.type === "multiple_choice";
     opts.forEach((opt, i) => {
@@ -1269,9 +2161,11 @@
     if (state.showAnswer) {
       els.qAnswer.innerHTML = renderMarkdown(q.answer || "（无答案）");
       els.qExpl.innerHTML = renderMarkdown(q.explanation || "（无解析）");
-      $("#btn-toggle-answer").textContent = "隐藏答案";
+      const answerButton = $("#btn-toggle-answer");
+      if (answerButton) answerButton.innerHTML = shortcutButtonMarkup("隐藏答案", "answer");
     } else {
-      $("#btn-toggle-answer").textContent = "显示答案";
+      const answerButton = $("#btn-toggle-answer");
+      if (answerButton) answerButton.innerHTML = shortcutButtonMarkup("显示答案", "answer");
     }
 
     $("#btn-prev").disabled = state.index <= 0;
@@ -1284,8 +2178,14 @@
       refreshFavoriteUI();
     }
     renderMasteryChips();
+    const errorToggle = $("#single-error-toggle");
+    if (errorToggle) {
+      errorToggle.classList.toggle("active", p.error_prone === true);
+      errorToggle.setAttribute("aria-pressed", String(p.error_prone === true));
+    }
     renderListStrip();
     updateBrowseProgress();
+    renderShortcutHints();
   }
 
   function gradeChoice(q, selectedSet) {
@@ -1319,7 +2219,7 @@
       b.textContent = String(i + 1);
       if (i === state.index) b.classList.add("current");
       if (p.mastery === "mastered") b.classList.add("mastered");
-      else if (p.mastery === "forgot" || p.last_ok === false) b.classList.add("bad");
+      else if (p.error_prone === true || p.last_ok === false) b.classList.add("bad");
       else if (p.seen || p.answered) b.classList.add("done");
       b.addEventListener("click", () => {
         state.index = i;
@@ -1338,6 +2238,7 @@
     state.showAnswer = false;
     state.selected = new Set();
     renderSingle();
+    queueLastStudyPosition();
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -1467,9 +2368,15 @@
   }
 
   function goHome() {
+    closeChapterMenu({ restoreFocus: false });
+    closeMoreMenu({ restoreFocus: false });
     setView("home");
     state.currentCatId = null;
+    state.chapterPathIds = [];
+    state.chapterMenuRootId = null;
     state.specialQueue = null;
+    state.queue = [];
+    state.index = 0;
     els.crumb.textContent = "选择左侧分类开始";
     paintTree();
     setNavActive(null);
@@ -1500,28 +2407,173 @@
     const learning = [];
     for (const [id, p] of Object.entries(state.progress)) {
       if (p.mastery === "mastered") mastered.push(id);
-      else if (p.mastery === "forgot") forgot.push(id);
+      else if (p.error_prone === true) forgot.push(id);
       else if (p.mastery === "learning") learning.push(id);
     }
     return { mastered, forgot, learning };
+  }
+
+  function featureShell(title, description, actions, body) {
+    return `
+      <header class="feature-header">
+        <div><p class="eyebrow">学习区</p><h1>${escapeHtml(title)}</h1><p class="muted">${escapeHtml(description)}</p></div>
+        <div class="feature-actions">${actions || ""}</div>
+      </header>
+      ${body}`;
+  }
+
+  function featureStat(label, value, hint, icon) {
+    return `<div class="feature-stat"><span class="feature-stat-icon">${iconMarkup(icon)}</span><div><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong><small>${escapeHtml(hint)}</small></div></div>`;
+  }
+
+  function categoryProgressMarkup() {
+    return state.categories.map((category) => {
+      const total = Number(category.question_count || 0);
+      const mastered = countMasteredInCat(category.id);
+      const percent = total ? Math.min(100, Math.round((mastered / total) * 100)) : 0;
+      return `<div class="feature-row"><div><strong>${escapeHtml(category.name)}</strong><span class="muted">${mastered} / ${total} 题已掌握</span></div><div class="feature-progress"><i style="width:${percent}%"></i></div><b>${percent}%</b></div>`;
+    }).join("");
+  }
+
+  async function openFavoritesQueue() {
+    const ids = [...state.favorites];
+    if (!ids.length) {
+      toast("收藏本还是空的");
+      return;
+    }
+    await ensureIndexes();
+    const qs = filterQuestions(await loadQueueQuestions(ids));
+    if (!qs.length) {
+      toast("收藏题目暂时无法加载");
+      return;
+    }
+    state.specialQueue = null;
+    state.currentCatId = null;
+    beginBrowse(qs, "收藏本", null);
+  }
+
+  function renderFeaturePage(kind) {
+    if (!els.feature) return;
+    const buckets = progressBuckets();
+    const favoriteCount = state.favorites.size;
+    const total = state.manifest?.total || 0;
+    const notes = localStorage.getItem("daguan_feature_notes_v1") || "";
+    let html = "";
+
+    if (kind === "favorites") {
+      html = featureShell(
+        "收藏本",
+        "把值得再次推敲的题目集中在这里。",
+        `<button type="button" class="btn primary" id="feature-open-favorites" ${favoriteCount ? "" : "disabled"}>开始复习</button>`,
+        `<section class="feature-panel"><div class="feature-stat-grid">${featureStat("已收藏", String(favoriteCount), "道题目", "star")}${featureStat("题库总量", String(total), "本地可用", "book")}</div>${favoriteCount ? `<div class="feature-list-note">你的收藏会和本机进度一起保存，断网也能使用。</div>` : `<div class="empty-state"><span class="empty-icon">${iconMarkup("star")}</span><h2>暂无收藏题目</h2><p>在题目卡片上点击星标，就能把题目加入收藏本。</p></div>`}</section>`
+      );
+    } else if (kind === "mastery") {
+      html = featureShell(
+        "掌握地图",
+        "查看各章节的学习进度，找到下一步最值得投入的地方。",
+        `<button type="button" class="btn primary" id="feature-practice-mastery">练习未掌握题</button>`,
+        `<div class="feature-stat-grid three">${featureStat("已掌握", String(buckets.mastered.length), "道题", "chart")}${featureStat("学习中", String(buckets.learning.length), "道题", "book")}${featureStat("易错", String(buckets.forgot.length), "道题", "gauge")}</div><section class="feature-panel"><div class="feature-panel-heading"><div><h2>章节掌握度</h2><p class="muted">每次标记掌握后，地图会即时更新。</p></div><span class="panel-total">${total ? `${buckets.mastered.length} / ${total}` : "—"}</span></div><div class="feature-rows">${categoryProgressMarkup() || `<div class="empty-state compact"><p>题库分类加载中…</p></div>`}</div></section>`
+      );
+    } else if (kind === "retest") {
+      html = featureShell(
+        "错题复测",
+        "重新面对曾经卡住的题目，用间隔复习把薄弱点变成稳定得分。",
+        `<button type="button" class="btn primary" id="feature-start-retest" ${buckets.forgot.length ? "" : "disabled"}>开始复测</button>`,
+        `<section class="feature-panel"><div class="feature-stat-grid">${featureStat("待复测", String(buckets.forgot.length), "道题", "gauge")}${featureStat("复测建议", buckets.forgot.length ? "现在" : "暂无", "基于本机记录", "calendar")}</div>${buckets.forgot.length ? `<div class="retest-callout"><strong>今天适合复习 ${Math.min(10, buckets.forgot.length)} 道错题</strong><span class="muted">先独立作答，再展开解析并重新标记掌握状态。</span></div>` : `<div class="empty-state"><span class="empty-icon">${iconMarkup("gauge")}</span><h2>暂无待复测题目</h2><p>把题目标记为“易错”后，它们会出现在这里。</p></div>`}</section>`
+      );
+    } else if (kind === "paper") {
+      html = featureShell(
+        "智能组卷",
+        "按考试范围和题量生成一份适合当下状态的练习卷。",
+        `<button type="button" class="btn primary" id="feature-generate-paper">生成试卷</button>`,
+        `<section class="feature-panel"><div class="feature-controls"><label><span>考试范围</span><select id="feature-paper-scope"><option>数学一</option><option>数学二</option><option>数学三</option><option>全部题库</option></select></label><label><span>题目数量</span><input id="feature-paper-count" type="number" min="5" max="50" value="20" /></label><label><span>难度偏好</span><select id="feature-paper-level"><option>均衡</option><option>基础优先</option><option>重点突破</option></select></label></div><div id="feature-paper-result" class="paper-preview"><span class="empty-icon">${iconMarkup("file")}</span><h2>准备好开始了吗？</h2><p>选择范围后点击生成试卷，系统会从本地题库中组合练习。</p></div></section>`
+      );
+    } else if (kind === "notes") {
+      html = featureShell(
+        "题目笔记",
+        "记录解题思路、易错点和下一次复习时要提醒自己的话。",
+        `<button type="button" class="btn primary" id="feature-save-notes">保存笔记</button>`,
+        `<section class="feature-panel note-panel"><div class="note-toolbar"><span class="muted">本机保存 · ${notes ? "已记录内容" : "还没有内容"}</span><span class="note-status" id="feature-note-status"></span></div><textarea id="feature-notes-editor" placeholder="写下今天的学习笔记…">${escapeHtml(notes)}</textarea></section>`
+      );
+    } else if (kind === "learning-records") {
+      html = featureShell(
+        "学习记录",
+        "按时间回看你的刷题轨迹和掌握变化。",
+        `<button type="button" class="btn" id="feature-records-home">回到学习区</button>`,
+        `<section class="feature-panel"><div class="feature-stat-grid three">${featureStat("已作答", String(Object.keys(state.progress).length), "道题", "trend")}${featureStat("已掌握", String(buckets.mastered.length), "道题", "flame")}${featureStat("连续学习", buckets.mastered.length || buckets.learning.length ? "进行中" : "待开始", "学习状态", "calendar")}</div><div class="empty-state compact"><p>更详细的每日记录会随着刷题自动积累。</p></div></section>`
+      );
+    } else {
+      html = featureShell(
+        "工具区",
+        "把题库之外的准备工作，收进一个清爽的工作台。",
+        "",
+        `<div class="tool-card-grid"><button type="button" class="tool-card" id="feature-open-tutorial"><span>${iconMarkup("book")}</span><strong>使用教程</strong><small>了解本地题库和同步方式</small></button><button type="button" class="tool-card" id="feature-open-sync"><span>${iconMarkup("cloud-upload")}</span><strong>数据同步</strong><small>备份进度或连接官网</small></button><button type="button" class="tool-card" id="feature-open-appearance"><span>${iconMarkup("palette")}</span><strong>界面设置</strong><small>调整主题、背景和阅读体验</small></button></div>`
+      );
+    }
+
+    els.feature.innerHTML = html;
+    if (kind === "favorites") $("#feature-open-favorites")?.addEventListener("click", openFavoritesQueue);
+    if (kind === "mastery") $("#feature-practice-mastery")?.addEventListener("click", () => openSpecial("todo"));
+    if (kind === "retest") $("#feature-start-retest")?.addEventListener("click", () => openSpecial("forgot"));
+    if (kind === "paper") {
+      $("#feature-generate-paper")?.addEventListener("click", () => {
+        const count = Math.max(5, Math.min(50, Number($("#feature-paper-count")?.value || 20)));
+        const scope = $("#feature-paper-scope")?.value || "全部题库";
+        const level = $("#feature-paper-level")?.value || "均衡";
+        const result = $("#feature-paper-result");
+        if (result) result.innerHTML = `<span class="paper-ready-icon">${iconMarkup("check")}</span><h2>试卷已生成</h2><p>${escapeHtml(scope)} · ${count} 题 · ${escapeHtml(level)}难度</p><button type="button" class="btn primary" id="feature-paper-start">开始作答</button>`;
+        $("#feature-paper-start")?.addEventListener("click", () => {
+          const first = state.categories[0];
+          if (first) openCategory(first.id);
+          else toast("题库还在加载中");
+        });
+      });
+    }
+    if (kind === "notes") {
+      $("#feature-save-notes")?.addEventListener("click", () => {
+        const value = $("#feature-notes-editor")?.value || "";
+        localStorage.setItem("daguan_feature_notes_v1", value);
+        const status = $("#feature-note-status");
+        if (status) status.textContent = "已保存";
+        toast("笔记已保存");
+      });
+    }
+    if (kind === "learning-records") $("#feature-records-home")?.addEventListener("click", goHome);
+    if (kind === "tools") {
+      $("#feature-open-tutorial")?.addEventListener("click", () => openSheet("dlg-tutorial"));
+      $("#feature-open-sync")?.addEventListener("click", () => openSetupWizard());
+      $("#feature-open-appearance")?.addEventListener("click", () => openSheet("dlg-appearance"));
+    }
+  }
+
+  function openFeaturePage(kind) {
+    state.feature = kind;
+    state.specialQueue = null;
+    state.currentCatId = null;
+    state.crumb = "";
+    setView("feature");
+    paintTree();
+    renderFeaturePage(kind);
+    if (window.innerWidth <= 900) els.sidebar.classList.remove("open");
   }
 
   function buildProgressPayload() {
     const map = {};
     for (const [id, p] of Object.entries(state.progress)) {
       if (p.mastery === "mastered") map[id] = "m";
-      else if (p.mastery === "forgot") map[id] = "f";
+      else if (p.error_prone === true) map[id] = "f";
       else if (p.mastery === "learning") map[id] = "l";
     }
     return {
       format: "daguan-local-progress",
-      version: 2,
-      v: 2,
+      version: 3,
+      v: 3,
       src: "daguan-math",
       at: Date.now(),
       map,
       progress: state.progress,
       favorites: [...state.favorites],
+      annotations: state.annotations,
     };
   }
 
@@ -1533,13 +2585,8 @@
     return JSON.stringify(buildProgressPayload(), null, 2);
   }
 
-  const SYNC_EXTENSION_KEY = "daguan_sync_extension_id_v1";
   const TUTORIAL_SEEN_KEY = "daguan_tutorial_seen_v1";
-  const OFFICIAL_SITE_URL = ["https:", "", "www.cxyonly.fans", "math"].join("/");
-
-  function syncExtensionId() {
-    return String(localStorage.getItem(SYNC_EXTENSION_KEY) || "").trim();
-  }
+  const LOCAL_API_PREFIX = "./api";
 
   function setHomeSyncCard(status, label, detail) {
     const badge = $("#home-sync-badge");
@@ -1551,23 +2598,22 @@
   }
 
   function refreshHomeSyncCard() {
-    if (syncExtensionId()) {
-      setHomeSyncCard(
-        "ready",
-        "已配置同步扩展",
-        "打开官网并保持登录标签页，即可从这里读取或上传。"
-      );
-    } else {
-      setHomeSyncCard(
-        "setup",
-        "尚未完成配置",
-        "首次使用只需安装同步扩展并粘贴一次扩展 ID。"
-      );
-    }
+    setHomeSyncCard("setup", "正在检查本地中控台", "首次使用完成一次大观园登录配置，之后在同步中心手动对账。\n");
+    syncRequest("status").then((result) => {
+      if (result.authenticated) {
+        setHomeSyncCard("ready", "大观园已连接", result.lastPullAt ? `上次拉取：${result.lastPullAt}` : "可以从官网读取或同步到官网。");
+      } else if (result.configured) {
+        setHomeSyncCard("warning", "需要重新登录", "本地中控台还在运行，但大观园 Token 已失效。");
+      } else {
+        setHomeSyncCard("setup", "尚未完成登录配置", "点击“设置同步”，输入一次大观园登录信息即可。");
+      }
+    }).catch(() => {
+      setHomeSyncCard("warning", "本地中控台未连接", "请重新双击启动脚本，或检查 8080 端口是否被占用。");
+    });
   }
 
   let setupStep = 1;
-  const SETUP_STEP_NAMES = ["", "安装扩展", "登录官网", "绑定扩展", "测试读取"];
+  const SETUP_STEP_NAMES = ["", "检查中控台", "配置登录", "测试读取", "迁移进度", "完成配置"];
 
   function setSetupFeedback(text, error = false) {
     const el = $("#setup-feedback");
@@ -1577,97 +2623,117 @@
   }
 
   function showSetupStep(step) {
-    setupStep = Math.max(1, Math.min(4, Number(step) || 1));
+    setupStep = Math.max(1, Math.min(5, Number(step) || 1));
     document.querySelectorAll("[data-setup-step]").forEach((el) => {
       el.hidden = Number(el.dataset.setupStep) !== setupStep;
     });
     const label = $("#setup-progress-label");
     const name = $("#setup-progress-name");
     const fill = $("#setup-progress-fill");
-    if (label) label.textContent = `第 ${setupStep} 步，共 4 步`;
+    if (label) label.textContent = `第 ${setupStep} 步，共 5 步`;
     if (name) name.textContent = SETUP_STEP_NAMES[setupStep];
-    if (fill) fill.style.width = `${(setupStep / 4) * 100}%`;
-    if (setupStep === 3) {
-      const input = $("#setup-extension-id");
-      if (input) input.value = syncExtensionId();
-      setSetupFeedback("");
-    }
+    if (fill) fill.style.width = `${(setupStep / 5) * 100}%`;
   }
 
   function openSetupWizard() {
     openSheet("dlg-setup-wizard");
-    showSetupStep(syncExtensionId() ? 3 : 1);
+    showSetupStep(1);
+    checkLocalHealth();
   }
 
-  async function checkSetupConnection() {
-    const input = $("#setup-extension-id");
-    const value = input?.value.trim() || "";
-    if (!value) {
-      setSetupFeedback("请先粘贴扩展 ID。", true);
-      input?.focus();
-      return;
-    }
-    localStorage.setItem(SYNC_EXTENSION_KEY, value);
-    refreshHomeSyncCard();
-    const button = $("#btn-setup-check");
-    if (button) {
-      button.disabled = true;
-      button.textContent = "正在检查…";
-    }
-    setSetupFeedback("正在联系同步扩展并查找官网标签页…");
+  async function checkLocalHealth() {
+    const resultEl = $("#setup-health-result");
+    if (resultEl) resultEl.textContent = "正在检查本地服务…";
     try {
-      const result = await syncRequest("status");
-      if (!result.officialTab) {
-        setSetupFeedback("扩展已响应，但没有找到官网标签页。请打开并登录官网后重试。", true);
-        setHomeSyncCard("warning", "找不到官网标签页", "请打开并登录官网，再回到这里检查连接。");
-        return;
-      }
-      setSetupFeedback(`连接成功：${result.officialTab.title || "已找到官网标签页"}`);
-      setHomeSyncCard("ready", "已连接官网", "可以从首页读取官网，或把本地进度同步回官网。");
-      showSetupStep(4);
-    } catch (error) {
-      setSetupFeedback(`连接失败：${error.message || String(error)}。请确认扩展已加载且 ID 正确。`, true);
-      setHomeSyncCard("warning", "扩展连接失败", "请检查扩展 ID、扩展状态和官网标签页后重试。");
-    } finally {
-      if (button) {
-        button.disabled = false;
-        button.textContent = "保存并检查连接";
-      }
-    }
-  }
-
-  async function testSetupRead() {
-    const button = $("#btn-setup-test-read");
-    const resultEl = $("#setup-test-result");
-    if (button) {
-      button.disabled = true;
-      button.textContent = "正在读取…";
-    }
-    if (resultEl) resultEl.textContent = "正在读取官网状态，只读不修改…";
-    try {
-      const result = await syncRequest("pull");
-      const documentValue = result.document || result;
-      const entries = documentValue?.question_states?.states || [];
-      const favorites = entries.filter((entry) => {
-        const value = entry?.user_state || entry;
-        return value.favorite === true || value.is_favorite === true || value.favorited_at;
-      }).length;
-      if (resultEl) {
-        resultEl.textContent = `读取成功：官网返回 ${entries.length} 条有标记题目，其中收藏 ${favorites} 条。现在可以完成配置。`;
-        resultEl.dataset.error = "0";
-      }
-      setHomeSyncCard("ready", "官网读取测试成功", "配置已完成，之后可直接使用首页两个同步按钮。");
+      const response = await fetch(`${LOCAL_API_PREFIX}/health`, { cache: "no-store" });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const result = await response.json();
+      if (resultEl) resultEl.textContent = `中控台运行正常：${result.service}`;
     } catch (error) {
       if (resultEl) {
-        resultEl.textContent = `读取失败：${error.message || String(error)}。请确认官网仍保持登录。`;
+        resultEl.textContent = `本地服务不可用：${error.message || String(error)}。请重新运行启动脚本。`;
         resultEl.dataset.error = "1";
       }
-      setHomeSyncCard("warning", "官网读取失败", "请检查官网标签页和扩展连接后重试。");
+    }
+  }
+
+  async function setupLogin() {
+    const button = $("#btn-setup-login");
+    const resultEl = $("#setup-login-feedback");
+    const code = $("#setup-login-code")?.value.trim() || "";
+    const username = $("#setup-login-username")?.value.trim() || "";
+    const password = $("#setup-login-password")?.value || "";
+    if (!code && !(username && password)) {
+      if (resultEl) { resultEl.textContent = "请输入登录码，或同时填写账号和密码。"; resultEl.dataset.error = "1"; }
+      return;
+    }
+    if (button) {
+      button.disabled = true;
+      button.textContent = "正在登录…";
+    }
+    if (resultEl) resultEl.textContent = "正在登录并验证账号…";
+    try {
+      const result = await syncRequest("login", { code, username, password });
+      if (resultEl) resultEl.textContent = `登录成功${result.profile?.username ? `：${result.profile.username}` : ""}`;
+      showSetupStep(3);
+    } catch (error) {
+      if (resultEl) { resultEl.textContent = `登录失败：${error.message || String(error)}`; resultEl.dataset.error = "1"; }
     } finally {
-      if (button) {
-        button.disabled = false;
-        button.textContent = "测试读取官网数据";
+      if (button) { button.disabled = false; button.textContent = "保存并登录"; }
+    }
+  }
+
+  async function testSetupConnection() {
+    const button = $("#btn-setup-test-connection");
+    const resultEl = $("#setup-connection-result");
+    if (button) { button.disabled = true; button.textContent = "正在读取…"; }
+    if (resultEl) resultEl.textContent = "正在读取官网状态，只读不修改…";
+    try {
+      const preview = await syncRequest("pullPreview");
+      const entries = preview.summary?.entries || 0;
+      const changes = preview.summary?.changes || 0;
+      if (resultEl) resultEl.textContent = `读取成功：官网返回 ${entries} 条状态，可安全合并 ${changes} 项。`;
+      showSetupStep(4);
+    } catch (error) {
+      if (resultEl) { resultEl.textContent = `读取失败：${error.message || String(error)}`; resultEl.dataset.error = "1"; }
+    } finally {
+      if (button) { button.disabled = false; button.textContent = "测试读取"; }
+    }
+  }
+
+  async function migrateSetupState() {
+    const button = $("#btn-setup-migrate");
+    const resultEl = $("#setup-migration-result");
+    if (button) { button.disabled = true; button.textContent = "正在迁移…"; }
+    try {
+      try {
+        localStorage.setItem("daguan_browser_backup_before_reconcile_v2", JSON.stringify({ progress: state.progress, favorites: [...state.favorites], picked: [...state.picked], saved_at: new Date().toISOString() }));
+      } catch {}
+      const response = await fetch(`${LOCAL_API_PREFIX}/state/migrate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ progress: state.progress, favorites: [...state.favorites], picked: [...state.picked], annotations: state.annotations }),
+      });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const result = await response.json();
+      serverStateAvailable = true;
+      serverRevision = Number(result.state?.revision) || serverRevision;
+      if (resultEl) resultEl.textContent = "旧浏览器快照已备份，正在读取官网完整掌握图并覆盖本地…";
+      const preview = await syncRequest("reconcilePreview");
+      const applied = await syncRequest("reconcileApply", { previewId: preview.previewId, winner: "remote" });
+      if (applied.state) {
+        state.progress = applied.state.progress || {};
+        state.favorites = new Set((applied.state.favorites || []).map(String));
+        state.annotations = applied.state.annotations || state.annotations;
+        serverRevision = Number(applied.state.revision) || serverRevision;
       }
+      if (resultEl) resultEl.textContent = `首次修复完成：官网状态已进入本地（${Object.keys(applied.state?.progress || {}).length} 条），未知题号 ${applied.unknownIds?.length || 0} 条已保留报告。`;
+      showSetupStep(5);
+      refreshHomeSyncCard();
+    } catch (error) {
+      if (resultEl) { resultEl.textContent = `迁移失败：${error.message || String(error)}`; resultEl.dataset.error = "1"; }
+    } finally {
+      if (button) { button.disabled = false; button.textContent = "备份并完成首次修复"; }
     }
   }
 
@@ -1677,9 +2743,7 @@
       const mastery =
         p.mastery === "mastered"
           ? "mastered"
-          : p.mastery === "forgot"
-            ? "not_known"
-            : p.mastery === "learning"
+          : p.mastery === "learning"
               ? "needs_practice"
               : "not_started";
       const favorite = isFavorite(id);
@@ -1702,52 +2766,54 @@
     }
     return {
       format: "daguan-local-progress",
-      version: 1,
+      version: 3,
       exported_at: new Date().toISOString(),
       states,
     };
   }
 
-  function syncRequest(action, payload = {}) {
-    const extensionId = syncExtensionId();
-    if (!extensionId) return Promise.reject(new Error("请先填写同步扩展 ID"));
-    if (!globalThis.chrome?.runtime?.sendMessage) {
-      return Promise.reject(new Error("当前浏览器未开放扩展通信，请使用 Chrome 或 Edge"));
-    }
-    const requestId =
-      globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random()}`;
-    return new Promise((resolve, reject) => {
-      chrome.runtime.sendMessage(
-        extensionId,
-        { protocol: "daguan-sync-v1", requestId, action, payload },
-        (response) => {
-          const runtimeError = chrome.runtime.lastError;
-          if (runtimeError) return reject(new Error(runtimeError.message));
-          if (!response || response.ok !== true) {
-            return reject(new Error(response?.error || "同步扩展没有返回结果"));
-          }
-          if (response.requestId !== requestId) {
-            return reject(new Error("同步扩展返回了不匹配的请求 ID"));
-          }
-          resolve(response.result);
-        }
-      );
+  async function localApi(pathname, options = {}) {
+    const response = await fetch(`${LOCAL_API_PREFIX}${pathname}`, {
+      cache: "no-store",
+      ...options,
+      headers: { ...(options.body ? { "Content-Type": "application/json" } : {}), ...(options.headers || {}) },
     });
+    const text = await response.text();
+    let data = null;
+    try { data = text ? JSON.parse(text) : null; } catch { data = null; }
+    if (!response.ok) throw new Error(data?.error || `本地中控台请求失败（HTTP ${response.status}）`);
+    return data;
   }
 
-  // Public Web API for the sync panel and future integrations. The extension
-  // remains the only component that can talk to the official site.
+  function syncRequest(action, payload = {}) {
+    const routes = {
+      status: ["/integrations/cxyonly/status", "GET"],
+      login: ["/integrations/cxyonly/login", "POST"],
+      pullPreview: ["/integrations/cxyonly/pull/preview", "POST"],
+      pullApply: ["/integrations/cxyonly/pull/apply", "POST"],
+      pushPreview: ["/integrations/cxyonly/push/preview", "POST"],
+      pushApply: ["/integrations/cxyonly/push/apply", "POST"],
+      reconcilePreview: ["/integrations/cxyonly/reconcile/preview", "POST"],
+      reconcileApply: ["/integrations/cxyonly/reconcile/apply", "POST"],
+    };
+    const route = routes[action];
+    if (!route) return Promise.reject(new Error(`未知同步操作：${action}`));
+    return localApi(route[0], { method: route[1], ...(route[1] === "POST" ? { body: JSON.stringify(payload) } : {}) });
+  }
+
+  // Public Web API for the sync panel and future integrations. The local
+  // Node console remains the only component that can talk to the official site.
   const publicSyncApi = Object.freeze({
     status: () => syncRequest("status"),
-    pullOnlineProgress: () => syncRequest("pull"),
+    pullOnlineProgress: () => syncRequest("pullPreview"),
     previewPush: (localProgress = buildSyncDocument()) =>
-      syncRequest("previewPush", { document: localProgress }),
+      syncRequest("pushPreview", { document: localProgress }),
     pushProgress: async (localProgress = buildSyncDocument(), previewId = "") => {
       const preview = previewId
         ? { previewId }
-        : await syncRequest("previewPush", { document: localProgress });
+        : await syncRequest("pushPreview", { document: localProgress });
       if (!preview.previewId) return preview;
-      return syncRequest("push", { previewId: preview.previewId });
+      return syncRequest("pushApply", { previewId: preview.previewId });
     },
   });
   globalThis.daguanSync = publicSyncApi;
@@ -1765,9 +2831,84 @@
     el.textContent = text;
   }
 
+  async function checkRuntimeVersion() {
+    try {
+      const response = await fetch("./api/runtime", { cache: "no-store" });
+      if (!response.ok) return;
+      const runtime = await response.json();
+      if (runtime.appVersion && runtime.appVersion !== APP_VERSION) {
+        const banner = $("#update-banner");
+        if (banner) banner.dataset.visible = "1";
+      }
+    } catch { /* local server may be unavailable in offline mode */ }
+  }
+
+  function saveLearningPosition() {
+    try {
+      sessionStorage.setItem(POSITION_KEY, JSON.stringify({ view: state.view, cat: state.currentCatId, index: state.index, mode: state.mode, scroll: $("#main")?.scrollTop || 0 }));
+    } catch {}
+  }
+
+  function queueLastStudyPosition() {
+    if (!serverStateAvailable || !serverStateHydrated || !state.currentCatId || !currentQ()) return;
+    state.last_study = { category_id: state.currentCatId, question_id: String(currentQ().id), mode: state.mode, updated_at: new Date().toISOString() };
+    fetch("./api/state/last-study", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", "If-Match": String(serverRevision) },
+      body: JSON.stringify({ ...state.last_study, revision: serverRevision }),
+    }).then(async (response) => {
+      if (!response.ok) return;
+      const result = await response.json();
+      serverRevision = Number(result.revision) || serverRevision;
+    }).catch(() => {});
+  }
+
+  async function restoreLearningPosition() {
+    try {
+      const saved = JSON.parse(sessionStorage.getItem(POSITION_KEY) || "null");
+      const position = saved || (state.last_study ? { view: "browse", cat: state.last_study.category_id, question: state.last_study.question_id, mode: state.last_study.mode } : null);
+      if (!position || position.view !== "browse" || position.cat == null) return;
+      if (position.mode === "single" || position.mode === "list") setMode(position.mode);
+      await ensureIndexes();
+      const trail = findCat(position.cat) || [];
+      const node = trail[trail.length - 1];
+      let leafId = node && isCategoryLeaf(node) ? node.id : null;
+      if (!leafId) {
+        const leaves = chapterLeavesFor(position.cat);
+        const questionId = position.question || state.last_study?.question_id;
+        const matched = leaves.find((entry) => questionId != null && (state.catQuestions[String(entry.node.id)] || []).some((id) => String(id) === String(questionId)));
+        leafId = matched?.node?.id || leaves.find((entry) => (state.catQuestions[String(entry.node.id)] || []).length)?.node?.id || null;
+      }
+      if (leafId != null) await openCategory(leafId, position.question || state.last_study?.question_id, { silent: true });
+      if (Number.isFinite(Number(position.index))) state.index = Math.max(0, Number(position.index));
+      requestAnimationFrame(() => { if ($("#main")) $("#main").scrollTop = Number(position.scroll) || 0; });
+    } catch {}
+  }
+
+  let reconcilePreview = null;
+
+  function formatReconcilePreview(preview) {
+    const s = preview.summary || {};
+    const mastery = s.masteryChanges || {};
+    const localMastery = s.localMasteryChanges || {};
+    return [
+      preview.firstRepair ? "首次修复：官网状态将覆盖本地状态（已安排双侧备份）" : "对账预览：默认按字段更新时间决定方向",
+      `官网状态：${s.remoteEntries || 0} 条`,
+      `官网 → 本地：${s.remoteToLocal || 0} 项（掌握/收藏）`,
+      `本地 → 官网：${s.localToRemote || 0} 项（掌握/收藏）`,
+      `冲突：${s.conflicts || 0} 项；未知题号：${s.unknown || 0} 项`,
+      `本地 → 官网掌握：已掌握 ${mastery.mastered || 0}、学习中 ${mastery.needs_practice || 0}、易错 ${mastery.not_known || 0}、未开始 ${mastery.not_started || 0}`,
+      `官网 → 本地掌握：已掌握 ${localMastery.mastered || 0}、学习中 ${localMastery.needs_practice || 0}、易错 ${localMastery.not_known || 0}、未开始 ${localMastery.not_started || 0}`,
+      `收藏字段变化：${s.favoriteChanges || 0} 项`,
+      `活动日历：已读取 ${preview.activityImpact?.remoteActivityDays ?? "未知"} 天；本次官网写入可能计入今日刷题数 ${preview.activityImpact?.possibleTodayWrites || 0} 项`,
+      `题库：${preview.catalog?.total || "未知"} 题（${preview.catalog?.version || "未标记版本"}）`,
+      preview.unknownIds?.length ? `未知题号将保留并报告：${preview.unknownIds.slice(0, 12).join(", ")}${preview.unknownIds.length > 12 ? "…" : ""}` : "没有未知题号",
+    ].join("\n");
+  }
+
   function remoteMasteryToLocal(value) {
     if (value === "mastered") return "mastered";
-    if (value === "not_known") return "forgot";
+    if (value === "not_known") return "learning";
     if (value === "needs_practice") return "learning";
     return "not_started";
   }
@@ -1820,6 +2961,7 @@
         state.progress[id] = {
           ...cur,
           mastery,
+          error_prone: remote.mastery === "not_known" ? true : cur.error_prone === true,
           seen: true,
           updated_at: Date.now(),
           remote_updated_at: remote.updated_at || remote.updatedAt || null,
@@ -1871,12 +3013,23 @@
 
   function closeSheet(id) {
     const el = document.getElementById(id);
-    if (el && typeof el.close === "function") el.close();
+    if (el && typeof el.close === "function" && el.open) el.close();
+    if (lastDialogTrigger && typeof lastDialogTrigger.focus === "function") {
+      lastDialogTrigger.focus({ preventScroll: true });
+      lastDialogTrigger = null;
+    }
   }
 
-  function openSheet(id) {
+  function openSheet(id, trigger = document.activeElement) {
     const el = document.getElementById(id);
-    if (el && typeof el.showModal === "function") el.showModal();
+    if (el && typeof el.showModal === "function") {
+      lastDialogTrigger = trigger && trigger !== document.body ? trigger : null;
+      el.showModal();
+      window.setTimeout(() => {
+        const target = el.querySelector("button:not([disabled]), input:not([disabled]), select, textarea, [tabindex]:not([tabindex='-1'])");
+        target?.focus({ preventScroll: true });
+      }, 0);
+    }
   }
 
   function exportScopeLabel(scope) {
@@ -2101,6 +3254,7 @@
         kind: "full",
         progress: data.progress,
         favorites: Array.isArray(data.favorites) ? data.favorites.map(String) : [],
+        annotations: data.annotations && typeof data.annotations === "object" ? data.annotations : {},
       };
     }
     const map = {};
@@ -2109,7 +3263,7 @@
       const key = String(id);
       if (!key || code == null) return;
       if (code === "m" || code === "mastered") map[key] = "mastered";
-      else if (code === "f" || code === "forgot" || code === "not_known") map[key] = "forgot";
+      else if (code === "f" || code === "forgot" || code === "not_known") map[key] = "error_prone";
       else if (code === "l" || code === "learning" || code === "needs_practice") map[key] = "learning";
     };
     if (data && data.states && typeof data.states === "object" && !Array.isArray(data.states)) {
@@ -2156,7 +3310,7 @@
       const mastery = map[id];
       if (!mastery) continue;
       const cur = state.progress[id] || {};
-      state.progress[id] = { ...cur, mastery, seen: true, updated_at: Date.now() };
+      state.progress[id] = { ...cur, mastery: mastery === "error_prone" ? "learning" : mastery, error_prone: mastery === "error_prone" ? true : cur.error_prone === true, seen: true, updated_at: Date.now() };
       n += 1;
     }
     for (const id of favorites) state.favorites.add(String(id));
@@ -2190,6 +3344,7 @@
     if (bundle.kind === "full") {
       state.progress = mergeProgress(state.progress, bundle.progress);
       for (const id of bundle.favorites || []) state.favorites.add(String(id));
+      state.annotations = { ...state.annotations, ...(bundle.annotations || {}) };
       saveProgress();
       flushPersist();
       renderHome();
@@ -2206,12 +3361,493 @@
     if (n) toast(`已写入本地 ${n} 题`);
   }
 
+  /* ---------- AI tutor / focus mode ---------- */
+
+  function aiPrefs() {
+    try { return JSON.parse(localStorage.getItem(AI_PREFS_KEY) || "{}") || {}; } catch { return {}; }
+  }
+
+  function saveAiPrefs(value) {
+    try { localStorage.setItem(AI_PREFS_KEY, JSON.stringify(value)); } catch {}
+  }
+
+  function currentAiQuestion() {
+    if (state.aiQuestionId != null) return getQuestionSync(state.aiQuestionId);
+    if (state.mode === "single") return currentQ();
+    const cards = [...(els.qFeed?.querySelectorAll(".q-card[data-id]") || [])];
+    if (!cards.length) return null;
+    const center = window.innerHeight / 2;
+    const card = cards.sort((a, b) => Math.abs(a.getBoundingClientRect().top + a.offsetHeight / 2 - center) - Math.abs(b.getBoundingClientRect().top + b.offsetHeight / 2 - center))[0];
+    return getQuestionSync(card?.dataset.id);
+  }
+
+  function getQuestionSync(id) {
+    const key = String(id);
+    return state.queue.find((q) => String(q.id) === key) || null;
+  }
+
+  function aiQuestionPayload(q) {
+    const p = progressOf(q?.id);
+    const annotation = state.annotations[String(q?.id)]?.markdown || "";
+    return {
+      id: q?.id,
+      category_path: q?.category_path || "",
+      source: q?.source || "",
+      type: q?.type || "",
+      stem: q?.stem || "",
+      options: q?.options || [],
+      answer: q?.answer || "",
+      explanation: q?.explanation || "",
+      userAnswer: [...(state.mode === "single" ? state.selected : cardState(q?.id).selected)].join(", "),
+      annotation,
+      mastery: p.mastery || "not_started",
+      errorProne: p.error_prone === true,
+      favorite: isFavorite(q?.id),
+    };
+  }
+
+  async function questionImages(q) {
+    if (!q) return [];
+    const source = `${q.stem || ""}\n${(q.options || []).map((o) => o.content_md || "").join("\n")}\n${q.answer || ""}\n${q.explanation || ""}`;
+    const refs = [...source.matchAll(/!\[[^\]]*\]\(([^)]+)\)|<img[^>]+src=["']([^"']+)["']/gi)].map((m) => m[1] || m[2]).filter(Boolean).slice(0, 4);
+    const out = [];
+    for (const ref of refs) {
+      try {
+        const response = await fetch(new URL(assetUrl(ref), location.href));
+        if (!response.ok) continue;
+        const blob = await response.blob();
+        if (blob.size > 2 * 1024 * 1024) continue;
+        const data = await new Promise((resolve) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = () => resolve(""); reader.readAsDataURL(blob); });
+        if (data) out.push(data);
+      } catch {}
+    }
+    return out;
+  }
+
+  function sanitizeAiHtml(html) {
+    const wrap = document.createElement("div");
+    wrap.innerHTML = html;
+    wrap.querySelectorAll("script,iframe,object,embed,style,link,form,input,button,textarea,select").forEach((el) => el.remove());
+    wrap.querySelectorAll("*").forEach((el) => {
+      [...el.attributes].forEach((attr) => {
+        if (/^on/i.test(attr.name) || ["href", "src", "xlink:href"].includes(attr.name) && /^(javascript:|data:text\/html|vbscript:)/i.test(attr.value)) el.removeAttribute(attr.name);
+      });
+    });
+    wrap.querySelectorAll("img").forEach((img) => { img.removeAttribute("srcset"); img.loading = "lazy"; img.alt = img.alt || "AI生成图形"; });
+    return wrap.innerHTML;
+  }
+
+  function enhanceAiDiagrams(item, content) {
+    const matches = [...String(content || "").matchAll(/```daguan-diagram\s*([\s\S]*?)```/gi)].slice(0, 2);
+    for (const match of matches) {
+      let spec;
+      try { spec = JSON.parse(match[1]); } catch { continue; }
+      if (!spec || typeof spec !== "object" || typeof spec.kind !== "string") continue;
+      const figure = document.createElement("figure");
+      figure.className = "ai-diagram";
+      figure.innerHTML = `<figcaption>图形解释 · ${escapeHtml(spec.title || "安全示意图")}</figcaption><div class="ai-diagram-status">正在生成图形…</div>`;
+      item.appendChild(figure);
+      fetch("./api/ai/diagram", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(spec) })
+        .then((response) => response.ok ? response.json() : Promise.reject(new Error("图形生成失败")))
+        .then((result) => {
+          const status = figure.querySelector(".ai-diagram-status");
+          if (status) status.innerHTML = sanitizeAiHtml(result.svg || "图形生成失败");
+        })
+        .catch(() => { const status = figure.querySelector(".ai-diagram-status"); if (status) status.textContent = "图形暂时不可用，文字解答仍然保留。"; });
+    }
+  }
+
+  function renderAiMessage(content, role, pending = false) {
+    const item = document.createElement("article");
+    item.className = `ai-message ai-message-${role}`;
+    const body = document.createElement("div");
+    body.className = "ai-message-body md";
+    body.innerHTML = sanitizeAiHtml(renderMarkdown(content || (pending ? "正在思考…" : "")));
+    item.appendChild(body);
+    if (role === "assistant" && !pending) enhanceAiDiagrams(item, content);
+    if (role === "assistant" && !pending) {
+      const actions = document.createElement("div");
+      actions.className = "ai-message-actions";
+      const save = document.createElement("button");
+      save.type = "button"; save.className = "btn ghost"; save.textContent = "保存到批注";
+      save.addEventListener("click", () => {
+        const selected = String(window.getSelection?.()?.toString() || "").trim();
+        appendToAnnotation(selected || content);
+      });
+      const copy = document.createElement("button");
+      copy.type = "button"; copy.className = "btn ghost"; copy.textContent = "复制";
+      copy.addEventListener("click", async () => toast(await copyText(content) ? "已复制 AI 解答" : "复制失败"));
+      actions.append(save, copy);
+      item.appendChild(actions);
+    }
+    return item;
+  }
+
+  function renderAiHistory(history) {
+    if (!els.aiMessages) return;
+    els.aiMessages.innerHTML = "";
+    const messages = Array.isArray(history?.messages) ? history.messages : [];
+    if (!messages.length) {
+      els.aiMessages.innerHTML = `<div class="ai-empty">${iconMarkup("spark")}<strong>先问一个问题</strong><p>题目上下文已经准备好，选择下方提示或直接输入你的疑问。</p></div>`;
+      return;
+    }
+    messages.forEach((message) => {
+      if (message.role !== "user" && message.role !== "assistant") return;
+      els.aiMessages.appendChild(renderAiMessage(message.content, message.role));
+    });
+    els.aiMessages.scrollTop = els.aiMessages.scrollHeight;
+  }
+
+  async function loadAiHistory() {
+    const q = currentAiQuestion();
+    if (!q || !state.aiProfileId) { renderAiHistory(null); return; }
+    try {
+      const response = await fetch(`./api/ai/conversations/${encodeURIComponent(state.aiProfileId)}/${encodeURIComponent(q.id)}`, { cache: "no-store" });
+      renderAiHistory(response.ok ? await response.json() : null);
+    } catch { renderAiHistory(null); }
+  }
+
+  async function loadAiProfiles() {
+    try {
+      const response = await fetch("./api/ai/profiles", { cache: "no-store" });
+      const data = await response.json();
+      state.aiProfiles = Array.isArray(data.profiles) ? data.profiles : [];
+      const preferred = aiPrefs().profileId;
+      state.aiProfileId = state.aiProfiles.find((item) => item.id === preferred)?.id || state.aiProfiles.find((item) => item.active)?.id || state.aiProfiles[0]?.id || "";
+      if (els.aiProfileSelect) {
+        els.aiProfileSelect.innerHTML = state.aiProfiles.length ? state.aiProfiles.map((item) => `<option value="${escapeHtml(item.id)}">${escapeHtml(item.name)}${item.model ? ` · ${escapeHtml(item.model)}` : ""}</option>`).join("") : `<option value="">未配置 AI</option>`;
+        els.aiProfileSelect.value = state.aiProfileId;
+      }
+      renderAiProfilesSettings();
+      if (state.aiOpen) loadAiHistory();
+    } catch { state.aiProfiles = []; renderAiProfilesSettings(); }
+  }
+
+  function setAiTab(tab) {
+    state.aiTab = tab === "note" ? "note" : "chat";
+    document.querySelectorAll("[data-ai-tab]").forEach((el) => { const active = el.dataset.aiTab === state.aiTab; el.classList.toggle("active", active); el.setAttribute("aria-selected", String(active)); });
+    document.querySelectorAll("[data-ai-panel]").forEach((el) => el.classList.toggle("hidden", el.dataset.aiPanel !== state.aiTab));
+    if (state.aiTab === "note") renderQuestionNote();
+  }
+
+  function openAiDrawer(q = currentAiQuestion(), tab = "chat") {
+    if (!q) { toast("请先打开一道题"); return; }
+    state.aiQuestionId = String(q.id);
+    state.aiOpen = true;
+    const line = $("#ai-context-line");
+    if (line) line.textContent = `#${q.id} · ${q.source || TYPE_LABEL[q.type] || "当前题目"}`;
+    document.body.classList.add("ai-drawer-open");
+    const width = Math.max(340, Math.min(620, Number(localStorage.getItem(AI_WIDTH_KEY)) || 400));
+    document.documentElement.style.setProperty("--ai-drawer-width", `${width}px`);
+    els.aiDrawer?.setAttribute("aria-hidden", "false");
+    els.aiEdgeTab?.classList.remove("hidden");
+    els.aiEdgeTab?.setAttribute("aria-expanded", "true");
+    setAiTab(tab);
+    loadAiHistory();
+    renderQuestionNote();
+    window.setTimeout(() => (state.aiTab === "chat" ? els.aiPrompt : els.noteEditor)?.focus(), 80);
+  }
+
+  function openAiForQuestion(q) { openAiDrawer(q, "chat"); }
+  function openNoteForQuestion(q) { openAiDrawer(q, "note"); }
+
+  function closeAiDrawer() {
+    state.aiOpen = false;
+    document.body.classList.remove("ai-drawer-open");
+    els.aiDrawer?.setAttribute("aria-hidden", "true");
+    els.aiEdgeTab?.setAttribute("aria-expanded", "false");
+  }
+
+  function bindAiDrawerResize() {
+    const handle = $("#ai-resize-handle");
+    if (!handle) return;
+    let startX = 0; let startWidth = 400;
+    handle.addEventListener("pointerdown", (event) => {
+      if (window.innerWidth < 1280) return;
+      startX = event.clientX; startWidth = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--ai-drawer-width")) || 400;
+      handle.setPointerCapture?.(event.pointerId);
+      const move = (moveEvent) => {
+        const width = Math.max(340, Math.min(620, startWidth + startX - moveEvent.clientX));
+        document.documentElement.style.setProperty("--ai-drawer-width", `${width}px`);
+        localStorage.setItem(AI_WIDTH_KEY, String(width));
+      };
+      const end = () => { handle.removeEventListener("pointermove", move); handle.removeEventListener("pointerup", end); };
+      handle.addEventListener("pointermove", move); handle.addEventListener("pointerup", end, { once: true });
+    });
+  }
+
+  function renderQuestionNote() {
+    const q = currentAiQuestion();
+    if (!q || !els.noteEditor) return;
+    const entry = state.annotations[String(q.id)] || {};
+    els.noteEditor.value = entry.markdown || "";
+    const status = $("#question-note-status");
+    if (status) status.textContent = entry.updated_at ? `已保存 ${formatDate(new Date(entry.updated_at))}` : "未保存";
+    state.noteHistory = Array.isArray(entry.history) ? entry.history : [];
+    renderNoteHistory();
+  }
+
+  function renderNoteHistory() {
+    const root = $("#question-note-history");
+    if (!root) return;
+    root.innerHTML = state.noteHistory.length ? state.noteHistory.slice().reverse().map((item, i) => `<button type="button" class="note-history-item" data-note-history-index="${state.noteHistory.length - 1 - i}"><span>${escapeHtml(formatDate(new Date(item.updated_at || Date.now())))}</span><small>${escapeHtml(String(item.markdown || "").slice(0, 90) || "空批注")}</small></button>`).join("") : `<p class="muted">还没有历史版本。</p>`;
+    root.querySelectorAll("[data-note-history-index]").forEach((button) => button.addEventListener("click", () => {
+      const item = state.noteHistory[Number(button.dataset.noteHistoryIndex)];
+      if (item && els.noteEditor) { els.noteEditor.value = item.markdown || ""; $("#btn-note-restore")?.removeAttribute("hidden"); root.querySelectorAll(".selected").forEach((el) => el.classList.remove("selected")); button.classList.add("selected"); }
+    }));
+  }
+
+  let noteSaveTimer = 0;
+  let activeAiRunId = "";
+  async function saveQuestionNote() {
+    const q = currentAiQuestion();
+    if (!q || !els.noteEditor) return;
+    const id = String(q.id);
+    const markdown = els.noteEditor.value.slice(0, 100_000);
+    const previous = state.annotations[id] || { history: [] };
+    const history = Array.isArray(previous.history) ? previous.history.slice(-9) : [];
+    if (previous.markdown !== markdown) history.push({ markdown: previous.markdown || "", updated_at: previous.updated_at || new Date().toISOString() });
+    const entry = { markdown, updated_at: new Date().toISOString(), history };
+    state.annotations[id] = entry;
+    try { localStorage.setItem(ANNOTATION_KEY, JSON.stringify(state.annotations)); } catch {}
+    const status = $("#question-note-status"); if (status) status.textContent = "保存中…";
+    if (serverStateAvailable && serverStateHydrated) {
+      try {
+        const response = await fetch(`./api/state/questions/${encodeURIComponent(id)}/annotation`, { method: "PATCH", headers: { "Content-Type": "application/json", "If-Match": String(serverRevision) }, body: JSON.stringify({ markdown, revision: serverRevision }) });
+        if (response.status === 409) { const conflict = await response.json().catch(() => ({})); if (conflict.current) serverRevision = Number(conflict.current.revision) || serverRevision; }
+        else if (response.ok) serverRevision = Number((await response.json()).revision) || serverRevision;
+      } catch {}
+    }
+    if (status) status.textContent = "已保存";
+    state.noteHistory = history;
+    renderNoteHistory();
+  }
+
+  function scheduleQuestionNoteSave() { clearTimeout(noteSaveTimer); noteSaveTimer = setTimeout(saveQuestionNote, 600); }
+
+  function appendToAnnotation(content) {
+    const text = String(content || "").trim();
+    if (!text || !els.noteEditor) return;
+    openAiDrawer(currentAiQuestion(), "note");
+    els.noteEditor.value = `${els.noteEditor.value.trim()}${els.noteEditor.value.trim() ? "\n\n" : ""}> AI 解答\n\n${text}\n`;
+    scheduleQuestionNoteSave();
+    toast("已追加到题目批注");
+  }
+
+  async function sendAiMessage(prompt = els.aiPrompt?.value || "") {
+    const q = currentAiQuestion();
+    const text = String(prompt || "").trim();
+    if (!q || !text) return;
+    if (!state.aiProfileId) { toast("请先在设置中配置 AI 服务"); openSheet("dlg-appearance"); return; }
+    const userItem = renderAiMessage(text, "user");
+    const pending = renderAiMessage("", "assistant", true);
+    els.aiMessages?.append(userItem, pending);
+    els.aiMessages?.scrollTo({ top: els.aiMessages.scrollHeight, behavior: "smooth" });
+    if (els.aiPrompt) els.aiPrompt.value = "";
+    const images = (state.aiProfiles.find((item) => item.id === state.aiProfileId)?.capabilities?.vision === "passed") ? await questionImages(q) : [];
+    try {
+      const response = await fetch("./api/ai/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ profileId: state.aiProfileId, question: aiQuestionPayload(q), prompt: text, includePrivate: $("#ai-include-private")?.checked === true, images }) });
+      if (!response.ok) throw new Error(`AI 请求失败（HTTP ${response.status}）`);
+      const runId = response.headers.get("X-Daguan-Run-Id");
+      activeAiRunId = runId || "";
+      if (runId) state.aiRuns.set(runId, { questionId: String(q.id), startedAt: Date.now() });
+      $("#btn-ai-stop")?.removeAttribute("hidden");
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder(); let buffer = ""; let answer = "";
+      const paint = () => { const body = pending.querySelector(".ai-message-body"); if (body) body.innerHTML = sanitizeAiHtml(renderMarkdown(answer || "正在思考…")); els.aiMessages?.scrollTo({ top: els.aiMessages.scrollHeight }); };
+      while (reader) {
+        const { done, value } = await reader.read(); if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const rows = buffer.split(/\r?\n/); buffer = rows.pop() || "";
+        for (const row of rows) if (row.startsWith("data:")) {
+          try { const event = JSON.parse(row.slice(5).trim()); if (event.type === "delta") { answer += event.content || ""; paint(); } if (event.type === "error") throw new Error(event.error || "AI 生成失败"); } catch (error) { if (error?.message && !/Unexpected token|JSON/.test(error.message)) throw error; }
+        }
+      }
+      pending.replaceWith(renderAiMessage(answer, "assistant"));
+      if (runId) state.aiRuns.delete(runId);
+      activeAiRunId = "";
+      $("#btn-ai-stop")?.setAttribute("hidden", "");
+    } catch (error) {
+      pending.replaceWith(renderAiMessage(`AI 暂时没有完成回答：${error.message || error}`, "assistant"));
+      activeAiRunId = "";
+      $("#btn-ai-stop")?.setAttribute("hidden", "");
+    }
+  }
+
+  async function enterFocusMode() {
+    if (state.focusMode) return;
+    state.focusSnapshot = { view: state.view, mode: state.mode, index: state.index, scrollY: window.scrollY };
+    state.focusMode = true;
+    if (state.view !== "browse") setView("browse");
+    if (state.mode !== "single") setMode("single");
+    document.body.classList.add("focus-mode");
+    renderSingle();
+    window.scrollTo(0, 0);
+  }
+
+  function exitFocusMode() {
+    if (!state.focusMode) return;
+    const snapshot = state.focusSnapshot || { view: "browse", mode: "single", index: state.index, scrollY: 0 };
+    state.focusMode = false; state.focusSnapshot = null;
+    document.body.classList.remove("focus-mode");
+    if (state.mode !== snapshot.mode) setMode(snapshot.mode); else if (snapshot.mode === "list") renderFeed(true);
+    setView(snapshot.view);
+    state.index = Math.max(0, Math.min(snapshot.index, state.queue.length - 1));
+    if (state.view === "browse" && state.mode === "single") renderSingle();
+    requestAnimationFrame(() => window.scrollTo(0, snapshot.scrollY || 0));
+  }
+
+  function renderAiProfilesSettings() {
+    const root = $("#ai-profile-list"); if (!root) return;
+    if (!state.aiProfiles.length) { root.innerHTML = `<div class="empty-state compact"><p>尚未配置 AI 服务。</p></div>`; return; }
+    root.innerHTML = state.aiProfiles.map((item) => `<div class="ai-profile-card ${item.id === state.aiProfileId ? "active" : ""}"><div><strong>${escapeHtml(item.name)}</strong><span>${escapeHtml(item.model || "未选模型")} · ${escapeHtml(item.keyHint || "未设置")}</span></div><div class="ai-profile-card-actions"><button type="button" class="btn ghost" data-ai-edit="${escapeHtml(item.id)}">编辑</button><button type="button" class="btn ghost" data-ai-use="${escapeHtml(item.id)}">使用</button><button type="button" class="btn ghost" data-ai-delete="${escapeHtml(item.id)}">删除</button></div></div>`).join("");
+    root.querySelectorAll("[data-ai-edit]").forEach((button) => button.addEventListener("click", () => openAiProfileForm(button.dataset.aiEdit)));
+    root.querySelectorAll("[data-ai-use]").forEach((button) => button.addEventListener("click", () => { state.aiProfileId = button.dataset.aiUse; saveAiPrefs({ ...aiPrefs(), profileId: state.aiProfileId }); if (els.aiProfileSelect) els.aiProfileSelect.value = state.aiProfileId; renderAiProfilesSettings(); toast("已切换 AI 服务"); }));
+    root.querySelectorAll("[data-ai-delete]").forEach((button) => button.addEventListener("click", async () => {
+      const profile = state.aiProfiles.find((item) => item.id === button.dataset.aiDelete);
+      if (!profile || !confirm(`删除“${profile.name}”？历史记录默认保留。`)) return;
+      const clearHistory = confirm("是否同时删除这个服务的全部 AI 历史？点击“取消”将只删除服务配置。");
+      const response = await fetch(`./api/ai/profiles/${encodeURIComponent(profile.id)}`, { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ clearHistory }) });
+      if (!response.ok) { toast("删除失败"); return; }
+      if (state.aiProfileId === profile.id) state.aiProfileId = "";
+      await loadAiProfiles(); toast("AI 服务已删除");
+    }));
+  }
+
+  function openAiProfileForm(id = "") {
+    const form = $("#ai-profile-form"); if (!form) return;
+    const item = state.aiProfiles.find((profile) => profile.id === id);
+    $("#ai-profile-id").value = item?.id || "";
+    $("#ai-profile-name").value = item?.name || "";
+    $("#ai-profile-model").value = item?.model || "";
+    $("#ai-profile-url").value = item?.baseUrl || "";
+    $("#ai-profile-key").value = "";
+    $("#ai-test-result").textContent = "";
+    form.classList.remove("hidden");
+    $("#ai-profile-name")?.focus();
+  }
+
+  function closeAiProfileForm() { $("#ai-profile-form")?.classList.add("hidden"); }
+
+  async function saveAiProfile(event) {
+    event.preventDefault();
+    const id = $("#ai-profile-id").value;
+    const body = { name: $("#ai-profile-name").value, model: $("#ai-profile-model").value, baseUrl: $("#ai-profile-url").value, key: $("#ai-profile-key").value };
+    try {
+      const response = await fetch(id ? `./api/ai/profiles/${encodeURIComponent(id)}` : "./api/ai/profiles", { method: id ? "PATCH" : "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      const data = await response.json(); if (!response.ok) throw new Error(data.error || "保存失败");
+      state.aiProfileId = data.profile.id; saveAiPrefs({ ...aiPrefs(), profileId: state.aiProfileId }); closeAiProfileForm(); await loadAiProfiles(); toast("AI 服务已保存");
+    } catch (error) { $("#ai-test-result").textContent = error.message || String(error); }
+  }
+
+  async function aiProfileAction(kind) {
+    const id = $("#ai-profile-id").value;
+    if (!id) { $("#ai-test-result").textContent = "请先保存服务，再测试。"; return; }
+    const result = $("#ai-test-result"); result.textContent = "正在测试…";
+    try {
+      const response = await fetch(`./api/ai/profiles/${encodeURIComponent(id)}/${kind === "models" ? "models" : "test"}`, { method: kind === "models" ? "GET" : "POST", headers: kind === "models" ? {} : { "Content-Type": "application/json" }, body: kind === "models" ? undefined : JSON.stringify({ kind }) });
+      const data = await response.json(); if (!response.ok) throw new Error(data.error || data.message || "测试失败");
+      if (kind === "models") { result.textContent = data.models?.length ? `已获取 ${data.models.length} 个模型：${data.models.slice(0, 12).join("、")}` : "接口未返回模型列表，请手动填写模型名。"; if (data.models?.[0] && !$("#ai-profile-model").value) $("#ai-profile-model").value = data.models[0]; }
+      else result.textContent = `${kind === "vision" ? "视觉" : "文本"}测试通过 · HTTP ${data.status} · ${data.latencyMs}ms · ${data.response || "无摘要"}`;
+      await loadAiProfiles();
+    } catch (error) { result.textContent = error.message || String(error); }
+  }
+
   function bindUI() {
     $("#btn-open-sidebar").addEventListener("click", () => els.sidebar.classList.add("open"));
     $("#btn-close-sidebar").addEventListener("click", () => els.sidebar.classList.remove("open"));
+    $("#btn-collapse-sidebar")?.addEventListener("click", () => {
+      const app = $("#app");
+      const collapsed = app?.dataset.sidebar === "collapsed";
+      if (app) app.dataset.sidebar = collapsed ? "expanded" : "collapsed";
+      const button = $("#btn-collapse-sidebar");
+      button?.setAttribute("aria-label", collapsed ? "收起侧栏" : "展开侧栏");
+    });
+    $("#btn-theme-toggle")?.addEventListener("click", () => {
+      setUiTheme(uiPrefs.theme === "official-dark" ? "official-light" : "official-dark");
+    });
+    $("#btn-appearance")?.addEventListener("click", (event) => openSheet("dlg-appearance", event.currentTarget));
+    $("#nav-settings")?.addEventListener("click", (event) => openSheet("dlg-appearance", event.currentTarget));
+    document.querySelectorAll("[data-theme-choice]").forEach((button) => {
+      button.addEventListener("click", () => setUiTheme(button.dataset.themeChoice));
+    });
+    $("#ui-bg-color")?.addEventListener("input", (event) => {
+      uiPrefs.backgroundColor = event.target.value;
+      uiPrefs.theme = "custom";
+      saveUiPrefs();
+      applyUiPreferences();
+      setThemeFeedback("自定义背景颜色已应用。", false);
+    });
+    $("#ui-bg-image")?.addEventListener("change", async (event) => {
+      await setUiBackground(event.target.files?.[0]);
+      event.target.value = "";
+    });
+    $("#ui-bg-position")?.addEventListener("change", (event) => {
+      uiPrefs.backgroundPosition = event.target.value;
+      uiPrefs.theme = "custom";
+      saveUiPrefs();
+      applyUiPreferences();
+    });
+    $("#ui-bg-overlay")?.addEventListener("input", (event) => {
+      uiPrefs.overlayOpacity = Number(event.target.value);
+      uiPrefs.theme = "custom";
+      saveUiPrefs();
+      applyUiPreferences();
+    });
+    $("#btn-appearance-reset")?.addEventListener("click", () => resetUiPreferences("official-light"));
+    $("#btn-appearance-eye")?.addEventListener("click", () => resetUiPreferences("eye-care"));
     window.addEventListener("pagehide", flushPersist);
     document.addEventListener("visibilitychange", () => {
       if (document.visibilityState === "hidden") flushPersist();
+    });
+    $("#btn-browse-back")?.addEventListener("click", goHome);
+    $("#chapter-trigger")?.addEventListener("click", (event) => {
+      event.stopPropagation();
+      if (state.chapterMenuOpen) closeChapterMenu();
+      else openChapterMenu();
+    });
+    $("#chapter-menu-close")?.addEventListener("click", () => closeChapterMenu());
+    $("#chapter-empty-open")?.addEventListener("click", () => openChapterMenu(state.chapterMenuRootId || state.chapterPathIds[state.chapterPathIds.length - 1] || null));
+    $("#chapter-menu")?.addEventListener("click", (event) => event.stopPropagation());
+    $("#chapter-menu")?.addEventListener("keydown", handleChapterMenuKeydown);
+    document.querySelectorAll("[data-chapter-scope]").forEach((button) => {
+      button.addEventListener("click", async () => {
+        const previous = state.scope;
+        state.scope = button.dataset.chapterScope || "all";
+        state.filterCore = state.scope === "core";
+        state.filterTodo = false;
+        if (els.filterCore) els.filterCore.checked = state.filterCore;
+        if (els.filterTodo) els.filterTodo.checked = false;
+        document.querySelectorAll(".scope-btn").forEach((item) => item.classList.toggle("active", item.dataset.scope === state.scope));
+        syncChapterScopeUI();
+        if (state.currentCatId != null) {
+          const currentId = currentQ()?.id;
+          const ok = await openCategory(state.currentCatId, currentId, { silent: true });
+          if (!ok) {
+            state.scope = previous;
+            state.filterCore = previous === "core";
+            if (els.filterCore) els.filterCore.checked = state.filterCore;
+            document.querySelectorAll(".scope-btn").forEach((item) => item.classList.toggle("active", item.dataset.scope === state.scope));
+            syncChapterScopeUI();
+            return;
+          }
+        }
+        renderChapterMenu();
+      });
+    });
+    $("#btn-prev-section")?.addEventListener("click", () => goToAdjacentChapter(-1));
+    $("#btn-next-section")?.addEventListener("click", () => goToAdjacentChapter(1));
+    $("#btn-more")?.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const opening = els.topbarMore?.classList.contains("hidden");
+      if (opening) {
+        els.topbarMore?.classList.remove("hidden");
+        els.moreTrigger?.setAttribute("aria-expanded", "true");
+      } else closeMoreMenu();
+    });
+    document.addEventListener("pointerdown", (event) => {
+      if (state.chapterMenuOpen && !els.chapterPicker?.contains(event.target)) closeChapterMenu({ restoreFocus: false });
+      if (!els.topbarMore?.classList.contains("hidden") && !event.target.closest?.(".topbar-more-wrap")) closeMoreMenu();
     });
     $("#btn-home").addEventListener("click", goHome);
     $("#btn-brand").addEventListener("click", (e) => {
@@ -2219,8 +3855,14 @@
       goHome();
     });
     $("#nav-home").addEventListener("click", goHome);
-    $("#nav-todo").addEventListener("click", () => openSpecial("todo"));
-    $("#nav-forgot").addEventListener("click", () => openSpecial("forgot"));
+    $("#nav-favorites")?.addEventListener("click", () => openFeaturePage("favorites"));
+    $("#nav-todo").addEventListener("click", () => openFeaturePage("mastery"));
+    $("#nav-forgot").addEventListener("click", () => openFeaturePage("retest"));
+    $("#nav-paper")?.addEventListener("click", () => openFeaturePage("paper"));
+    $("#nav-notes")?.addEventListener("click", () => openFeaturePage("notes"));
+    $("#workspace-learning")?.addEventListener("click", goHome);
+    $("#workspace-tools")?.addEventListener("click", () => openFeaturePage("tools"));
+    $("#btn-learning-records")?.addEventListener("click", () => openFeaturePage("learning-records"));
     $("#btn-start").addEventListener("click", () => {
       const first = state.categories[0];
       if (first) openCategory(first.id);
@@ -2228,6 +3870,10 @@
 
     $("#btn-prev").addEventListener("click", () => go(-1));
     $("#btn-next").addEventListener("click", () => go(1));
+    $("#btn-focus-mode")?.addEventListener("click", enterFocusMode);
+    $("#btn-single-ai")?.addEventListener("click", () => openAiForQuestion(currentQ()));
+    $("#btn-single-note")?.addEventListener("click", () => openNoteForQuestion(currentQ()));
+    $("#single-error-toggle")?.addEventListener("click", () => { const q = currentQ(); if (q) setErrorProne(q.id, !progressOf(q.id).error_prone); });
     $("#btn-toggle-answer").addEventListener("click", () => {
       state.showAnswer = !state.showAnswer;
       const q = currentQ();
@@ -2253,10 +3899,9 @@
           b.classList.toggle("active", b.dataset.scope === state.scope);
         });
         // sync checkbox
-        if (state.scope === "core") {
-          els.filterCore.checked = true;
-          state.filterCore = true;
-        }
+        els.filterCore.checked = state.scope === "core";
+        state.filterCore = state.scope === "core";
+        syncChapterScopeUI();
         if (state.currentCatId != null) await openCategory(state.currentCatId, currentQ()?.id);
         else if (state.specialQueue) await openSpecial(state.specialQueue);
       });
@@ -2265,6 +3910,7 @@
     $("#btn-reset-progress").addEventListener("click", () => {
       if (!confirm("确定清除本机全部做题进度？")) return;
       state.progress = {};
+      state.annotations = {};
       saveProgress();
       flushPersist();
       renderHome();
@@ -2280,6 +3926,12 @@
     });
 
     document.querySelectorAll("dialog.sheet").forEach((dialog) => {
+      dialog.addEventListener("close", () => {
+        if (lastDialogTrigger && typeof lastDialogTrigger.focus === "function") {
+          lastDialogTrigger.focus({ preventScroll: true });
+          lastDialogTrigger = null;
+        }
+      });
       dialog.addEventListener("click", (e) => {
         const rect = dialog.getBoundingClientRect();
         const isInDialog =
@@ -2293,29 +3945,23 @@
       });
     });
 
-    const openOfficialSite = () => window.open(OFFICIAL_SITE_URL, "_blank", "noreferrer");
-    const openExtensionPage = () => {
+    const openOnlineSyncPanel = async (actionId = "", trigger = document.activeElement) => {
       try {
-        window.open("chrome://extensions/", "_blank");
+        const status = await syncRequest("status");
+        if (!status.authenticated) {
+          openSetupWizard();
+          return;
+        }
+        refreshSyncStats();
+        openSheet("dlg-online-sync", trigger);
+        if (actionId) window.setTimeout(() => $("#" + actionId)?.click(), 0);
       } catch {
-        // ignored
+        openSetupWizard();
       }
-      toast("如果浏览器拦截，请在新标签页地址栏输入 chrome://extensions 并回车");
     };
 
-    const openOnlineSyncPanel = (actionId = "") => {
-      if (!syncExtensionId()) {
-        openSetupWizard();
-        return;
-      }
-      const input = $("#sync-extension-id");
-      if (input) input.value = syncExtensionId();
-      refreshSyncStats();
-      openSheet("dlg-online-sync");
-      if (actionId) {
-        window.setTimeout(() => $("#" + actionId)?.click(), 0);
-      }
-    };
+    $("#btn-top-online-sync")?.addEventListener("click", (event) => openOnlineSyncPanel("", event.currentTarget));
+    $("#nav-sync")?.addEventListener("click", (event) => openOnlineSyncPanel("", event.currentTarget));
 
     const btnTutorial = $("#btn-tutorial");
     if (btnTutorial) btnTutorial.addEventListener("click", () => openSheet("dlg-tutorial"));
@@ -2344,36 +3990,31 @@
     if (btnTutorialSync) {
       btnTutorialSync.addEventListener("click", () => {
         closeSheet("dlg-tutorial");
-        const input = $("#sync-extension-id");
-        if (input) input.value = syncExtensionId();
-        refreshSyncStats();
-        openSheet("dlg-online-sync");
+        openOnlineSyncPanel();
+      });
+    }
+    const btnTutorialSyncCard = $("#btn-tutorial-sync-card");
+    if (btnTutorialSyncCard) {
+      btnTutorialSyncCard.addEventListener("click", () => {
+        closeSheet("dlg-tutorial");
+        openSetupWizard();
       });
     }
 
-    const btnOpenOfficial = $("#btn-open-official-site");
-    if (btnOpenOfficial) btnOpenOfficial.addEventListener("click", openOfficialSite);
-    const btnOpenOfficialSync = $("#btn-open-official-site-sync");
-    if (btnOpenOfficialSync) btnOpenOfficialSync.addEventListener("click", openOfficialSite);
-
-    const btnOpenExt = $("#btn-open-extension-page");
-    if (btnOpenExt) btnOpenExt.addEventListener("click", openExtensionPage);
-    const btnOpenExtSync = $("#btn-open-extension-page-sync");
-    if (btnOpenExtSync) btnOpenExtSync.addEventListener("click", openExtensionPage);
-    const btnSetupOpenExt = $("#btn-setup-open-extension");
-    if (btnSetupOpenExt) btnSetupOpenExt.addEventListener("click", openExtensionPage);
-    const btnSetupOpenOfficial = $("#btn-setup-open-official");
-    if (btnSetupOpenOfficial) btnSetupOpenOfficial.addEventListener("click", openOfficialSite);
     document.querySelectorAll("[data-setup-next]").forEach((btn) => {
       btn.addEventListener("click", () => showSetupStep(btn.dataset.setupNext));
     });
     document.querySelectorAll("[data-setup-prev]").forEach((btn) => {
       btn.addEventListener("click", () => showSetupStep(btn.dataset.setupPrev));
     });
-    const btnSetupCheck = $("#btn-setup-check");
-    if (btnSetupCheck) btnSetupCheck.addEventListener("click", checkSetupConnection);
-    const btnSetupTestRead = $("#btn-setup-test-read");
-    if (btnSetupTestRead) btnSetupTestRead.addEventListener("click", testSetupRead);
+    const btnSetupHealth = $("#btn-setup-health");
+    if (btnSetupHealth) btnSetupHealth.addEventListener("click", checkLocalHealth);
+    const btnSetupLogin = $("#btn-setup-login");
+    if (btnSetupLogin) btnSetupLogin.addEventListener("click", setupLogin);
+    const btnSetupTest = $("#btn-setup-test-connection");
+    if (btnSetupTest) btnSetupTest.addEventListener("click", testSetupConnection);
+    const btnSetupMigrate = $("#btn-setup-migrate");
+    if (btnSetupMigrate) btnSetupMigrate.addEventListener("click", migrateSetupState);
     const btnReopenSetupWizard = $("#btn-reopen-setup-wizard");
     if (btnReopenSetupWizard) {
       btnReopenSetupWizard.addEventListener("click", () => {
@@ -2384,7 +4025,7 @@
     const btnHomePull = $("#btn-home-pull");
     if (btnHomePull) btnHomePull.addEventListener("click", () => openOnlineSyncPanel("btn-sync-pull"));
     const btnHomePush = $("#btn-home-push");
-    if (btnHomePush) btnHomePush.addEventListener("click", () => openOnlineSyncPanel("btn-sync-push"));
+    if (btnHomePush) btnHomePush.addEventListener("click", () => openOnlineSyncPanel("btn-sync-pull"));
     const btnHomeSyncSetup = $("#btn-home-sync-setup");
     if (btnHomeSyncSetup) btnHomeSyncSetup.addEventListener("click", openSetupWizard);
     $("#btn-export").addEventListener("click", () => {
@@ -2408,24 +4049,18 @@
     $("#btn-online-sync").addEventListener("click", () => {
       openOnlineSyncPanel();
     });
-    $("#sync-extension-id").addEventListener("change", (event) => {
-      localStorage.setItem(SYNC_EXTENSION_KEY, event.target.value.trim());
-      refreshHomeSyncCard();
-    });
-    $("#sync-extension-id").addEventListener("input", (event) => {
-      localStorage.setItem(SYNC_EXTENSION_KEY, event.target.value.trim());
-      refreshHomeSyncCard();
-    });
     $("#btn-sync-status").addEventListener("click", async () => {
       try {
         const result = await syncRequest("status");
-        $("#sync-connection-status").textContent = result.message || "同步扩展已连接";
+        $("#sync-connection-status").textContent = result.authenticated
+          ? "大观园已连接，中控台可以直接同步。"
+          : result.configured
+            ? "Token 已失效，请重新登录。"
+            : "尚未配置大观园登录。";
         setHomeSyncCard(
-          result.officialTab ? "ready" : "warning",
-          result.officialTab ? "官网已连接" : "找不到官网标签页",
-          result.officialTab
-            ? "同步入口已就绪，可以从这里读取或上传。"
-            : "请先打开并登录大观园官网，再点击检查连接。"
+          result.authenticated ? "ready" : "warning",
+          result.authenticated ? "大观园已连接" : "需要重新配置",
+          result.authenticated ? "可以从这里读取或上传。" : "点击“设置同步”完成登录。"
         );
         showSyncResult(JSON.stringify(result, null, 2));
       } catch (error) {
@@ -2436,62 +4071,65 @@
     });
     $("#btn-sync-pull").addEventListener("click", async () => {
       try {
-        showSyncResult("正在读取官网状态…");
-        const result = await syncRequest("pull");
-        const documentValue = result.document || result;
-        const preview = summarizeRemoteSyncDocument(documentValue);
-        showSyncResult(
-          `读取预览\n官网条目：${preview.entries}\n将更新掌握：${preview.masteryChanges}\n将新增收藏：${preview.favoriteAdds}\n未知题号：${preview.unknown}`
-        );
-        if (!preview.masteryChanges && !preview.favoriteAdds) {
-          toast("官网没有需要合并到本地的变化");
-          return;
-        }
-        if (!window.confirm("确认把官网的非空掌握状态和收藏合并到本地吗？官网的未开始和未收藏不会清除本地数据。")) {
-          return;
-        }
-        const applied = applyRemoteSyncDocument(documentValue);
-        showSyncResult(`读取完成\n官网条目：${applied.entries}\n更新本地掌握：${applied.updated}\n更新收藏：${applied.favorites}\n未知题号：${applied.unknown}`);
-        setHomeSyncCard(
-          "ready",
-          "刚刚从官网读取",
-          `已合并 ${applied.updated + applied.favorites} 项本地变化，可继续刷题。`
-        );
-        toast("已从官网读取进度");
+        const button = $("#btn-sync-pull");
+        button.disabled = true;
+        button.textContent = "正在检查…";
+        try {
+          localStorage.setItem("daguan_browser_backup_before_reconcile_v2", JSON.stringify({ progress: state.progress, favorites: [...state.favorites], picked: [...state.picked], saved_at: new Date().toISOString() }));
+        } catch {}
+        showSyncResult("正在增量读取题库、官网掌握图、收藏、最近学习和活动日历…");
+        reconcilePreview = await syncRequest("reconcilePreview");
+        showSyncResult(formatReconcilePreview(reconcilePreview));
+        toast("差异检查完成，请确认后应用对账计划");
       } catch (error) {
-        setHomeSyncCard("warning", "读取失败", "请检查官网标签页和扩展连接后重试。");
+        setHomeSyncCard("warning", "对账检查失败", "请检查本地中控台和大观园登录状态后重试。");
         showSyncResult(String(error.message || error), true);
+      } finally {
+        const button = $("#btn-sync-pull");
+        button.disabled = false;
+        button.textContent = "检查差异";
       }
     });
     $("#btn-sync-push").addEventListener("click", async () => {
       try {
-        showSyncResult("正在读取官网当前状态并计算变更…");
-        const preview = await syncRequest("previewPush", {
-          document: buildSyncDocument(),
-        });
-        const summary = preview.summary || {};
-        showSyncResult(JSON.stringify(summary, null, 2));
-        if (!preview.previewId || !summary.changes) {
-          toast("没有需要同步的变化");
+        if (!reconcilePreview?.previewId) {
+          toast("请先点击“检查差异”");
           return;
         }
-        const confirmed = window.confirm(
-          `预计更新 ${summary.changes} 道题，写入前会下载官网备份。确定同步吗？`
-        );
-        if (!confirmed) return;
-        showSyncResult("正在备份官网并写入状态…");
-        const result = await syncRequest("push", { previewId: preview.previewId });
-        showSyncResult(JSON.stringify(result, null, 2));
-        setHomeSyncCard(
-          "ready",
-          "刚刚同步到官网",
-          `成功写入 ${result.succeeded || 0} 条，可继续刷题。`
-        );
-        toast(`同步完成：成功 ${result.succeeded || 0} 条`);
+        const winner = $("#sync-conflict-winner")?.value || "latest";
+        if (!window.confirm("确认应用这次对账计划吗？应用前会生成本地与官网双侧备份。")) return;
+        showSyncResult("正在先写入本地，再同步官网并重新校验…");
+        const result = await syncRequest("reconcileApply", { previewId: reconcilePreview.previewId, winner: winner === "latest" ? null : winner });
+        reconcilePreview = null;
+        if (result.state) {
+          state.progress = result.state.progress || state.progress;
+          state.favorites = new Set((result.state.favorites || []).map(String));
+          state.picked = new Set((result.state.picked || []).map(String));
+          state.remote_activity = result.state.remote_activity || state.remote_activity;
+          serverRevision = Number(result.state.revision) || serverRevision;
+          renderHome();
+          refreshFavoriteUI();
+        }
+        showSyncResult(`对账完成\n本地应用：${result.appliedLocal || 0}\n官网成功：${result.succeeded || 0}\n失败：${result.failed || 0}\n未知题号：${result.unknownIds?.length || 0}\n${result.verified ? "官网复读校验成功" : "官网复读校验失败，请稍后重试"}`);
+        setHomeSyncCard("ready", result.failed ? "对账部分完成" : "对账完成", `本地 ${result.appliedLocal || 0} 项，官网成功 ${result.succeeded || 0} 项。`);
+        toast(result.failed ? "对账完成，但有失败项已保留待同步" : "官网与本地已完成对账");
       } catch (error) {
-        setHomeSyncCard("warning", "同步失败", "本地数据未被清除，请检查连接后重试。");
+        setHomeSyncCard("warning", "对账失败", "预览可能已过期或状态发生变化，请重新检查差异。");
         showSyncResult(String(error.message || error), true);
       }
+    });
+    $("#btn-sync-export-local").addEventListener("click", () => {
+      window.location.href = `${LOCAL_API_PREFIX}/integrations/cxyonly/export?source=local`;
+    });
+    $("#btn-sync-export-remote").addEventListener("click", () => {
+      window.location.href = `${LOCAL_API_PREFIX}/integrations/cxyonly/export?source=remote`;
+    });
+    $("#btn-sync-export-android").addEventListener("click", () => {
+      window.location.href = `${LOCAL_API_PREFIX}/integrations/cxyonly/export?source=android`;
+    });
+    $("#btn-update-refresh")?.addEventListener("click", () => {
+      saveLearningPosition();
+      window.location.reload();
     });
     $("#btn-download-progress").addEventListener("click", () => {
       downloadText(backupFilename(), backupText(), "application/json");
@@ -2586,8 +4224,49 @@
       if (!q) return;
       setFavorite(q.id, !isFavorite(q.id));
     });
+    $("#ai-edge-tab")?.addEventListener("click", () => openAiDrawer(currentAiQuestion(), "chat"));
+    $("#btn-ai-close")?.addEventListener("click", closeAiDrawer);
+    bindAiDrawerResize();
+    document.querySelectorAll("[data-ai-tab]").forEach((button) => button.addEventListener("click", () => setAiTab(button.dataset.aiTab)));
+    $("#ai-profile-select")?.addEventListener("change", (event) => { state.aiProfileId = event.target.value; saveAiPrefs({ ...aiPrefs(), profileId: state.aiProfileId }); loadAiHistory(); });
+    document.querySelectorAll("[data-ai-prompt]").forEach((button) => button.addEventListener("click", () => sendAiMessage(button.dataset.aiPrompt)));
+    $("#ai-compose")?.addEventListener("submit", (event) => { event.preventDefault(); sendAiMessage(); });
+    $("#btn-ai-stop")?.addEventListener("click", async () => { if (!activeAiRunId) return; await fetch(`./api/ai/runs/${encodeURIComponent(activeAiRunId)}`, { method: "DELETE" }).catch(() => {}); });
+    $("#question-note-editor")?.addEventListener("input", scheduleQuestionNoteSave);
+    $("#btn-note-history")?.addEventListener("click", () => $("#question-note-history")?.classList.toggle("hidden"));
+    $("#btn-note-restore")?.addEventListener("click", () => {
+      const selected = $("#question-note-history .selected");
+      const item = selected ? state.noteHistory[Number(selected.dataset.noteHistoryIndex)] : null;
+      if (item && els.noteEditor) { els.noteEditor.value = item.markdown || ""; scheduleQuestionNoteSave(); toast("已恢复历史批注"); }
+    });
+    $("#btn-ai-settings")?.addEventListener("click", () => { openSheet("dlg-appearance"); window.setTimeout(() => $("#ai-settings-title")?.scrollIntoView({ block: "center" }), 80); });
+    $("#btn-ai-add-profile")?.addEventListener("click", () => openAiProfileForm());
+    $("#ai-profile-form")?.addEventListener("submit", saveAiProfile);
+    $("#btn-ai-cancel-profile")?.addEventListener("click", closeAiProfileForm);
+    $("#btn-ai-fetch-models")?.addEventListener("click", () => aiProfileAction("models"));
+    $("#btn-ai-test-text")?.addEventListener("click", () => aiProfileAction("text"));
+    $("#btn-ai-test-vision")?.addEventListener("click", () => aiProfileAction("vision"));
+    $("#btn-shortcuts-reset")?.addEventListener("click", () => {
+      Object.assign(shortcuts, SHORTCUT_DEFAULTS);
+      localStorage.setItem(SHORTCUTS_KEY, JSON.stringify(shortcuts));
+      renderShortcutSettings();
+      renderShortcutHints();
+      $("#shortcut-feedback")?.replaceChildren(document.createTextNode("已恢复默认快捷键。"));
+    });
+    renderShortcutSettings();
+    renderShortcutHints();
     document.addEventListener("keydown", (e) => {
       if (e.key !== "Escape") return;
+      if (state.chapterMenuOpen) {
+        e.preventDefault();
+        closeChapterMenu();
+        return;
+      }
+      if (!els.topbarMore?.classList.contains("hidden")) {
+        e.preventDefault();
+        closeMoreMenu({ restoreFocus: true });
+        return;
+      }
       if (document.body.classList.contains("print-preview")) {
         e.preventDefault();
         closePrintPreview();
@@ -2596,17 +4275,20 @@
 
     els.filterCore.addEventListener("change", async () => {
       state.filterCore = els.filterCore.checked;
+      if (!els.filterCore.checked && state.scope === "core") state.scope = "all";
       if (els.filterCore.checked) {
         state.scope = "core";
         document.querySelectorAll(".scope-btn").forEach((b) => {
           b.classList.toggle("active", b.dataset.scope === "core");
         });
       }
+      syncChapterScopeUI();
       if (state.currentCatId != null) await openCategory(state.currentCatId, currentQ()?.id);
       else if (state.specialQueue) await openSpecial(state.specialQueue);
     });
     els.filterTodo.addEventListener("change", async () => {
       state.filterTodo = els.filterTodo.checked;
+      syncChapterScopeUI();
       if (state.currentCatId != null) await openCategory(state.currentCatId, currentQ()?.id);
       else if (state.specialQueue) await openSpecial(state.specialQueue);
     });
@@ -2629,8 +4311,24 @@
     document.addEventListener("keydown", (e) => {
       if (document.body.classList.contains("print-preview")) return;
       if (e.target && (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA")) return;
-      if (state.view !== "browse") return;
-      if (state.mode !== "single") return;
+      if (e.key === shortcuts.focus) { e.preventDefault(); if (state.focusMode) exitFocusMode(); else enterFocusMode(); return; }
+      if (state.focusMode) {
+        if (e.key === shortcuts.escape) { e.preventDefault(); if (state.aiOpen) closeAiDrawer(); else exitFocusMode(); return; }
+        if (e.key === shortcuts.up) { e.preventDefault(); go(-1); return; }
+        if (e.key === shortcuts.down) { e.preventDefault(); go(1); return; }
+        if (e.key === shortcuts.answer) { e.preventDefault(); $("#btn-toggle-answer")?.click(); return; }
+        if (e.key.toLowerCase() === shortcuts.mastery1) { e.preventDefault(); $("#single-mastery [data-mastery='not_started']")?.click(); return; }
+        if (e.key.toLowerCase() === shortcuts.mastery2) { e.preventDefault(); $("#single-mastery [data-mastery='learning']")?.click(); return; }
+        if (e.key.toLowerCase() === shortcuts.mastery3) { e.preventDefault(); $("#single-mastery [data-mastery='mastered']")?.click(); return; }
+        if (e.key.toLowerCase() === shortcuts.error) { e.preventDefault(); $("#single-error-toggle")?.click(); return; }
+        if (e.key.toLowerCase() === shortcuts.favorite) { e.preventDefault(); $("#btn-toggle-favorite")?.click(); return; }
+        if (e.key.toLowerCase() === shortcuts.ai) { e.preventDefault(); openAiForQuestion(currentQ()); return; }
+        if (e.key.toLowerCase() === shortcuts.note) { e.preventDefault(); openNoteForQuestion(currentQ()); return; }
+        if (e.key.toLowerCase() === shortcuts.copy) { e.preventDefault(); if (currentQ()) copyQuestionMarkdown(currentQ()); return; }
+        if (e.key === shortcuts.help) { e.preventDefault(); toast("↑/↓ 切题 · Space 答案 · 1/2/3 掌握 · E 易错 · F 收藏 · A AI · N 批注 · C 复制 · Esc 关闭/退出"); return; }
+        return;
+      }
+      if (state.view !== "browse" || state.mode !== "single") return;
       if (e.key === "ArrowLeft") {
         e.preventDefault();
         go(-1);
@@ -2646,12 +4344,18 @@
         if (btn) btn.click();
       }
     });
+
+    loadAiProfiles();
   }
 
   async function init() {
+    checkRuntimeVersion();
+    applyUiPreferences();
+    loadUiBackground();
     bindUI();
     applyModeUI();
     const hydrated = hydrateStores();
+    const serverHydrated = hydrateServerState();
     try {
       indexesReady = Promise.all([
         fetchJSON(`${DATA}/category_questions.json`),
@@ -2664,12 +4368,15 @@
         fetchJSON(`${DATA}/manifest.json`),
         fetchJSON(`${DATA}/categories.json`),
         hydrated,
+        serverHydrated,
       ]);
       state.manifest = manifest;
       state.categories = categories;
       paintTree();
       renderHome();
+      refreshHomeSyncCard();
       setView("home");
+      restoreLearningPosition();
       refreshPickUI();
       if (!localStorage.getItem(TUTORIAL_SEEN_KEY)) {
         openSheet("dlg-welcome");
@@ -2680,9 +4387,10 @@
       els.stats.textContent = "数据加载失败";
       els.home.innerHTML = `<h1>加载失败</h1><p class="muted">${escapeHtml(err.message || String(err))}</p>
         <p>请用本地 HTTP 服务打开（不要直接双击 HTML）。例如：</p>
-        <pre>cd site && python3 -m http.server 8765</pre>`;
+        <pre>npm start</pre>`;
     }
   }
 
+  window.addEventListener("pagehide", saveLearningPosition);
   init();
 })();

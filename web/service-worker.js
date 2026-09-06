@@ -1,9 +1,9 @@
-const CACHE = "daguan-shell-v8";
+const CACHE = "daguan-shell-v32";
 const SHELL = [
   "./",
   "./index.html",
-  "./styles.css?v=2",
-  "./app.js?v=6",
+  "./styles.css?v=21",
+  "./app.js?v=24",
   "./vendor/marked.min.js",
   "./vendor/katex.min.js",
   "./vendor/katex.min.css",
@@ -91,16 +91,17 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   const request = event.request;
   if (request.method !== "GET") return;
+  if (new URL(request.url).pathname.includes("/api/")) return;
+  const isNavigation = request.mode === "navigate" || request.destination === "document";
   event.respondWith(
-    caches.match(request).then((cached) => {
-      if (cached) return cached;
-      return fetch(request).then((response) => {
-        if (response.ok && new URL(request.url).origin === location.origin) {
-          const copy = response.clone();
-          caches.open(CACHE).then((cache) => cache.put(request, copy));
-        }
-        return response;
-      });
-    })
+    isNavigation
+      ? fetch(request).then((response) => {
+          if (response.ok) caches.open(CACHE).then((cache) => cache.put(request, response.clone()));
+          return response;
+        }).catch(() => caches.match(request).then((cached) => cached || caches.match("./index.html")))
+      : caches.match(request).then((cached) => cached || fetch(request).then((response) => {
+          if (response.ok && new URL(request.url).origin === location.origin) caches.open(CACHE).then((cache) => cache.put(request, response.clone()));
+          return response;
+        }))
   );
 });

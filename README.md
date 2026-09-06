@@ -1,77 +1,83 @@
 # 大观园数学题库本地版
 
-本项目提供一个可离线运行或部署到服务器的本地 Web/PWA 刷题站，并通过浏览器扩展安全地与大观园官网同步掌握状态和收藏。
+本项目是一个本地优先的数学题库 Web/PWA。Node 中控台负责保存本地学习状态，并直接调用大观园 API 读取、写入和导出掌握状态；默认不需要浏览器扩展，也不需要打开大观园官网标签页。
 
-目录中的 `android/` 保留原 Flutter 客户端，作为移动端进度格式和题图资源参考；Web 端刷题入口是 `web/`。
+`android/` 保留原 Flutter 客户端和兼容数据格式，`web/` 是刷题页面，`local-server/` 是本地中控台，`sync-extension/` 仅作为旧版浏览器桥接兼容方案保留。
 
----
+## 一键启动
 
-## ⚡ 最快开始（快速上手）
+### Windows
 
-### Windows 用户（推荐一键启动）
-直接双击仓库根目录下的 **`启动本地题库.cmd`** 即可自动运行本地服务并拉起浏览器打开 `http://localhost:8080/`。
+双击根目录的 `启动本地题库.cmd`：
 
-> 详细图文与进阶使用说明，请参阅 📖 **[完整使用教程](docs/使用教程.md)**。
+1. 自动检查 Node.js 20；
+2. 没有 Node.js 时下载并校验便携运行时；
+3. 自动执行 `npm ci`；
+4. 启动本地中控台；
+5. 打开 `http://127.0.0.1:8080/`。
 
----
+第一次进入页面后，点击“设置同步”，输入大观园登录码即可完成配置。
 
-## 本地启动（手动方式）
+如果希望发给没有 Node.js 的新电脑，可在本机执行：
 
-```bash
-# Python 3
-python3 -m http.server 8080 --directory web
+```powershell
+npm run package:windows
 ```
 
-打开 `http://localhost:8080/`。
+生成的 `dist/大观园数学题库.exe` 是 Windows 单文件便携程序，双击即可启动；运行数据保存在当前 Windows 用户的 `%LOCALAPPDATA%\DaguanMath\data`，升级程序不会覆盖进度和登录配置。
 
-## Docker 启动
+### Linux
+
+```bash
+bash scripts/install-linux.sh
+```
+
+脚本会检查或安装 Node.js 20、安装依赖、创建 systemd 用户服务并启动本地中控台。
+
+### Docker
 
 ```bash
 docker compose -f deploy/docker-compose.yml up -d --build
 ```
-Windows 用户亦可双击 `启动本地题库-Docker.cmd` 启动。
 
-## 官网同步
+`data/` 会挂载到容器外，登录信息、学习状态、同步备份和日志会在重启后保留。
 
-首次使用时，首页的“数据同步中心”会打开配置向导，按“安装扩展 → 登录官网 → 绑定扩展 → 测试读取”完成配置。
+## 同步流程
 
-1. 在 Chrome 或 Edge 中加载 `sync-extension/` 未打包扩展。
-2. 打开并登录 `https://www.cxyonly.fans/math`。
-3. 从扩展弹窗复制扩展 ID，粘贴到向导中。
-4. 点击“测试读取官网数据”确认通信正常。
-5. 以后直接从首页点击“从官网读取”或“同步到官网”。
+首页“数据同步中心”提供：
 
-首页也提供了“数据同步中心”，配置完成后可以直接点击“从官网读取”或“同步到官网”，不必再从侧栏进入。
+- 检查差异：读取官网掌握、收藏、最近学习和活动，生成统一对账计划；
+- 应用对账：先备份并写入本地，再按计划写入官网并复读校验；
+- 导出本地数据：导出本地状态 JSON；
+- 导出官网快照：直接从大观园读取并导出当前状态。
 
-浏览器不允许普通网页静默安装扩展，也不允许网页自动读取另一个域名的登录 Cookie。因此扩展安装和官网登录仍需用户确认；完成一次配置后，日常同步都在本地网页中操作。
+默认行为：启动后只检查本地中控台和登录状态；官网掌握、收藏、最近学习和活动请在同步中心手动检查差异并确认应用。
 
-同步只处理掌握状态和收藏，不传输登录令牌、手写数据或文字笔记。写入官网前会先自动下载官网状态备份。
+Token 只保存在本机 `data/cxyonly-integration.json`，不会返回给网页、写入导出文件或写入日志。
 
-页面也暴露了 `sync.status()`（以及稳定别名 `daguanSync.status()`）、`pullOnlineProgress()`、`previewPush()` 和 `pushProgress()`；它们仍通过扩展转发，不会让本地页面直接接触官网令牌。
-
-## 数据同步
-
-当前题库数据来自线上静态题库。执行以下命令可重新下载题库和本地依赖：
+## 开发与验证
 
 ```bash
-npm run sync:data
-```
-
-如果题图接口要求登录令牌，设置临时环境变量后再运行：
-
-```bash
-# PowerShell
-$env:DAGUAN_ASSET_TOKEN = "临时令牌"
-npm run sync:data
-```
-
-令牌不会写入仓库。缺少题图时，页面会显示本地占位图，不会回退请求外部 URL。
-
-当前快照已复用 Android 客户端中 1297 张同哈希题图；线上题库新增或需要权限的题图仍需提供临时 `DAGUAN_ASSET_TOKEN` 后补齐。
-
-## 验证
-
-```bash
+npm ci
+npm start
 npm test
 npm run verify
 ```
+
+默认服务地址：`http://127.0.0.1:8080/`。
+
+重新下载题库资源：
+
+```bash
+npm run sync:data
+```
+
+题库缺图时，可按 `tools/sync-web-data.mjs` 的说明提供临时 `DAGUAN_ASSET_TOKEN`；本地页面不会回退加载外部图片或 CDN。
+
+## 安全边界
+
+- Node 默认只监听 `127.0.0.1`；
+- Token 文件和同步备份不纳入 Git；
+- 官网 API 发生变化时，只需调整 `local-server/cxyonly-client.mjs`；
+- `sync-extension/` 不参与默认同步流程；
+- 本项目不是大观园官方客户端，题库内容及相关权利归原权利人所有。

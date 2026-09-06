@@ -1,0 +1,16 @@
+[Unit]
+Description=Daguan Math Local Console
+After=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=__ROOT__
+ExecStart=__NODE__ __ROOT__/local-server/server.mjs
+Restart=on-failure
+RestartSec=5
+Environment=NODE_ENV=production
+Environment=HOST=127.0.0.1
+Environment=PORT=8080
+
+[Install]
+WantedBy=default.target

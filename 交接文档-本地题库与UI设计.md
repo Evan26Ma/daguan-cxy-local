@@ -11,7 +11,7 @@
 本地仓库绝对路径：
 
 ```text
-C:\Users\14666\Documents\ChatGPT\大观园本地
+F:\ai\大观园本地
 ```
 
 GitHub 仓库：
@@ -46,7 +46,7 @@ M web/styles.css
 这些是本轮新增的“首页同步中心 + 配置向导”未提交修改；启动脚本和扩展 UX 已在前一个提交中完成。继续工作前先运行：
 
 ```powershell
-cd 'C:\Users\14666\Documents\ChatGPT\大观园本地'
+cd 'F:\ai\大观园本地'
 git diff --stat
 git status --short
 ```
@@ -57,7 +57,7 @@ git status --short
 
 文件地址：
 
-[web/index.html](C:\Users\14666\Documents\ChatGPT\大观园本地\web\index.html)
+[web/index.html](F:\ai\大观园本地\web\index.html)
 
 首页同步中心入口：
 
@@ -131,25 +131,25 @@ btn-reopen-setup-wizard
 
 | 文件 | 作用 | UI AI 需要注意 |
 |---|---|---|
-| [web/index.html](C:\Users\14666\Documents\ChatGPT\大观园本地\web\index.html) | 页面结构、侧栏、首页、对话框 | 本次暂停时已加入教程入口和同步准备步骤 |
-| [web/styles.css](C:\Users\14666\Documents\ChatGPT\大观园本地\web\styles.css) | 页面全部样式 | 保持现有米白/深蓝风格；不要引入 CDN 图标、字体或框架 |
-| [web/app.js](C:\Users\14666\Documents\ChatGPT\大观园本地\web\app.js) | 刷题、搜索、进度、收藏、同步交互 | 不要把官网令牌或官网请求搬到这里 |
-| [web/manifest.webmanifest](C:\Users\14666\Documents\ChatGPT\大观园本地\web\manifest.webmanifest) | PWA 配置 | 资源路径必须兼容根路径和子路径 |
-| [web/service-worker.js](C:\Users\14666\Documents\ChatGPT\大观园本地\web\service-worker.js) | 离线缓存 | 如果修改脚本或教程资源，更新 cache 版本 |
-| [web/data](C:\Users\14666\Documents\ChatGPT\大观园本地\web\data) | 本地题库 JSON、索引、题图 | 不要手工改题库数据来解决 UI 问题 |
-| [web/vendor](C:\Users\14666\Documents\ChatGPT\大观园本地\web\vendor) | 本地 marked、KaTeX 和字体 | 禁止恢复 CDN 依赖 |
+| [web/index.html](F:\ai\大观园本地\web\index.html) | 页面结构、侧栏、首页、对话框 | 本次暂停时已加入教程入口和同步准备步骤 |
+| [web/styles.css](F:\ai\大观园本地\web\styles.css) | 页面全部样式 | 保持现有米白/深蓝风格；不要引入 CDN 图标、字体或框架 |
+| [web/app.js](F:\ai\大观园本地\web\app.js) | 刷题、搜索、进度、收藏、同步交互 | 不要把官网令牌或官网请求搬到这里 |
+| [web/manifest.webmanifest](F:\ai\大观园本地\web\manifest.webmanifest) | PWA 配置 | 资源路径必须兼容根路径和子路径 |
+| [web/service-worker.js](F:\ai\大观园本地\web\service-worker.js) | 离线缓存 | 如果修改脚本或教程资源，更新 cache 版本 |
+| [web/data](F:\ai\大观园本地\web\data) | 本地题库 JSON、索引、题图 | 不要手工改题库数据来解决 UI 问题 |
+| [web/vendor](F:\ai\大观园本地\web\vendor) | 本地 marked、KaTeX 和字体 | 禁止恢复 CDN 依赖 |
 
 ### 官网同步扩展
 
 | 文件 | 作用 |
 |---|---|
-| [sync-extension/manifest.json](C:\Users\14666\Documents\ChatGPT\大观园本地\sync-extension\manifest.json) | MV3 权限、官网 host 权限、本地来源白名单 |
-| [sync-extension/background.js](C:\Users\14666\Documents\ChatGPT\大观园本地\sync-extension\background.js) | 接收本地页面消息，转发到官网标签页 |
-| [sync-extension/bridge.js](C:\Users\14666\Documents\ChatGPT\大观园本地\sync-extension\bridge.js) | 官网适配层、CSRF、读取/写入、备份、重试 |
-| [sync-extension/protocol.js](C:\Users\14666\Documents\ChatGPT\大观园本地\sync-extension\protocol.js) | 扩展端同步协议和数据校验 |
-| [sync-extension/popup.html](C:\Users\14666\Documents\ChatGPT\大观园本地\sync-extension\popup.html) | 点击浏览器扩展图标后的弹窗 |
-| [sync-extension/popup.js](C:\Users\14666\Documents\ChatGPT\大观园本地\sync-extension\popup.js) | 扩展弹窗逻辑 |
-| [sync-extension/popup.css](C:\Users\14666\Documents\ChatGPT\大观园本地\sync-extension\popup.css) | 扩展弹窗样式 |
+| [sync-extension/manifest.json](F:\ai\大观园本地\sync-extension\manifest.json) | MV3 权限、官网 host 权限、本地来源白名单 |
+| [sync-extension/background.js](F:\ai\大观园本地\sync-extension\background.js) | 接收本地页面消息，转发到官网标签页 |
+| [sync-extension/bridge.js](F:\ai\大观园本地\sync-extension\bridge.js) | 官网适配层、CSRF、读取/写入、备份、重试 |
+| [sync-extension/protocol.js](F:\ai\大观园本地\sync-extension\protocol.js) | 扩展端同步协议和数据校验 |
+| [sync-extension/popup.html](F:\ai\大观园本地\sync-extension\popup.html) | 点击浏览器扩展图标后的弹窗 |
+| [sync-extension/popup.js](F:\ai\大观园本地\sync-extension\popup.js) | 扩展弹窗逻辑 |
+| [sync-extension/popup.css](F:\ai\大观园本地\sync-extension\popup.css) | 扩展弹窗样式 |
 
 可以在扩展弹窗中增加“复制扩展 ID”按钮，读取 `chrome.runtime.id`，这样用户只需复制并粘贴一次 ID。
 
@@ -157,13 +157,13 @@ btn-reopen-setup-wizard
 
 | 文件 | 作用 |
 |---|---|
-| [shared/sync-protocol.js](C:\Users\14666\Documents\ChatGPT\大观园本地\shared\sync-protocol.js) | Web 与扩展共用的数据协议副本 |
-| [tools/sync-web-data.mjs](C:\Users\14666\Documents\ChatGPT\大观园本地\tools\sync-web-data.mjs) | 下载线上题库、题图和本地依赖 |
-| [tools/verify-web-data.mjs](C:\Users\14666\Documents\ChatGPT\大观园本地\tools\verify-web-data.mjs) | 校验题库、资源、外部 URL 和字体 |
-| [deploy/docker-compose.yml](C:\Users\14666\Documents\ChatGPT\大观园本地\deploy\docker-compose.yml) | Docker 端口映射 `8080:80` |
-| [deploy/Dockerfile](C:\Users\14666\Documents\ChatGPT\大观园本地\deploy\Dockerfile) | Nginx 静态部署镜像 |
-| [deploy/README.md](C:\Users\14666\Documents\ChatGPT\大观园本地\deploy\README.md) | Linux/Docker 部署说明 |
-| [package.json](C:\Users\14666\Documents\ChatGPT\大观园本地\package.json) | `npm test`、`npm run verify` 等脚本 |
+| [shared/sync-protocol.js](F:\ai\大观园本地\shared\sync-protocol.js) | Web 与扩展共用的数据协议副本 |
+| [tools/sync-web-data.mjs](F:\ai\大观园本地\tools\sync-web-data.mjs) | 下载线上题库、题图和本地依赖 |
+| [tools/verify-web-data.mjs](F:\ai\大观园本地\tools\verify-web-data.mjs) | 校验题库、资源、外部 URL 和字体 |
+| [deploy/docker-compose.yml](F:\ai\大观园本地\deploy\docker-compose.yml) | Docker 端口映射 `8080:80` |
+| [deploy/Dockerfile](F:\ai\大观园本地\deploy\Dockerfile) | Nginx 静态部署镜像 |
+| [deploy/README.md](F:\ai\大观园本地\deploy\README.md) | Linux/Docker 部署说明 |
+| [package.json](F:\ai\大观园本地\package.json) | `npm test`、`npm run verify` 等脚本 |
 
 ## 5. 一键使用功能的目标
 
@@ -172,7 +172,7 @@ btn-reopen-setup-wizard
 在仓库根目录新增：
 
 ```text
-C:\Users\14666\Documents\ChatGPT\大观园本地\启动本地题库.cmd
+F:\ai\大观园本地\启动本地题库.cmd
 ```
 
 双击后应当：
@@ -186,7 +186,7 @@ C:\Users\14666\Documents\ChatGPT\大观园本地\启动本地题库.cmd
 可选地新增：
 
 ```text
-C:\Users\14666\Documents\ChatGPT\大观园本地\启动本地题库-Docker.cmd
+F:\ai\大观园本地\启动本地题库-Docker.cmd
 ```
 
 用于执行：
@@ -274,7 +274,7 @@ globalThis.sync
 建议新增：
 
 ```text
-C:\Users\14666\Documents\ChatGPT\大观园本地\docs\使用教程.md
+F:\ai\大观园本地\docs\使用教程.md
 ```
 
 内容至少包括：
@@ -292,7 +292,7 @@ C:\Users\14666\Documents\ChatGPT\大观园本地\docs\使用教程.md
 
 同时应在：
 
-[README.md](C:\Users\14666\Documents\ChatGPT\大观园本地\README.md)
+[README.md](F:\ai\大观园本地\README.md)
 
 增加一个“最快开始”段落，并链接到 `docs/使用教程.md`。
 
@@ -327,7 +327,7 @@ node --check sync-extension/popup.js
 可以直接把下面这段发给下一个 AI：
 
 ```text
-请在 C:\Users\14666\Documents\ChatGPT\大观园本地 继续工作。
+请在 F:\ai\大观园本地 继续工作。
 先阅读交接文档-本地题库与UI设计.md，不要 reset 或覆盖当前未提交的 web/index.html。
 本次目标是完善“一键使用 + 页面内使用教程”的 UI 和交互：
 1. 完成 web/index.html 中现有教程/同步准备 DOM 的 CSS 和 JS 事件绑定；
