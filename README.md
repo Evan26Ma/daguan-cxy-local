@@ -20,7 +20,7 @@
 
 第一次进入页面后，点击“同步进度”，再按引导完成登录、只读测试和首次同步。
 
-普通用户建议直接下载 GitHub Releases 中的 `大观园数学题库-windows-x64.zip`：
+普通用户建议直接从 [GitHub Releases](https://github.com/Evan26Ma/daguanyuan-math-local-sync/releases) 下载 `大观园数学题库-windows-x64.zip`：
 
 1. 解压完整 ZIP 文件；
 2. 双击 `安装大观园数学题库.cmd`；
