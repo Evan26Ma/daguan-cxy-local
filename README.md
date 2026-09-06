@@ -34,7 +34,7 @@ AI 能力取决于你配置的服务：普通文本模型不能自动获得视�
 
 第一次进入页面后，点击“同步进度”，再按引导完成登录、只读测试和首次同步。
 
-普通用户建议直接从 [GitHub Releases](../../releases) 下载 `大观园数学题库-windows-x64.zip`：
+普通用户建议直接从 [GitHub Releases](https://github.com/Evan26Ma/daguan-local/releases) 下载 `大观园数学题库-windows-x64.zip`：
 
 1. 解压完整 ZIP 文件；
 2. 双击 `安装大观园数学题库.cmd`；
