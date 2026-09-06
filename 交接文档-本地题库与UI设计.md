@@ -4,7 +4,7 @@
 
 本文件用于交给其他 AI 继续设计和实现 UI、使用教程以及“一键启动”体验。
 
-当前任务已经暂停，不要把本文件当成“功能已全部完成”的说明。尤其是本次新增的教程 DOM 还没有完成 JavaScript 事件绑定、CSS 样式和启动脚本。
+当前版本已经完成首页同步中心和官网同步配置向导；如果继续优化，请以当前工作区代码为准，不要按早期“待完成”描述重复实现。
 
 ## 2. 项目位置与 Git 状态
 
@@ -35,26 +35,43 @@ codex/daguan-math-local-sync
 当前暂停时的工作区状态：
 
 ```text
+M README.md
+M docs/使用教程.md
+M web/app.js
 M web/index.html
+M web/service-worker.js
+M web/styles.css
 ```
 
-也就是说，`web/index.html` 有一组未提交的教程入口和同步准备步骤；`web/app.js`、`web/styles.css`、启动脚本和教程文档尚未针对这组新增 DOM 完成收尾。继续工作前先运行：
+这些是本轮新增的“首页同步中心 + 配置向导”未提交修改；启动脚本和扩展 UX 已在前一个提交中完成。继续工作前先运行：
 
 ```powershell
 cd 'C:\Users\14666\Documents\ChatGPT\大观园本地'
-git diff -- web/index.html
+git diff --stat
 git status --short
 ```
 
 不要使用 `git reset --hard`，也不要覆盖当前未提交的 `web/index.html`。
 
-## 3. 本次已经写入 `web/index.html` 的待完成入口
+## 3. 当前已落地的同步入口
 
 文件地址：
 
 [web/index.html](C:\Users\14666\Documents\ChatGPT\大观园本地\web\index.html)
 
-目前新增或需要继续处理的 ID：
+首页同步中心入口：
+
+```text
+home-sync
+btn-home-pull
+btn-home-push
+btn-home-sync-setup
+home-sync-badge
+home-sync-status
+home-sync-detail
+```
+
+教程入口：
 
 ```text
 btn-tutorial
@@ -70,26 +87,43 @@ btn-open-official-site-sync
 btn-open-extension-page-sync
 ```
 
-现有官网同步对话框 `dlg-online-sync` 也已经增加了“登录官网、安装扩展、复制扩展 ID”的准备步骤。
+配置向导入口和控件：
 
-### 继续实现时必须完成
+```text
+dlg-setup-wizard
+setup-progress-label
+setup-progress-name
+setup-progress-fill
+btn-setup-open-extension
+btn-setup-open-official
+setup-extension-id
+btn-setup-check
+setup-feedback
+btn-setup-test-read
+setup-test-result
+btn-reopen-setup-wizard
+```
 
-1. 给上述按钮绑定事件；如果决定重新设计 DOM，可以保留等价功能并同步修改 ID。
-2. 给欢迎弹窗和教程弹窗补充样式、移动端布局、键盘关闭和焦点可用性。
-3. 增加首次打开提示的本地标记，例如：
+`web/app.js` 已绑定这些入口。首页按钮在未配置扩展 ID 时会先打开配置向导；完成配置后会直接打开同步面板并触发对应的读取/写入动作。
+
+### 后续可选优化
+
+1. 如果需要，把扩展发布到 Chrome Web Store 或企业策略中，减少“加载已解压扩展”的一次性操作。
+2. 如果扩展拥有固定发布 ID，可以把 ID 做成版本配置，进一步减少手工粘贴。
+3. 继续做 375px、Edge/Chrome 实机验证。
+4. 教程按钮不能影响原有刷题、进度备份和同步逻辑。
+
+首次打开提示使用的本地标记：
 
    ```text
    daguan_tutorial_seen_v1
    ```
 
-4. “打开扩展管理页”可尝试打开 `chrome://extensions/`；如果浏览器拦截，必须给出文字提示，并显示用户可手动输入的地址。
-5. “打开官网”使用：
+官网地址：
 
    ```text
    https://www.cxyonly.fans/math
    ```
-
-6. 教程按钮不能影响原有刷题、进度备份和同步逻辑。
 
 ## 4. 关键文件清单
 
@@ -304,4 +338,3 @@ node --check sync-extension/popup.js
 6. 完成 npm test、npm run verify、node --check 和 375px 移动端手工检查。
 最后报告修改文件、测试结果和仍需用户确认的事项，不要擅自推送未确认的提交。
 ```
-

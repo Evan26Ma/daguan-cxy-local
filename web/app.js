@@ -1541,6 +1541,136 @@
     return String(localStorage.getItem(SYNC_EXTENSION_KEY) || "").trim();
   }
 
+  function setHomeSyncCard(status, label, detail) {
+    const badge = $("#home-sync-badge");
+    const statusEl = $("#home-sync-status");
+    const detailEl = $("#home-sync-detail");
+    if (badge) badge.dataset.state = status;
+    if (statusEl && label) statusEl.textContent = label;
+    if (detailEl && detail) detailEl.textContent = detail;
+  }
+
+  function refreshHomeSyncCard() {
+    if (syncExtensionId()) {
+      setHomeSyncCard(
+        "ready",
+        "已配置同步扩展",
+        "打开官网并保持登录标签页，即可从这里读取或上传。"
+      );
+    } else {
+      setHomeSyncCard(
+        "setup",
+        "尚未完成配置",
+        "首次使用只需安装同步扩展并粘贴一次扩展 ID。"
+      );
+    }
+  }
+
+  let setupStep = 1;
+  const SETUP_STEP_NAMES = ["", "安装扩展", "登录官网", "绑定扩展", "测试读取"];
+
+  function setSetupFeedback(text, error = false) {
+    const el = $("#setup-feedback");
+    if (!el) return;
+    el.textContent = text;
+    el.dataset.error = error ? "1" : "0";
+  }
+
+  function showSetupStep(step) {
+    setupStep = Math.max(1, Math.min(4, Number(step) || 1));
+    document.querySelectorAll("[data-setup-step]").forEach((el) => {
+      el.hidden = Number(el.dataset.setupStep) !== setupStep;
+    });
+    const label = $("#setup-progress-label");
+    const name = $("#setup-progress-name");
+    const fill = $("#setup-progress-fill");
+    if (label) label.textContent = `第 ${setupStep} 步，共 4 步`;
+    if (name) name.textContent = SETUP_STEP_NAMES[setupStep];
+    if (fill) fill.style.width = `${(setupStep / 4) * 100}%`;
+    if (setupStep === 3) {
+      const input = $("#setup-extension-id");
+      if (input) input.value = syncExtensionId();
+      setSetupFeedback("");
+    }
+  }
+
+  function openSetupWizard() {
+    openSheet("dlg-setup-wizard");
+    showSetupStep(syncExtensionId() ? 3 : 1);
+  }
+
+  async function checkSetupConnection() {
+    const input = $("#setup-extension-id");
+    const value = input?.value.trim() || "";
+    if (!value) {
+      setSetupFeedback("请先粘贴扩展 ID。", true);
+      input?.focus();
+      return;
+    }
+    localStorage.setItem(SYNC_EXTENSION_KEY, value);
+    refreshHomeSyncCard();
+    const button = $("#btn-setup-check");
+    if (button) {
+      button.disabled = true;
+      button.textContent = "正在检查…";
+    }
+    setSetupFeedback("正在联系同步扩展并查找官网标签页…");
+    try {
+      const result = await syncRequest("status");
+      if (!result.officialTab) {
+        setSetupFeedback("扩展已响应，但没有找到官网标签页。请打开并登录官网后重试。", true);
+        setHomeSyncCard("warning", "找不到官网标签页", "请打开并登录官网，再回到这里检查连接。");
+        return;
+      }
+      setSetupFeedback(`连接成功：${result.officialTab.title || "已找到官网标签页"}`);
+      setHomeSyncCard("ready", "已连接官网", "可以从首页读取官网，或把本地进度同步回官网。");
+      showSetupStep(4);
+    } catch (error) {
+      setSetupFeedback(`连接失败：${error.message || String(error)}。请确认扩展已加载且 ID 正确。`, true);
+      setHomeSyncCard("warning", "扩展连接失败", "请检查扩展 ID、扩展状态和官网标签页后重试。");
+    } finally {
+      if (button) {
+        button.disabled = false;
+        button.textContent = "保存并检查连接";
+      }
+    }
+  }
+
+  async function testSetupRead() {
+    const button = $("#btn-setup-test-read");
+    const resultEl = $("#setup-test-result");
+    if (button) {
+      button.disabled = true;
+      button.textContent = "正在读取…";
+    }
+    if (resultEl) resultEl.textContent = "正在读取官网状态，只读不修改…";
+    try {
+      const result = await syncRequest("pull");
+      const documentValue = result.document || result;
+      const entries = documentValue?.question_states?.states || [];
+      const favorites = entries.filter((entry) => {
+        const value = entry?.user_state || entry;
+        return value.favorite === true || value.is_favorite === true || value.favorited_at;
+      }).length;
+      if (resultEl) {
+        resultEl.textContent = `读取成功：官网返回 ${entries.length} 条有标记题目，其中收藏 ${favorites} 条。现在可以完成配置。`;
+        resultEl.dataset.error = "0";
+      }
+      setHomeSyncCard("ready", "官网读取测试成功", "配置已完成，之后可直接使用首页两个同步按钮。");
+    } catch (error) {
+      if (resultEl) {
+        resultEl.textContent = `读取失败：${error.message || String(error)}。请确认官网仍保持登录。`;
+        resultEl.dataset.error = "1";
+      }
+      setHomeSyncCard("warning", "官网读取失败", "请检查官网标签页和扩展连接后重试。");
+    } finally {
+      if (button) {
+        button.disabled = false;
+        button.textContent = "测试读取官网数据";
+      }
+    }
+  }
+
   function buildSyncDocument() {
     const states = {};
     for (const [id, p] of Object.entries(state.progress)) {
@@ -1961,6 +2091,7 @@
     if (copyBtn) copyBtn.disabled = empty;
     const share = $("#btn-share-progress");
     if (share) share.hidden = !navigator.share;
+    refreshHomeSyncCard();
   }
 
   function parseProgressBundle(text) {
@@ -2172,6 +2303,20 @@
       toast("如果浏览器拦截，请在新标签页地址栏输入 chrome://extensions 并回车");
     };
 
+    const openOnlineSyncPanel = (actionId = "") => {
+      if (!syncExtensionId()) {
+        openSetupWizard();
+        return;
+      }
+      const input = $("#sync-extension-id");
+      if (input) input.value = syncExtensionId();
+      refreshSyncStats();
+      openSheet("dlg-online-sync");
+      if (actionId) {
+        window.setTimeout(() => $("#" + actionId)?.click(), 0);
+      }
+    };
+
     const btnTutorial = $("#btn-tutorial");
     if (btnTutorial) btnTutorial.addEventListener("click", () => openSheet("dlg-tutorial"));
 
@@ -2215,6 +2360,33 @@
     if (btnOpenExt) btnOpenExt.addEventListener("click", openExtensionPage);
     const btnOpenExtSync = $("#btn-open-extension-page-sync");
     if (btnOpenExtSync) btnOpenExtSync.addEventListener("click", openExtensionPage);
+    const btnSetupOpenExt = $("#btn-setup-open-extension");
+    if (btnSetupOpenExt) btnSetupOpenExt.addEventListener("click", openExtensionPage);
+    const btnSetupOpenOfficial = $("#btn-setup-open-official");
+    if (btnSetupOpenOfficial) btnSetupOpenOfficial.addEventListener("click", openOfficialSite);
+    document.querySelectorAll("[data-setup-next]").forEach((btn) => {
+      btn.addEventListener("click", () => showSetupStep(btn.dataset.setupNext));
+    });
+    document.querySelectorAll("[data-setup-prev]").forEach((btn) => {
+      btn.addEventListener("click", () => showSetupStep(btn.dataset.setupPrev));
+    });
+    const btnSetupCheck = $("#btn-setup-check");
+    if (btnSetupCheck) btnSetupCheck.addEventListener("click", checkSetupConnection);
+    const btnSetupTestRead = $("#btn-setup-test-read");
+    if (btnSetupTestRead) btnSetupTestRead.addEventListener("click", testSetupRead);
+    const btnReopenSetupWizard = $("#btn-reopen-setup-wizard");
+    if (btnReopenSetupWizard) {
+      btnReopenSetupWizard.addEventListener("click", () => {
+        closeSheet("dlg-online-sync");
+        openSetupWizard();
+      });
+    }
+    const btnHomePull = $("#btn-home-pull");
+    if (btnHomePull) btnHomePull.addEventListener("click", () => openOnlineSyncPanel("btn-sync-pull"));
+    const btnHomePush = $("#btn-home-push");
+    if (btnHomePush) btnHomePush.addEventListener("click", () => openOnlineSyncPanel("btn-sync-push"));
+    const btnHomeSyncSetup = $("#btn-home-sync-setup");
+    if (btnHomeSyncSetup) btnHomeSyncSetup.addEventListener("click", openSetupWizard);
     $("#btn-export").addEventListener("click", () => {
       refreshExportCounts();
       openSheet("dlg-export");
@@ -2234,21 +2406,31 @@
       openSheet("dlg-sync");
     });
     $("#btn-online-sync").addEventListener("click", () => {
-      const input = $("#sync-extension-id");
-      if (input) input.value = syncExtensionId();
-      refreshSyncStats();
-      openSheet("dlg-online-sync");
+      openOnlineSyncPanel();
     });
     $("#sync-extension-id").addEventListener("change", (event) => {
       localStorage.setItem(SYNC_EXTENSION_KEY, event.target.value.trim());
+      refreshHomeSyncCard();
+    });
+    $("#sync-extension-id").addEventListener("input", (event) => {
+      localStorage.setItem(SYNC_EXTENSION_KEY, event.target.value.trim());
+      refreshHomeSyncCard();
     });
     $("#btn-sync-status").addEventListener("click", async () => {
       try {
         const result = await syncRequest("status");
         $("#sync-connection-status").textContent = result.message || "同步扩展已连接";
+        setHomeSyncCard(
+          result.officialTab ? "ready" : "warning",
+          result.officialTab ? "官网已连接" : "找不到官网标签页",
+          result.officialTab
+            ? "同步入口已就绪，可以从这里读取或上传。"
+            : "请先打开并登录大观园官网，再点击检查连接。"
+        );
         showSyncResult(JSON.stringify(result, null, 2));
       } catch (error) {
         $("#sync-connection-status").textContent = "连接失败";
+        setHomeSyncCard("warning", "同步连接失败", String(error.message || error));
         showSyncResult(String(error.message || error), true);
       }
     });
@@ -2270,8 +2452,14 @@
         }
         const applied = applyRemoteSyncDocument(documentValue);
         showSyncResult(`读取完成\n官网条目：${applied.entries}\n更新本地掌握：${applied.updated}\n更新收藏：${applied.favorites}\n未知题号：${applied.unknown}`);
+        setHomeSyncCard(
+          "ready",
+          "刚刚从官网读取",
+          `已合并 ${applied.updated + applied.favorites} 项本地变化，可继续刷题。`
+        );
         toast("已从官网读取进度");
       } catch (error) {
+        setHomeSyncCard("warning", "读取失败", "请检查官网标签页和扩展连接后重试。");
         showSyncResult(String(error.message || error), true);
       }
     });
@@ -2294,8 +2482,14 @@
         showSyncResult("正在备份官网并写入状态…");
         const result = await syncRequest("push", { previewId: preview.previewId });
         showSyncResult(JSON.stringify(result, null, 2));
+        setHomeSyncCard(
+          "ready",
+          "刚刚同步到官网",
+          `成功写入 ${result.succeeded || 0} 条，可继续刷题。`
+        );
         toast(`同步完成：成功 ${result.succeeded || 0} 条`);
       } catch (error) {
+        setHomeSyncCard("warning", "同步失败", "本地数据未被清除，请检查连接后重试。");
         showSyncResult(String(error.message || error), true);
       }
     });

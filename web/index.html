@@ -7,7 +7,7 @@
   <meta name="description" content="大观园数学题库本地静态刷题站" />
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="stylesheet" href="./vendor/katex.min.css" />
-  <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./styles.css?v=2" />
 </head>
 <body>
   <div id="app">
@@ -82,6 +82,38 @@
               <button type="button" class="btn hero-cta" id="btn-hero-tutorial">先看使用教程</button>
             </div>
           </div>
+
+          <section class="home-sync" aria-labelledby="home-sync-title">
+            <div class="home-sync-head">
+              <div>
+                <p class="home-sync-kicker">数据同步中心</p>
+                <h2 id="home-sync-title">本地刷题，官网一键互通</h2>
+                <p class="muted home-sync-desc">刷题留在本地，准备好后从这里读取官网，或把本地进度安全同步回官网。</p>
+              </div>
+              <div class="sync-status-badge" id="home-sync-badge" data-state="setup" role="status">
+                <span class="sync-status-dot" aria-hidden="true"></span>
+                <span id="home-sync-status">尚未完成配置</span>
+              </div>
+            </div>
+            <div class="home-sync-actions">
+              <button type="button" class="sync-action sync-action-primary" id="btn-home-pull">
+                <span class="sync-action-kicker">官网 → 本地</span>
+                <strong>从官网读取</strong>
+                <span class="sync-action-desc">把官网的掌握状态和收藏合并到本地</span>
+                <span class="sync-action-arrow" aria-hidden="true">→</span>
+              </button>
+              <button type="button" class="sync-action sync-action-secondary" id="btn-home-push">
+                <span class="sync-action-kicker">本地 → 官网</span>
+                <strong>同步到官网</strong>
+                <span class="sync-action-desc">先预览、自动备份，再确认写入官网</span>
+                <span class="sync-action-arrow" aria-hidden="true">→</span>
+              </button>
+            </div>
+            <div class="home-sync-foot">
+              <span class="muted" id="home-sync-detail">首次使用只需安装同步扩展并粘贴一次扩展 ID。</span>
+              <button type="button" class="btn ghost" id="btn-home-sync-setup">设置同步</button>
+            </div>
+          </section>
 
           <div class="metric-strip" id="metric-strip">
             <div class="metric">
@@ -315,6 +347,74 @@
     </div>
   </dialog>
 
+  <dialog id="dlg-setup-wizard" class="sheet sheet-wide">
+    <div class="sheet-head">
+      <div>
+        <p class="dialog-kicker">首次配置</p>
+        <h2>配置官网同步</h2>
+      </div>
+      <button type="button" class="icon-btn" data-close="dlg-setup-wizard" aria-label="关闭">×</button>
+    </div>
+    <div class="setup-progress" aria-live="polite">
+      <div class="setup-progress-meta"><span id="setup-progress-label">第 1 步，共 4 步</span><span id="setup-progress-name">安装扩展</span></div>
+      <div class="setup-progress-track"><i id="setup-progress-fill"></i></div>
+    </div>
+
+    <section class="setup-step" data-setup-step="1">
+      <span class="setup-step-number">1</span>
+      <div class="setup-step-content">
+        <h3>安装同步扩展</h3>
+        <p>普通网页不能替你静默安装浏览器扩展。请在扩展管理页开启“开发者模式”，选择项目里的 <code>sync-extension</code> 文件夹。</p>
+        <div class="setup-path"><span>扩展目录</span><code>sync-extension</code></div>
+        <div class="tutorial-actions">
+          <button type="button" class="btn" id="btn-setup-open-extension">打开扩展管理页</button>
+          <button type="button" class="btn primary" data-setup-next="2">我已加载，下一步</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="setup-step" data-setup-step="2" hidden>
+      <span class="setup-step-number">2</span>
+      <div class="setup-step-content">
+        <h3>登录大观园官网</h3>
+        <p>在同一个 Chrome 或 Edge 浏览器中打开官网并完成登录，保持官网数学题库标签页打开。扩展只能通过这个已登录标签页读取数据。</p>
+        <div class="tutorial-actions">
+          <button type="button" class="btn" id="btn-setup-open-official">打开大观园官网</button>
+          <button type="button" class="btn primary" data-setup-next="3">我已登录，下一步</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="setup-step" data-setup-step="3" hidden>
+      <span class="setup-step-number">3</span>
+      <div class="setup-step-content">
+        <h3>绑定扩展并检查连接</h3>
+        <p>点击浏览器扩展图标，在“大观园数据桥接”弹窗中点击“复制 ID”，然后粘贴到下面。ID 只需保存一次。</p>
+        <label class="field-label" for="setup-extension-id">同步扩展 ID</label>
+        <input id="setup-extension-id" class="import-area sync-extension-id" placeholder="例如 abcdefghijklmnop" autocomplete="off" spellcheck="false" />
+        <p class="setup-feedback" id="setup-feedback" role="status" aria-live="polite"></p>
+        <div class="tutorial-actions">
+          <button type="button" class="btn" data-setup-prev="2">上一步</button>
+          <button type="button" class="btn primary" id="btn-setup-check">保存并检查连接</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="setup-step" data-setup-step="4" hidden>
+      <span class="setup-step-number">4</span>
+      <div class="setup-step-content">
+        <h3>测试读取官网数据</h3>
+        <p>点击测试后，扩展会从已登录官网读取当前掌握状态和收藏数量，只读不修改官网和本地进度。</p>
+        <div class="setup-feedback setup-feedback-box" id="setup-test-result" role="status" aria-live="polite">等待测试。</div>
+        <div class="tutorial-actions">
+          <button type="button" class="btn" data-setup-prev="3">返回修改</button>
+          <button type="button" class="btn" id="btn-setup-test-read">测试读取官网数据</button>
+          <button type="button" class="btn primary" data-close="dlg-setup-wizard">完成配置</button>
+        </div>
+      </div>
+    </section>
+  </dialog>
+
   <dialog id="dlg-online-sync" class="sheet sheet-wide">
     <div class="sheet-head">
       <h2>官网同步</h2>
@@ -335,6 +435,9 @@
     </div>
     <pre class="sync-result" id="sync-result" hidden aria-live="polite"></pre>
     <p class="hint-note">默认只合并非空掌握状态和已收藏，不会清空官网记录。写入前扩展会自动下载官网备份。</p>
+    <div class="sheet-actions inline setup-reopen-actions">
+      <button type="button" class="btn ghost" id="btn-reopen-setup-wizard">重新运行配置向导</button>
+    </div>
   </dialog>
 
   <div id="print-stage" class="print-stage hidden" hidden>
@@ -354,6 +457,6 @@
 
   <script defer src="./vendor/marked.min.js"></script>
   <script defer src="./vendor/katex.min.js"></script>
-  <script defer src="./app.js?v=5"></script>
+  <script defer src="./app.js?v=6"></script>
 </body>
 </html>

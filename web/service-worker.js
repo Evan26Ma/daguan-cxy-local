@@ -1,9 +1,9 @@
-const CACHE = "daguan-shell-v6";
+const CACHE = "daguan-shell-v8";
 const SHELL = [
   "./",
   "./index.html",
-  "./styles.css",
-  "./app.js?v=5",
+  "./styles.css?v=2",
+  "./app.js?v=6",
   "./vendor/marked.min.js",
   "./vendor/katex.min.js",
   "./vendor/katex.min.css",
