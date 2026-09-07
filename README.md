@@ -1,5 +1,55 @@
 # 本地大观园
 
+<div align="center">
+  <a href="https://space.bilibili.com/6536560">
+    <img src="https://i1.hdslb.com/bfs/face/57ae07cd5d54f25f86bc6df213de143aed9f6491.jpg" width="112" height="112" alt="澄潇宇 B 站头像">
+  </a>
+  <h2>🌟 特别鸣谢：澄潇宇（帕拉迪宇）</h2>
+  <p><strong>本项目特别感谢澄潇宇提供的支持，以及他对“大观”系列的系统整理、讲解与公开分享。</strong></p>
+</div>
+
+> 👤 **B 站账号：** [澄潇宇·大观全系列](https://space.bilibili.com/6536560) · [帕拉迪宇·早期账号](https://space.bilibili.com/3546659988441400)
+>
+> **账号说明：** “帕拉迪宇”是早期账号；下方已单独列出“极限大观”，其余课程按澄潇宇的“考研数学大观全系列”合集整理。
+
+## 🎬 大观视频导航
+
+### ⭐ 先看使用教程
+
+- **[CXY-000#0《大观使用说明：一个视频教给你如何使用数学大观》](https://www.bilibili.com/video/BV1KSDxBkEKJ/)**
+- **[《考研数学大观全系列》合集入口（共 17 个视频）](https://www.bilibili.com/video/BV1THN36xE41/)**
+
+### 📘 高等数学公共部分
+
+1. [积分计算大观](https://www.bilibili.com/video/BV1gmReBDEUz/)
+2. [积分应用大观](https://www.bilibili.com/video/BV1yHE56FEaf/)
+3. [反常积分大观](https://www.bilibili.com/video/BV1hEykBjEdX/)
+4. [二重积分大观](https://www.bilibili.com/video/BV1rPtQegEtk/)
+5. [极限大观](https://www.bilibili.com/video/BV1NKVpzREDV/)
+6. [一元微分大观](https://www.bilibili.com/video/BV1z9H4z2EyY/)
+7. [多元微分大观](https://www.bilibili.com/video/BV1FShNzVErn/)
+8. [微分方程大观](https://www.bilibili.com/video/BV1CpM8ztEaX/)
+
+### 📙 高等数学（数学一、数学三专项）
+
+1. [级数大观](https://www.bilibili.com/video/BV1THN36xE41/)
+
+### 📗 线性代数
+
+1. [线性代数大观（上篇）](https://www.bilibili.com/video/BV1aeUWYUEiT/)
+2. [线性代数大观（下篇）](https://www.bilibili.com/video/BV1shzdYqEXq/)
+3. [二次型大观（上篇）](https://www.bilibili.com/video/BV1wh4y1P7rj/)
+4. [二次型大观（中篇）](https://www.bilibili.com/video/BV1K34y1K7rx/)
+5. [二次型大观（下篇）](https://www.bilibili.com/video/BV1Wu411A78B/)
+
+### 📕 概率论与数理统计
+
+1. [概率论](https://www.bilibili.com/video/BV1LDqJB6ELz/)
+2. [数理统计（上篇）](https://www.bilibili.com/video/BV1FN41177AD/)
+3. [数理统计（下篇）](https://www.bilibili.com/video/BV1UN411V769/)
+
+---
+
 > **Windows 新手推荐：直接下载 EXE，不要下载 Source code。**
 > [⬇️ 下载 `DaguanMath-windows-x64.exe`](https://github.com/Evan26Ma/daguan-cxy-local/releases/latest/download/DaguanMath-windows-x64.exe) · [📖 完全零基础安装与配置教程](docs/Windows新手安装与配置.md)
 
