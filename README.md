@@ -1,6 +1,9 @@
 # 本地大观园
 
-一个面向数学学习的本地增强版刷题工作区。它读取大观园题库，在本机提供更适合连续学习的题目界面、状态管理、AI 助教和可视化解释；官网账号与官网同步仍由本地中控台负责，默认不需要浏览器扩展，也不需要打开大观园官网标签页。
+> **Windows 新手推荐：直接下载 EXE，不要下载 Source code。**
+> [⬇️ 下载 `DaguanMath-windows-x64.exe`](https://github.com/Evan26Ma/daguan-cxy-local/releases/latest/download/DaguanMath-windows-x64.exe) · [📖 完全零基础安装与配置教程](docs/Windows新手安装与配置.md)
+
+一个在自己电脑上运行的大观园数学题库增强版：题目更适合连续刷，学习进度保存在本机，可选同步官网进度，也可选连接 AI 助教。普通 Windows 用户只需“下载 EXE → 双击运行 → 浏览器自动打开”，不需要安装 Node.js、不需要使用命令行，也不需要浏览器扩展。
 
 ## 它和原版大观园有什么不同？
 
@@ -24,17 +27,18 @@ AI 能力取决于你配置的服务：普通文本模型不能自动获得视�
 
 ### Windows
 
-如果是开发者或已经安装 Node.js 的用户，双击根目录的 `启动本地题库.cmd`：
+#### 普通用户（推荐）
 
-1. 自动检查 Node.js 20；
-2. 没有 Node.js 时下载并校验便携运行时；
-3. 自动执行 `npm ci`；
-4. 启动本地中控台；
-5. 打开 `http://127.0.0.1:8080/`。
+直接下载 [DaguanMath-windows-x64.exe](https://github.com/Evan26Ma/daguan-cxy-local/releases/latest/download/DaguanMath-windows-x64.exe)：
 
-第一次进入页面后，点击“同步进度”，再按引导完成登录、只读测试和首次同步。
+1. 双击 EXE；
+2. 如果 Windows 显示“已保护你的电脑”，核对文件来自本项目 Release 后，点击“更多信息 → 仍要运行”；
+3. 保持黑色运行窗口打开，稍等浏览器自动进入题库；
+4. 第一次使用可直接刷题；需要官网进度时，再点击首页“同步进度”。
 
-普通用户建议直接从 [GitHub Releases](https://github.com/Evan26Ma/daguan-local/releases) 下载 `DaguanMath-windows-x64.exe`，双击即可运行，不需要 Node.js。
+不要下载 GitHub 自动生成的 `Source code (zip)`，那是给开发者的源代码，不是可直接运行的安装包。第一次使用建议阅读 [Windows 新手安装与配置教程](docs/Windows新手安装与配置.md)。
+
+#### 需要桌面快捷方式
 
 如果希望安装到系统并创建桌面、开始菜单快捷方式，下载 `DaguanMath-windows-x64.zip`：
 
@@ -43,6 +47,16 @@ AI 能力取决于你配置的服务：普通文本模型不能自动获得视�
 3. 安装器会创建桌面和开始菜单快捷方式，并自动启动。
 
 两种发布包都不需要 Node.js，详细说明见 [Windows 安装说明](packaging/windows/安装说明.txt)。
+
+#### 开发者从源码启动
+
+如果是开发者或已经安装 Node.js 的用户，双击根目录的 `启动本地题库.cmd`：
+
+1. 自动检查 Node.js 20；
+2. 没有 Node.js 时下载并校验便携运行时；
+3. 自动执行 `npm ci`；
+4. 启动本地中控台；
+5. 打开 `http://127.0.0.1:8080/`。
 
 如果需要自行构建 Windows 单文件程序，可在本机执行：
 

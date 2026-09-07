@@ -12,6 +12,11 @@
 - ZIP 发布包改用 ASCII 文件名，构建时自动解压并复查 PowerShell 语法；
 - 统一将运行数据保存到 `%LOCALAPPDATA%\DaguanMath`，避免直接运行 EXE 时在下载目录产生数据副本。
 
+### 新手文档
+
+- GitHub 首页改为优先推荐直接运行的 EXE，并醒目提示普通用户不要下载 Source code；
+- 新增 Windows 完全零基础教程，覆盖下载、SmartScreen、启动、刷题、首次同步、AI 配置、更新、备份和常见故障。
+
 ## 2026.09.07-r7（待发布）
 
 ### 同步流程简化
