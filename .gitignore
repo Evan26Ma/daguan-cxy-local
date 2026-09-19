@@ -22,3 +22,7 @@ android/.flutter-plugins-dependencies
 android/.packages
 android/android/.gradle/
 android/android/app/build/
+
+# 标注管线中间产物与本地截图（不入库）
+tools/tagger-out/
+docs/refshots/

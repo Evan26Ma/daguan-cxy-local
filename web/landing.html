@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>考研学习资源｜题库刷题与智能组卷 · 大观园</title>
+  <meta name="description" content="面向中国大陆考研用户，提供题库、真题刷题、错题复习、学习记录与智能组卷，更多考研内容持续建设中。" />
+  <link rel="icon" type="image/png" href="./assets/landing/daguan-curve-logo.png" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="stylesheet" href="./landing.css?v=3" />
+</head>
+<body>
+  <div class="landing-page">
+    <a class="skip-link" href="#landing-main-content">跳到主要内容</a>
+
+    <header class="museum-nav" aria-label="首页导航">
+      <a class="nav-brand" href="./landing.html" aria-label="大观园 研学资源知识库">
+        <img class="nav-brand-mark" src="./assets/landing/daguan-curve-logo.png" alt="" width="64" height="64" />
+        <span class="nav-brand-title">大观园</span>
+        <span class="nav-brand-sub">研学资源知识库</span>
+      </a>
+      <nav class="nav-links" aria-label="页面章节">
+        <button type="button" class="nav-link is-active" data-target="hero" aria-current="location">首页</button>
+        <button type="button" class="nav-link" data-target="resources">资源中心</button>
+        <button type="button" class="nav-link" data-target="follow">关注我们</button>
+      </nav>
+      <div class="nav-progress" aria-label="页面进度：第 01 节，共 3 节，首页">
+        <span id="nav-progress-index" aria-current="step">01</span><span></span><span aria-hidden="true"></span><span aria-hidden="true"></span>
+      </div>
+    </header>
+
+    <main id="landing-main-content" tabindex="-1">
+      <section id="hero" class="hero-section">
+        <div class="hero-inner">
+          <div class="hero-copy">
+            <h1 class="hero-title">大观园</h1>
+            <p class="hero-deck">系统知识 · 优质资源 · 研途相伴</p>
+            <div class="hero-actions">
+              <a class="hero-primary-btn" href="./index.html">开始学习
+                <svg xmlns="http://www.w3.org/2000/svg" width="27" height="27" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l14 0"></path><path d="M13 6l6 6"></path><path d="M13 18l6 -6"></path></svg>
+              </a>
+              <button type="button" class="hero-secondary-btn" id="btn-view-resources">查看资源
+                <svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l14 0"></path><path d="M13 6l6 6"></path><path d="M13 18l6 -6"></path></svg>
+              </button>
+            </div>
+          </div>
+          <div class="geometry">
+            <div class="geometry-scene" aria-hidden="true">
+              <img class="geometry-fallback is-animated" src="./assets/landing/landing-book-particles.jpg" alt="" />
+            </div>
+            <button type="button" class="motion-toggle" id="btn-motion-toggle" aria-label="暂停书页动画">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5.5v13M18 5.5v13"></path></svg>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section id="resources" class="resource-section" aria-labelledby="resource-heading">
+        <h2 id="resource-heading" class="sr-only">研学资源中心</h2>
+        <div class="resource-navigator" aria-label="学科资源导航" aria-roledescription="轮播">
+          <div class="resource-map">
+            <svg class="map-lines" viewBox="0 0 1200 300" preserveAspectRatio="none" fill="none" aria-hidden="true">
+              <path d="M25 180C190 30 380 125 340 200S355 247 390 254M810 254C900 95 1000 110 1175 175" stroke="currentColor" stroke-width="1"></path>
+              <ellipse cx="600" cy="265" rx="210" ry="28" stroke="currentColor" opacity="0.18"></ellipse>
+              <ellipse cx="600" cy="265" rx="244" ry="42" stroke="currentColor" opacity="0.09"></ellipse>
+              <circle cx="340" cy="200" r="4" fill="currentColor"></circle>
+              <circle cx="834" cy="159" r="4" fill="currentColor"></circle>
+            </svg>
+            <!-- 学科节点由 landing.js 渲染 -->
+            <noscript><p style="text-align:center;padding-top:120px;color:#68768d">考研数学题库入口已开放，请启用 JavaScript 或直接点击“开始学习”。</p></noscript>
+          </div>
+          <div class="resource-controls">
+            <button type="button" class="switch-arrow" id="btn-subject-prev" aria-label="上一个学科">
+              <svg xmlns="http://www.w3.org/2000/svg" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l14 0"></path><path d="M5 12l6 6"></path><path d="M5 12l6 -6"></path></svg>
+            </button>
+            <div class="subject-tabs" role="tablist" aria-label="选择学科" id="subject-tabs"></div>
+            <button type="button" class="switch-arrow" id="btn-subject-next" aria-label="下一个学科">
+              <svg xmlns="http://www.w3.org/2000/svg" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l14 0"></path><path d="M13 6l6 6"></path><path d="M13 18l6 -6"></path></svg>
+            </button>
+          </div>
+          <p class="sr-only" role="status" id="subject-live">当前学科：考研数学，开放</p>
+        </div>
+      </section>
+
+      <section id="follow" class="wechat-section" aria-labelledby="follow-heading">
+        <div class="section-block">
+          <div class="section-block-head">
+            <p class="section-kicker">Follow Us</p>
+            <div class="wechat-title-row">
+              <h2 id="follow-heading" class="section-title">关注获取更多</h2>
+              <p class="section-desc">扫码关注微信公众号或服务号，获取更新通知与独家内容</p>
+            </div>
+          </div>
+          <div class="wechat-grid">
+            <div class="wechat-card">
+              <div class="wechat-info">
+                <span class="wechat-index">01</span>
+                <h3>微信公众号</h3>
+                <p>定期推送考研干货与资源</p>
+              </div>
+              <img src="./assets/landing/wechat_qrcode.png" alt="微信公众号" class="wechat-qrcode" />
+            </div>
+            <div class="wechat-card">
+              <div class="wechat-info">
+                <span class="wechat-index">02</span>
+                <h3>微信服务号</h3>
+                <p>获取大观园更多功能</p>
+              </div>
+              <img src="./assets/landing/wechat_qrcode.png" alt="微信服务号" class="wechat-qrcode" />
+            </div>
+            <div class="wechat-card">
+              <div class="wechat-info">
+                <span class="wechat-index">03</span>
+                <h3>B 站首页</h3>
+                <p><a class="wechat-description-link" href="https://www.bilibili.com/" target="_blank" rel="noreferrer">去 B 站看看更多内容</a></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        <span class="footer-brand-sub">© 大观园 · <a href="https://beian.miit.gov.cn/" target="_blank" rel="noreferrer" class="footer-icp-link">ICP备案</a> · <a href="https://www.beian.gov.cn/" target="_blank" rel="noreferrer" class="footer-icp-link">晋公网安备14102102000454号</a></span>
+      </div>
+    </footer>
+  </div>
+
+  <script defer src="./landing.js?v=2"></script>
+</body>
+</html>

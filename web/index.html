@@ -7,9 +7,17 @@
   <meta name="description" content="大观园数学题库本地静态刷题站" />
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="stylesheet" href="./vendor/katex.min.css" />
-    <link rel="stylesheet" href="./styles.css?v=24" />
+    <link rel="stylesheet" href="./styles.css?v=31" />
   <script>
     (() => {
+      if (location.search.includes("purge=1")) {
+        navigator.serviceWorker.getRegistrations().then((rs) => rs.forEach((r) => r.unregister()));
+        caches.keys().then((ks) => ks.forEach((k) => caches.delete(k)));
+        if (!localStorage.getItem("daguan_purged")) {
+          localStorage.setItem("daguan_purged", "1");
+          location.replace(location.pathname + "?fresh=1");
+        }
+      }
       try {
         const value = JSON.parse(localStorage.getItem("daguan_ui_preferences_v1") || "{}");
         const themes = ["official-light", "official-dark", "eye-care", "custom"];
@@ -56,8 +64,9 @@
     <aside class="sidebar learning-shell__sidebar" id="sidebar">
       <div class="sidebar-head learning-shell__brand-row">
         <a class="brand learning-shell__brand" href="#" id="btn-brand" aria-label="大观园学习首页">
+          <img class="brand-mark" src="./assets/landing/daguan-curve-logo.png" alt="" width="28" height="28" />
           <strong>大观园</strong>
-          <span>学习区</span>
+          <span>数学</span>
         </a>
         <button type="button" class="icon-btn sidebar-collapse" id="btn-collapse-sidebar" aria-label="收起侧栏"><svg class="ui-icon"><use href="#icon-collapse"></use></svg></button>
         <button type="button" class="icon-btn" id="btn-close-sidebar" aria-label="关闭侧栏"><svg class="ui-icon"><use href="#icon-close"></use></svg></button>
@@ -67,6 +76,7 @@
         <button type="button" class="side-link active" id="nav-home" data-nav="home"><svg class="ui-icon"><use href="#icon-home"></use></svg><span>首页</span></button>
         <button type="button" class="side-link" id="nav-favorites" data-nav="favorites"><svg class="ui-icon"><use href="#icon-star"></use></svg><span>收藏本</span></button>
         <button type="button" class="side-link" id="nav-todo" data-nav="mastery"><svg class="ui-icon"><use href="#icon-chart"></use></svg><span>掌握地图</span></button>
+        <button type="button" class="side-link" id="nav-knowledge"><svg class="ui-icon"><use href="#icon-grid"></use></svg><span>知识图谱</span></button>
         <button type="button" class="side-link" id="nav-forgot" data-nav="retest"><svg class="ui-icon"><use href="#icon-gauge"></use></svg><span>错题复测</span></button>
         <button type="button" class="side-link" id="nav-paper" data-nav="paper"><svg class="ui-icon"><use href="#icon-file"></use></svg><span>智能组卷</span></button>
         <button type="button" class="side-link" id="nav-notes" data-nav="notes"><svg class="ui-icon"><use href="#icon-note"></use></svg><span>题目笔记</span></button>
@@ -77,16 +87,19 @@
       <div class="sidebar-tools">
         <input id="search" type="search" placeholder="搜索题号 / 来源 / 题干…" autocomplete="off" />
         <div class="tool-row">
-          <label class="check"><input type="checkbox" id="filter-core" /> 仅核心</label>
+          <label class="check"><input type="checkbox" id="filter-core" /> 严选</label>
           <label class="check"><input type="checkbox" id="filter-todo" /> 未掌握</label>
         </div>
+        <button type="button" class="btn ghost adv-filter-btn" id="btn-adv-filter">
+          <svg class="ui-icon"><use href="#icon-grid"></use></svg><span>详细筛选</span>
+        </button>
       </div>
 
       <div class="chapter-head">
         <span>题库</span>
         <div class="scope-toggle" role="group" aria-label="题库范围">
           <button type="button" class="scope-btn active" data-scope="all">完整</button>
-          <button type="button" class="scope-btn" data-scope="core">核心</button>
+          <button type="button" class="scope-btn" data-scope="core">严选</button>
           <button type="button" class="scope-btn" data-scope="real">真题</button>
         </div>
       </div>
@@ -119,7 +132,7 @@
               </div>
               <div class="chapter-menu-scopes" role="group" aria-label="题库范围">
                 <button type="button" class="chapter-scope-btn active" data-chapter-scope="all">完整</button>
-                <button type="button" class="chapter-scope-btn" data-chapter-scope="core">核心</button>
+                <button type="button" class="chapter-scope-btn" data-chapter-scope="core">严选</button>
                 <button type="button" class="chapter-scope-btn" data-chapter-scope="real">真题</button>
               </div>
               <div class="chapter-menu-navigation">
@@ -153,6 +166,7 @@
             <button type="button" class="icon-btn topbar-more-trigger" id="btn-more" aria-label="更多操作" aria-haspopup="menu" aria-expanded="false"><svg class="ui-icon"><use href="#icon-more"></use></svg><span>更多</span></button>
             <div class="topbar-more-menu hidden" id="topbar-more-menu" role="menu" aria-label="更多操作">
               <button type="button" class="btn ghost" id="btn-shuffle" title="打乱当前列表顺序" role="menuitem">打乱</button>
+              <button type="button" class="btn ghost" id="btn-adv-filter-top" role="menuitem">详细筛选</button>
               <button type="button" class="btn ghost" id="btn-expand-all" title="展开当前已加载题目的答案" role="menuitem" style="display:inline-flex">全开答案</button>
               <button type="button" class="btn ghost" id="btn-export" title="导出当前题目为 PDF" role="menuitem">导出 PDF</button>
               <button type="button" class="btn ghost" id="btn-home" role="menuitem">首页</button>
@@ -172,13 +186,17 @@
         <section class="home" id="view-home">
           <div class="hero hero-learning">
             <div class="hero-copy">
-              <h1>继续学习</h1>
-              <div class="hero-meta"><strong id="hero-chapter">选择一个章节开始学习</strong><span id="hero-date">最近作答 —</span></div>
-              <div class="hero-progress"><span>章节进度</span><strong id="hero-done">已完成 0 题</strong><span id="hero-remaining">还剩 — 题</span><div class="progress-track"><i id="hero-progress-fill"></i></div></div>
-            </div>
-            <div class="hero-actions">
-               <button type="button" class="btn primary hero-cta" id="btn-start">继续学习</button>
-               <button type="button" class="btn hero-cta" id="btn-hero-tutorial">使用教程</button>
+              <h1>从一道题开始</h1>
+              <p class="hero-desc">先试着作答，再查看答案与解析。</p>
+              <div class="home-continue">
+                <h2 id="hero-chapter">选择一个章节开始学习</h2>
+                <div class="home-continue-actions">
+                  <button type="button" class="btn primary home-continue-btn" id="btn-start">练习这一节</button>
+                  <button type="button" class="btn ghost home-continue-other" id="btn-hero-other">选择其他章节</button>
+                </div>
+              </div>
+              <p class="muted home-note" id="hero-date">进度已自动保存在本机；完成官网同步后可跨设备接续。</p>
+              <p class="home-countdown">考研初试 · <time id="exam-date">2026-12-19</time> · <span id="exam-days">还有 — 天</span></p>
             </div>
           </div>
 
@@ -261,11 +279,6 @@
               <span class="progress-label" id="progress-label"></span>
             </div>
           </div>
-          <div class="pick-bar" id="pick-bar">
-            <span class="pick-count" id="pick-count">已勾选 0 题</span>
-            <button type="button" class="btn ghost" id="btn-pick-queue">全选当前列表</button>
-            <button type="button" class="btn ghost" id="btn-pick-clear">清空勾选</button>
-          </div>
           <div class="chapter-empty-state hidden" id="chapter-empty-state">
             <svg class="ui-icon" aria-hidden="true"><use href="#icon-book"></use></svg>
             <h3>请选择一个小节</h3>
@@ -299,7 +312,7 @@
                 <button type="button" class="btn" id="btn-next" data-shortcut-label="down">下一题<kbd class="shortcut-hint" data-shortcut-hint="down">↓</kbd></button>
                 <button type="button" class="btn secondary" id="btn-focus-mode" data-shortcut-label="focus">焦点模式<kbd class="shortcut-hint" data-shortcut-hint="focus">F6</kbd></button>
                 <button type="button" class="btn ai-action" id="btn-single-ai" data-shortcut-label="ai"><svg class="ui-icon"><use href="#icon-spark"></use></svg><span class="action-label">AI 解答</span><kbd class="shortcut-hint" data-shortcut-hint="ai">A</kbd></button>
-                <button type="button" class="btn ghost" id="btn-copy-md" data-shortcut-label="copy" title="复制本题源 Markdown">复制 Markdown<kbd class="shortcut-hint" data-shortcut-hint="copy">C</kbd></button>
+                <button type="button" class="btn ghost" id="btn-copy-md" data-shortcut-label="copy" title="复制题目、答案与解析">复制题目和答案<kbd class="shortcut-hint" data-shortcut-hint="copy">C</kbd></button>
                 <button type="button" class="btn ghost" id="btn-toggle-favorite" data-favorite-id="" data-shortcut-label="favorite"><span class="action-label">收藏</span><kbd class="shortcut-hint" data-shortcut-hint="favorite">F</kbd></button>
                 <button type="button" class="btn ghost" id="btn-single-note" data-shortcut-label="note"><svg class="ui-icon"><use href="#icon-note"></use></svg><span class="action-label">批注</span><kbd class="shortcut-hint" data-shortcut-hint="note">N</kbd></button>
                 <label class="check pick-single"><input type="checkbox" id="single-pick" /> 勾选本题</label>
@@ -353,6 +366,24 @@
       <section class="ai-panel hidden" id="ai-note-panel" data-ai-panel="note"><div class="note-toolbar"><span class="muted">本机保存 · 停止输入后自动保存</span><span class="note-status" id="question-note-status"></span></div><textarea id="question-note-editor" class="question-note-editor" placeholder="记录这道题的思路、易错点和下次复习提醒…" aria-label="题目批注"></textarea><div class="note-history-row"><button type="button" class="btn ghost" id="btn-note-history">查看历史</button><button type="button" class="btn ghost" id="btn-note-restore" hidden>恢复选中版本</button></div><div class="note-history hidden" id="question-note-history"></div></section>
     </div>
   </aside>
+
+  <dialog id="dlg-filter" class="sheet sheet-wide filter-sheet">
+    <div class="sheet-head">
+      <div><p class="dialog-kicker">题目筛选</p><h2>题库目录与筛选</h2></div>
+      <button type="button" class="icon-btn" data-close="dlg-filter" aria-label="关闭筛选"><svg class="ui-icon"><use href="#icon-close"></use></svg></button>
+    </div>
+    <div class="filter-body">
+      <nav class="filter-tabs" id="filter-tabs" aria-label="筛选维度"></nav>
+      <div class="filter-options" id="filter-options"></div>
+    </div>
+    <div class="filter-foot">
+      <span class="filter-count"><strong id="f-match-count">0</strong>&nbsp;道题符合条件</span>
+      <div class="sheet-actions inline">
+        <button type="button" class="btn" id="btn-filter-clear">清空全部</button>
+        <button type="button" class="btn primary" id="btn-filter-apply">查看题目</button>
+      </div>
+    </div>
+  </dialog>
 
   <div id="toast" class="toast hidden" role="status"></div>
 
@@ -738,6 +769,6 @@
 
   <script defer src="./vendor/marked.min.js"></script>
   <script defer src="./vendor/katex.min.js"></script>
-    <script defer src="./app.js?v=27"></script>
+    <script defer src="./app2.js?v=10"></script>
 </body>
 </html>

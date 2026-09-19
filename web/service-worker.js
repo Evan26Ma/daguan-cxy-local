@@ -1,9 +1,15 @@
-const CACHE = "daguan-shell-v36";
+const CACHE = "daguan-shell-v44";
 const SHELL = [
   "./",
+  "./landing.html",
+  "./landing.css?v=3",
+  "./landing.js?v=2",
+  "./assets/landing/daguan-curve-logo.png",
+  "./assets/landing/landing-book-particles.jpg",
+  "./assets/landing/wechat_qrcode.png",
   "./index.html",
-  "./styles.css?v=24",
-  "./app.js?v=27",
+  "./styles.css?v=31",
+  "./app2.js?v=10",
   "./vendor/marked.min.js",
   "./vendor/katex.min.js",
   "./vendor/katex.min.css",

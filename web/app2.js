@@ -1436,9 +1436,197 @@
   async function copyQuestionMarkdown(q) {
     if (!q) return;
     const ok = await copyText(questionMarkdown(q));
-    toast(ok ? "已复制 Markdown" : "复制失败");
+    toast(ok ? "已复制题目和答案" : "复制失败");
   }
 
+  function favHas(id) {
+    const f = state.favorites;
+    if (!f) return false;
+    if (typeof f.has === "function") return f.has(String(id));
+    return (Array.isArray(f) ? f : []).some((x) => String(x) === String(id));
+  }
+  function sourceMeta(q) {
+    const src = String(q.source || "");
+    const exam = /数学一|数一/.test(src) ? "数一" : /数学二|数二/.test(src) ? "数二" : /数学三|数三/.test(src) ? "数三" : null;
+    const y = src.match(/(19|20)\d{2}/);
+    let srcType = "讲义习题";
+    if (/880/.test(src)) srcType = "880题";
+    else if (/660/.test(src)) srcType = "660题";
+    else if (/模拟/.test(src)) srcType = "模拟卷";
+    else if (/(真题|历年)/.test(src) || (exam && y)) srcType = "真题";
+    return { exam, src: srcType, year: y ? Number(y[0]) : null, type: String(q.type || "").trim() };
+  }
+  function advFilterActive() {
+    const f = state.advFilter || {};
+    return Object.values(f).some((arr) => (arr || []).length);
+  }
+  function annExam(v) {
+    return v.exam ? "数学" + String(v.exam).slice(-1) : null;
+  }
+  function advFilterMatchAnnot(id, A) {
+    const f = state.advFilter || {};
+    if (!advFilterActive()) return true;
+    if (!A) return false;
+    if ((f["快捷入口"] || []).length && !f["快捷入口"].includes(A.src)) return false;
+    if ((f["题源"] || []).length && !f["题源"].includes(A.src)) return false;
+    if ((f["章节"] || []).length && !f["章节"].includes(A.chapter)) return false;
+    if ((f["知识点"] || []).length && !(A.kps || []).some((k) => f["知识点"].includes(k))) return false;
+    if ((f["题型"] || []).length) {
+      const t = A.luna_type || A.type;
+      const primary = (A.kps || [])[0] || null;
+      if (!f["题型"].includes(t) && !(primary && f["题型"].includes(primary))) return false;
+    }
+    if ((f["解题方法"] || []).length && !(A.methods || []).some((k) => f["解题方法"].includes(k))) return false;
+    if ((f["考试类别"] || []).length && !f["考试类别"].includes(annExam(A))) return false;
+    if ((f["题目形式"] || []).length && !f["题目形式"].includes(A.format)) return false;
+    if ((f["难度"] || []).length && !f["难度"].includes(A.difficulty)) return false;
+    if ((f["掌握状态"] || []).length) {
+      const p = progressOf(id);
+      const tags = [p.mastery];
+      if (p.error_prone) tags.push("易错");
+      if (favHas(id)) tags.push("已收藏");
+      const mapped = { not_started: "未开始", learning: "学习中", mastered: "已掌握" };
+      const norm = f["掌握状态"].map((t) => mapped[t] || t);
+      if (!norm.some((t) => tags.includes(t))) return false;
+    }
+    return true;
+  }
+  function advFilterMatch(q) {
+    const A = state.bankTags && state.bankTags.annotations ? state.bankTags.annotations[String(q.id)] : null;
+    return advFilterMatchAnnot(q.id, A || { src: sourceMeta(q).src, chapter: null, kps: [], type: null, methods: [], exam: sourceMeta(q).exam, format: null, difficulty: null });
+  }
+  function masteryFacetCounts() {
+    const c = { "未开始": 0, "学习中": 0, "已掌握": 0, "易错": 0, "已收藏": 0 };
+    const ann = (state.bankTags && state.bankTags.annotations) || {};
+    for (const id of Object.keys(ann)) {
+      const p = progressOf(id);
+      c[p.mastery === "mastered" ? "已掌握" : p.mastery === "learning" ? "学习中" : "未开始"] += 1;
+      if (p.error_prone) c["易错"] += 1;
+      if (favHas(id)) c["已收藏"] += 1;
+    }
+    return c;
+  }
+  function renderFilterFacet(dim) {
+    const box = $("#filter-options");
+    if (!box) return;
+    document.querySelectorAll("#filter-tabs .filter-tab").forEach((b) => b.classList.toggle("active", b.textContent === dim));
+    const facet = (state._facets || []).find((x) => x.dim === dim);
+    if (!facet) return;
+    box.innerHTML = "";
+    for (const o of facet.options) {
+      const lab = document.createElement("label");
+      lab.className = "filter-option";
+      const checked = ((state.advFilter || {})[dim] || []).includes(o.name) ? " checked" : "";
+      lab.innerHTML = `<input type="checkbox" data-dim="${dim}" data-name="${o.name}"${checked} /><span>${o.name}</span><small>${o.count}</small>`;
+      box.appendChild(lab);
+    }
+  }
+  function onFilterOptionChange(event) {
+    const input = event.target;
+    if (!input.dataset || !input.dataset.dim) return;
+    const dim = input.dataset.dim;
+    state.advFilter = state.advFilter || {};
+    const arr = new Set(state.advFilter[dim] || []);
+    if (input.checked) arr.add(input.dataset.name);
+    else arr.delete(input.dataset.name);
+    state.advFilter[dim] = Array.from(arr);
+    updateFilterCount();
+  }
+  async function loadAnnotationsData() {
+    const tryJson = async (url) => {
+      const res = await fetch(url);
+      const txt = await res.text();
+      window.__fraw = { url: url.slice(-30), status: res.status, head: txt.slice(0, 120) };
+      if (!res.ok) return null;
+      const j = JSON.parse(txt);
+      return j && j.annotations && Object.keys(j.annotations).length ? j : null;
+    };
+    for (const u of ["./data/annotations.json?v=5", "./data/annotations.json"]) {
+      try { const j = await tryJson(u); if (j) return j; } catch (e) { window.__ferr = String(e); }
+    }
+    return await new Promise((resolve) => {
+      try {
+        const xhr = new XMLHttpRequest();
+        xhr.open("GET", "./data/annotations.json?t=" + Date.now(), true);
+        xhr.onload = () => { try { const j = JSON.parse(xhr.responseText); resolve(j.annotations && Object.keys(j.annotations).length ? j : null); } catch { resolve(null); } };
+        xhr.onerror = () => resolve(null);
+        xhr.send();
+      } catch { resolve(null); }
+    });
+  }
+  async function openFilterDialog() {
+    if (!state.bankTags) {
+      state.bankTags = await loadAnnotationsData();
+      window.__fdbg = { hasAnn: !!state.bankTags, keys: state.bankTags ? Object.keys(state.bankTags.annotations || {}).length : -1, facets: state.bankTags ? (state.bankTags.facets || []).length : -1 };
+    }
+    if (!state.advFilter) {
+      try { state.advFilter = JSON.parse(localStorage.getItem("daguan_adv_filter_v1") || "{}"); } catch { state.advFilter = {}; }
+    }
+    {
+      const DIMS = ["快捷入口", "题源", "章节", "知识点", "题型", "解题方法", "考试类别", "题目形式", "难度", "掌握状态"];
+      const clean = {};
+      for (const d of DIMS) {
+        if (Array.isArray(state.advFilter[d]) && state.advFilter[d].length) clean[d] = state.advFilter[d];
+      }
+      state.advFilter = clean;
+    }
+    window.__fdbg = { hasAnn: !!state.bankTags, keys: state.bankTags ? Object.keys(state.bankTags.annotations || {}).length : -1, facets: state.bankTags ? (state.bankTags.facets || []).length : -1 };
+    const tabs = $("#filter-tabs");
+    if (tabs && !tabs.childElementCount && state.bankTags) {
+      const facets = (state.bankTags.facets || []).map((x) => x);
+      const mc = masteryFacetCounts();
+      facets.push({ dim: "掌握状态", options: Object.entries(mc).map(([name, count]) => ({ name, count })) });
+      state._facets = facets;
+      for (const f of facets) {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "filter-tab";
+        b.textContent = f.dim;
+        b.addEventListener("click", () => renderFilterFacet(f.dim));
+        tabs.appendChild(b);
+      }
+      renderFilterFacet(facets[0].dim);
+    }
+    openSheet("dlg-filter");
+    updateFilterCount();
+    const box = $("#filter-options");
+    if (box && !box.dataset.bound) {
+      box.dataset.bound = "1";
+      box.addEventListener("change", onFilterOptionChange);
+      box.addEventListener("click", (e) => {
+        const t = e.target;
+        window.__fclick = { tag: t.tagName, dim: t.dataset ? t.dataset.dim : undefined, name: t.dataset ? t.dataset.name : undefined, x: Math.round(e.clientX), y: Math.round(e.clientY) };
+      }, true);
+    }
+  }
+  async function updateFilterCount() {
+    const el = $("#f-match-count");
+    if (!el) return;
+    const ann = (state.bankTags && state.bankTags.annotations) || {};
+    let n = 0;
+    for (const [id, A] of Object.entries(ann)) {
+      if (advFilterMatchAnnot(id, A)) n += 1;
+    }
+    el.textContent = String(n);
+  }
+  function persistAdvFilter() {
+    localStorage.setItem("daguan_adv_filter_v1", JSON.stringify(state.advFilter || {}));
+    const btn = $("#btn-adv-filter");
+    if (btn) btn.classList.toggle("active", advFilterActive());
+  }
+  async function applyFilterDialog() {
+    persistAdvFilter();
+    closeSheet("dlg-filter");
+    if (state.currentCatId != null) await openCategory(state.currentCatId, null, { silent: true });
+    else toast(advFilterActive() ? "筛选已生效，进入小节后按条件过滤" : "筛选已清空");
+  }
+  function clearFilterDialog() {
+    state.advFilter = {};
+    persistAdvFilter();
+    renderFilterFacet(document.querySelector("#filter-tabs .filter-tab.active")?.textContent || "快捷入口");
+    updateFilterCount();
+    if (state.currentCatId != null) openCategory(state.currentCatId, null, { silent: true });
+  }
   async function getQuestion(id) {
     const name = state.idIndex[String(id)];
     if (!name) return null;
@@ -1474,6 +1662,7 @@
         const p = progressOf(q.id);
         if (p.mastery === "mastered") return false;
       }
+      if (!advFilterMatch(q)) return false;
       return true;
     });
   }
@@ -1650,22 +1839,24 @@
   function renderHeroProgress() {
     const chapter = $("#hero-chapter");
     const date = $("#hero-date");
-    const doneEl = $("#hero-done");
-    const remainingEl = $("#hero-remaining");
-    const fill = $("#hero-progress-fill");
-    if (!chapter || !date || !doneEl || !remainingEl || !fill) return;
+    if (!chapter || !date) return;
     const records = Object.values(state.progress);
     const latest = records.reduce((current, item) => Number(item.updated_at || 0) > Number(current?.updated_at || 0) ? item : current, null);
-    chapter.textContent = state.crumb || (latest ? "最近学习的题目" : "选择一个章节开始学习");
-    date.textContent = latest?.updated_at ? `最近作答 ${isoDate(new Date(Number(latest.updated_at)))}` : "最近作答 —";
-    const buckets = progressBuckets();
-    const total = Number(state.manifest?.total || 0);
-    const done = buckets.mastered.length;
-    const remaining = Math.max(0, total - done);
-    const percent = total ? Math.min(100, Math.round((done / total) * 100)) : 0;
-    doneEl.textContent = `已完成 ${done} 题`;
-    remainingEl.textContent = `还剩 ${remaining} 题`;
-    fill.style.width = `${percent}%`;
+    const resumeLeaf = (() => {
+      const current = state.currentCatId ? findCat(state.currentCatId) : null;
+      const node = current?.[current.length - 1];
+      if (node && isCategoryLeaf(node)) return node;
+      return flattenCategoryLeaves()[0]?.node || null;
+    })();
+    if (resumeLeaf) state.heroRecommendCatId = resumeLeaf.id;
+    chapter.textContent = state.crumb && state.crumb !== "选择左侧分类开始" ? state.crumb : (resumeLeaf ? resumeLeaf.name : "选择一个章节开始学习");
+    date.textContent = latest?.updated_at ? `最近作答 ${isoDate(new Date(Number(latest.updated_at)))}；完成官网同步后可跨设备接续。` : "进度已自动保存在本机；完成官网同步后可跨设备接续。";
+    const exam = new Date(2026, 11, 19);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const days = Math.round((exam - today) / 86400000);
+    const daysEl = $("#exam-days");
+    if (daysEl) daysEl.textContent = days > 0 ? `还有 ${days} 天` : days === 0 ? "就是今天" : "已结束";
   }
 
   function countMasteredInCat(catId) {
@@ -2025,7 +2216,7 @@
     copyBtn.type = "button";
     copyBtn.className = "btn ghost";
     copyBtn.dataset.shortcutLabel = "copy";
-    copyBtn.innerHTML = shortcutButtonMarkup("复制 Markdown", "copy");
+    copyBtn.innerHTML = shortcutButtonMarkup("复制题目和答案", "copy");
     copyBtn.title = "复制本题源 Markdown";
     copyBtn.addEventListener("click", () => copyQuestionMarkdown(q));
 
@@ -3945,6 +4136,7 @@
             if (els.filterCore) els.filterCore.checked = state.filterCore;
             document.querySelectorAll(".scope-btn").forEach((item) => item.classList.toggle("active", item.dataset.scope === state.scope));
             syncChapterScopeUI();
+            toast("本节暂无该范围题目，已保持原范围");
             return;
           }
         }
@@ -3973,6 +4165,7 @@
     $("#nav-home").addEventListener("click", goHome);
     $("#nav-favorites")?.addEventListener("click", () => openFeaturePage("favorites"));
     $("#nav-todo").addEventListener("click", () => openFeaturePage("mastery"));
+    $("#nav-knowledge")?.addEventListener("click", () => toast("知识图谱建设中，敬请期待"));
     $("#nav-forgot").addEventListener("click", () => openFeaturePage("retest"));
     $("#nav-paper")?.addEventListener("click", () => openFeaturePage("paper"));
     $("#nav-notes")?.addEventListener("click", () => openFeaturePage("notes"));
@@ -3980,9 +4173,16 @@
     $("#workspace-tools")?.addEventListener("click", () => openFeaturePage("tools"));
     $("#btn-learning-records")?.addEventListener("click", () => openFeaturePage("learning-records"));
     $("#btn-start").addEventListener("click", () => {
-      const first = state.categories[0];
-      if (first) openCategory(first.id);
+      let target = state.heroRecommendCatId ? findCat(state.heroRecommendCatId) : null;
+      let leaf = target ? target[target.length - 1] : null;
+      if (!leaf || !isCategoryLeaf(leaf)) leaf = flattenCategoryLeaves()[0]?.node || null;
+      if (leaf) openCategory(leaf.id);
+      else {
+        const first = state.categories[0];
+        if (first) openCategory(first.id);
+      }
     });
+    $("#btn-hero-other")?.addEventListener("click", () => openChapterMenu());
 
     $("#btn-prev").addEventListener("click", () => go(-1));
     $("#btn-next").addEventListener("click", () => go(1));
@@ -4168,6 +4368,10 @@
     $("#btn-export-go").addEventListener("click", () => runExportPreview());
     $("#btn-print-back").addEventListener("click", closePrintPreview);
     $("#btn-copy-md").addEventListener("click", () => copyQuestionMarkdown(currentQ()));
+    $("#btn-adv-filter")?.addEventListener("click", () => openFilterDialog());
+    $("#btn-adv-filter-top")?.addEventListener("click", () => openFilterDialog());
+    $("#btn-filter-apply")?.addEventListener("click", applyFilterDialog);
+    $("#btn-filter-clear")?.addEventListener("click", clearFilterDialog);
     $("#btn-print-go").addEventListener("click", () => window.print());
     $("#export-answers").addEventListener("change", () => {
       const on = $("#export-answers").checked;
@@ -4360,20 +4564,6 @@
       $("#import-file").value = "";
     });
     $("#btn-import-apply").addEventListener("click", () => importProgressText($("#import-text").value));
-    $("#btn-pick-queue").addEventListener("click", () => {
-      if (!state.queue.length) {
-        toast("先打开一个分类");
-        return;
-      }
-      for (const q of state.queue) state.picked.add(String(q.id));
-      savePicked();
-      toast(`已勾选当前列表 ${state.queue.length} 题`);
-    });
-    $("#btn-pick-clear").addEventListener("click", () => {
-      state.picked.clear();
-      savePicked();
-      toast("已清空勾选");
-    });
     $("#single-pick").addEventListener("change", () => {
       const q = currentQ();
       if (!q) return;

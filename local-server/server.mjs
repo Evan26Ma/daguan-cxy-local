@@ -434,11 +434,11 @@ async function route(req, res) {
   return serveStatic(pathname, res);
 }
 
-const MIME = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8", ".json": "application/json; charset=utf-8", ".png": "image/png", ".svg": "image/svg+xml", ".woff2": "font/woff2" };
+const MIME = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8", ".json": "application/json; charset=utf-8", ".png": "image/png", ".svg": "image/svg+xml", ".woff2": "font/woff2", ".webp": "image/webp", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".gif": "image/gif", ".ico": "image/x-icon" };
 async function serveStatic(requestPath, res) {
   let relative;
   try { relative = decodeURIComponent(requestPath); } catch { return json(res, 400, { error: "路径错误" }); }
-  if (relative === "/" || relative === "") relative = "/index.html";
+  if (relative === "/" || relative === "") relative = "/landing.html";
   const target = path.resolve(WEB_ROOT, `.${relative}`);
   if (!target.startsWith(`${WEB_ROOT}${path.sep}`)) return json(res, 403, { error: "禁止访问" });
   try {
