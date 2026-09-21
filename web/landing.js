@@ -28,7 +28,7 @@
       name: "思想政治",
       status: "开放",
       desc: "帕拉迪宇资料使用与问卷评价。",
-      action: { label: "查看资料", href: "https://www.cxyonly.fans/", external: true },
+      action: { label: "查看资料", href: "https://cxy.kaoyangogogo.fun/", external: true },
       icon: "world",
     },
     {

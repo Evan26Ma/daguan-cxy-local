@@ -12,6 +12,8 @@
 >
 > **账号说明：** “帕拉迪宇”是早期账号；下方已单独列出“极限大观”，其余课程按澄潇宇的“考研数学大观全系列”合集整理。
 
+> 🌐 **在线入口：** [cxy.kaoyangogogo.fun](https://cxy.kaoyangogogo.fun/)
+
 ## 🎬 大观视频导航
 
 ### ⭐ 先看使用教程
@@ -69,7 +71,7 @@
 
 AI 能力取决于你配置的服务：普通文本模型不能自动获得视觉或绘图能力；API 费用、速率限制、内容策略和服务稳定性由对应厂商或中转站负责。
 
-更新记录见 [CHANGELOG.md](CHANGELOG.md)，当前版本为 r8 Windows 发布修复版。
+更新记录见 [CHANGELOG.md](CHANGELOG.md)，当前发布版本为 `v2026.09.22-r11`。
 
 `android/` 保留原 Flutter 客户端和兼容数据格式，`web/` 是刷题页面，`local-server/` 是本地中控台，`sync-extension/` 仅作为旧版浏览器桥接兼容方案保留。
 

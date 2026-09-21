@@ -17,7 +17,7 @@ F:\ai\大观园本地
 GitHub 仓库：
 
 ```text
-https://github.com/Evan26Ma/daguanyuan-math-local-sync
+https://github.com/Evan26Ma/daguan-cxy-local
 ```
 
 当前分支：
