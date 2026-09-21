@@ -812,12 +812,6 @@ summary:focus-visible {
   border-color: color-mix(in srgb, var(--brand) 38%, var(--line));
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--brand) 18%, transparent), var(--shadow-sm);
 }
-.pick-single {
-  margin-left: 0.15rem;
-  font-size: 0.82rem;
-  color: var(--muted);
-}
-
 .q-feed {
   list-style: none;
   margin: 0;
@@ -2021,6 +2015,17 @@ html[data-theme="custom"] body {
   background-attachment: fixed;
 }
 
+/* The learning shell covers the body, so custom backgrounds must be painted
+   on the shell itself instead of being hidden behind its opaque canvas. */
+html[data-theme="custom"] #app.learning-shell {
+  background-color: var(--color-canvas);
+  background-image: linear-gradient(rgba(255, 255, 255, var(--custom-overlay-opacity)), rgba(255, 255, 255, var(--custom-overlay-opacity))), var(--custom-background-image);
+  background-position: center, var(--custom-background-position);
+  background-size: cover, cover;
+  background-attachment: fixed;
+}
+html[data-theme="custom"] #app.learning-shell .main-wrap { background: transparent; }
+
 body {
   font-family: var(--font-family-body);
   font-size: 14px;
@@ -2099,8 +2104,6 @@ button { -webkit-tap-highlight-color: transparent; }
 .home-continue h2 { margin: 0 0 .8rem; color: var(--color-foreground); font-size: 1.05rem; font-weight: 700; }
 .home-continue-actions { display: flex; align-items: center; gap: 1.1rem; }
 .home-continue-btn { min-height: 2.5rem; padding: 0 1.1rem; border-radius: var(--radius-card); }
-.home-continue-other { min-height: 2.5rem; padding: 0; color: var(--color-brand); text-decoration: underline; text-underline-offset: 4px; }
-.home-continue-other:hover { color: var(--color-brand-hover); background: transparent; }
 .home-note { margin: 1.4rem 0 0; font-size: .8125rem; }
 .home-countdown { margin: .5rem 0 0; color: var(--color-foreground-muted); font-size: .8125rem; }
 .home-countdown time { font-variant-numeric: tabular-nums; }
@@ -2578,14 +2581,9 @@ body[data-view="browse"] .top-actions .mode-toggle, body[data-view="browse"] .to
 #update-banner[data-visible="1"] { display: flex; }
 
 @media (min-width: 64rem) and (max-width: 89.999rem) {
-  #app.learning-shell { grid-template-columns: 4.25rem minmax(0, 1fr); }
-  #app.learning-shell .sidebar-head { justify-content: center; padding-inline: .45rem; }
-  #app.learning-shell .brand strong { font-size: 0; }
-  #app.learning-shell .brand strong::before { content: "大"; font-size: 1.1rem; }
-  #app.learning-shell .sidebar-collapse { display: none; }
-  #app.learning-shell .sidebar-nav { padding-inline: .4rem; }
-  #app.learning-shell .side-link { justify-content: center; gap: 0; padding-inline: .25rem; }
-  #app.learning-shell .side-link span, #app.learning-shell .chapter-head, #app.learning-shell .cat-tree { display: none; }
+  /* Keep the sidebar expandable on medium desktop widths. The user can
+     collapse it manually, but it must not become a one-way icon rail. */
+  #app.learning-shell .sidebar-collapse { display: inline-flex; }
   #app.learning-shell .topbar { padding-inline: 1rem; gap: .5rem; }
   #app.learning-shell .top-actions > #btn-shuffle,
   #app.learning-shell .top-actions > #btn-expand-all,
@@ -2605,8 +2603,8 @@ body[data-view="browse"] .top-actions .mode-toggle, body[data-view="browse"] .to
 #app.learning-shell {
   --dg-warm-border: #e2ddd4;
   --dg-warm-border-soft: #eeeae4;
-  --dg-teal: #1f5364;
-  --dg-teal-soft: #e8f1f2;
+  --dg-teal: var(--color-brand);
+  --dg-teal-soft: var(--color-brand-soft);
   --dg-stem-font: "SimSun", "宋体", "Noto Serif CJK SC", "Source Han Serif SC", serif;
 }
 #app.learning-shell .q-card,
@@ -2647,13 +2645,28 @@ body[data-view="browse"] .top-actions .mode-toggle, body[data-view="browse"] .to
 #app.learning-shell .q-actions .btn { min-height: 36px; border-radius: 8px; }
 #app.learning-shell .q-actions .btn,
 #app.learning-shell .mastery-row .chip { display: inline-flex; align-items: center; justify-content: center; gap: 7px; }
+#app.learning-shell .focus-exit { display: none; }
+body.focus-mode #app.learning-shell .focus-exit { display: inline-flex; }
 #app.learning-shell .action-label { white-space: nowrap; }
-#app.learning-shell .shortcut-hint { display: inline-flex; align-items: center; justify-content: center; min-width: 19px; height: 19px; padding: 0 4px; color: currentColor; opacity: .62; border: 1px solid currentColor; border-radius: 4px; font: 700 10px/1 var(--font-family-ui); letter-spacing: 0; }
+#app.learning-shell .shortcut-hint { display: none; align-items: center; justify-content: center; min-width: 19px; height: 19px; padding: 0 4px; color: currentColor; opacity: .62; border: 1px solid currentColor; border-radius: 4px; font: 700 10px/1 var(--font-family-ui); letter-spacing: 0; }
 #app.learning-shell .shortcut-hint[hidden] { display: none; }
+body.focus-mode #app.learning-shell .shortcut-hint:not([hidden]) { display: inline-flex; }
 #app.learning-shell .mastery-row .shortcut-hint { min-width: 16px; height: 16px; padding: 0 3px; font-size: 9px; }
 #app.learning-shell .q-actions .btn.primary { background: var(--dg-teal); border-color: var(--dg-teal); }
 #app.learning-shell .q-actions .btn.secondary { background: var(--dg-teal-soft); border-color: transparent; color: var(--dg-teal); }
-#app.learning-shell .q-actions .btn.ai-action { color: var(--dg-teal); border-color: #c9dadd; background: #f4f8f8; }
+#app.learning-shell .q-actions .btn.ai-action { color: var(--dg-teal); border-color: var(--color-border); background: var(--color-brand-soft); }
+#app.learning-shell .q-actions .btn[data-favorite-id].active,
+#app.learning-shell #btn-toggle-favorite.active {
+  color: var(--color-success);
+  background: color-mix(in srgb, var(--color-success) 12%, var(--color-surface));
+  border-color: color-mix(in srgb, var(--color-success) 45%, var(--color-border));
+}
+#app.learning-shell .q-actions .btn[data-favorite-id].active:hover,
+#app.learning-shell #btn-toggle-favorite.active:hover {
+  color: var(--color-success-foreground);
+  background: color-mix(in srgb, var(--color-success) 20%, var(--color-surface));
+  border-color: var(--color-success);
+}
 #app.learning-shell .mastery-row { align-items: center; gap: 0; margin-top: 14px; }
 #app.learning-shell .mastery-label { margin-right: 10px; color: var(--color-foreground-muted); font: 12px/1.4 var(--font-family-ui); }
 #app.learning-shell .mastery-row .chip { min-height: 31px; padding: 4px 11px; border-radius: 0; border-right-width: 0; font-size: 12px; }
@@ -2670,11 +2683,14 @@ body[data-view="browse"] .top-actions .mode-toggle, body[data-view="browse"] .to
 .ai-edge-tab { position: fixed; z-index: 46; top: 50%; right: 0; transform: translateY(-50%); display: inline-flex; align-items: center; gap: 7px; padding: 13px 10px; color: #fff; background: var(--dg-teal, #1f5364); border: 0; border-radius: 10px 0 0 10px; box-shadow: 0 8px 25px rgba(31, 83, 100, .24); font: 700 13px/1 var(--font-family-ui); writing-mode: vertical-rl; cursor: pointer; }
 .ai-edge-tab.hidden { display: none; }
 .ai-edge-tab .ui-icon { width: 16px; height: 16px; }
-.ai-drawer { position: fixed; z-index: 45; inset: 0 0 0 auto; display: flex; flex-direction: column; width: var(--ai-drawer-width, 400px); max-width: min(620px, 100vw); color: var(--color-foreground); background: var(--color-surface); border-left: 1px solid var(--dg-warm-border); box-shadow: -14px 0 36px rgba(39, 45, 48, .12); transform: translateX(105%); transition: transform .2s ease; }
+.ai-drawer { position: fixed; z-index: 45; inset: 0 0 0 auto; display: flex; flex-direction: column; width: min(var(--ai-drawer-width, 400px), 100vw); max-width: min(620px, 100vw); container-type: inline-size; color: var(--color-foreground); background: var(--color-surface); border-left: 1px solid var(--dg-warm-border); box-shadow: -14px 0 36px rgba(39, 45, 48, .12); transform: translateX(105%); transition: transform .2s ease; }
 body.ai-drawer-open .ai-drawer { transform: translateX(0); }
 body.ai-drawer-open .ai-edge-tab { right: var(--ai-drawer-width, 400px); transition: right .2s ease; }
 body.ai-drawer-open #app.learning-shell { margin-right: var(--ai-drawer-width, 400px); transition: margin-right .2s ease; }
-.ai-resize-handle { position: absolute; z-index: 2; top: 0; bottom: 0; left: -4px; width: 8px; cursor: ew-resize; }
+.ai-resize-handle { position: absolute; z-index: 2; top: 0; bottom: 0; left: -5px; width: 10px; cursor: ew-resize; touch-action: none; }
+.ai-resize-handle::after { content: ""; position: absolute; top: 42%; left: 4px; width: 2px; height: 52px; border-radius: 999px; background: var(--color-border-strong); opacity: .72; transition: background-color .15s ease, opacity .15s ease; }
+.ai-resize-handle:hover::after, .ai-resize-handle:focus-visible::after { background: var(--dg-teal); opacity: 1; }
+body.ai-drawer-resizing { user-select: none; cursor: ew-resize; }
 .ai-resize-handle:focus-visible { outline: 2px solid var(--dg-teal); outline-offset: -2px; }
 .ai-drawer-head { display: flex; justify-content: space-between; gap: 12px; padding: 20px 20px 14px; border-bottom: 1px solid var(--dg-warm-border-soft); }
 .ai-drawer-head h2 { margin: 0; font-size: 18px; }
@@ -2683,6 +2699,7 @@ body.ai-drawer-open #app.learning-shell { margin-right: var(--ai-drawer-width, 4
 .ai-tab { padding: 8px 10px; color: var(--color-foreground-muted); background: transparent; border: 0; border-bottom: 2px solid transparent; font: 600 13px/1.3 var(--font-family-ui); cursor: pointer; }
 .ai-tab.active { color: var(--dg-teal); border-bottom-color: var(--dg-teal); }
 .ai-drawer-body { min-height: 0; flex: 1; overflow: auto; padding: 14px 20px 20px; }
+.ai-drawer-body > *, .ai-drawer-head > div { min-width: 0; max-width: 100%; }
 .ai-profile-row { display: flex; align-items: center; gap: 7px; margin-bottom: 10px; }
 .ai-profile-row label { color: var(--color-foreground-muted); font-size: 12px; }
 .ai-profile-row select { min-width: 0; flex: 1; min-height: 34px; padding: 0 8px; color: var(--color-foreground); background: var(--color-surface); border: 1px solid var(--dg-warm-border); border-radius: 7px; }
@@ -2703,12 +2720,14 @@ body.ai-drawer-open #app.learning-shell { margin-right: var(--ai-drawer-width, 4
 .ai-empty .ui-icon { width: 25px; height: 25px; margin-bottom: 8px; color: var(--dg-teal); }
 .ai-empty p { max-width: 250px; margin: 6px 0 0; font-size: 12px; }
 .ai-suggestions { display: flex; flex-wrap: wrap; gap: 6px; }
-.ai-suggestion { padding: 6px 9px; color: var(--dg-teal); background: transparent; border: 1px solid #cbdcdf; border-radius: 999px; font-size: 11px; cursor: pointer; }
+.ai-suggestion { padding: 6px 9px; color: var(--dg-teal); background: transparent; border: 1px solid var(--color-border); border-radius: 999px; font-size: 11px; cursor: pointer; }
 .ai-suggestion:hover { background: var(--dg-teal-soft); }
 .ai-compose { margin-top: 12px; }
 .ai-compose textarea, .question-note-editor { display: block; width: 100%; resize: vertical; padding: 10px; color: var(--color-foreground); background: var(--color-surface); border: 1px solid var(--dg-warm-border); border-radius: 8px; font: 13px/1.6 var(--font-family-ui); }
 .ai-compose textarea { min-height: 72px; }
 .ai-compose-foot, .note-toolbar, .note-history-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 8px; }
+.ai-compose-foot { flex-wrap: wrap; }
+.ai-compose-buttons { display: inline-flex; flex: 0 0 auto; gap: 6px; }
 .ai-compose-foot .check { color: var(--color-foreground-muted); font-size: 11px; }
 .question-note-editor { min-height: 300px; font-family: var(--dg-stem-font); }
 .note-history { display: grid; gap: 6px; margin-top: 10px; }
@@ -2731,7 +2750,8 @@ body.ai-drawer-open #app.learning-shell { margin-right: var(--ai-drawer-width, 4
 body.focus-mode #app.learning-shell .learning-shell__sidebar,
 body.focus-mode #app.learning-shell .learning-shell__topbar,
 body.focus-mode #app.learning-shell #update-banner { display: none !important; }
-body.focus-mode #app.learning-shell { display: block; min-height: 100dvh; margin-right: 0 !important; }
+body.focus-mode #app.learning-shell { display: block; grid-template-columns: 1fr !important; min-height: 100dvh; margin-right: 0 !important; }
+body.focus-mode #app.learning-shell .learning-shell__sidebar { width: 0 !important; min-width: 0 !important; visibility: hidden !important; }
 body.focus-mode #app.learning-shell .main { min-height: 100dvh; padding: 5vh 20px 9vh; }
 body.focus-mode #app.learning-shell .browse-head,
 body.focus-mode #app.learning-shell .pick-bar,
@@ -2747,8 +2767,34 @@ body.focus-mode #app.learning-shell .q-actions { position: sticky; bottom: 0; ba
 
 @media (max-width: 1279px) {
   body.ai-drawer-open #app.learning-shell { margin-right: 0; }
-  .ai-drawer { width: 100vw; }
+  .ai-drawer { width: min(var(--ai-drawer-width, 400px), 100vw); }
   body.ai-drawer-open .ai-edge-tab { right: 0; }
+}
+@media (min-width: 42.0625rem) {
+  /* The main column follows the assistant width while it is open, including
+     tablets and immersive mode. */
+  body.ai-drawer-open #app.learning-shell { margin-right: var(--ai-drawer-width, 400px); transition: margin-right .2s ease; }
+  body.focus-mode.ai-drawer-open #app.learning-shell { margin-right: var(--ai-drawer-width, 400px) !important; }
+}
+@container (max-width: 380px) {
+  .ai-drawer-head { padding-inline: 14px; }
+  .ai-drawer-body { padding-inline: 14px; }
+  .ai-profile-row { align-items: stretch; flex-wrap: wrap; }
+  .ai-profile-row label { flex: 0 0 auto; align-self: center; }
+  .ai-profile-row select { flex: 1 1 12rem; }
+  .ai-profile-row .btn { flex: 1 1 100%; }
+  .ai-compose-foot { align-items: stretch; flex-direction: column; }
+  .ai-compose-buttons, .ai-compose-buttons .btn { width: 100%; }
+  .ai-compose-buttons .btn { flex: 1 1 0; }
+  .ai-suggestion { flex: 1 1 calc(50% - 6px); min-width: 0; }
+}
+@container (min-width: 520px) {
+  .ai-drawer-body { padding-inline: 26px; }
+  .ai-message { padding-inline: 16px; }
+  .ai-empty p { max-width: 32rem; }
+}
+@media (min-width: 42.0625rem) and (max-width: 79.999rem) {
+  body.ai-drawer-open .ai-edge-tab { right: var(--ai-drawer-width, 400px); }
 }
 @media (max-width: 900px) {
   #app.learning-shell .q-card, #app.learning-shell #single-card { padding: 18px 16px; }
@@ -2759,6 +2805,7 @@ body.focus-mode #app.learning-shell .q-actions { position: sticky; bottom: 0; ba
 }
 @media (max-width: 42rem) {
   .ai-drawer { inset: 0; width: 100vw; max-width: none; }
+  .ai-resize-handle { display: none; }
   .ai-drawer-head { padding: 14px 16px 10px; }
   .ai-drawer-body { padding-inline: 16px; }
   .ai-edge-tab { top: auto; right: 12px; bottom: 5.2rem; transform: none; writing-mode: horizontal-tb; border-radius: 999px; padding: 10px 12px; }
@@ -2936,11 +2983,62 @@ body[data-view="browse"] #app.learning-shell .topbar { gap: .7rem; padding-inlin
 #app[data-sidebar="collapsed"] .brand { flex-direction: column; gap: .15rem; justify-content: center; }
 #app[data-sidebar="collapsed"] .brand span { display: none; }
 #app[data-sidebar="collapsed"] .sidebar-tools { padding-inline: .45rem; }
-/* 修复：1024-1440px 区间自动图标栏模式下，侧栏自身宽度未跟随网格列，压住主内容 */
+/* 修复：1024-1440px 区间保留完整侧栏，收起状态只由用户手动触发 */
 @media (min-width: 64rem) and (max-width: 89.999rem) {
-  #app.learning-shell .sidebar { width: 4.25rem; }
-  #app.learning-shell .brand { flex-direction: column; gap: .15rem; justify-content: center; }
-  #app.learning-shell .brand span { display: none; }
+  #app.learning-shell:not([data-sidebar="collapsed"]) .sidebar { width: var(--shell-sidebar-width); }
+  #app.learning-shell:not([data-sidebar="collapsed"]) .brand { flex-direction: row; gap: .32rem; justify-content: flex-start; }
+  #app.learning-shell:not([data-sidebar="collapsed"]) .brand span { display: inline; }
+  #app.learning-shell:not([data-sidebar="collapsed"]) .side-link { justify-content: flex-start; gap: .7rem; padding-inline: .75rem; }
+  #app.learning-shell:not([data-sidebar="collapsed"]) .side-link span { display: inline; }
+  #app.learning-shell:not([data-sidebar="collapsed"]) .chapter-head { display: flex; }
+  #app.learning-shell:not([data-sidebar="collapsed"]) .cat-tree { display: block; }
+}
+
+/* 浏览题目时也保留左侧题库树；章节选择器仍可作为顶部快捷入口。 */
+@media (min-width: 42.0625rem) {
+  body[data-view="browse"] #app.learning-shell .learning-shell__sidebar {
+    display: flex !important;
+  }
+  body[data-view="browse"] #app.learning-shell:not([data-sidebar="collapsed"]) .chapter-head {
+    display: flex !important;
+  }
+  body[data-view="browse"] #app.learning-shell:not([data-sidebar="collapsed"]) .cat-tree {
+    display: block !important;
+  }
+}
+
+@media (min-width: 42.0625rem) and (max-width: 63.999rem) {
+  body[data-view="browse"] #app.learning-shell #btn-open-sidebar {
+    display: inline-flex !important;
+  }
+}
+
+@media (min-width: 64rem) {
+  body[data-view="browse"] #app.learning-shell {
+    display: grid;
+    grid-template-columns: var(--shell-sidebar-width) minmax(0, 1fr);
+  }
+  body[data-view="browse"] #app.learning-shell[data-sidebar="collapsed"] {
+    grid-template-columns: 4.25rem minmax(0, 1fr);
+  }
+  body[data-view="browse"] #app.learning-shell .learning-shell__sidebar {
+    position: sticky;
+    width: auto;
+    height: 100dvh;
+    transform: none;
+  }
+  body[data-view="browse"] #app.learning-shell #btn-open-sidebar {
+    display: none;
+  }
+}
+
+/* The browse layout restores the chapter tree on desktop, but immersive mode
+   must win over that rule so the hidden sidebar cannot cover the question. */
+body.focus-mode[data-view="browse"] #app.learning-shell .learning-shell__sidebar {
+  display: none !important;
+  width: 0 !important;
+  min-width: 0 !important;
+  visibility: hidden !important;
 }
 
 /* ==== 详细筛选（参考 luna 多维筛选） ==== */

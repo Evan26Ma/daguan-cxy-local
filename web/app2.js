@@ -2,7 +2,7 @@
   "use strict";
 
   if ("serviceWorker" in navigator && location.protocol !== "file:") {
-    navigator.serviceWorker.register("./service-worker.js").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=62").catch(() => {});
   }
 
   const DATA = "./data";
@@ -16,7 +16,7 @@
   const AI_PREFS_KEY = "daguan_ai_preferences_v1";
   const AI_WIDTH_KEY = "daguan_ai_drawer_width_v1";
   const UI_BACKGROUND_KEY = "ui-background";
-  const APP_VERSION = "2026.09.07-r7";
+  const APP_VERSION = "2026.09.20-r25";
   const POSITION_KEY = "daguan_learning_position_v2";
   const UI_THEMES = ["official-light", "official-dark", "eye-care", "custom"];
   const DEFAULT_UI_PREFS = Object.freeze({
@@ -182,19 +182,57 @@
   }
 
   function loadShortcuts() {
-    try { return { ...SHORTCUT_DEFAULTS, ...(JSON.parse(localStorage.getItem(SHORTCUTS_KEY) || "{}") || {}) }; }
-    catch { return { ...SHORTCUT_DEFAULTS }; }
+    let loaded = {};
+    try { loaded = JSON.parse(localStorage.getItem(SHORTCUTS_KEY) || "{}") || {}; }
+    catch { loaded = {}; }
+    const out = { ...SHORTCUT_DEFAULTS, ...loaded };
+    // Older builds could persist an empty answer shortcut. Keep Space as the
+    // stable default and accept display-style values from old local storage.
+    if (!out.answer || out.answer === "Space" || out.answer === "Spacebar") out.answer = " ";
+    return out;
   }
 
   const shortcuts = loadShortcuts();
-  const SHORTCUT_LABELS = Object.freeze({ focus: "进入 / 退出焦点模式", up: "上一题", down: "下一题", answer: "显示 / 隐藏答案", mastery1: "标记未开始", mastery2: "标记学习中", mastery3: "标记已掌握", error: "切换易错", favorite: "切换收藏", ai: "打开 AI 解答", note: "打开题目批注", copy: "复制本题 Markdown", help: "显示快捷键帮助", escape: "关闭抽屉 / 退出焦点" });
+  const SHORTCUT_LABELS = Object.freeze({ focus: "进入 / 退出沉浸模式", up: "上一题", down: "下一题", answer: "显示 / 隐藏答案", mastery1: "标记未开始", mastery2: "标记学习中", mastery3: "标记已掌握", error: "切换易错", favorite: "切换收藏", ai: "打开 AI 解答", note: "打开题目批注", copy: "复制本题 Markdown", help: "显示快捷键帮助", escape: "关闭抽屉 / 退出沉浸" });
 
   function shortcutDisplay(key) {
-    if (key === " ") return "Space";
-    if (key === "ArrowUp") return "↑";
-    if (key === "ArrowDown") return "↓";
-    if (key === "Escape") return "Esc";
-    return key.length === 1 ? key.toUpperCase() : key;
+    const normalized = key === "Space" || key === "Spacebar" ? " " : key;
+    if (normalized === " ") return "空格";
+    if (!normalized) return "";
+    if (normalized === "ArrowUp") return "↑";
+    if (normalized === "ArrowDown") return "↓";
+    if (normalized === "Escape") return "Esc";
+    return normalized.length === 1 ? normalized.toUpperCase() : normalized;
+  }
+
+  const SHORTCUT_CODE_FALLBACK = Object.freeze({
+    Space: " ",
+    ArrowUp: "ArrowUp",
+    ArrowDown: "ArrowDown",
+    ArrowLeft: "ArrowLeft",
+    ArrowRight: "ArrowRight",
+    Escape: "Escape",
+    F6: "F6",
+    KeyA: "a",
+    KeyC: "c",
+    KeyE: "e",
+    KeyF: "f",
+    KeyN: "n",
+    Digit1: "1",
+    Digit2: "2",
+    Digit3: "3",
+    Digit4: "4",
+    Slash: "?",
+  });
+
+  function shortcutEventKey(event) {
+    if (event.key && event.key !== "Unidentified") return event.key;
+    return SHORTCUT_CODE_FALLBACK[event.code] || event.code || "";
+  }
+
+  function shortcutMatches(actual, binding) {
+    if (!actual || !binding) return false;
+    return actual === binding || actual.toLowerCase?.() === binding.toLowerCase?.();
   }
 
   function shortcutButtonMarkup(label, action, icon = "") {
@@ -228,7 +266,7 @@
         event.preventDefault();
         if (["Tab", "Shift", "Control", "Alt", "Meta"].includes(event.key)) return;
         const action = button.dataset.shortcutAction;
-        const next = event.key === " " ? " " : event.key;
+        const next = shortcutEventKey(event);
         const duplicate = Object.entries(shortcuts).find(([name, value]) => name !== action && value.toLowerCase?.() === next.toLowerCase?.());
         if (duplicate) {
           const feedback = $("#shortcut-feedback");
@@ -355,9 +393,6 @@
     document.querySelectorAll(".q-card[data-id]").forEach((card) => {
       card.classList.toggle("is-picked", isPicked(card.dataset.id));
     });
-    const single = $("#single-pick");
-    const q = typeof currentQ === "function" ? currentQ() : null;
-    if (single && q) single.checked = isPicked(q.id);
   }
 
   const IDB_NAME = "daguan-math";
@@ -733,8 +768,9 @@
   }
 
   function loadMode() {
-    const m = localStorage.getItem(MODE_KEY);
-    return m === "single" ? "single" : "list";
+    // Single-question view is now the transient immersive state. Do not
+    // restore the old persisted single mode without its focus shell.
+    return "list";
   }
 
   function saveMode() {
@@ -946,7 +982,7 @@
     updateChapterHeader();
   }
 
-  function setMode(mode) {
+  function applyMode(mode) {
     if (mode !== "list" && mode !== "single") return;
     state.mode = mode;
     saveMode();
@@ -955,6 +991,19 @@
       if (mode === "list") renderFeed(true);
       else renderSingle();
     }
+  }
+
+  function setMode(mode) {
+    if (mode !== "list" && mode !== "single") return;
+    if (mode === "single") {
+      enterFocusMode();
+      return;
+    }
+    if (state.focusMode) {
+      exitFocusMode();
+      return;
+    }
+    applyMode(mode);
   }
 
   function findCat(id, nodes = state.categories, trail = []) {
@@ -1266,18 +1315,31 @@
     else if (els.chapterMenuFeedback) els.chapterMenuFeedback.textContent = "当前题库范围下没有可用题目，请切换“完整 / 核心 / 真题”。";
   }
 
-  async function goToAdjacentChapter(delta) {
-    if (!state.currentCatId || state.specialQueue) return;
+  function findAdjacentChapter(delta) {
+    if (!state.currentCatId || state.specialQueue) return null;
     const leaves = chapterLeavesFor(state.currentCatId);
     const currentIndex = leaves.findIndex((entry) => String(entry.node.id) === String(state.currentCatId));
-    if (currentIndex < 0) return;
+    if (currentIndex < 0) return null;
+    for (let index = currentIndex + delta; index >= 0 && index < leaves.length; index += delta) {
+      const entry = leaves[index];
+      if ((state.catQuestions[String(entry.node.id)] || []).length) return entry;
+    }
+    return null;
+  }
+
+  async function goToAdjacentChapter(delta) {
+    if (!state.currentCatId || state.specialQueue) return false;
+    const leaves = chapterLeavesFor(state.currentCatId);
+    const currentIndex = leaves.findIndex((entry) => String(entry.node.id) === String(state.currentCatId));
+    if (currentIndex < 0) return false;
     for (let index = currentIndex + delta; index >= 0 && index < leaves.length; index += delta) {
       const entry = leaves[index];
       const ok = await openCategory(entry.node.id, null, { silent: true });
-      if (ok) return;
+      if (ok) return true;
     }
     toast(delta < 0 ? "已经是本章第一节" : "已经是本章最后一节");
     updateChapterHeader();
+    return false;
   }
 
   function progressOf(id) {
@@ -1842,7 +1904,16 @@
     if (!chapter || !date) return;
     const records = Object.values(state.progress);
     const latest = records.reduce((current, item) => Number(item.updated_at || 0) > Number(current?.updated_at || 0) ? item : current, null);
+    const savedTrail = state.last_study?.category_id != null ? findCat(state.last_study.category_id) : null;
+    const savedLeaf = savedTrail?.[savedTrail.length - 1];
+    const canResume = Boolean(savedLeaf && isCategoryLeaf(savedLeaf) && state.last_study?.question_id != null);
+    const startButton = $("#btn-start");
+    if (startButton) {
+      startButton.textContent = canResume ? "继续" : "练习这一节";
+      startButton.title = canResume ? "从上次刷题的位置继续" : "从推荐章节开始练习";
+    }
     const resumeLeaf = (() => {
+      if (canResume) return savedLeaf;
       const current = state.currentCatId ? findCat(state.currentCatId) : null;
       const node = current?.[current.length - 1];
       if (node && isCategoryLeaf(node)) return node;
@@ -1857,6 +1928,30 @@
     const days = Math.round((exam - today) / 86400000);
     const daysEl = $("#exam-days");
     if (daysEl) daysEl.textContent = days > 0 ? `还有 ${days} 天` : days === 0 ? "就是今天" : "已结束";
+  }
+
+  function hasSavedLearningPosition() {
+    return Boolean(
+      state.last_study?.category_id != null &&
+      state.last_study?.question_id != null &&
+      findCat(state.last_study.category_id)?.length
+    );
+  }
+
+  async function resumeSavedLearningPosition() {
+    if (!hasSavedLearningPosition()) return false;
+    const trail = findCat(state.last_study.category_id);
+    const leaf = trail?.[trail.length - 1];
+    if (!leaf || !isCategoryLeaf(leaf)) return false;
+    if (state.focusMode) exitFocusMode();
+    applyMode("list");
+    const opened = await openCategory(leaf.id, state.last_study.question_id, { silent: true });
+    if (!opened) return false;
+    if (state.last_study.mode === "single") {
+      setMode("single");
+      queueLastStudyPosition();
+    }
+    return true;
   }
 
   function countMasteredInCat(catId) {
@@ -1992,7 +2087,7 @@
     applyModeUI();
     els.crumb.textContent = `${title} · ${qs.length} 题`;
     els.browseHeading.textContent = title;
-    els.browseSub.textContent = `共 ${qs.length} 题` + (state.mode === "list" ? " · 列表连续浏览" : " · 单题专注");
+    els.browseSub.textContent = `共 ${qs.length} 题` + (state.mode === "list" ? " · 列表连续浏览" : " · 沉浸单题");
     updateBrowseProgress();
 
     if (state.mode === "list") {
@@ -2039,6 +2134,7 @@
 
   let feedLoading = false;
   let feedSentinelObs = null;
+  let chapterTransitioning = false;
 
   function ensureFeedSentinel() {
     let tip = document.getElementById("feed-sentinel");
@@ -2198,8 +2294,8 @@
     focusBtn.type = "button";
     focusBtn.className = "btn secondary";
     focusBtn.dataset.shortcutLabel = "focus";
-    focusBtn.innerHTML = shortcutButtonMarkup("进入单题", "focus");
-    focusBtn.title = "在单题模式中打开";
+    focusBtn.innerHTML = shortcutButtonMarkup("进入沉浸", "focus");
+    focusBtn.title = "在沉浸模式中打开本题";
     focusBtn.addEventListener("click", () => {
       state.index = index;
       setMode("single");
@@ -2399,9 +2495,8 @@
     }
 
     $("#btn-prev").disabled = state.index <= 0;
-    $("#btn-next").disabled = state.index >= state.queue.length - 1;
-    const singlePick = $("#single-pick");
-    if (singlePick) singlePick.checked = isPicked(q.id);
+    const canContinueToNextChapter = state.focusMode && Boolean(findAdjacentChapter(1));
+    $("#btn-next").disabled = state.index >= state.queue.length - 1 && !canContinueToNextChapter;
     const favoriteButton = $("#btn-toggle-favorite");
     if (favoriteButton) {
       favoriteButton.dataset.favoriteId = String(q.id);
@@ -2461,8 +2556,28 @@
     }
   }
 
-  function go(delta) {
+  async function go(delta) {
     const next = state.index + delta;
+    if (next >= state.queue.length && delta > 0 && state.focusMode) {
+      if (chapterTransitioning) return;
+      chapterTransitioning = true;
+      try {
+        const opened = await goToAdjacentChapter(1);
+        if (opened) {
+          state.showAnswer = false;
+          state.selected = new Set();
+          if (state.focusSnapshot) {
+            state.focusSnapshot.index = 0;
+            state.focusSnapshot.scrollY = 0;
+          }
+          queueLastStudyPosition();
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+      } finally {
+        chapterTransitioning = false;
+      }
+      return;
+    }
     if (next < 0 || next >= state.queue.length) return;
     state.index = next;
     state.showAnswer = false;
@@ -2598,6 +2713,8 @@
   }
 
   function goHome() {
+    if (state.focusMode) exitFocusMode();
+    else if (state.mode === "single") applyMode("list");
     closeChapterMenu({ restoreFocus: false });
     closeMoreMenu({ restoreFocus: false });
     setView("home");
@@ -3116,7 +3233,10 @@
       const saved = JSON.parse(sessionStorage.getItem(POSITION_KEY) || "null");
       const position = saved || (state.last_study ? { view: "browse", cat: state.last_study.category_id, question: state.last_study.question_id, mode: state.last_study.mode } : null);
       if (!position || position.view !== "browse" || position.cat == null) return;
-      if (position.mode === "single" || position.mode === "list") setMode(position.mode);
+      // A single-question view needs a loaded queue. Applying it before
+      // openCategory() would switch the home view to an empty browse view,
+      // which looks like a white screen when restoring a saved session.
+      if (position.mode === "list") applyMode("list");
       await ensureIndexes();
       const trail = findCat(position.cat) || [];
       const node = trail[trail.length - 1];
@@ -3127,8 +3247,11 @@
         const matched = leaves.find((entry) => questionId != null && (state.catQuestions[String(entry.node.id)] || []).some((id) => String(id) === String(questionId)));
         leafId = matched?.node?.id || leaves.find((entry) => (state.catQuestions[String(entry.node.id)] || []).length)?.node?.id || null;
       }
-      if (leafId != null) await openCategory(leafId, position.question || state.last_study?.question_id, { silent: true });
+      const opened = leafId != null
+        ? await openCategory(leafId, position.question || state.last_study?.question_id, { silent: true })
+        : false;
       if (Number.isFinite(Number(position.index))) state.index = Math.max(0, Number(position.index));
+      if (opened && position.mode === "single") enterFocusMode();
       requestAnimationFrame(() => { if ($("#main")) $("#main").scrollTop = Number(position.scroll) || 0; });
     } catch {}
   }
@@ -3844,8 +3967,7 @@
     const line = $("#ai-context-line");
     if (line) line.textContent = `#${q.id} · ${q.source || TYPE_LABEL[q.type] || "当前题目"}`;
     document.body.classList.add("ai-drawer-open");
-    const width = Math.max(340, Math.min(620, Number(localStorage.getItem(AI_WIDTH_KEY)) || 400));
-    document.documentElement.style.setProperty("--ai-drawer-width", `${width}px`);
+    setAiDrawerWidth(Number(localStorage.getItem(AI_WIDTH_KEY)) || 400);
     els.aiDrawer?.setAttribute("aria-hidden", "false");
     setAiTab(tab);
     loadAiHistory();
@@ -3862,22 +3984,54 @@
     els.aiDrawer?.setAttribute("aria-hidden", "true");
   }
 
+  function aiDrawerWidthBounds() {
+    const max = Math.max(340, Math.min(620, window.innerWidth - 24));
+    return { min: 340, max };
+  }
+
+  function setAiDrawerWidth(value) {
+    const { min, max } = aiDrawerWidthBounds();
+    const width = Math.round(Math.max(min, Math.min(max, Number(value) || 400)));
+    document.documentElement.style.setProperty("--ai-drawer-width", `${width}px`);
+    localStorage.setItem(AI_WIDTH_KEY, String(width));
+    const handle = $("#ai-resize-handle");
+    handle?.setAttribute("aria-valuenow", String(width));
+    handle?.setAttribute("aria-valuetext", `${width} 像素`);
+    return width;
+  }
+
   function bindAiDrawerResize() {
     const handle = $("#ai-resize-handle");
     if (!handle) return;
     let startX = 0; let startWidth = 400;
     handle.addEventListener("pointerdown", (event) => {
-      if (window.innerWidth < 1280) return;
+      if (window.innerWidth <= 672) return;
+      event.preventDefault();
       startX = event.clientX; startWidth = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--ai-drawer-width")) || 400;
       handle.setPointerCapture?.(event.pointerId);
+      document.body.classList.add("ai-drawer-resizing");
       const move = (moveEvent) => {
-        const width = Math.max(340, Math.min(620, startWidth + startX - moveEvent.clientX));
-        document.documentElement.style.setProperty("--ai-drawer-width", `${width}px`);
-        localStorage.setItem(AI_WIDTH_KEY, String(width));
+        setAiDrawerWidth(startWidth + startX - moveEvent.clientX);
       };
-      const end = () => { handle.removeEventListener("pointermove", move); handle.removeEventListener("pointerup", end); };
+      const end = () => {
+        handle.removeEventListener("pointermove", move);
+        handle.removeEventListener("pointerup", end);
+        handle.removeEventListener("pointercancel", end);
+        document.body.classList.remove("ai-drawer-resizing");
+      };
       handle.addEventListener("pointermove", move); handle.addEventListener("pointerup", end, { once: true });
+      handle.addEventListener("pointercancel", end, { once: true });
     });
+    handle.addEventListener("keydown", (event) => {
+      if (window.innerWidth <= 672) return;
+      if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+      event.preventDefault();
+      const current = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--ai-drawer-width")) || 400;
+      const { min, max } = aiDrawerWidthBounds();
+      const next = event.key === "Home" ? min : event.key === "End" ? max : current + (event.key === "ArrowLeft" ? 16 : -16);
+      setAiDrawerWidth(next);
+    });
+    setAiDrawerWidth(Number(localStorage.getItem(AI_WIDTH_KEY)) || 400);
   }
 
   function renderQuestionNote() {
@@ -3978,15 +4132,18 @@
     }
   }
 
-  async function enterFocusMode() {
-    if (state.focusMode) return;
+  function enterFocusMode() {
+    if (state.focusMode) return true;
+    if (state.view !== "browse" || !currentQ()) {
+      toast("请先选择章节并打开一道题，再进入沉浸模式");
+      return false;
+    }
     state.focusSnapshot = { view: state.view, mode: state.mode, index: state.index, scrollY: window.scrollY };
     state.focusMode = true;
-    if (state.view !== "browse") setView("browse");
-    if (state.mode !== "single") setMode("single");
     document.body.classList.add("focus-mode");
-    renderSingle();
+    applyMode("single");
     window.scrollTo(0, 0);
+    return true;
   }
 
   function exitFocusMode() {
@@ -3994,7 +4151,7 @@
     const snapshot = state.focusSnapshot || { view: "browse", mode: "single", index: state.index, scrollY: 0 };
     state.focusMode = false; state.focusSnapshot = null;
     document.body.classList.remove("focus-mode");
-    if (state.mode !== snapshot.mode) setMode(snapshot.mode); else if (snapshot.mode === "list") renderFeed(true);
+    applyMode(snapshot.mode === "single" ? "list" : snapshot.mode);
     setView(snapshot.view);
     state.index = Math.max(0, Math.min(snapshot.index, state.queue.length - 1));
     if (state.view === "browse" && state.mode === "single") renderSingle();
@@ -4066,6 +4223,7 @@
       if (app) app.dataset.sidebar = collapsed ? "expanded" : "collapsed";
       const button = $("#btn-collapse-sidebar");
       button?.setAttribute("aria-label", collapsed ? "收起侧栏" : "展开侧栏");
+      button?.setAttribute("aria-expanded", String(collapsed));
     });
     $("#btn-theme-toggle")?.addEventListener("click", () => {
       setUiTheme(uiPrefs.theme === "official-dark" ? "official-light" : "official-dark");
@@ -4172,7 +4330,8 @@
     $("#workspace-learning")?.addEventListener("click", goHome);
     $("#workspace-tools")?.addEventListener("click", () => openFeaturePage("tools"));
     $("#btn-learning-records")?.addEventListener("click", () => openFeaturePage("learning-records"));
-    $("#btn-start").addEventListener("click", () => {
+    $("#btn-start").addEventListener("click", async () => {
+      if (await resumeSavedLearningPosition()) return;
       let target = state.heroRecommendCatId ? findCat(state.heroRecommendCatId) : null;
       let leaf = target ? target[target.length - 1] : null;
       if (!leaf || !isCategoryLeaf(leaf)) leaf = flattenCategoryLeaves()[0]?.node || null;
@@ -4182,11 +4341,9 @@
         if (first) openCategory(first.id);
       }
     });
-    $("#btn-hero-other")?.addEventListener("click", () => openChapterMenu());
-
     $("#btn-prev").addEventListener("click", () => go(-1));
     $("#btn-next").addEventListener("click", () => go(1));
-    $("#btn-focus-mode")?.addEventListener("click", enterFocusMode);
+    $("#btn-exit-focus")?.addEventListener("click", exitFocusMode);
     $("#btn-single-ai")?.addEventListener("click", () => openAiForQuestion(currentQ()));
     $("#btn-single-note")?.addEventListener("click", () => openNoteForQuestion(currentQ()));
     $("#single-error-toggle")?.addEventListener("click", () => { const q = currentQ(); if (q) setErrorProne(q.id, !progressOf(q.id).error_prone); });
@@ -4564,11 +4721,6 @@
       $("#import-file").value = "";
     });
     $("#btn-import-apply").addEventListener("click", () => importProgressText($("#import-text").value));
-    $("#single-pick").addEventListener("change", () => {
-      const q = currentQ();
-      if (!q) return;
-      setPicked(q.id, $("#single-pick").checked);
-    });
     $("#btn-toggle-favorite").addEventListener("click", () => {
       const q = currentQ();
       if (!q) return;
@@ -4605,7 +4757,7 @@
     renderShortcutSettings();
     renderShortcutHints();
     document.addEventListener("keydown", (e) => {
-      if (e.key !== "Escape") return;
+      if (shortcutEventKey(e) !== "Escape") return;
       if (state.chapterMenuOpen) {
         e.preventDefault();
         closeChapterMenu();
@@ -4660,35 +4812,36 @@
     document.addEventListener("keydown", (e) => {
       if (document.body.classList.contains("print-preview")) return;
       if (e.target && (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA")) return;
-      if (e.key === shortcuts.focus) { e.preventDefault(); if (state.focusMode) exitFocusMode(); else enterFocusMode(); return; }
+      const key = shortcutEventKey(e);
+      if (shortcutMatches(key, shortcuts.focus)) { e.preventDefault(); if (state.focusMode) exitFocusMode(); else enterFocusMode(); return; }
       if (state.focusMode) {
-        if (e.key === shortcuts.escape) { e.preventDefault(); if (state.aiOpen) closeAiDrawer(); else exitFocusMode(); return; }
-        if (e.key === shortcuts.up) { e.preventDefault(); go(-1); return; }
-        if (e.key === shortcuts.down) { e.preventDefault(); go(1); return; }
-        if (e.key === shortcuts.answer) { e.preventDefault(); $("#btn-toggle-answer")?.click(); return; }
-        if (e.key.toLowerCase() === shortcuts.mastery1) { e.preventDefault(); $("#single-mastery [data-mastery='not_started']")?.click(); return; }
-        if (e.key.toLowerCase() === shortcuts.mastery2) { e.preventDefault(); $("#single-mastery [data-mastery='learning']")?.click(); return; }
-        if (e.key.toLowerCase() === shortcuts.mastery3) { e.preventDefault(); $("#single-mastery [data-mastery='mastered']")?.click(); return; }
-        if (e.key.toLowerCase() === shortcuts.error) { e.preventDefault(); $("#single-error-toggle")?.click(); return; }
-        if (e.key.toLowerCase() === shortcuts.favorite) { e.preventDefault(); $("#btn-toggle-favorite")?.click(); return; }
-        if (e.key.toLowerCase() === shortcuts.ai) { e.preventDefault(); openAiForQuestion(currentQ()); return; }
-        if (e.key.toLowerCase() === shortcuts.note) { e.preventDefault(); openNoteForQuestion(currentQ()); return; }
-        if (e.key.toLowerCase() === shortcuts.copy) { e.preventDefault(); if (currentQ()) copyQuestionMarkdown(currentQ()); return; }
-        if (e.key === shortcuts.help) { e.preventDefault(); toast("↑/↓ 切题 · Space 答案 · 1/2/3 掌握 · E 易错 · F 收藏 · A AI · N 批注 · C 复制 · Esc 关闭/退出"); return; }
+        if (shortcutMatches(key, shortcuts.escape)) { e.preventDefault(); if (state.aiOpen) closeAiDrawer(); else exitFocusMode(); return; }
+        if (shortcutMatches(key, shortcuts.up)) { e.preventDefault(); go(-1); return; }
+        if (shortcutMatches(key, shortcuts.down)) { e.preventDefault(); go(1); return; }
+        if (shortcutMatches(key, shortcuts.answer)) { e.preventDefault(); $("#btn-toggle-answer")?.click(); return; }
+        if (shortcutMatches(key, shortcuts.mastery1)) { e.preventDefault(); $("#single-mastery [data-mastery='not_started']")?.click(); return; }
+        if (shortcutMatches(key, shortcuts.mastery2)) { e.preventDefault(); $("#single-mastery [data-mastery='learning']")?.click(); return; }
+        if (shortcutMatches(key, shortcuts.mastery3)) { e.preventDefault(); $("#single-mastery [data-mastery='mastered']")?.click(); return; }
+        if (shortcutMatches(key, shortcuts.error)) { e.preventDefault(); $("#single-error-toggle")?.click(); return; }
+        if (shortcutMatches(key, shortcuts.favorite)) { e.preventDefault(); $("#btn-toggle-favorite")?.click(); return; }
+        if (shortcutMatches(key, shortcuts.ai)) { e.preventDefault(); openAiForQuestion(currentQ()); return; }
+        if (shortcutMatches(key, shortcuts.note)) { e.preventDefault(); openNoteForQuestion(currentQ()); return; }
+        if (shortcutMatches(key, shortcuts.copy)) { e.preventDefault(); if (currentQ()) copyQuestionMarkdown(currentQ()); return; }
+        if (shortcutMatches(key, shortcuts.help)) { e.preventDefault(); toast("↑/↓ 切题 · 空格 答案 · 1/2/3 掌握 · E 易错 · F 收藏 · A AI · N 批注 · C 复制 · Esc 关闭/退出"); return; }
         return;
       }
       if (state.view !== "browse" || state.mode !== "single") return;
-      if (e.key === "ArrowLeft") {
+      if (key === "ArrowLeft") {
         e.preventDefault();
         go(-1);
-      } else if (e.key === "ArrowRight") {
+      } else if (key === "ArrowRight") {
         e.preventDefault();
         go(1);
-      } else if (e.key === "a" || e.key === "A") {
+      } else if (shortcutMatches(key, "a")) {
         e.preventDefault();
         $("#btn-toggle-answer").click();
-      } else if (["1", "2", "3", "4"].includes(e.key)) {
-        const i = Number(e.key) - 1;
+      } else if (["1", "2", "3", "4"].includes(key)) {
+        const i = Number(key) - 1;
         const btn = els.qOptions.children[i];
         if (btn) btn.click();
       }
@@ -4706,18 +4859,9 @@
     const hydrated = hydrateStores();
     const serverHydrated = hydrateServerState();
     try {
-      indexesReady = Promise.all([
-        fetchJSON(`${DATA}/category_questions.json`),
-        fetchJSON(`${DATA}/id_index.json`),
-      ]).then(([catQuestions, idIndex]) => {
-        state.catQuestions = catQuestions;
-        state.idIndex = idIndex;
-      });
       const [manifest, categories] = await Promise.all([
         fetchJSON(`${DATA}/manifest.json`),
         fetchJSON(`${DATA}/categories.json`),
-        hydrated,
-        serverHydrated,
       ]);
       state.manifest = manifest;
       state.categories = categories;
@@ -4730,7 +4874,12 @@
       if (!localStorage.getItem(TUTORIAL_SEEN_KEY)) {
         openSheet("dlg-welcome");
       }
-      indexesReady.then(() => renderHome()).catch(() => {});
+      // 进度和 IndexedDB 状态不阻塞首屏；加载完成后只刷新受影响的首页区域。
+      Promise.allSettled([hydrated, serverHydrated]).then(() => {
+        refreshHomeSyncCard();
+        if (state.view === "home") renderHome();
+        refreshPickUI();
+      });
     } catch (err) {
       console.error(err);
       els.stats.textContent = "数据加载失败";

@@ -7,7 +7,7 @@
   <meta name="description" content="大观园数学题库本地静态刷题站" />
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="stylesheet" href="./vendor/katex.min.css" />
-    <link rel="stylesheet" href="./styles.css?v=31" />
+    <link rel="stylesheet" href="./styles.css?v=47" />
   <script>
     (() => {
       if (location.search.includes("purge=1")) {
@@ -60,7 +60,7 @@
     <symbol id="icon-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.4" /><circle cx="12" cy="12" r="1.4" /><circle cx="19" cy="12" r="1.4" /></symbol>
     <symbol id="icon-check" viewBox="0 0 24 24"><path d="m5 12 4.5 4.5L19 7" /></symbol>
   </svg>
-  <div id="app" class="learning-shell">
+  <div id="app" class="learning-shell" data-sidebar="expanded">
     <aside class="sidebar learning-shell__sidebar" id="sidebar">
       <div class="sidebar-head learning-shell__brand-row">
         <a class="brand learning-shell__brand" href="#" id="btn-brand" aria-label="大观园学习首页">
@@ -68,7 +68,7 @@
           <strong>大观园</strong>
           <span>数学</span>
         </a>
-        <button type="button" class="icon-btn sidebar-collapse" id="btn-collapse-sidebar" aria-label="收起侧栏"><svg class="ui-icon"><use href="#icon-collapse"></use></svg></button>
+        <button type="button" class="icon-btn sidebar-collapse" id="btn-collapse-sidebar" aria-label="收起侧栏" aria-expanded="true"><svg class="ui-icon"><use href="#icon-collapse"></use></svg></button>
         <button type="button" class="icon-btn" id="btn-close-sidebar" aria-label="关闭侧栏"><svg class="ui-icon"><use href="#icon-close"></use></svg></button>
       </div>
 
@@ -155,7 +155,7 @@
         <div class="top-actions">
           <div class="mode-toggle" role="group" aria-label="浏览模式">
             <button type="button" class="mode-btn active" id="mode-list" data-mode="list" title="列表模式：一页多题">列表</button>
-            <button type="button" class="mode-btn" id="mode-single" data-mode="single" title="单题模式">单题</button>
+            <button type="button" class="mode-btn" id="mode-single" data-mode="single" title="沉浸模式：单题专注">沉浸</button>
           </div>
           <div class="chapter-section-nav" id="chapter-section-nav" hidden>
             <span class="chapter-progress-top" id="chapter-progress-top">0 / 0</span>
@@ -192,7 +192,6 @@
                 <h2 id="hero-chapter">选择一个章节开始学习</h2>
                 <div class="home-continue-actions">
                   <button type="button" class="btn primary home-continue-btn" id="btn-start">练习这一节</button>
-                  <button type="button" class="btn ghost home-continue-other" id="btn-hero-other">选择其他章节</button>
                 </div>
               </div>
               <p class="muted home-note" id="hero-date">进度已自动保存在本机；完成官网同步后可跨设备接续。</p>
@@ -264,7 +263,7 @@
           <div class="home-cards" id="home-cards"></div>
 
           <div class="home-hint">
-            <p><strong>快捷键</strong>（单题模式）：<kbd>←</kbd>/<kbd>→</kbd> 上一/下一题，<kbd>A</kbd> 答案，<kbd>1-4</kbd> 选项。<span class="hint-sep">·</span> 列表模式可连续滚动，每题独立展开答案与标记掌握。</p>
+            <p><strong>沉浸模式</strong>支持快捷键操作。<span class="hint-sep">·</span> 列表模式可连续滚动，每题独立展开答案与标记掌握。</p>
           </div>
         </section>
 
@@ -308,14 +307,13 @@
               <div class="question-options" id="q-options"></div>
               <div class="q-actions">
                 <button type="button" class="btn" id="btn-prev" data-shortcut-label="up">上一题<kbd class="shortcut-hint" data-shortcut-hint="up">↑</kbd></button>
-                <button type="button" class="btn primary" id="btn-toggle-answer" data-shortcut-label="answer">显示答案<kbd class="shortcut-hint" data-shortcut-hint="answer">Space</kbd></button>
+                <button type="button" class="btn primary" id="btn-toggle-answer" data-shortcut-label="answer">显示答案<kbd class="shortcut-hint" data-shortcut-hint="answer">空格</kbd></button>
                 <button type="button" class="btn" id="btn-next" data-shortcut-label="down">下一题<kbd class="shortcut-hint" data-shortcut-hint="down">↓</kbd></button>
-                <button type="button" class="btn secondary" id="btn-focus-mode" data-shortcut-label="focus">焦点模式<kbd class="shortcut-hint" data-shortcut-hint="focus">F6</kbd></button>
+                <button type="button" class="btn secondary focus-exit" id="btn-exit-focus" data-shortcut-label="focus">退出沉浸<kbd class="shortcut-hint" data-shortcut-hint="focus">F6</kbd></button>
                 <button type="button" class="btn ai-action" id="btn-single-ai" data-shortcut-label="ai"><svg class="ui-icon"><use href="#icon-spark"></use></svg><span class="action-label">AI 解答</span><kbd class="shortcut-hint" data-shortcut-hint="ai">A</kbd></button>
                 <button type="button" class="btn ghost" id="btn-copy-md" data-shortcut-label="copy" title="复制题目、答案与解析">复制题目和答案<kbd class="shortcut-hint" data-shortcut-hint="copy">C</kbd></button>
                 <button type="button" class="btn ghost" id="btn-toggle-favorite" data-favorite-id="" data-shortcut-label="favorite"><span class="action-label">收藏</span><kbd class="shortcut-hint" data-shortcut-hint="favorite">F</kbd></button>
                 <button type="button" class="btn ghost" id="btn-single-note" data-shortcut-label="note"><svg class="ui-icon"><use href="#icon-note"></use></svg><span class="action-label">批注</span><kbd class="shortcut-hint" data-shortcut-hint="note">N</kbd></button>
-                <label class="check pick-single"><input type="checkbox" id="single-pick" /> 勾选本题</label>
               </div>
               <div class="mastery-row" id="single-mastery">
                 <span class="mastery-label">掌握程度</span>
@@ -349,7 +347,7 @@
   </div>
 
   <aside class="ai-drawer" id="ai-drawer" aria-hidden="true" aria-labelledby="ai-drawer-title">
-    <div class="ai-resize-handle" id="ai-resize-handle" role="separator" aria-label="调整 AI 抽屉宽度" tabindex="0"></div>
+    <div class="ai-resize-handle" id="ai-resize-handle" role="separator" aria-orientation="vertical" aria-label="调整 AI 抽屉宽度" aria-valuemin="340" aria-valuemax="620" aria-valuenow="400" tabindex="0"></div>
     <div class="ai-drawer-head">
       <div><p class="dialog-kicker">学习助手</p><h2 id="ai-drawer-title">AI 解答</h2><p class="ai-context-line" id="ai-context-line">先选择一道题</p></div>
       <button type="button" class="icon-btn" id="btn-ai-close" aria-label="关闭 AI 解答"><svg class="ui-icon"><use href="#icon-close"></use></svg></button>
@@ -423,7 +421,7 @@
       </li>
       <li>
         <span class="tutorial-step-no">2</span>
-        <div><h3>开始刷题</h3><p>从首页进入学科，再用刷题页顶部的章节选择器进入最末级小节；列表模式适合连续刷，单题模式支持快捷键。每次标记都会增量保存到本机中控台。</p></div>
+        <div><h3>开始刷题</h3><p>从首页进入学科，再用刷题页顶部的章节选择器进入最末级小节；列表模式适合连续刷，沉浸模式适合单题作答和快捷键操作。每次标记都会增量保存到本机中控台。</p></div>
       </li>
       <li>
         <span class="tutorial-step-no">3</span>
@@ -740,7 +738,7 @@
       </form>
     </section>
     <section class="shortcut-settings" aria-labelledby="shortcut-settings-title">
-      <div class="ai-settings-heading"><div><p class="dialog-kicker">沉浸操作</p><h3 id="shortcut-settings-title">焦点模式快捷键</h3><p class="muted">点击按键后直接按下新键。输入框、批注和 AI 对话中会自动停用题目快捷键。</p></div><button type="button" class="btn ghost" id="btn-shortcuts-reset">恢复默认</button></div>
+      <div class="ai-settings-heading"><div><p class="dialog-kicker">沉浸操作</p><h3 id="shortcut-settings-title">沉浸模式快捷键</h3><p class="muted">点击按键后直接按下新键。输入框、批注和 AI 对话中会自动停用题目快捷键。</p></div><button type="button" class="btn ghost" id="btn-shortcuts-reset">恢复默认</button></div>
       <div id="shortcut-list" class="shortcut-list"></div>
       <p class="setup-feedback" id="shortcut-feedback" role="status" aria-live="polite"></p>
     </section>
@@ -769,6 +767,6 @@
 
   <script defer src="./vendor/marked.min.js"></script>
   <script defer src="./vendor/katex.min.js"></script>
-    <script defer src="./app2.js?v=10"></script>
+    <script defer src="./app2.js?v=27"></script>
 </body>
 </html>

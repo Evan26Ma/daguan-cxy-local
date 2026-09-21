@@ -3,8 +3,9 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 
 const html = fs.readFileSync(new URL("../web/index.html", import.meta.url), "utf8");
-const app = fs.readFileSync(new URL("../web/app.js", import.meta.url), "utf8");
+const app = fs.readFileSync(new URL("../web/app2.js", import.meta.url), "utf8");
 const css = fs.readFileSync(new URL("../web/styles.css", import.meta.url), "utf8");
+const server = fs.readFileSync(new URL("../local-server/server.mjs", import.meta.url), "utf8");
 
 test("工具区拥有独立选中态和清晰的同步入口", () => {
   assert.match(app, /const toolsWorkspace = name === "feature" && state\.feature === "tools"/);
@@ -48,4 +49,132 @@ test("同步流程使用清晰的两步入口并隐藏低频操作", () => {
   assert.match(app, /needsFirstSync/);
   assert.match(app, /remoteQuestionCount/);
   assert.match(app, /进度有新变化，请再次确认/);
+});
+
+test("首页不再显示无效的其他章节入口", () => {
+  assert.doesNotMatch(html, /id="btn-hero-other"/);
+  assert.doesNotMatch(app, /btn-hero-other/);
+  assert.doesNotMatch(css, /chapter-menu-home-open/);
+});
+
+test("中等桌面宽度下侧栏仍保留手动展开按钮", () => {
+  assert.match(css, /#app\.learning-shell \.sidebar-collapse\s*\{\s*display:\s*inline-flex\s*;?\s*\}/);
+  assert.doesNotMatch(css, /#app\.learning-shell \.sidebar-collapse\s*\{\s*display:\s*none\s*!important?\s*\}/);
+  assert.match(css, /#app\.learning-shell:not\(\[data-sidebar="collapsed"\]\) \.sidebar\s*\{\s*width:\s*var\(--shell-sidebar-width\)\s*;/);
+  assert.match(css, /#app\.learning-shell:not\(\[data-sidebar="collapsed"\]\) \.brand span\s*\{\s*display:\s*inline\s*;/);
+});
+
+test("浏览题目时展开侧栏仍显示题库树", () => {
+  assert.match(html, /id="app"[^>]*data-sidebar="expanded"/);
+  assert.match(html, /id="cat-tree"[^>]*aria-label="分类"/);
+  assert.match(css, /body\[data-view="browse"\] #app\.learning-shell \.learning-shell__sidebar\s*\{\s*display:\s*flex\s*!important/s);
+  assert.match(css, /body\[data-view="browse"\] #app\.learning-shell\s*\{\s*display:\s*grid/s);
+  assert.match(css, /body\[data-view="browse"\] #app\.learning-shell:not\(\[data-sidebar="collapsed"\]\) \.cat-tree\s*\{\s*display:\s*block\s*!important/s);
+  assert.match(css, /body\[data-view="browse"\] #app\.learning-shell #btn-open-sidebar\s*\{\s*display:\s*inline-flex\s*!important/s);
+});
+
+test("首屏不阻塞加载题库索引", () => {
+  assert.doesNotMatch(app, /const \[manifest, categories\] = await Promise\.all\(\[[\s\S]*?hydrated,[\s\S]*?serverHydrated,[\s\S]*?\]\);/);
+  assert.match(app, /Promise\.allSettled\(\[hydrated, serverHydrated\]\)/);
+  assert.match(app, /function ensureIndexes\(\)/);
+});
+
+test("Service Worker 不预缓存首屏之外的大型索引和字体", () => {
+  const sw = fs.readFileSync(new URL("../web/service-worker.js", import.meta.url), "utf8");
+  assert.match(sw, /daguan-shell-v63/);
+  assert.match(app, /service-worker\.js\?v=62/);
+  assert.doesNotMatch(sw, /data\/(category_questions|id_index|search_index)\.json/);
+  assert.doesNotMatch(sw, /vendor\/fonts\//);
+});
+
+test("Service Worker 响应始终重新校验，避免线上继续命中旧脚本", () => {
+  assert.match(server, /const isServiceWorker = path\.basename\(file\) === "service-worker\.js"/);
+  assert.match(server, /isHtml \|\| isServiceWorker \? "no-cache"/);
+});
+
+test("首页继续按钮回到上次刷题题目", () => {
+  assert.match(html, /id="btn-start"/);
+  assert.match(app, /startButton\.textContent = canResume \? "继续"/);
+  assert.match(app, /async function resumeSavedLearningPosition\(\)/);
+  assert.match(app, /openCategory\(leaf\.id, state\.last_study\.question_id/);
+  assert.match(app, /if \(await resumeSavedLearningPosition\(\)\) return/);
+});
+
+test("沉浸模式隐藏左侧导航并让 AI 抽屉宽度参与页面布局", () => {
+  assert.match(css, /body\.focus-mode #app\.learning-shell \.learning-shell__sidebar\s*,[\s\S]*display:\s*none\s*!important/s);
+  assert.match(css, /body\.focus-mode #app\.learning-shell\s*\{[\s\S]*?grid-template-columns:\s*1fr\s*!important/s);
+  assert.match(css, /body\.ai-drawer-open #app\.learning-shell\s*\{\s*margin-right:\s*var\(--ai-drawer-width/s);
+  assert.match(css, /\.ai-drawer\s*\{[\s\S]*container-type:\s*inline-size/s);
+  assert.match(css, /@container \(max-width:\s*380px\)/);
+});
+
+test("单题展示统一为沉浸模式，快捷键只在沉浸模式显示", () => {
+  assert.doesNotMatch(html, /id="btn-focus-mode"/);
+  assert.match(html, /id="mode-single"[^>]*>沉浸<\/button>/);
+  assert.match(app, /if \(mode === "single"\) \{\s*enterFocusMode\(\);/s);
+  assert.match(app, /if \(!out\.answer \|\| out\.answer === "Space"/);
+  assert.match(css, /#app\.learning-shell \.shortcut-hint\s*\{\s*display:\s*none/s);
+  assert.match(css, /body\.focus-mode #app\.learning-shell \.shortcut-hint:not\(\[hidden\]\)\s*\{\s*display:\s*inline-flex/s);
+});
+
+test("iPad 外接键盘可以通过 event.code 使用沉浸快捷键", () => {
+  assert.match(app, /const SHORTCUT_CODE_FALLBACK = Object\.freeze/);
+  assert.match(app, /Space:\s*" "/);
+  assert.match(app, /F6:\s*"F6"/);
+  assert.match(app, /function shortcutEventKey\(event\)/);
+  assert.match(app, /SHORTCUT_CODE_FALLBACK\[event\.code\]/);
+  assert.match(app, /const key = shortcutEventKey\(e\)/);
+});
+
+test("主题色统一驱动学习区按钮且自定义背景绘制在页面容器", () => {
+  assert.match(css, /--dg-teal:\s*var\(--color-brand\)/);
+  assert.match(css, /#app\.learning-shell \.q-actions \.btn\.primary\s*\{\s*background:\s*var\(--dg-teal\)/);
+  assert.match(css, /html\[data-theme="custom"\] #app\.learning-shell\s*\{[\s\S]*?background-image:/);
+  assert.match(app, /--custom-background-image/);
+});
+
+test("沉浸模式提供清晰的退出入口", () => {
+  assert.match(html, /id="btn-exit-focus"[^>]*>退出沉浸/);
+  assert.match(app, /#btn-exit-focus.*addEventListener\("click", exitFocusMode\)/);
+  assert.match(css, /#app\.learning-shell \.focus-exit\s*\{\s*display:\s*none/);
+  assert.match(css, /body\.focus-mode #app\.learning-shell \.focus-exit\s*\{\s*display:\s*inline-flex/);
+});
+
+test("没有当前题目时进入沉浸模式不会把首页切成空白页", () => {
+  assert.match(app, /if \(state\.view !== "browse" \|\| !currentQ\(\)\) \{/);
+  assert.match(app, /请先选择章节并打开一道题，再进入沉浸模式/);
+  assert.match(app, /const opened = leafId != null[\s\S]*?if \(opened && position\.mode === "single"\) enterFocusMode\(\);/);
+  assert.match(css, /body\.focus-mode\[data-view="browse"\] #app\.learning-shell \.learning-shell__sidebar\s*\{[\s\S]*display:\s*none\s*!important/s);
+});
+
+test("已收藏状态使用绿色 UI 标记", () => {
+  assert.match(app, /el\.classList\.toggle\("active", on\)/);
+  assert.match(css, /\.q-actions \.btn\[data-favorite-id\]\.active[\s\S]*?color:\s*var\(--color-success\)/);
+  assert.match(css, /#btn-toggle-favorite\.active/);
+});
+
+test("沉浸模式末题可以自动进入下一小节", () => {
+  assert.match(app, /function findAdjacentChapter\(delta\)/);
+  assert.match(app, /async function go\(delta\)/);
+  assert.match(app, /next >= state\.queue\.length && delta > 0 && state\.focusMode/);
+  assert.match(app, /const opened = await goToAdjacentChapter\(1\)/);
+  assert.match(app, /state\.focusSnapshot\.index = 0/);
+  assert.match(app, /const canContinueToNextChapter = state\.focusMode && Boolean\(findAdjacentChapter\(1\)\)/);
+});
+
+test("单题界面不再显示勾选项且答案快捷键显示 Space", () => {
+  assert.doesNotMatch(html, /id="single-pick"|勾选本题/);
+  assert.doesNotMatch(app, /single-pick/);
+  assert.match(html, /id="btn-toggle-answer"[^>]*>[\s\S]*<kbd[^>]*>空格<\/kbd>/);
+  assert.match(app, /if \(!out\.answer \|\| out\.answer === "Space"/);
+  assert.match(app, /if \(normalized === " "\) return "空格"/);
+});
+
+test("AI 学习助手支持鼠标拖拽和键盘调整宽度", () => {
+  assert.match(html, /id="ai-resize-handle"[^>]*aria-valuemin="340"[^>]*aria-valuemax="620"/);
+  assert.match(app, /function setAiDrawerWidth\(value\)/);
+  assert.match(app, /handle\.addEventListener\("pointerdown"/);
+  assert.match(app, /handle\.addEventListener\("keydown"/);
+  assert.match(app, /localStorage\.setItem\(AI_WIDTH_KEY/);
+  assert.match(css, /\.ai-resize-handle::after/);
 });
