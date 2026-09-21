@@ -2,7 +2,7 @@
   "use strict";
 
   if ("serviceWorker" in navigator && location.protocol !== "file:") {
-    navigator.serviceWorker.register("./service-worker.js?v=62").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=63").catch(() => {});
   }
 
   const DATA = "./data";
@@ -16,7 +16,7 @@
   const AI_PREFS_KEY = "daguan_ai_preferences_v1";
   const AI_WIDTH_KEY = "daguan_ai_drawer_width_v1";
   const UI_BACKGROUND_KEY = "ui-background";
-  const APP_VERSION = "2026.09.20-r25";
+  const APP_VERSION = "2026.09.21-r26";
   const POSITION_KEY = "daguan_learning_position_v2";
   const UI_THEMES = ["official-light", "official-dark", "eye-care", "custom"];
   const DEFAULT_UI_PREFS = Object.freeze({
@@ -4057,6 +4057,17 @@
 
   let noteSaveTimer = 0;
   let activeAiRunId = "";
+  const aiStreamStates = new Set();
+
+  function refreshAiAfterResume() {
+    if (document.visibilityState !== "visible") return;
+    aiStreamStates.forEach((stream) => stream.flush?.());
+    window.requestAnimationFrame(() => {
+      if (state.view === "browse" && state.mode === "single" && currentQ()) renderSingle();
+      if (state.aiOpen && !aiStreamStates.size) loadAiHistory();
+    });
+  }
+
   async function saveQuestionNote() {
     const q = currentAiQuestion();
     if (!q || !els.noteEditor) return;
@@ -4102,6 +4113,24 @@
     els.aiMessages?.append(userItem, pending);
     els.aiMessages?.scrollTo({ top: els.aiMessages.scrollHeight, behavior: "smooth" });
     if (els.aiPrompt) els.aiPrompt.value = "";
+    const stream = { timer: 0, disposed: false, flush: null, answer: "" };
+    const paintNow = () => {
+      stream.timer = 0;
+      if (stream.disposed || document.visibilityState !== "visible") return;
+      const body = pending.querySelector(".ai-message-body");
+      if (body) body.innerHTML = sanitizeAiHtml(renderMarkdown(stream.answer || "正在思考…"));
+      els.aiMessages?.scrollTo({ top: els.aiMessages.scrollHeight });
+    };
+    const schedulePaint = () => {
+      if (stream.disposed || stream.timer || document.visibilityState !== "visible") return;
+      stream.timer = window.setTimeout(paintNow, 120);
+    };
+    stream.flush = () => {
+      if (stream.timer) window.clearTimeout(stream.timer);
+      stream.timer = 0;
+      paintNow();
+    };
+    aiStreamStates.add(stream);
     const images = (state.aiProfiles.find((item) => item.id === state.aiProfileId)?.capabilities?.vision === "passed") ? await questionImages(q) : [];
     try {
       const response = await fetch("./api/ai/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ profileId: state.aiProfileId, question: aiQuestionPayload(q), prompt: text, includePrivate: $("#ai-include-private")?.checked === true, images }) });
@@ -4111,17 +4140,16 @@
       if (runId) state.aiRuns.set(runId, { questionId: String(q.id), startedAt: Date.now() });
       $("#btn-ai-stop")?.removeAttribute("hidden");
       const reader = response.body?.getReader();
-      const decoder = new TextDecoder(); let buffer = ""; let answer = "";
-      const paint = () => { const body = pending.querySelector(".ai-message-body"); if (body) body.innerHTML = sanitizeAiHtml(renderMarkdown(answer || "正在思考…")); els.aiMessages?.scrollTo({ top: els.aiMessages.scrollHeight }); };
+      const decoder = new TextDecoder(); let buffer = "";
       while (reader) {
         const { done, value } = await reader.read(); if (done) break;
         buffer += decoder.decode(value, { stream: true });
         const rows = buffer.split(/\r?\n/); buffer = rows.pop() || "";
         for (const row of rows) if (row.startsWith("data:")) {
-          try { const event = JSON.parse(row.slice(5).trim()); if (event.type === "delta") { answer += event.content || ""; paint(); } if (event.type === "error") throw new Error(event.error || "AI 生成失败"); } catch (error) { if (error?.message && !/Unexpected token|JSON/.test(error.message)) throw error; }
+          try { const event = JSON.parse(row.slice(5).trim()); if (event.type === "delta") { stream.answer += event.content || ""; schedulePaint(); } if (event.type === "error") throw new Error(event.error || "AI 生成失败"); } catch (error) { if (error?.message && !/Unexpected token|JSON/.test(error.message)) throw error; }
         }
       }
-      pending.replaceWith(renderAiMessage(answer, "assistant"));
+      pending.replaceWith(renderAiMessage(stream.answer, "assistant"));
       if (runId) state.aiRuns.delete(runId);
       activeAiRunId = "";
       $("#btn-ai-stop")?.setAttribute("hidden", "");
@@ -4129,6 +4157,11 @@
       pending.replaceWith(renderAiMessage(`AI 暂时没有完成回答：${error.message || error}`, "assistant"));
       activeAiRunId = "";
       $("#btn-ai-stop")?.setAttribute("hidden", "");
+    } finally {
+      stream.disposed = true;
+      if (stream.timer) window.clearTimeout(stream.timer);
+      stream.timer = 0;
+      aiStreamStates.delete(stream);
     }
   }
 
@@ -4261,6 +4294,7 @@
     window.addEventListener("pagehide", flushPersist);
     document.addEventListener("visibilitychange", () => {
       if (document.visibilityState === "hidden") flushPersist();
+      else refreshAiAfterResume();
     });
     $("#btn-browse-back")?.addEventListener("click", goHome);
     $("#chapter-trigger")?.addEventListener("click", (event) => {
@@ -4890,5 +4924,6 @@
   }
 
   window.addEventListener("pagehide", saveLearningPosition);
+  window.addEventListener("pageshow", refreshAiAfterResume);
   init();
 })();

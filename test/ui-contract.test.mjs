@@ -81,8 +81,8 @@ test("首屏不阻塞加载题库索引", () => {
 
 test("Service Worker 不预缓存首屏之外的大型索引和字体", () => {
   const sw = fs.readFileSync(new URL("../web/service-worker.js", import.meta.url), "utf8");
-  assert.match(sw, /daguan-shell-v63/);
-  assert.match(app, /service-worker\.js\?v=62/);
+  assert.match(sw, /daguan-shell-v64/);
+  assert.match(app, /service-worker\.js\?v=63/);
   assert.doesNotMatch(sw, /data\/(category_questions|id_index|search_index)\.json/);
   assert.doesNotMatch(sw, /vendor\/fonts\//);
 });
@@ -160,6 +160,14 @@ test("沉浸模式末题可以自动进入下一小节", () => {
   assert.match(app, /const opened = await goToAdjacentChapter\(1\)/);
   assert.match(app, /state\.focusSnapshot\.index = 0/);
   assert.match(app, /const canContinueToNextChapter = state\.focusMode && Boolean\(findAdjacentChapter\(1\)\)/);
+});
+
+test("AI 流式回答节流渲染并在回到前台时恢复", () => {
+  assert.match(app, /const aiStreamStates = new Set\(\)/);
+  assert.match(app, /stream\.timer = window\.setTimeout\(paintNow, 120\)/);
+  assert.match(app, /function refreshAiAfterResume\(\)/);
+  assert.match(app, /else refreshAiAfterResume\(\)/);
+  assert.match(app, /window\.addEventListener\("pageshow", refreshAiAfterResume\)/);
 });
 
 test("单题界面不再显示勾选项且答案快捷键显示 Space", () => {
