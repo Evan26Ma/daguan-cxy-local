@@ -2911,6 +2911,18 @@ body[data-view="browse"] #app.learning-shell .topbar { gap: .7rem; padding-inlin
 .sync-flow-step { color: var(--color-brand); font-size: .72rem; font-weight: 800; letter-spacing: .04em; }
 .sync-flow-card strong { color: var(--color-foreground); font-size: 1.08rem; line-height: 1.45; }
 .sync-flow-card p { margin: 0; color: var(--color-foreground-muted); font-size: .8rem; line-height: 1.55; }
+.sync-detail { margin: .75rem 0 0; border: 1px solid var(--color-border); border-radius: var(--radius-card); background: var(--color-surface); }
+.sync-detail > summary { padding: .75rem .9rem; color: var(--color-brand); cursor: pointer; font-size: .8rem; font-weight: 750; }
+.sync-detail-content { display: grid; gap: .65rem; padding: 0 .75rem .75rem; }
+.sync-detail-direction { border-top: 1px solid var(--color-border-subtle); }
+.sync-detail-direction > summary { padding: .65rem .15rem; color: var(--color-foreground); cursor: pointer; font-size: .78rem; font-weight: 750; }
+.sync-detail-groups { display: grid; gap: .45rem; padding: 0 0 .35rem .25rem; }
+.sync-detail-group { border: 1px solid var(--color-border-subtle); border-radius: var(--radius-control); background: var(--color-surface-subtle); }
+.sync-detail-group > summary { padding: .55rem .65rem; color: var(--color-foreground-muted); cursor: pointer; font-size: .75rem; font-weight: 650; }
+.sync-detail-questions { display: flex; flex-wrap: wrap; gap: .35rem; padding: 0 .65rem .6rem; }
+.sync-detail-question { display: inline-flex; align-items: center; gap: .25rem; padding: .22rem .42rem; color: var(--color-foreground-muted); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 999px; font: 600 .68rem/1.2 var(--font-family-ui); }
+.sync-detail-question small { color: var(--color-foreground-subtle); font-weight: 500; }
+.sync-detail-empty { margin: 0; padding: .6rem; color: var(--color-foreground-subtle); font-size: .75rem; }
 .sync-primary-actions { align-items: center; }
 .sync-primary-actions #btn-sync-push { min-width: 9.5rem; }
 .sync-advanced { margin-top: .8rem; border-top: 1px solid var(--color-border-subtle); }

@@ -81,8 +81,8 @@ test("首屏不阻塞加载题库索引", () => {
 
 test("Service Worker 不预缓存首屏之外的大型索引和字体", () => {
   const sw = fs.readFileSync(new URL("../web/service-worker.js", import.meta.url), "utf8");
-  assert.match(sw, /daguan-shell-v66/);
-  assert.match(app, /service-worker\.js\?v=64/);
+  assert.match(sw, /daguan-shell-v67/);
+  assert.match(app, /service-worker\.js\?v=65/);
   assert.doesNotMatch(sw, /data\/(category_questions|id_index|search_index)\.json/);
   assert.doesNotMatch(sw, /vendor\/fonts\//);
 });
@@ -181,6 +181,14 @@ test("进度统计兼容数字时间戳和 ISO 时间", () => {
   assert.match(app, /const parsed = Date\.parse\(value\)/);
   assert.match(app, /timestampOf\(p\.updated_at\)/);
   assert.match(app, /new Date\(timestampOf\(latest\.updated_at\)\)/);
+});
+
+test("同步预览按章节和小节展示可展开题号明细", () => {
+  assert.match(html, /id="sync-detail"/);
+  assert.match(app, /function syncQuestionPathMap\(\)/);
+  assert.match(app, /function renderSyncDetails\(preview\)/);
+  assert.match(app, /同步预览.*ensureIndexes|await ensureIndexes\(\)[\s\S]*reconcilePreview/s);
+  assert.match(app, /sync-detail-group/);
 });
 
 test("单题界面不再显示勾选项且答案快捷键显示 Space", () => {

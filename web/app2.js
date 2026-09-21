@@ -2,7 +2,7 @@
   "use strict";
 
   if ("serviceWorker" in navigator && location.protocol !== "file:") {
-    navigator.serviceWorker.register("./service-worker.js?v=64").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=65").catch(() => {});
   }
 
   const DATA = "./data";
@@ -16,7 +16,7 @@
   const AI_PREFS_KEY = "daguan_ai_preferences_v1";
   const AI_WIDTH_KEY = "daguan_ai_drawer_width_v1";
   const UI_BACKGROUND_KEY = "ui-background";
-  const APP_VERSION = "2026.09.21-r28";
+  const APP_VERSION = "2026.09.21-r29";
   const POSITION_KEY = "daguan_learning_position_v2";
   const UI_THEMES = ["official-light", "official-dark", "eye-care", "custom"];
   const DEFAULT_UI_PREFS = Object.freeze({
@@ -3267,6 +3267,80 @@
 
   let reconcilePreview = null;
 
+  function syncMasteryLabel(value) {
+    return {
+      mastered: "已掌握",
+      needs_practice: "学习中",
+      learning: "学习中",
+      not_known: "易错",
+      forgot: "易错",
+      not_started: "未开始",
+    }[value] || String(value || "状态变化");
+  }
+
+  function syncQuestionPathMap() {
+    const map = new Map();
+    for (const entry of flattenCategoryLeaves()) {
+      const path = entry.trail.map((node) => node.name).filter(Boolean).join(" / ") || "未归类章节";
+      for (const id of state.catQuestions[String(entry.node.id)] || []) {
+        if (!map.has(String(id))) map.set(String(id), path);
+      }
+    }
+    return map;
+  }
+
+  function syncChangeLabels(item, direction) {
+    if (direction === "to-local") {
+      if (item.field === "mastery") return syncMasteryLabel(item.value);
+      if (item.field === "favorite") return item.value ? "加入收藏" : "取消收藏";
+      return "本地状态变化";
+    }
+    const payload = item.payload || {};
+    const labels = [];
+    if (payload.mastery != null) labels.push(syncMasteryLabel(payload.mastery));
+    if (Object.prototype.hasOwnProperty.call(payload, "is_favorite")) labels.push(payload.is_favorite ? "加入收藏" : "取消收藏");
+    return labels.join(" · ") || "状态变化";
+  }
+
+  function renderSyncDetails(preview) {
+    const detail = $("#sync-detail");
+    const content = $("#sync-detail-content");
+    if (!detail || !content) return;
+    const paths = syncQuestionPathMap();
+    const directions = [
+      { title: "本地 → 官网", direction: "to-remote", items: preview.remoteOperations || [] },
+      { title: "官网 → 本地", direction: "to-local", items: preview.localChanges || [] },
+    ];
+    const rendered = directions.map(({ title, direction, items }) => {
+      const groups = new Map();
+      for (const item of items) {
+        const id = String(item.questionId ?? item.question_id ?? "");
+        if (!id) continue;
+        const path = paths.get(id) || "未归类章节";
+        if (!groups.has(path)) groups.set(path, new Map());
+        const questions = groups.get(path);
+        if (!questions.has(id)) questions.set(id, syncChangeLabels(item, direction));
+        else {
+          const previous = questions.get(id);
+          const next = syncChangeLabels(item, direction);
+          if (next && !previous.includes(next)) questions.set(id, `${previous} · ${next}`);
+        }
+      }
+      const groupMarkup = [...groups.entries()].sort(([a], [b]) => a.localeCompare(b, "zh-CN")).map(([path, questions]) => `
+        <details class="sync-detail-group">
+          <summary>${escapeHtml(path)} · ${questions.size} 道题</summary>
+          <div class="sync-detail-questions">${[...questions.entries()].sort(([a], [b]) => Number(a) - Number(b)).map(([id, label]) => `<span class="sync-detail-question">#${escapeHtml(id)}<small>${escapeHtml(label)}</small></span>`).join("")}</div>
+        </details>`).join("");
+      return `<details class="sync-detail-direction"${groups.size ? "" : " hidden"}>
+        <summary>${title} · ${items.length} 道题</summary>
+        <div class="sync-detail-groups">${groupMarkup}</div>
+      </details>`;
+    }).join("");
+    content.innerHTML = rendered || `<p class="sync-detail-empty">没有需要展开的题目变化。</p>`;
+    detail.hidden = !directions.some(({ items }) => items.length);
+    detail.open = false;
+  }
+
   function formatReconcilePreview(preview) {
     const s = preview.summary || {};
     const mastery = s.masteryChanges || {};
@@ -3279,6 +3353,7 @@
     const card = $("#sync-flow-card");
     const applyButton = $("#btn-sync-push");
     const winnerWrap = $("#sync-winner-wrap");
+    renderSyncDetails(preview);
     if (card) card.dataset.state = remoteQuestions || localQuestions ? "ready" : "no_changes";
     if (summary) {
       summary.textContent = remoteQuestions && localQuestions
@@ -3320,14 +3395,17 @@
     const card = $("#sync-flow-card");
     const summary = $("#sync-summary");
     const note = $("#sync-summary-note");
+    const detail = $("#sync-detail");
     const winner = $("#sync-conflict-winner")?.value || "latest";
     if (pullButton) { pullButton.disabled = true; pullButton.textContent = "正在检查…"; }
     if (applyButton) { applyButton.hidden = true; applyButton.disabled = true; }
     if (card) card.dataset.state = "checking";
+    if (detail) detail.hidden = true;
     if (summary) summary.textContent = "正在检查官网和本地进度…";
     if (note) note.textContent = "这是只读检查，不会修改任何数据。";
     showSyncResult("正在读取官网掌握状态、收藏、最近学习和活动日历…");
     try {
+      await ensureIndexes();
       try {
         localStorage.setItem("daguan_browser_backup_before_reconcile_v2", JSON.stringify({ progress: state.progress, favorites: [...state.favorites], picked: [...state.picked], saved_at: new Date().toISOString() }));
       } catch {}
