@@ -16,7 +16,7 @@
   const AI_PREFS_KEY = "daguan_ai_preferences_v1";
   const AI_WIDTH_KEY = "daguan_ai_drawer_width_v1";
   const UI_BACKGROUND_KEY = "ui-background";
-  const APP_VERSION = "2026.09.21-r26";
+  const APP_VERSION = "2026.09.21-r27";
   const POSITION_KEY = "daguan_learning_position_v2";
   const UI_THEMES = ["official-light", "official-dark", "eye-care", "custom"];
   const DEFAULT_UI_PREFS = Object.freeze({
@@ -4766,6 +4766,11 @@
     $("#ai-profile-select")?.addEventListener("change", (event) => { state.aiProfileId = event.target.value; saveAiPrefs({ ...aiPrefs(), profileId: state.aiProfileId }); loadAiHistory(); });
     document.querySelectorAll("[data-ai-prompt]").forEach((button) => button.addEventListener("click", () => sendAiMessage(button.dataset.aiPrompt)));
     $("#ai-compose")?.addEventListener("submit", (event) => { event.preventDefault(); sendAiMessage(); });
+    $("#ai-prompt")?.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter" || event.shiftKey || event.isComposing || event.keyCode === 229) return;
+      event.preventDefault();
+      sendAiMessage();
+    });
     $("#btn-ai-stop")?.addEventListener("click", async () => { if (!activeAiRunId) return; await fetch(`./api/ai/runs/${encodeURIComponent(activeAiRunId)}`, { method: "DELETE" }).catch(() => {}); });
     $("#question-note-editor")?.addEventListener("input", scheduleQuestionNoteSave);
     $("#btn-note-history")?.addEventListener("click", () => $("#question-note-history")?.classList.toggle("hidden"));
