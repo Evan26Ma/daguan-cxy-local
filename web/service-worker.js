@@ -1,4 +1,4 @@
-const CACHE = "daguan-shell-v65";
+const CACHE = "daguan-shell-v66";
 const SHELL = [
   "./",
   "./landing.html",
@@ -9,7 +9,7 @@ const SHELL = [
   "./assets/landing/wechat_qrcode.png",
   "./index.html",
   "./styles.css?v=47",
-  "./app2.js?v=29",
+  "./app2.js?v=30",
   "./vendor/marked.min.js",
   "./vendor/katex.min.js",
   "./vendor/katex.min.css",

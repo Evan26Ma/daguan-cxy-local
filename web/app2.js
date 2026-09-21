@@ -2,7 +2,7 @@
   "use strict";
 
   if ("serviceWorker" in navigator && location.protocol !== "file:") {
-    navigator.serviceWorker.register("./service-worker.js?v=63").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=64").catch(() => {});
   }
 
   const DATA = "./data";
@@ -16,7 +16,7 @@
   const AI_PREFS_KEY = "daguan_ai_preferences_v1";
   const AI_WIDTH_KEY = "daguan_ai_drawer_width_v1";
   const UI_BACKGROUND_KEY = "ui-background";
-  const APP_VERSION = "2026.09.21-r27";
+  const APP_VERSION = "2026.09.21-r28";
   const POSITION_KEY = "daguan_learning_position_v2";
   const UI_THEMES = ["official-light", "official-dark", "eye-care", "custom"];
   const DEFAULT_UI_PREFS = Object.freeze({
@@ -624,9 +624,18 @@
       if (!p || typeof p !== "object") continue;
       const cur = out[id];
       if (!cur) out[id] = p;
-      else if ((p.updated_at || 0) >= (cur.updated_at || 0)) out[id] = { ...cur, ...p };
+      else if (timestampOf(p.updated_at) >= timestampOf(cur.updated_at)) out[id] = { ...cur, ...p };
     }
     return out;
+  }
+
+  function timestampOf(value) {
+    if (typeof value === "number" && Number.isFinite(value)) return value;
+    if (typeof value !== "string" || !value.trim()) return 0;
+    const numeric = Number(value);
+    if (Number.isFinite(numeric)) return numeric;
+    const parsed = Date.parse(value);
+    return Number.isFinite(parsed) ? parsed : 0;
   }
 
   function flushPersist() {
@@ -784,8 +793,8 @@
     const seen = vals.filter((p) => p.seen).length;
     const forgot = vals.filter((p) => p.error_prone === true).length;
     const today = isoDate(new Date());
-    const activeDates = new Set(vals.filter((p) => p.updated_at).map((p) => isoDate(new Date(Number(p.updated_at)))));
-    const todayCount = vals.filter((p) => p.updated_at && isoDate(new Date(Number(p.updated_at))) === today).length;
+    const activeDates = new Set(vals.map((p) => timestampOf(p.updated_at)).filter(Boolean).map((at) => isoDate(new Date(at))));
+    const todayCount = vals.filter((p) => timestampOf(p.updated_at) && isoDate(new Date(timestampOf(p.updated_at))) === today).length;
     let streak = 0;
     const cursor = new Date();
     while (activeDates.has(isoDate(cursor))) {
@@ -1849,7 +1858,7 @@
     const remoteCounts = extractActivityCounts(state.remote_activity);
     for (const [date, count] of remoteCounts) counts.set(date, count);
     for (const progress of Object.values(state.progress)) {
-      const time = Number(progress.updated_at || 0);
+      const time = timestampOf(progress.updated_at);
       if (!time) continue;
       const date = new Date(time);
       if (Number.isNaN(date.getTime())) continue;
@@ -1903,7 +1912,7 @@
     const date = $("#hero-date");
     if (!chapter || !date) return;
     const records = Object.values(state.progress);
-    const latest = records.reduce((current, item) => Number(item.updated_at || 0) > Number(current?.updated_at || 0) ? item : current, null);
+    const latest = records.reduce((current, item) => timestampOf(item.updated_at) > timestampOf(current?.updated_at) ? item : current, null);
     const savedTrail = state.last_study?.category_id != null ? findCat(state.last_study.category_id) : null;
     const savedLeaf = savedTrail?.[savedTrail.length - 1];
     const canResume = Boolean(savedLeaf && isCategoryLeaf(savedLeaf) && state.last_study?.question_id != null);
@@ -1921,7 +1930,7 @@
     })();
     if (resumeLeaf) state.heroRecommendCatId = resumeLeaf.id;
     chapter.textContent = state.crumb && state.crumb !== "选择左侧分类开始" ? state.crumb : (resumeLeaf ? resumeLeaf.name : "选择一个章节开始学习");
-    date.textContent = latest?.updated_at ? `最近作答 ${isoDate(new Date(Number(latest.updated_at)))}；完成官网同步后可跨设备接续。` : "进度已自动保存在本机；完成官网同步后可跨设备接续。";
+    date.textContent = latest?.updated_at ? `最近作答 ${isoDate(new Date(timestampOf(latest.updated_at)))}；完成官网同步后可跨设备接续。` : "进度已自动保存在本机；完成官网同步后可跨设备接续。";
     const exam = new Date(2026, 11, 19);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -3110,7 +3119,7 @@
         mastery,
         favorite,
         updated_at: p.updated_at
-          ? new Date(Number(p.updated_at)).toISOString()
+          ? new Date(timestampOf(p.updated_at)).toISOString()
           : new Date().toISOString(),
       };
     }

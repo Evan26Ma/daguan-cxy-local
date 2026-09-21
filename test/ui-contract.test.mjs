@@ -81,8 +81,8 @@ test("首屏不阻塞加载题库索引", () => {
 
 test("Service Worker 不预缓存首屏之外的大型索引和字体", () => {
   const sw = fs.readFileSync(new URL("../web/service-worker.js", import.meta.url), "utf8");
-  assert.match(sw, /daguan-shell-v65/);
-  assert.match(app, /service-worker\.js\?v=63/);
+  assert.match(sw, /daguan-shell-v66/);
+  assert.match(app, /service-worker\.js\?v=64/);
   assert.doesNotMatch(sw, /data\/(category_questions|id_index|search_index)\.json/);
   assert.doesNotMatch(sw, /vendor\/fonts\//);
 });
@@ -174,6 +174,13 @@ test("AI 输入框回车发送且 Shift+Enter 换行", () => {
   assert.match(app, /\$\("#ai-prompt"\)\?\.addEventListener\("keydown"/);
   assert.match(app, /event\.key !== "Enter" \|\| event\.shiftKey \|\| event\.isComposing \|\| event\.keyCode === 229/);
   assert.match(app, /event\.preventDefault\(\);\s*sendAiMessage\(\);/);
+});
+
+test("进度统计兼容数字时间戳和 ISO 时间", () => {
+  assert.match(app, /function timestampOf\(value\)/);
+  assert.match(app, /const parsed = Date\.parse\(value\)/);
+  assert.match(app, /timestampOf\(p\.updated_at\)/);
+  assert.match(app, /new Date\(timestampOf\(latest\.updated_at\)\)/);
 });
 
 test("单题界面不再显示勾选项且答案快捷键显示 Space", () => {
