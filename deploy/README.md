@@ -18,6 +18,26 @@ bash scripts/install-linux.sh
 
 脚本会自动安装或使用 Node.js 20，并创建 systemd 用户服务。默认只监听 `127.0.0.1`。
 
+### 从 GitHub 自动更新
+
+服务器版可以安装定时更新器。它每 15 分钟检查当前分支的上游 GitHub 分支；只有工作区干净、远端提交可以快进合并，并且新版本通过 `npm test` 和 `npm run verify` 时，才会更新代码并重启服务：
+
+```bash
+sudo install -m 644 deploy/daguan-cxy-update.service /etc/systemd/system/daguan-cxy-update.service
+sudo install -m 644 deploy/daguan-cxy-update.timer /etc/systemd/system/daguan-cxy-update.timer
+sudo systemctl daemon-reload
+sudo systemctl enable --now daguan-cxy-update.timer
+```
+
+查看更新器状态和日志：
+
+```bash
+systemctl status daguan-cxy-update.timer
+journalctl -u daguan-cxy-update.service -n 80 --no-pager
+```
+
+更新器不会覆盖本地未提交改动；发现工作区不干净时会跳过本轮检查。
+
 ## 配置
 
 可通过环境变量调整：

@@ -1,0 +1,12 @@
+[Unit]
+Description=Daguan CXY GitHub auto-update check
+Wants=network-online.target
+After=network-online.target daguan-cxy.service
+
+[Service]
+Type=oneshot
+User=root
+WorkingDirectory=/home/ubuntu/daguan-cxy-local
+Environment=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+Environment=DAGUAN_UPDATE_USER=ubuntu
+ExecStart=/usr/bin/bash /home/ubuntu/daguan-cxy-local/scripts/auto-update-linux.sh

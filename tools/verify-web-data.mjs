@@ -11,7 +11,7 @@ const data = join(web, "data");
 const required = [
   "index.html",
   "styles.css",
-  "app.js",
+  "app2.js",
   "manifest.webmanifest",
   "service-worker.js",
   "vendor/marked.min.js",
@@ -58,7 +58,7 @@ const html = await readFile(join(web, "index.html"), "utf8");
 if (/src=["']https?:\/\//i.test(html) || /href=["']https?:\/\//i.test(html)) {
   throw new Error("index.html 仍包含外部脚本或样式");
 }
-for (const file of ["app.js", "styles.css", "manifest.webmanifest", "service-worker.js"]) {
+for (const file of ["app2.js", "styles.css", "manifest.webmanifest", "service-worker.js"]) {
   const text = await readFile(join(web, file), "utf8");
   if (/https?:\/\//i.test(text)) {
     throw new Error(`${file} 仍包含外部 URL`);

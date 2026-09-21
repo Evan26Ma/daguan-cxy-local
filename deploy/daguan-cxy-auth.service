@@ -1,0 +1,29 @@
+[Unit]
+Description=Daguan CXY trusted-device authentication gateway
+After=network-online.target daguan-cxy.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+ExecStart=/usr/bin/node /usr/local/lib/daguan-cxy-auth-gateway.mjs
+Environment=CXY_AUTH_HOST=127.0.0.1
+Environment=CXY_AUTH_PORT=18091
+Environment=CXY_AUTH_UPSTREAM=http://127.0.0.1:8080
+Environment=CXY_AUTH_TOKEN_FILE=/etc/daguan-cxy-auth/token
+Environment=CXY_AUTH_SECRET_FILE=/var/lib/daguan-cxy-auth/cookie-secret
+Environment=CXY_AUTH_TRUST_DAYS=180
+Restart=always
+RestartSec=3
+UMask=0077
+StateDirectory=daguan-cxy-auth
+StateDirectoryMode=0700
+ReadWritePaths=/etc/daguan-cxy-auth /var/lib/daguan-cxy-auth
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target

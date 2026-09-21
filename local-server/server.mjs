@@ -13,7 +13,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const WEB_ROOT = path.join(ROOT, "web");
 const PORT = Number(process.env.PORT || 8080);
 const HOST = process.env.HOST || "127.0.0.1";
-const BUILD_VERSION = "2026.09.07-r7";
+const BUILD_VERSION = "2026.09.20-r25";
 const MAX_BODY = 10 * 1024 * 1024;
 
 const store = createStore(ROOT, process.env.DAGUAN_DATA_DIR);
@@ -445,7 +445,12 @@ async function serveStatic(requestPath, res) {
     const stat = await fs.stat(target);
     const file = stat.isDirectory() ? path.join(target, "index.html") : target;
     const ext = path.extname(file).toLowerCase();
-    res.writeHead(200, { "Content-Type": MIME[ext] || "application/octet-stream", "Cache-Control": ext === ".html" ? "no-cache" : "public, max-age=3600" });
+    const isHtml = ext === ".html";
+    const isServiceWorker = path.basename(file) === "service-worker.js";
+    res.writeHead(200, {
+      "Content-Type": MIME[ext] || "application/octet-stream",
+      "Cache-Control": isHtml || isServiceWorker ? "no-cache" : "public, max-age=3600",
+    });
     return res.end(await fs.readFile(file));
   } catch {
     return json(res, 404, { error: "资源不存在" });
