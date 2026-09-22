@@ -170,6 +170,13 @@ test("AI 流式回答节流渲染并在回到前台时恢复", () => {
   assert.match(app, /window\.addEventListener\("pageshow", refreshAiAfterResume\)/);
 });
 
+test("AI 题目入口提供错题分析模板", () => {
+  assert.match(html, /错题模板/);
+  assert.match(html, /错题分析/);
+  assert.match(html, /所有数学公式都使用 LaTeX 格式/);
+  assert.match(html, /只使用半角标点符号/);
+});
+
 test("AI 输入框回车发送且 Shift+Enter 换行", () => {
   assert.match(app, /\$\("#ai-prompt"\)\?\.addEventListener\("keydown"/);
   assert.match(app, /event\.key !== "Enter" \|\| event\.shiftKey \|\| event\.isComposing \|\| event\.keyCode === 229/);
