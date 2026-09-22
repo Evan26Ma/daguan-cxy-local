@@ -229,5 +229,8 @@ test("AI 学习助手支持鼠标拖拽和键盘调整宽度", () => {
   assert.match(css, /\.ai-resize-handle::before/);
   assert.match(css, /body\.ai-drawer-resizing \.ai-drawer[\s\S]*transition: none !important/);
   assert.match(css, /@media \(min-width: 80rem\)[\s\S]*body\.ai-drawer-open #app\.learning-shell/);
+  assert.match(css, /\.ai-messages\s*\{[\s\S]*grid-template-columns:\s*minmax\(0, 1fr\)/);
+  assert.match(css, /\.ai-message-body pre\s*\{[\s\S]*white-space:\s*pre-wrap/);
+  assert.match(css, /overflow-x:\s*clip/);
   assert.match(app, /lostpointercapture/);
 });
