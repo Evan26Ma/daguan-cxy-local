@@ -4101,7 +4101,10 @@
     handle.addEventListener("pointerdown", (event) => {
       if (window.innerWidth <= 672) return;
       event.preventDefault();
-      startX = event.clientX; startWidth = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--ai-drawer-width")) || 400;
+      startX = event.clientX;
+      startWidth = Number.parseFloat(document.documentElement.style.getPropertyValue("--ai-drawer-width"))
+        || Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--ai-drawer-width"))
+        || 400;
       handle.setPointerCapture?.(event.pointerId);
       document.body.classList.add("ai-drawer-resizing");
       const move = (moveEvent) => {
@@ -4111,10 +4114,12 @@
         handle.removeEventListener("pointermove", move);
         handle.removeEventListener("pointerup", end);
         handle.removeEventListener("pointercancel", end);
+        handle.removeEventListener("lostpointercapture", end);
         document.body.classList.remove("ai-drawer-resizing");
       };
       handle.addEventListener("pointermove", move); handle.addEventListener("pointerup", end, { once: true });
       handle.addEventListener("pointercancel", end, { once: true });
+      handle.addEventListener("lostpointercapture", end, { once: true });
     });
     handle.addEventListener("keydown", (event) => {
       if (window.innerWidth <= 672) return;
