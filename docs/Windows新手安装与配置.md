@@ -4,7 +4,7 @@
 
 ## 先看结论：你只需要这个 EXE
 
-[⬇️ 点击下载 DaguanMath-windows-x64.exe](https://github.com/Evan26Ma/daguan-cxy-local/releases/latest/download/DaguanMath-windows-x64.exe)
+[⬇️ 下载最新 EXE 安装包](https://github.com/Evan26Ma/daguan-cxy-local/releases/latest/download/DaguanMath-windows-x64.exe) · [下载最新 ZIP 安装包](https://github.com/Evan26Ma/daguan-cxy-local/releases/latest/download/DaguanMath-windows-x64.zip)
 
 下载完成后双击它，等待浏览器自动打开就行。
 
