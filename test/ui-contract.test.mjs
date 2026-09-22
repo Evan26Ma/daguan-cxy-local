@@ -228,8 +228,13 @@ test("AI 输入框支持原位、左下角和右侧下方三种停靠位置", ()
 test("进度统计兼容数字时间戳和 ISO 时间", () => {
   assert.match(app, /function timestampOf\(value\)/);
   assert.match(app, /const parsed = Date\.parse\(value\)/);
+  assert.match(app, /function practiceTimestamp\(progress\)/);
+  assert.match(app, /last_practiced_at/);
+  assert.match(app, /practiceTimestamp\(p\)/);
   assert.match(app, /timestampOf\(p\.updated_at\)/);
   assert.match(app, /new Date\(timestampOf\(latest\.updated_at\)\)/);
+  assert.match(server, /if \(incoming\.seen != null\) entry\.seen = incoming\.seen === true/);
+  assert.match(server, /if \(incoming\.last_practiced_at != null\) entry\.last_practiced_at = incoming\.last_practiced_at/);
 });
 
 test("同步预览按章节和小节展示可展开题号明细", () => {

@@ -330,8 +330,8 @@
     const key = String(id);
     const cur = state.progress[key] || {};
     const at = Date.now();
-    state.progress[key] = { ...cur, error_prone: !!on, error_prone_updated_at: at, updated_at: at, seen: true };
-    queueQuestionSync(key, { error_prone: !!on, seen: true });
+    state.progress[key] = { ...cur, error_prone: !!on, error_prone_updated_at: at, last_practiced_at: at, updated_at: at, seen: true };
+    queueQuestionSync(key, { error_prone: !!on, seen: true, last_practiced_at: at });
     saveProgress();
     refreshCardChrome(id);
     if (currentQ()?.id != null && String(currentQ().id) === key) renderSingle();
@@ -652,6 +652,10 @@
     return Number.isFinite(parsed) ? parsed : 0;
   }
 
+  function practiceTimestamp(progress) {
+    return timestampOf(progress?.last_practiced_at || progress?.updated_at);
+  }
+
   function flushPersist() {
     persistTimer = 0;
     try {
@@ -716,7 +720,7 @@
       const response = await fetch("./api/state", { cache: "no-store" });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const remote = await response.json();
-      if (remote?.progress && typeof remote.progress === "object") state.progress = remote.progress;
+      if (remote?.progress && typeof remote.progress === "object") state.progress = mergeProgress(remote.progress, state.progress);
       if (Array.isArray(remote?.favorites)) state.favorites = new Set(remote.favorites.map(String));
       if (Array.isArray(remote?.picked)) state.picked = new Set(remote.picked.map(String));
       if (remote?.annotations && typeof remote.annotations === "object") state.annotations = remote.annotations;
@@ -729,6 +733,7 @@
       serverStateAvailable = false;
     } finally {
       serverStateHydrated = true;
+      if (serverStateAvailable && serverQuestionQueue.size && !serverQuestionTimer) serverQuestionTimer = setTimeout(flushQuestionSync, 350);
     }
   }
 
@@ -741,11 +746,12 @@
   }
 
   function queueQuestionSync(id, patch) {
-    if (!serverStateAvailable || !serverStateHydrated) return;
     const key = String(id);
     serverQuestionQueue.set(key, { ...(serverQuestionQueue.get(key) || {}), ...patch });
-    if (serverQuestionTimer) clearTimeout(serverQuestionTimer);
-    serverQuestionTimer = setTimeout(flushQuestionSync, 350);
+    if (serverStateAvailable && serverStateHydrated) {
+      if (serverQuestionTimer) clearTimeout(serverQuestionTimer);
+      serverQuestionTimer = setTimeout(flushQuestionSync, 350);
+    }
   }
 
   async function flushQuestionSync() {
@@ -765,7 +771,7 @@
           const conflict = await response.json().catch(() => ({}));
           if (conflict.current) {
             serverRevision = Number(conflict.current.revision) || serverRevision;
-            state.progress = conflict.current.progress || state.progress;
+            state.progress = mergeProgress(conflict.current.progress || {}, state.progress);
             state.favorites = new Set((conflict.current.favorites || []).map(String));
             if (conflict.current.annotations && typeof conflict.current.annotations === "object") state.annotations = conflict.current.annotations;
           }
@@ -808,7 +814,7 @@
     const forgot = vals.filter((p) => p.error_prone === true).length;
     const today = isoDate(new Date());
     const activeDates = new Set(vals.map((p) => timestampOf(p.updated_at)).filter(Boolean).map((at) => isoDate(new Date(at))));
-    const todayCount = vals.filter((p) => timestampOf(p.updated_at) && isoDate(new Date(timestampOf(p.updated_at))) === today).length;
+    const todayCount = vals.filter((p) => practiceTimestamp(p) && isoDate(new Date(practiceTimestamp(p))) === today).length;
     let streak = 0;
     const cursor = new Date();
     while (activeDates.has(isoDate(cursor))) {
@@ -1382,8 +1388,8 @@
     const cur = state.progress[key] || {};
     const at = Date.now();
     const nextMastery = mastery === "forgot" ? "learning" : mastery;
-    state.progress[key] = { ...cur, mastery: nextMastery, seen: true, updated_at: at, mastery_updated_at: at };
-    queueQuestionSync(key, { mastery: nextMastery, seen: true });
+    state.progress[key] = { ...cur, mastery: nextMastery, seen: true, last_practiced_at: at, updated_at: at, mastery_updated_at: at };
+    queueQuestionSync(key, { mastery: nextMastery, seen: true, last_practiced_at: at });
     saveProgress();
     refreshCardChrome(id);
     if (state.mode === "single") {
@@ -1396,9 +1402,12 @@
   function markSeen(id) {
     const key = String(id);
     const cur = state.progress[key] || {};
-    if (!cur.seen) {
-      state.progress[key] = { ...cur, seen: true, updated_at: Date.now() };
-      queueQuestionSync(key, { seen: true });
+    const at = Date.now();
+    const lastPractice = timestampOf(cur.last_practiced_at);
+    const practicedToday = lastPractice && isoDate(new Date(lastPractice)) === isoDate(new Date(at));
+    if (!cur.seen || !practicedToday) {
+      state.progress[key] = { ...cur, seen: true, last_practiced_at: at, updated_at: at };
+      queueQuestionSync(key, { seen: true, last_practiced_at: at });
       saveProgress();
       refreshCardChrome(id);
       updateChapterHeader();
@@ -1408,16 +1417,18 @@
   function markAnswered(id, ok) {
     const key = String(id);
     const cur = state.progress[key] || {};
+    const at = Date.now();
     state.progress[key] = {
       ...cur,
       seen: true,
       answered: true,
       last_ok: !!ok,
-      updated_at: Date.now(),
+      last_practiced_at: at,
+      updated_at: at,
       mastery: cur.mastery || "learning",
       error_prone: ok ? cur.error_prone === true : true,
     };
-    queueQuestionSync(key, { mastery: state.progress[key].mastery, error_prone: state.progress[key].error_prone === true, seen: true, answered: true, last_ok: !!ok });
+    queueQuestionSync(key, { mastery: state.progress[key].mastery, error_prone: state.progress[key].error_prone === true, seen: true, answered: true, last_ok: !!ok, last_practiced_at: at });
     saveProgress();
     refreshCardChrome(id);
     updateChapterHeader();
@@ -1872,7 +1883,7 @@
     const remoteCounts = extractActivityCounts(state.remote_activity);
     for (const [date, count] of remoteCounts) counts.set(date, count);
     for (const progress of Object.values(state.progress)) {
-      const time = timestampOf(progress.updated_at);
+      const time = practiceTimestamp(progress);
       if (!time) continue;
       const date = new Date(time);
       if (Number.isNaN(date.getTime())) continue;

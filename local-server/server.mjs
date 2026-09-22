@@ -313,6 +313,10 @@ async function route(req, res) {
         entry.mastery_updated_at = at;
         entry.seen = incoming.seen !== false;
       }
+      if (incoming.seen != null) entry.seen = incoming.seen === true;
+      if (incoming.answered != null) entry.answered = incoming.answered === true;
+      if (incoming.last_ok != null) entry.last_ok = incoming.last_ok === true;
+      if (incoming.last_practiced_at != null) entry.last_practiced_at = incoming.last_practiced_at;
       if (incoming.error_prone != null) { entry.error_prone = incoming.error_prone === true; entry.error_prone_updated_at = at; }
       if (incoming.favorite != null || incoming.is_favorite != null) { entry.favorite = incoming.favorite ?? incoming.is_favorite === true; entry.favorite_updated_at = at; }
       entry.updated_at = at;
