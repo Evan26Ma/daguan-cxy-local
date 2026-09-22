@@ -209,8 +209,20 @@ test("AI 输入框在桌面停靠左下角并在非聊天页隐藏", () => {
   assert.match(html, /<form class="ai-compose ai-compose-dock hidden" id="ai-compose"/);
   assert.match(app, /\$\("#ai-compose"\)\?\.classList\.toggle\("hidden", !state\.aiOpen \|\| state\.aiTab !== "chat"\)/);
   assert.match(app, /\$\("#ai-compose"\)\?\.classList\.add\("hidden"\)/);
-  assert.match(css, /body\.ai-drawer-open #ai-compose\.ai-compose-dock:not\(\.hidden\)[\s\S]*position:\s*fixed/);
-  assert.match(css, /body\.ai-drawer-open #ai-compose\.ai-compose-dock:not\(\.hidden\)[\s\S]*left:\s*max\(1rem/);
+  assert.match(css, /body\.ai-drawer-open #ai-compose\.ai-compose-dock\[data-ai-compose-position="left"\]:not\(\.hidden\)[\s\S]*position:\s*fixed/);
+  assert.match(css, /body\.ai-drawer-open #ai-compose\.ai-compose-dock\[data-ai-compose-position="left"\]:not\(\.hidden\)[\s\S]*left:\s*max\(1rem/);
+});
+
+test("AI 输入框支持原位、左下角和右侧下方三种停靠位置", () => {
+  assert.match(html, /id="ui-ai-compose-position"/);
+  assert.match(html, /value="drawer">AI 面板内/);
+  assert.match(html, /value="left">左下角/);
+  assert.match(html, /value="right">右侧下方/);
+  assert.match(app, /aiComposePosition:\s*"left"/);
+  assert.match(app, /function applyAiComposePosition\(\)/);
+  assert.match(app, /form\.classList\.toggle\("ai-compose-dock", mode !== "drawer"\)/);
+  assert.match(app, /uiPrefs\.aiComposePosition = \["drawer", "left", "right"\]/);
+  assert.match(css, /data-ai-compose-position="right"[\s\S]*bottom:\s*max\(5\.5rem/);
 });
 
 test("进度统计兼容数字时间戳和 ISO 时间", () => {

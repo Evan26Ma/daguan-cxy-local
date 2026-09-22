@@ -24,6 +24,7 @@
     theme: "official-light",
     backgroundColor: "#f5f7fa",
     aiUserColor: "#356fe5",
+    aiComposePosition: "left",
     backgroundImageKey: "",
     backgroundPosition: "center",
     overlayOpacity: 0.78,
@@ -491,6 +492,9 @@
       if (!/^#[0-9a-f]{6}$/i.test(String(value.aiUserColor || ""))) {
         value.aiUserColor = DEFAULT_UI_PREFS.aiUserColor;
       }
+      if (!["drawer", "left", "right"].includes(value.aiComposePosition)) {
+        value.aiComposePosition = DEFAULT_UI_PREFS.aiComposePosition;
+      }
       const overlay = Number(value.overlayOpacity);
       value.overlayOpacity = Number.isFinite(overlay)
         ? Math.min(0.95, Math.max(0.55, overlay))
@@ -527,6 +531,7 @@
     root.style.setProperty("--custom-background-position", uiPrefs.backgroundPosition || "center");
     root.style.setProperty("--custom-background-image", uiBackgroundUrl ? `url("${uiBackgroundUrl}")` : "none");
     updateAppearanceUI();
+    applyAiComposePosition();
     const toggle = $("#btn-theme-toggle");
     if (toggle) {
       const dark = uiPrefs.theme === "official-dark";
@@ -544,11 +549,13 @@
     });
     const color = $("#ui-bg-color");
     const aiUserColor = $("#ui-ai-user-color");
+    const aiComposePosition = $("#ui-ai-compose-position");
     const position = $("#ui-bg-position");
     const overlay = $("#ui-bg-overlay");
     const output = $("#ui-bg-overlay-value");
     if (color) color.value = uiPrefs.backgroundColor;
     if (aiUserColor) aiUserColor.value = uiPrefs.aiUserColor;
+    if (aiComposePosition) aiComposePosition.value = uiPrefs.aiComposePosition;
     if (position) position.value = uiPrefs.backgroundPosition;
     if (overlay) overlay.value = String(uiPrefs.overlayOpacity);
     if (output) output.textContent = `${Math.round(uiPrefs.overlayOpacity * 100)}%`;
@@ -4049,6 +4056,19 @@
     } catch { state.aiProfiles = []; renderAiProfilesSettings(); }
   }
 
+  function applyAiComposePosition() {
+    const form = $("#ai-compose");
+    if (!form) return;
+    const mode = ["drawer", "left", "right"].includes(uiPrefs.aiComposePosition) ? uiPrefs.aiComposePosition : "left";
+    const slot = $("#ai-compose-slot");
+    form.dataset.aiComposePosition = mode;
+    form.classList.toggle("ai-compose-dock", mode !== "drawer");
+    if (mode === "drawer" && slot) slot.appendChild(form);
+    else if (mode !== "drawer") document.body.appendChild(form);
+    if (state.aiOpen) setAiTab(state.aiTab);
+    else form.classList.add("hidden");
+  }
+
   function setAiTab(tab) {
     state.aiTab = tab === "note" ? "note" : "chat";
     document.querySelectorAll("[data-ai-tab]").forEach((el) => { const active = el.dataset.aiTab === state.aiTab; el.classList.toggle("active", active); el.setAttribute("aria-selected", String(active)); });
@@ -4412,6 +4432,12 @@
       saveUiPrefs();
       applyUiPreferences();
       setThemeFeedback("用户消息主题色已应用。", false);
+    });
+    $("#ui-ai-compose-position")?.addEventListener("change", (event) => {
+      uiPrefs.aiComposePosition = ["drawer", "left", "right"].includes(event.target.value) ? event.target.value : DEFAULT_UI_PREFS.aiComposePosition;
+      saveUiPrefs();
+      applyUiPreferences();
+      setThemeFeedback("AI 输入框位置已应用。", false);
     });
     $("#ui-bg-image")?.addEventListener("change", async (event) => {
       await setUiBackground(event.target.files?.[0]);
