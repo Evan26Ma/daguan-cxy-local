@@ -7,7 +7,7 @@
   <meta name="description" content="大观园数学题库本地静态刷题站" />
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="stylesheet" href="./vendor/katex.min.css" />
-    <link rel="stylesheet" href="./styles.css?v=52" />
+    <link rel="stylesheet" href="./styles.css?v=53" />
   <script>
     (() => {
       if (location.search.includes("purge=1")) {
@@ -365,11 +365,11 @@
           <button type="button" class="ai-suggestion" data-ai-prompt="请判断这道题是否适合画图，并用图形解释。">画图解释</button>
           <button type="button" class="ai-suggestion" data-ai-prompt="请把这道题整理成一份适合复习的错题分析。先用连贯的自然段说明题目是什么以及考查的知识点, 再解释解题思路和完整过程。对每一个关键过程, 说明使用了什么信息, 并指出这些信息可以从题干, 图像, 条件, 选项或答案解析中的哪里提取出来。明确写出最终答案, 说明遇到同类题时第一时间应该想到什么, 再总结此类题的通用解法或通式。最后判断有没有类似题, 可以给出类似题型或检索关键词。如果题目图片中能看出题目来源, 书名, 章节, 页码, 题号或其他出处, 请标注来源; 无法确认时不要猜测。请区分题目中已经给出的信息和解题过程中推出的信息, 不要遗漏图片中的条件。输出只使用半角标点符号, 不要使用全角符号。所有数学公式都使用 LaTeX 格式, 行内公式使用 $...$, 独立公式使用 \\[...\\], 不要把公式写成普通文字。优先采用连贯的自然段, 通过因此, 不过, 换句话说等逻辑连接词组织内容, 不要把每个意思拆成单独一行。只有并列选项, 步骤或需要逐条对照时才使用列表或换行。加粗只用于真正重要的关键词或结论, 不要整句加粗, 也不要给每个小标题都加粗。请基于第一性原理分析, 避免冗余, 直接说明关键理由。">错题模板</button>
         </div>
-        <form class="ai-compose" id="ai-compose"><textarea id="ai-prompt" rows="3" placeholder="问问这道题…" aria-label="向 AI 提问"></textarea><div class="ai-compose-foot"><label class="check"><input type="checkbox" id="ai-include-private" /> 包含我的批注与学习状态</label><span class="ai-compose-buttons"><button type="button" class="btn ghost" id="btn-ai-stop" hidden>停止</button><button type="submit" class="btn primary" id="btn-ai-send">发送</button></span></div></form>
       </section>
       <section class="ai-panel hidden" id="ai-note-panel" data-ai-panel="note"><div class="note-toolbar"><span class="muted">本机保存 · 停止输入后自动保存</span><span class="note-status" id="question-note-status"></span></div><textarea id="question-note-editor" class="question-note-editor" placeholder="记录这道题的思路、易错点和下次复习提醒…" aria-label="题目批注"></textarea><div class="note-history-row"><button type="button" class="btn ghost" id="btn-note-history">查看历史</button><button type="button" class="btn ghost" id="btn-note-restore" hidden>恢复选中版本</button></div><div class="note-history hidden" id="question-note-history"></div></section>
     </div>
   </aside>
+  <form class="ai-compose ai-compose-dock hidden" id="ai-compose"><textarea id="ai-prompt" rows="3" placeholder="问问这道题…" aria-label="向 AI 提问"></textarea><div class="ai-compose-foot"><label class="check"><input type="checkbox" id="ai-include-private" /> 包含我的批注与学习状态</label><span class="ai-compose-buttons"><button type="button" class="btn ghost" id="btn-ai-stop" hidden>停止</button><button type="submit" class="btn primary" id="btn-ai-send">发送</button></span></div></form>
 
   <dialog id="dlg-filter" class="sheet sheet-wide filter-sheet">
     <div class="sheet-head">
@@ -778,6 +778,6 @@
 
   <script defer src="./vendor/marked.min.js"></script>
   <script defer src="./vendor/katex.min.js"></script>
-    <script defer src="./app2.js?v=35"></script>
+    <script defer src="./app2.js?v=36"></script>
 </body>
 </html>

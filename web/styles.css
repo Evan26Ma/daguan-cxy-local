@@ -2738,6 +2738,7 @@ body.ai-drawer-resizing .ai-drawer, body.ai-drawer-resizing #app.learning-shell,
 .ai-suggestion { padding: 6px 9px; color: var(--dg-teal); background: transparent; border: 1px solid var(--color-border); border-radius: 999px; font-size: 11px; cursor: pointer; }
 .ai-suggestion:hover { background: var(--dg-teal-soft); }
 .ai-compose { margin-top: 12px; }
+.ai-compose-dock { display: none; }
 .ai-compose textarea, .question-note-editor { display: block; width: 100%; resize: vertical; padding: 10px; color: var(--color-foreground); background: var(--color-surface); border: 1px solid var(--dg-warm-border); border-radius: 8px; font: 13px/1.6 var(--font-family-ui); }
 .ai-compose textarea { min-height: 72px; }
 .ai-compose-foot, .note-toolbar, .note-history-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 8px; }
@@ -2821,11 +2822,19 @@ body.focus-mode #app.learning-shell .q-actions { position: sticky; bottom: 0; ba
   .ai-drawer { inset: 0; width: 100vw; max-width: none; }
   .ai-resize-handle { display: none; }
   .ai-drawer-head { padding: 14px 16px 10px; }
-  .ai-drawer-body { padding-inline: 16px; }
+  .ai-drawer-body { padding-inline: 16px; padding-bottom: 9rem; }
   .ai-edge-tab { top: auto; right: 12px; bottom: 5.2rem; transform: none; writing-mode: horizontal-tb; border-radius: 999px; padding: 10px 12px; }
   .ai-edge-tab span { display: inline; }
   body.focus-mode #app.learning-shell .main { padding: 20px 10px 6rem; }
   body.focus-mode #app.learning-shell .q-actions { position: fixed; z-index: 20; inset: auto 0 4.25rem; padding: 8px 10px; margin: 0; border-top: 1px solid var(--dg-warm-border-soft); overflow-x: auto; }
+}
+
+@media (min-width: 42.0625rem) {
+  body.ai-drawer-open #ai-compose.ai-compose-dock:not(.hidden) { position: fixed; z-index: 44; left: max(1rem, env(safe-area-inset-left)); bottom: max(1rem, env(safe-area-inset-bottom)); display: block; width: min(32rem, calc(100vw - var(--ai-drawer-width, 400px) - 2rem)); margin: 0; padding: 10px; background: color-mix(in srgb, var(--color-surface) 96%, transparent); border: 1px solid var(--dg-warm-border); border-radius: 12px; box-shadow: 0 10px 30px rgba(39, 45, 48, .16); }
+}
+
+@media (max-width: 42rem) {
+  body.ai-drawer-open #ai-compose.ai-compose-dock:not(.hidden) { position: fixed; z-index: 46; right: 12px; bottom: calc(4.25rem + 12px); left: 12px; display: block; width: auto; margin: 0; padding: 8px; background: color-mix(in srgb, var(--color-surface) 97%, transparent); border: 1px solid var(--dg-warm-border); border-radius: 12px; box-shadow: 0 8px 24px rgba(39, 45, 48, .18); }
 }
 
 @media (min-width: 42.0625rem) and (max-width: 63.999rem) {

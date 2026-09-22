@@ -205,6 +205,14 @@ test("切换题目时清空 AI 助手并停止上一题的回答", () => {
   assert.match(app, /state\.aiQuestionId !== questionId/);
 });
 
+test("AI 输入框在桌面停靠左下角并在非聊天页隐藏", () => {
+  assert.match(html, /<form class="ai-compose ai-compose-dock hidden" id="ai-compose"/);
+  assert.match(app, /\$\("#ai-compose"\)\?\.classList\.toggle\("hidden", !state\.aiOpen \|\| state\.aiTab !== "chat"\)/);
+  assert.match(app, /\$\("#ai-compose"\)\?\.classList\.add\("hidden"\)/);
+  assert.match(css, /body\.ai-drawer-open #ai-compose\.ai-compose-dock:not\(\.hidden\)[\s\S]*position:\s*fixed/);
+  assert.match(css, /body\.ai-drawer-open #ai-compose\.ai-compose-dock:not\(\.hidden\)[\s\S]*left:\s*max\(1rem/);
+});
+
 test("进度统计兼容数字时间戳和 ISO 时间", () => {
   assert.match(app, /function timestampOf\(value\)/);
   assert.match(app, /const parsed = Date\.parse\(value\)/);

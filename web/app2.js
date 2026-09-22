@@ -4053,6 +4053,7 @@
     state.aiTab = tab === "note" ? "note" : "chat";
     document.querySelectorAll("[data-ai-tab]").forEach((el) => { const active = el.dataset.aiTab === state.aiTab; el.classList.toggle("active", active); el.setAttribute("aria-selected", String(active)); });
     document.querySelectorAll("[data-ai-panel]").forEach((el) => el.classList.toggle("hidden", el.dataset.aiPanel !== state.aiTab));
+    $("#ai-compose")?.classList.toggle("hidden", !state.aiOpen || state.aiTab !== "chat");
     if (state.aiTab === "note") renderQuestionNote();
   }
 
@@ -4078,6 +4079,7 @@
     state.aiOpen = false;
     document.body.classList.remove("ai-drawer-open");
     els.aiDrawer?.setAttribute("aria-hidden", "true");
+    $("#ai-compose")?.classList.add("hidden");
   }
 
   function aiDrawerWidthBounds() {
