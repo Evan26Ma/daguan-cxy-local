@@ -133,6 +133,16 @@ test("主题色统一驱动学习区按钮且自定义背景绘制在页面容�
   assert.match(app, /--custom-background-image/);
 });
 
+test("AI 对话区区分用户和 AI 消息颜色", () => {
+  assert.match(html, /id="ui-ai-user-color"/);
+  assert.match(app, /aiUserColor:\s*"#356fe5"/);
+  assert.match(app, /--ai-user-color/);
+  assert.match(css, /\.ai-message-user\s*\{[\s\S]*?color:\s*var\(--ai-user-color\)/);
+  assert.match(css, /\.ai-message-assistant\s*\{[\s\S]*?color:\s*var\(--color-foreground\)/);
+  assert.match(css, /\.ai-message-user::before\s*\{[\s\S]*?content:\s*"用户"/);
+  assert.match(css, /\.ai-message-assistant::before\s*\{[\s\S]*?content:\s*"AI"/);
+});
+
 test("沉浸模式提供清晰的退出入口", () => {
   assert.match(html, /id="btn-exit-focus"[^>]*>退出沉浸/);
   assert.match(app, /#btn-exit-focus.*addEventListener\("click", exitFocusMode\)/);

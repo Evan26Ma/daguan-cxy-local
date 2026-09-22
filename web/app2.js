@@ -23,6 +23,7 @@
     version: 1,
     theme: "official-light",
     backgroundColor: "#f5f7fa",
+    aiUserColor: "#356fe5",
     backgroundImageKey: "",
     backgroundPosition: "center",
     overlayOpacity: 0.78,
@@ -487,6 +488,9 @@
       if (!/^#[0-9a-f]{6}$/i.test(String(value.backgroundColor || ""))) {
         value.backgroundColor = DEFAULT_UI_PREFS.backgroundColor;
       }
+      if (!/^#[0-9a-f]{6}$/i.test(String(value.aiUserColor || ""))) {
+        value.aiUserColor = DEFAULT_UI_PREFS.aiUserColor;
+      }
       const overlay = Number(value.overlayOpacity);
       value.overlayOpacity = Number.isFinite(overlay)
         ? Math.min(0.95, Math.max(0.55, overlay))
@@ -518,6 +522,7 @@
     root.dataset.theme = uiPrefs.theme;
     root.style.colorScheme = uiPrefs.theme === "official-dark" ? "dark" : "light";
     root.style.setProperty("--custom-bg-color", uiPrefs.backgroundColor || DEFAULT_UI_PREFS.backgroundColor);
+    root.style.setProperty("--ai-user-color", uiPrefs.aiUserColor || DEFAULT_UI_PREFS.aiUserColor);
     root.style.setProperty("--custom-overlay-opacity", String(uiPrefs.overlayOpacity));
     root.style.setProperty("--custom-background-position", uiPrefs.backgroundPosition || "center");
     root.style.setProperty("--custom-background-image", uiBackgroundUrl ? `url("${uiBackgroundUrl}")` : "none");
@@ -538,10 +543,12 @@
       button.setAttribute("aria-selected", String(active));
     });
     const color = $("#ui-bg-color");
+    const aiUserColor = $("#ui-ai-user-color");
     const position = $("#ui-bg-position");
     const overlay = $("#ui-bg-overlay");
     const output = $("#ui-bg-overlay-value");
     if (color) color.value = uiPrefs.backgroundColor;
+    if (aiUserColor) aiUserColor.value = uiPrefs.aiUserColor;
     if (position) position.value = uiPrefs.backgroundPosition;
     if (overlay) overlay.value = String(uiPrefs.overlayOpacity);
     if (output) output.textContent = `${Math.round(uiPrefs.overlayOpacity * 100)}%`;
@@ -4359,6 +4366,12 @@
       saveUiPrefs();
       applyUiPreferences();
       setThemeFeedback("自定义背景颜色已应用。", false);
+    });
+    $("#ui-ai-user-color")?.addEventListener("input", (event) => {
+      uiPrefs.aiUserColor = event.target.value;
+      saveUiPrefs();
+      applyUiPreferences();
+      setThemeFeedback("用户消息主题色已应用。", false);
     });
     $("#ui-bg-image")?.addEventListener("change", async (event) => {
       await setUiBackground(event.target.files?.[0]);

@@ -1939,6 +1939,7 @@ body.print-preview .print-stage {
   --custom-overlay-opacity: 0.78;
   --custom-background-image: none;
   --custom-background-position: center;
+  --ai-user-color: #356fe5;
   --bg: var(--color-canvas);
   --bg-elev: var(--color-surface);
   --bg-subtle: var(--color-surface-subtle);
@@ -2705,8 +2706,12 @@ body.ai-drawer-resizing { user-select: none; cursor: ew-resize; }
 .ai-profile-row select { min-width: 0; flex: 1; min-height: 34px; padding: 0 8px; color: var(--color-foreground); background: var(--color-surface); border: 1px solid var(--dg-warm-border); border-radius: 7px; }
 .ai-privacy-note { padding: 8px 10px; color: var(--color-foreground-muted); background: var(--color-surface-subtle); border-radius: 7px; font-size: 11px; line-height: 1.55; }
 .ai-messages { display: grid; gap: 10px; min-height: 180px; margin: 14px 0; }
-.ai-message { padding: 10px 12px; border: 1px solid var(--dg-warm-border-soft); border-radius: 10px; font-size: 13px; line-height: 1.65; overflow-wrap: anywhere; }
-.ai-message.user { color: var(--dg-teal); background: var(--dg-teal-soft); border-color: transparent; }
+.ai-message { position: relative; padding: 25px 12px 10px; color: var(--color-foreground); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 10px; font-size: 13px; line-height: 1.65; overflow-wrap: anywhere; }
+.ai-message::before { position: absolute; top: 7px; left: 12px; font-size: 10px; font-weight: 750; line-height: 1; letter-spacing: .04em; }
+.ai-message-user { color: var(--ai-user-color); background: color-mix(in srgb, var(--ai-user-color) 8%, var(--color-surface)); border-color: color-mix(in srgb, var(--ai-user-color) 32%, var(--color-border)); border-left: 3px solid var(--ai-user-color); }
+.ai-message-user::before { content: "用户"; color: var(--ai-user-color); }
+.ai-message-assistant { color: var(--color-foreground); border-left: 3px solid color-mix(in srgb, var(--color-foreground) 70%, var(--color-border)); }
+.ai-message-assistant::before { content: "AI"; color: var(--color-foreground); }
 .ai-message-body p:first-child { margin-top: 0; }
 .ai-message-body p:last-child { margin-bottom: 0; }
 .ai-message.pending { opacity: .72; }
