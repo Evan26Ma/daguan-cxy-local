@@ -196,6 +196,15 @@ test("AI 输入框回车发送且 Shift+Enter 换行", () => {
   assert.match(app, /event\.preventDefault\(\);\s*sendAiMessage\(\);/);
 });
 
+test("切换题目时清空 AI 助手并停止上一题的回答", () => {
+  assert.match(app, /function clearAiForQuestion\(q\)/);
+  assert.match(app, /clearAiForQuestion\(state\.queue\[state\.index\] \|\| null\)/);
+  assert.match(app, /function renderSingle\(\)\s*\{[\s\S]*?clearAiForQuestion\(q\)/);
+  assert.match(app, /renderAiHistory\(null\)/);
+  assert.match(app, /stream\.controller\?\.abort\(\)/);
+  assert.match(app, /state\.aiQuestionId !== questionId/);
+});
+
 test("进度统计兼容数字时间戳和 ISO 时间", () => {
   assert.match(app, /function timestampOf\(value\)/);
   assert.match(app, /const parsed = Date\.parse\(value\)/);

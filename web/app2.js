@@ -2098,6 +2098,7 @@
       const i = qs.findIndex((q) => Number(q.id) === Number(startId));
       if (i >= 0) state.index = i;
     }
+    clearAiForQuestion(state.queue[state.index] || null);
 
     setView("browse");
     applyModeUI();
@@ -2451,6 +2452,7 @@
   function renderSingle() {
     const q = currentQ();
     if (!q) return;
+    clearAiForQuestion(q);
     const p = progressOf(q.id);
     markSeen(q.id);
 
@@ -4056,7 +4058,7 @@
 
   function openAiDrawer(q = currentAiQuestion(), tab = "chat") {
     if (!q) { toast("请先打开一道题"); return; }
-    state.aiQuestionId = String(q.id);
+    clearAiForQuestion(q);
     state.aiOpen = true;
     const line = $("#ai-context-line");
     if (line) line.textContent = `#${q.id} · ${q.source || TYPE_LABEL[q.type] || "当前题目"}`;
@@ -4158,6 +4160,29 @@
   let activeAiRunId = "";
   const aiStreamStates = new Set();
 
+  function clearAiForQuestion(q) {
+    const nextId = q?.id == null ? null : String(q.id);
+    if (state.aiQuestionId === nextId) return;
+    state.aiQuestionId = nextId;
+    const runIds = new Set([...state.aiRuns.keys(), activeAiRunId].filter(Boolean));
+    aiStreamStates.forEach((stream) => {
+      stream.disposed = true;
+      if (stream.timer) window.clearTimeout(stream.timer);
+      stream.timer = 0;
+      stream.controller?.abort();
+    });
+    aiStreamStates.clear();
+    state.aiRuns.clear();
+    activeAiRunId = "";
+    runIds.forEach((runId) => fetch(`./api/ai/runs/${encodeURIComponent(runId)}`, { method: "DELETE" }).catch(() => {}));
+    $("#btn-ai-stop")?.setAttribute("hidden", "");
+    if (els.aiPrompt) els.aiPrompt.value = "";
+    renderAiHistory(null);
+    const line = $("#ai-context-line");
+    if (line) line.textContent = q ? `#${q.id} · ${q.source || TYPE_LABEL[q.type] || "当前题目"}` : "先选择一道题";
+    if (state.aiTab === "note") renderQuestionNote();
+  }
+
   function refreshAiAfterResume() {
     if (document.visibilityState !== "visible") return;
     aiStreamStates.forEach((stream) => stream.flush?.());
@@ -4206,16 +4231,18 @@
     const q = currentAiQuestion();
     const text = String(prompt || "").trim();
     if (!q || !text) return;
+    const questionId = String(q.id);
     if (!state.aiProfileId) { toast("请先在设置中配置 AI 服务"); openSheet("dlg-appearance"); return; }
     const userItem = renderAiMessage(text, "user");
     const pending = renderAiMessage("", "assistant", true);
     els.aiMessages?.append(userItem, pending);
     els.aiMessages?.scrollTo({ top: els.aiMessages.scrollHeight, behavior: "smooth" });
     if (els.aiPrompt) els.aiPrompt.value = "";
-    const stream = { timer: 0, disposed: false, flush: null, answer: "" };
+    const controller = new AbortController();
+    const stream = { timer: 0, disposed: false, flush: null, answer: "", controller };
     const paintNow = () => {
       stream.timer = 0;
-      if (stream.disposed || document.visibilityState !== "visible") return;
+      if (stream.disposed || state.aiQuestionId !== questionId || document.visibilityState !== "visible") return;
       const body = pending.querySelector(".ai-message-body");
       if (body) body.innerHTML = sanitizeAiHtml(renderMarkdown(stream.answer || "正在思考…"));
       els.aiMessages?.scrollTo({ top: els.aiMessages.scrollHeight });
@@ -4231,9 +4258,14 @@
     };
     aiStreamStates.add(stream);
     const images = (state.aiProfiles.find((item) => item.id === state.aiProfileId)?.capabilities?.vision === "passed") ? await questionImages(q) : [];
+    if (stream.disposed || state.aiQuestionId !== questionId) {
+      aiStreamStates.delete(stream);
+      return;
+    }
     try {
-      const response = await fetch("./api/ai/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ profileId: state.aiProfileId, question: aiQuestionPayload(q), prompt: text, includePrivate: $("#ai-include-private")?.checked === true, images }) });
+      const response = await fetch("./api/ai/chat", { method: "POST", headers: { "Content-Type": "application/json" }, signal: controller.signal, body: JSON.stringify({ profileId: state.aiProfileId, question: aiQuestionPayload(q), prompt: text, includePrivate: $("#ai-include-private")?.checked === true, images }) });
       if (!response.ok) throw new Error(`AI 请求失败（HTTP ${response.status}）`);
+      if (stream.disposed || state.aiQuestionId !== questionId) return;
       const runId = response.headers.get("X-Daguan-Run-Id");
       activeAiRunId = runId || "";
       if (runId) state.aiRuns.set(runId, { questionId: String(q.id), startedAt: Date.now() });
@@ -4248,12 +4280,13 @@
           try { const event = JSON.parse(row.slice(5).trim()); if (event.type === "delta") { stream.answer += event.content || ""; schedulePaint(); } if (event.type === "error") throw new Error(event.error || "AI 生成失败"); } catch (error) { if (error?.message && !/Unexpected token|JSON/.test(error.message)) throw error; }
         }
       }
+      if (stream.disposed || state.aiQuestionId !== questionId) return;
       pending.replaceWith(renderAiMessage(stream.answer, "assistant"));
       if (runId) state.aiRuns.delete(runId);
       activeAiRunId = "";
       $("#btn-ai-stop")?.setAttribute("hidden", "");
     } catch (error) {
-      pending.replaceWith(renderAiMessage(`AI 暂时没有完成回答：${error.message || error}`, "assistant"));
+      if (!stream.disposed && state.aiQuestionId === questionId) pending.replaceWith(renderAiMessage(`AI 暂时没有完成回答：${error.message || error}`, "assistant"));
       activeAiRunId = "";
       $("#btn-ai-stop")?.setAttribute("hidden", "");
     } finally {
