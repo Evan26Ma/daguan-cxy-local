@@ -171,9 +171,10 @@ test("AI 流式回答节流渲染并在回到前台时恢复", () => {
 });
 
 test("AI 题目入口提供错题分析模板", () => {
-  assert.match(html, /请给出这道题的完整解答[\s\S]*知识点是什么[\s\S]*思路和完整过程/);
-  assert.match(html, /每个过程说明用到了什么信息[\s\S]*答案是什么[\s\S]*第一时间应该想到什么/);
+  assert.match(html, /只回答下面这些内容[\s\S]*题目是什么[\s\S]*知识点是什么[\s\S]*思路是什么[\s\S]*过程是什么/);
+  assert.match(html, /每个过程用到的信息[\s\S]*答案是什么[\s\S]*第一时间该想到什么/);
   assert.match(html, /通式[\s\S]*有没有类似题/);
+  assert.match(html, /只回答下面这些内容[\s\S]*不要添加其他分析或无关内容/);
   assert.match(html, /错题模板/);
   assert.match(html, /错题分析/);
   assert.match(html, /所有数学公式都使用 LaTeX 格式/);
