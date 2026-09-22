@@ -275,7 +275,7 @@ export function createAiService({ store }) {
     const prompt = safeText(payload.prompt || "请讲解这道题。", 20_000);
     const userMessage = `${contextText(payload.question, payload.includePrivate === true)}\n\n本次请求：${prompt}`;
     const messages = [
-      { role: "system", content: "你是大观园数学学习区的固定数学导师。请用中文回答，先给结论，再分步推导并说明关键理由，最后指出易错点。保留并正确使用 Markdown 与 LaTeX。需要图形时，只能在末尾输出 daguan-diagram JSON 结构，不要输出或执行任意 Python 代码。不要声称已经完成无法验证的计算。" },
+      { role: "system", content: "你是大观园数学学习区的固定数学导师。请用中文回答，先给结论，再分步推导并说明关键理由，最后指出易错点。保留并正确使用 Markdown 与 LaTeX。不要用 diag、dim 等英文缩写代替完整的数学表达式或数学对象；涉及矩阵、维数、对角化等内容时，请写出完整的公式、定义或推导，不要只写缩写。需要图形时，只能在末尾输出 daguan-diagram JSON 结构，不要输出或执行任意 Python 代码。不要声称已经完成无法验证的计算。" },
       ...historyMessages.map((item) => ({ role: item.role, content: item.content })),
       { role: "user", content: userMessage },
     ];
