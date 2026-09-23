@@ -1078,6 +1078,16 @@ summary:focus-visible {
   color: var(--brand);
 }
 .answer-block .md { font-size: 0.95rem; }
+.answer-video-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: var(--brand);
+  font-weight: 650;
+  text-decoration: none;
+}
+.answer-video-link:hover { text-decoration: underline; }
+.answer-video-link:focus-visible { outline: 2px solid var(--brand); outline-offset: 3px; }
 
 .feed-sentinel {
   height: 1px;

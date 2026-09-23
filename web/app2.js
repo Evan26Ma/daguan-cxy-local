@@ -48,6 +48,7 @@
 
   const state = {
     manifest: null,
+    videoMapping: null,
     categories: [],
     catQuestions: {},
     idIndex: {},
@@ -83,6 +84,7 @@
     aiOpen: false,
     aiTab: "chat",
     aiQuestionId: null,
+    paradiyuVideoQuestionIds: null,
     aiProfiles: [],
     aiRuns: new Map(),
     aiProfileId: "",
@@ -974,6 +976,28 @@
     return div.innerHTML;
   }
 
+  function videoExplanationMarkup(q) {
+    const categoryPath = String(q?.category_path || "");
+    if (!categoryPath.startsWith("线性代数")) return "";
+    const mapping = state.videoMapping;
+    const entry = mapping?.questions?.[String(q?.id)];
+    const seconds = Number(entry?.startSeconds);
+    if (!mapping || !Number.isFinite(seconds) || seconds < 0) return "";
+    const videoUrl = String(mapping.videoUrl || "").trim();
+    if (!videoUrl) return "";
+    let href;
+    try {
+      const url = new URL(videoUrl);
+      url.searchParams.set("t", String(Math.floor(seconds)));
+      href = url.toString();
+    } catch {
+      return "";
+    }
+    const time = new Date(Math.floor(seconds) * 1000).toISOString().slice(11, 19);
+    const title = String(entry.title || "").trim();
+    return `<div class="answer-block answer-video-block"><h3>帕拉迪宇视频讲解</h3><a class="answer-video-link" href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(title || "在新标签页打开视频讲解")}">跳转到 ${escapeHtml(time)}${title ? ` · ${escapeHtml(title)}` : ""}<span aria-hidden="true"> ↗</span></a></div>`;
+  }
+
   function setView(name) {
     if (name !== "browse" && state.chapterMenuOpen) closeChapterMenu({ restoreFocus: false });
     state.view = name;
@@ -1563,6 +1587,7 @@
     const f = state.advFilter || {};
     if (!advFilterActive()) return true;
     if (!A) return false;
+    if ((f["视频讲解"] || []).includes("帕拉迪宇讲过") && (A.chapter !== "线性代数" || !(state.paradiyuVideoQuestionIds || new Set()).has(String(id)))) return false;
     if ((f["快捷入口"] || []).length && !f["快捷入口"].includes(A.src)) return false;
     if ((f["题源"] || []).length && !f["题源"].includes(A.src)) return false;
     if ((f["章节"] || []).length && !f["章节"].includes(A.chapter)) return false;
@@ -1650,16 +1675,31 @@
       } catch { resolve(null); }
     });
   }
+  async function loadParadiyuVideoData() {
+    try {
+      const res = await fetch("./data/paradiyu-linear-video.json");
+      if (!res.ok) return new Set();
+      const data = await res.json();
+      return new Set((Array.isArray(data.questionIds) ? data.questionIds : []).map(String));
+    } catch {
+      return new Set();
+    }
+  }
   async function openFilterDialog() {
-    if (!state.bankTags) {
-      state.bankTags = await loadAnnotationsData();
+    if (!state.bankTags || !state.paradiyuVideoQuestionIds) {
+      const [bankTags, paradiyuVideoQuestionIds] = await Promise.all([
+        state.bankTags ? Promise.resolve(state.bankTags) : loadAnnotationsData(),
+        state.paradiyuVideoQuestionIds ? Promise.resolve(state.paradiyuVideoQuestionIds) : loadParadiyuVideoData(),
+      ]);
+      state.bankTags = bankTags;
+      state.paradiyuVideoQuestionIds = paradiyuVideoQuestionIds;
       window.__fdbg = { hasAnn: !!state.bankTags, keys: state.bankTags ? Object.keys(state.bankTags.annotations || {}).length : -1, facets: state.bankTags ? (state.bankTags.facets || []).length : -1 };
     }
     if (!state.advFilter) {
       try { state.advFilter = JSON.parse(localStorage.getItem("daguan_adv_filter_v1") || "{}"); } catch { state.advFilter = {}; }
     }
     {
-      const DIMS = ["快捷入口", "题源", "章节", "知识点", "题型", "解题方法", "考试类别", "题目形式", "难度", "掌握状态"];
+      const DIMS = ["快捷入口", "题源", "章节", "知识点", "题型", "解题方法", "考试类别", "题目形式", "难度", "视频讲解", "掌握状态"];
       const clean = {};
       for (const d of DIMS) {
         if (Array.isArray(state.advFilter[d]) && state.advFilter[d].length) clean[d] = state.advFilter[d];
@@ -1671,6 +1711,8 @@
     const tabs = $("#filter-tabs");
     if (tabs && !tabs.childElementCount && state.bankTags) {
       const facets = (state.bankTags.facets || []).map((x) => x);
+      const videoCount = [...(state.paradiyuVideoQuestionIds || [])].filter((id) => state.bankTags.annotations[String(id)]?.chapter === "线性代数").length;
+      facets.push({ dim: "视频讲解", options: [{ name: "帕拉迪宇讲过", count: videoCount }] });
       const mc = masteryFacetCounts();
       facets.push({ dim: "掌握状态", options: Object.entries(mc).map(([name, count]) => ({ name, count })) });
       state._facets = facets;
@@ -2406,7 +2448,8 @@
         <div class="answer-block">
           <h3>解析</h3>
           <div class="md">${renderMarkdown(q.explanation || "（无解析）")}</div>
-        </div>`;
+        </div>
+        ${videoExplanationMarkup(q)}`;
     }
 
     li.append(head, path, stem, ...(options ? [options] : []), actions, masteryRow, answerBox);
@@ -2523,6 +2566,14 @@
     if (state.showAnswer) {
       els.qAnswer.innerHTML = renderMarkdown(q.answer || "（无答案）");
       els.qExpl.innerHTML = renderMarkdown(q.explanation || "（无解析）");
+      const videoLink = document.querySelector("#answer-box .answer-video-block");
+      const videoMarkup = videoExplanationMarkup(q);
+      if (videoMarkup) {
+        if (videoLink) videoLink.outerHTML = videoMarkup;
+        else els.answerBox.insertAdjacentHTML("beforeend", videoMarkup);
+      } else {
+        videoLink?.remove();
+      }
       const answerButton = $("#btn-toggle-answer");
       if (answerButton) answerButton.innerHTML = shortcutButtonMarkup("隐藏答案", "answer");
     } else {
@@ -5075,12 +5126,14 @@
     const hydrated = hydrateStores();
     const serverHydrated = hydrateServerState();
     try {
-      const [manifest, categories] = await Promise.all([
+      const [manifest, categories, videoMapping] = await Promise.all([
         fetchJSON(`${DATA}/manifest.json`),
         fetchJSON(`${DATA}/categories.json`),
+        fetchJSON(`${DATA}/paradiyu-linear-video.json`).catch(() => null),
       ]);
       state.manifest = manifest;
       state.categories = categories;
+      state.videoMapping = videoMapping;
       paintTree();
       renderHome();
       refreshHomeSyncCard();
