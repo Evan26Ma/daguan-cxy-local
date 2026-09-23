@@ -2886,6 +2886,9 @@ body[data-view="browse"] #app.learning-shell .topbar { gap: .7rem; padding-inlin
 .chapter-progress-top { min-width: 3.5rem; color: var(--color-foreground-muted); font-size: .78rem; font-variant-numeric: tabular-nums; text-align: center; }
 .chapter-section-nav .btn { min-height: 2.5rem; padding-inline: .65rem; font-size: .78rem; }
 .topbar-more-wrap { position: relative; }
+.topbar-filter-trigger { min-height: 2.25rem; padding-inline: .65rem; color: var(--color-brand); background: var(--color-brand-soft); border-color: color-mix(in srgb, var(--color-brand) 28%, var(--color-border)); }
+.topbar-filter-trigger:hover, .topbar-filter-trigger.active { color: #fff; background: var(--color-brand); border-color: var(--color-brand); }
+.topbar-filter-trigger.active span::after { content: " •"; }
 .topbar-more-trigger { width: auto; min-width: 2.5rem; gap: .25rem; padding-inline: .65rem; }
 .topbar-more-trigger span { font-size: .78rem; }
 .topbar-more-menu { position: absolute; z-index: 55; top: calc(100% + .45rem); right: 0; display: grid; min-width: 10rem; gap: .2rem; padding: .45rem; background: var(--color-surface); border: 1px solid var(--dg-warm-border, #e2ddd4); border-radius: 10px; box-shadow: 0 14px 32px rgba(31, 41, 55, .15); }
@@ -3081,6 +3084,14 @@ body.focus-mode[data-view="browse"] #app.learning-shell .learning-shell__sidebar
 .adv-filter-btn { width: 100%; justify-content: center; margin-top: .45rem; min-height: 2.1rem; font-size: .8rem; }
 .adv-filter-btn.active { color: #fff; background: var(--color-brand); border-color: var(--color-brand); }
 .adv-filter-btn.active span::after { content: " •"; }
+.chapter-head { flex-direction: column; align-items: stretch; gap: .45rem; }
+.chapter-head-main { min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: .45rem; }
+.chapter-head-main > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chapter-filter-button { min-height: 2rem; display: inline-flex; align-items: center; justify-content: center; gap: .3rem; flex: 0 0 auto; padding: .25rem .55rem; color: var(--color-brand); background: var(--color-brand-soft); border: 1px solid color-mix(in srgb, var(--color-brand) 28%, var(--color-border)); border-radius: var(--radius-control); cursor: pointer; font-size: .72rem; font-weight: 750; }
+.chapter-filter-button:hover, .chapter-filter-button.active { color: #fff; background: var(--color-brand); border-color: var(--color-brand); }
+.chapter-filter-button.active span::after { content: " •"; }
+.chapter-filter-button .ui-icon { width: .9rem; height: .9rem; }
+.chapter-head .scope-toggle { width: 100%; }
 .chip-row { display: flex; flex-wrap: wrap; gap: .4rem; }
 .year-range { display: flex; align-items: center; gap: .5rem; }
 .year-range input { width: 7.5rem; min-height: 2.2rem; padding: .3rem .5rem; border: 1px solid var(--color-border); border-radius: var(--radius-control); background: var(--color-surface); color: var(--color-foreground); }

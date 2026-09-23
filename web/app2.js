@@ -2,7 +2,7 @@
   "use strict";
 
   if ("serviceWorker" in navigator && location.protocol !== "file:") {
-    navigator.serviceWorker.register("./service-worker.js?v=65").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=66").catch(() => {});
   }
 
   const DATA = "./data";
@@ -1666,6 +1666,7 @@
       }
       state.advFilter = clean;
     }
+    document.querySelectorAll("#btn-adv-filter, #btn-adv-filter-top").forEach((btn) => btn.classList.toggle("active", advFilterActive()));
     window.__fdbg = { hasAnn: !!state.bankTags, keys: state.bankTags ? Object.keys(state.bankTags.annotations || {}).length : -1, facets: state.bankTags ? (state.bankTags.facets || []).length : -1 };
     const tabs = $("#filter-tabs");
     if (tabs && !tabs.childElementCount && state.bankTags) {
@@ -1707,8 +1708,7 @@
   }
   function persistAdvFilter() {
     localStorage.setItem("daguan_adv_filter_v1", JSON.stringify(state.advFilter || {}));
-    const btn = $("#btn-adv-filter");
-    if (btn) btn.classList.toggle("active", advFilterActive());
+    document.querySelectorAll("#btn-adv-filter, #btn-adv-filter-top").forEach((btn) => btn.classList.toggle("active", advFilterActive()));
   }
   async function applyFilterDialog() {
     persistAdvFilter();

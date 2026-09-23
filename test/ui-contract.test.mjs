@@ -22,6 +22,14 @@ test("章节导航提供显式返回、面包屑和逐列层级快照", () => {
   assert.match(css, /\.chapter-menu-back[^}]*min-height:\s*2\.75rem/s);
 });
 
+test("题库详细筛选在题库目录和顶部直接可见", () => {
+  assert.match(html, /class="chapter-head"[\s\S]*id="btn-adv-filter"/);
+  assert.match(html, /class="btn ghost topbar-filter-trigger" id="btn-adv-filter-top"/);
+  const moreMenu = html.match(/id="topbar-more-menu"[\s\S]*?<\/div>/)?.[0] || "";
+  assert.doesNotMatch(moreMenu, /btn-adv-filter-top/);
+  assert.match(app, /querySelectorAll\("#btn-adv-filter, #btn-adv-filter-top"\)/);
+});
+
 test("官网同步教程在首页、工具区和同步中心均可到达", () => {
   assert.match(html, /id="dlg-sync-guide"/);
   assert.match(html, /id="btn-home-sync-guide"/);
@@ -81,8 +89,8 @@ test("首屏不阻塞加载题库索引", () => {
 
 test("Service Worker 不预缓存首屏之外的大型索引和字体", () => {
   const sw = fs.readFileSync(new URL("../web/service-worker.js", import.meta.url), "utf8");
-  assert.match(sw, /daguan-shell-v67/);
-  assert.match(app, /service-worker\.js\?v=65/);
+  assert.match(sw, /daguan-shell-v68/);
+  assert.match(app, /service-worker\.js\?v=66/);
   assert.doesNotMatch(sw, /data\/(category_questions|id_index|search_index)\.json/);
   assert.doesNotMatch(sw, /vendor\/fonts\//);
 });

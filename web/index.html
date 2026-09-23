@@ -7,7 +7,7 @@
   <meta name="description" content="大观园数学题库本地静态刷题站" />
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="stylesheet" href="./vendor/katex.min.css" />
-    <link rel="stylesheet" href="./styles.css?v=54" />
+    <link rel="stylesheet" href="./styles.css?v=55" />
   <script>
     (() => {
       if (location.search.includes("purge=1")) {
@@ -90,13 +90,15 @@
           <label class="check"><input type="checkbox" id="filter-core" /> 严选</label>
           <label class="check"><input type="checkbox" id="filter-todo" /> 未掌握</label>
         </div>
-        <button type="button" class="btn ghost adv-filter-btn" id="btn-adv-filter">
-          <svg class="ui-icon"><use href="#icon-grid"></use></svg><span>详细筛选</span>
-        </button>
       </div>
 
       <div class="chapter-head">
-        <span>题库</span>
+        <div class="chapter-head-main">
+          <span>题库目录</span>
+          <button type="button" class="chapter-filter-button" id="btn-adv-filter" title="按题源、章节、知识点、题型等条件筛选">
+            <svg class="ui-icon"><use href="#icon-grid"></use></svg><span>详细筛选</span>
+          </button>
+        </div>
         <div class="scope-toggle" role="group" aria-label="题库范围">
           <button type="button" class="scope-btn active" data-scope="all">完整</button>
           <button type="button" class="scope-btn" data-scope="core">严选</button>
@@ -162,11 +164,13 @@
             <button type="button" class="btn ghost" id="btn-prev-section" title="上一小节">上一节</button>
             <button type="button" class="btn primary" id="btn-next-section" title="下一小节">下一节</button>
           </div>
+          <button type="button" class="btn ghost topbar-filter-trigger" id="btn-adv-filter-top" title="按题源、章节、知识点、题型等条件筛选">
+            <svg class="ui-icon"><use href="#icon-grid"></use></svg><span>详细筛选</span>
+          </button>
           <div class="topbar-more-wrap">
             <button type="button" class="icon-btn topbar-more-trigger" id="btn-more" aria-label="更多操作" aria-haspopup="menu" aria-expanded="false"><svg class="ui-icon"><use href="#icon-more"></use></svg><span>更多</span></button>
             <div class="topbar-more-menu hidden" id="topbar-more-menu" role="menu" aria-label="更多操作">
               <button type="button" class="btn ghost" id="btn-shuffle" title="打乱当前列表顺序" role="menuitem">打乱</button>
-              <button type="button" class="btn ghost" id="btn-adv-filter-top" role="menuitem">详细筛选</button>
               <button type="button" class="btn ghost" id="btn-expand-all" title="展开当前已加载题目的答案" role="menuitem" style="display:inline-flex">全开答案</button>
               <button type="button" class="btn ghost" id="btn-export" title="导出当前题目为 PDF" role="menuitem">导出 PDF</button>
               <button type="button" class="btn ghost" id="btn-home" role="menuitem">首页</button>
@@ -780,6 +784,6 @@
 
   <script defer src="./vendor/marked.min.js"></script>
   <script defer src="./vendor/katex.min.js"></script>
-    <script defer src="./app2.js?v=38"></script>
+    <script defer src="./app2.js?v=39"></script>
 </body>
 </html>
