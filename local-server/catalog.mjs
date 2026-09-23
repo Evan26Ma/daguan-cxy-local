@@ -1,6 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
+import { mergeLocalQuestionBanks } from "../shared/local-question-banks.mjs";
 
 const SOURCE = "https://hsad.xyz/daguan-math";
 
@@ -43,13 +44,15 @@ export async function refreshCatalog(rootDir, progress = () => {}) {
     manifest.asset_base = "./data/assets/";
     manifest.synced_at = new Date().toISOString();
     await fs.writeFile(path.join(stageDir, "manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`);
+    await mergeLocalQuestionBanks(stageDir, dataDir);
     for (const file of [...files, "manifest.json"]) {
       const from = path.join(stageDir, file);
       const to = path.join(dataDir, file);
       await fs.mkdir(path.dirname(to), { recursive: true });
       await fs.copyFile(from, to);
     }
-    return { ok: true, total: seen.size, files: files.length + 1, version: manifest.version || manifest.synced_at };
+    const mergedManifest = await fs.readFile(path.join(dataDir, "manifest.json"), "utf8").then(JSON.parse);
+    return { ok: true, total: mergedManifest.total, files: files.length + 1, version: manifest.version || manifest.synced_at };
   } finally {
     await fs.rm(stageDir, { recursive: true, force: true }).catch(() => {});
   }

@@ -61,6 +61,7 @@ async function makeBundle(output) {
   const files = [
     ...(await walk(path.join(ROOT, "web"))),
     ...(await walk(path.join(ROOT, "local-server"))),
+    ...(await walk(path.join(ROOT, "shared"))),
   ];
   const chunks = [];
   for (const file of files) {

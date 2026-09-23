@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "total": 6183,
+  "total": 6342,
   "types": {
-    "subjective": 4448,
-    "single_choice": 1730,
+    "subjective": 4582,
+    "single_choice": 1755,
     "multiple_choice": 5
   },
   "shards": {
@@ -17,7 +17,7 @@
     },
     "概率统计": {
       "file": "shards/概率统计.json",
-      "count": 317
+      "count": 476
     },
     "模拟哥专区": {
       "file": "shards/模拟哥专区.json",

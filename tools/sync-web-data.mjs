@@ -3,6 +3,7 @@ import { mkdir, readFile, writeFile, stat } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { mergeLocalQuestionBanks } from "../shared/local-question-banks.mjs";
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const webDir = join(root, "web");
@@ -102,6 +103,8 @@ delete manifest.asset_base_remote;
 manifest.asset_base = "./data/assets/";
 manifest.synced_at = new Date().toISOString();
 await writeFile(join(dataDir, "manifest.json"), JSON.stringify(manifest, null, 2));
+await mergeLocalQuestionBanks(dataDir, dataDir);
 await downloadAssets(hashes);
 
-console.log(`题库同步完成：${manifest.total} 题，${hashes.size} 张题图`);
+const mergedManifest = JSON.parse(await readFile(join(dataDir, "manifest.json"), "utf8"));
+console.log(`题库同步完成：${mergedManifest.total} 题，${hashes.size} 张题图`);
