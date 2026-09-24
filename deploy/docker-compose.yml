@@ -9,6 +9,8 @@ services:
       HOST: 0.0.0.0
       PORT: 8080
       DAGUAN_PULL_INTERVAL_MINUTES: 30
+      DAGUAN_PREVIEW_MODE: ${DAGUAN_PREVIEW_MODE:-0}
+      DAGUAN_PREVIEW_KEY: ${DAGUAN_PREVIEW_KEY:-}
     volumes:
       - ../data:/app/data
     restart: unless-stopped

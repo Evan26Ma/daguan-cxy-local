@@ -9,6 +9,7 @@ const UPSTREAM = new URL(process.env.CXY_AUTH_UPSTREAM || "http://127.0.0.1:8080
 const TOKEN_FILE = process.env.CXY_AUTH_TOKEN_FILE || "/etc/daguan-cxy-auth/token";
 const SECRET_FILE = process.env.CXY_AUTH_SECRET_FILE || "/var/lib/daguan-cxy-auth/cookie-secret";
 const TRUST_DAYS = Math.max(1, Number(process.env.CXY_AUTH_TRUST_DAYS || 180));
+const PUBLIC_PREVIEW = process.env.CXY_AUTH_PUBLIC_PREVIEW === "1";
 const COOKIE_NAME = "daguan_cxy_trusted_device";
 const MAX_FAILURES = 5;
 const FAILURE_WINDOW_MS = 15 * 60 * 1000;
@@ -86,9 +87,16 @@ function failed(request) {
   return current;
 }
 function redirect(response, location, extra = {}) { response.writeHead(303, { location, ...headers("text/plain; charset=utf-8"), ...extra }); response.end(); }
+function previewCookie(request) {
+  const value = String(request.headers.cookie || "");
+  const token = value.split(";").map((part) => part.trim()).find((part) => part.startsWith("daguan_preview_access="));
+  return token || "";
+}
 function proxy(request, response) {
   const requestHeaders = { ...request.headers, host: UPSTREAM.host };
   delete requestHeaders.cookie;
+  const preview = previewCookie(request);
+  if (preview) requestHeaders.cookie = preview;
   const upstream = http.request({ protocol: UPSTREAM.protocol, hostname: UPSTREAM.hostname, port: UPSTREAM.port, method: request.method, path: request.url, headers: requestHeaders }, (upstreamResponse) => {
     response.writeHead(upstreamResponse.statusCode || 502, upstreamResponse.headers);
     upstreamResponse.pipe(response);
@@ -116,7 +124,8 @@ const server = http.createServer(async (request, response) => {
       return;
     }
     if (url.pathname === "/_auth/logout" && request.method === "POST") { redirect(response, "/_auth/login", { "set-cookie": `${COOKIE_NAME}=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax` }); return; }
-    if (!isTrusted(request)) {
+    // 公开预览由上游大观园服务负责保护个人 API；网关只在普通私有模式下要求设备 Token。
+    if (!PUBLIC_PREVIEW && !isTrusted(request)) {
       if (request.method === "GET" && !url.pathname.startsWith("/api/")) return redirect(response, `/_auth/login?next=${encodeURIComponent(safeNext(request.url))}`);
       response.writeHead(401, headers("application/json; charset=utf-8")); response.end(JSON.stringify({ ok: false, message: "设备尚未信任" })); return;
     }

@@ -2,7 +2,7 @@ import http from "node:http";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { randomUUID } from "node:crypto";
+import { createHmac, randomUUID, timingSafeEqual } from "node:crypto";
 import { createStore } from "./store.mjs";
 import { CxyonlyClient } from "./cxyonly-client.mjs";
 import { refreshCatalog } from "./catalog.mjs";
@@ -13,8 +13,12 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const WEB_ROOT = path.join(ROOT, "web");
 const PORT = Number(process.env.PORT || 8080);
 const HOST = process.env.HOST || "127.0.0.1";
-const BUILD_VERSION = "2026.09.20-r25";
+const BUILD_VERSION = "2026.09.24-r26";
 const MAX_BODY = 10 * 1024 * 1024;
+const PREVIEW_KEY = String(process.env.DAGUAN_PREVIEW_KEY || "");
+const PREVIEW_MODE = process.env.DAGUAN_PREVIEW_MODE === "1" || Boolean(PREVIEW_KEY);
+const PREVIEW_COOKIE = "daguan_preview_access";
+const PREVIEW_TTL_SECONDS = 60 * 60 * 24 * 365;
 
 const store = createStore(ROOT, process.env.DAGUAN_DATA_DIR);
 const client = new CxyonlyClient({
@@ -35,6 +39,49 @@ function json(res, status, value) {
 function errorJson(res, error, status = 500) {
   const code = error?.code === "AUTH_EXPIRED" ? 401 : Number(error?.status) || status;
   json(res, code, { ok: false, code: error?.code || null, error: String(error?.message || error), current: error?.current || undefined });
+}
+
+function cookies(req) {
+  return Object.fromEntries(String(req.headers.cookie || "").split(";").map((part) => part.trim()).filter(Boolean).map((part) => {
+    const index = part.indexOf("=");
+    if (index < 0) return [part, ""];
+    try { return [part.slice(0, index), decodeURIComponent(part.slice(index + 1))]; }
+    catch { return [part.slice(0, index), ""]; }
+  }));
+}
+
+function safeEqualText(left, right) {
+  const a = Buffer.from(String(left));
+  const b = Buffer.from(String(right));
+  return a.length === b.length && timingSafeEqual(a, b);
+}
+
+function previewToken(timestamp) {
+  return createHmac("sha256", PREVIEW_KEY).update(String(timestamp)).digest("base64url");
+}
+
+function setPreviewCookie(res, timestamp = Date.now()) {
+  res.setHeader("Set-Cookie", `${PREVIEW_COOKIE}=${timestamp}.${previewToken(timestamp)}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${PREVIEW_TTL_SECONDS}`);
+}
+
+function hasPreviewAccess(req) {
+  if (!PREVIEW_MODE) return true;
+  if (!PREVIEW_KEY) return false;
+  const raw = cookies(req)[PREVIEW_COOKIE] || "";
+  const [timestamp, signature] = raw.split(".");
+  const issuedAt = Number(timestamp);
+  if (!Number.isInteger(issuedAt) || !signature || Date.now() - issuedAt > PREVIEW_TTL_SECONDS * 1000 || issuedAt > Date.now() + 60_000) return false;
+  return safeEqualText(signature, previewToken(issuedAt));
+}
+
+function privateApiPath(pathname) {
+  return pathname === "/api/state" || pathname.startsWith("/api/state/") || pathname.startsWith("/api/ai/") || pathname.startsWith("/api/integrations/cxyonly/");
+}
+
+function requirePreviewAccess(req, res) {
+  if (!PREVIEW_MODE || hasPreviewAccess(req)) return true;
+  json(res, 403, { ok: false, code: "PREVIEW_LOCKED", error: "预览模式下的个人功能需要输入预览密钥" });
+  return false;
 }
 
 async function body(req) {
@@ -270,16 +317,44 @@ async function route(req, res) {
   const subpath = "/daguan-math";
   const pathname = url.pathname === subpath ? "/" : url.pathname.startsWith(`${subpath}/`) ? url.pathname.slice(subpath.length) : url.pathname;
   if (pathname === "/api/health" && method === "GET") return json(res, 200, { ok: true, service: "daguan-local-console", time: nowIso() });
+  if (pathname === "/api/access/status" && method === "GET") {
+    const unlocked = !PREVIEW_MODE || hasPreviewAccess(req);
+    if (PREVIEW_MODE && unlocked) setPreviewCookie(res);
+    return json(res, 200, {
+      ok: true,
+      previewMode: PREVIEW_MODE,
+      configured: Boolean(PREVIEW_KEY),
+      unlocked,
+      privateFeatures: ["收藏", "错题", "掌握度", "批注", "进度备份", "官网同步", "AI 服务与历史"],
+    });
+  }
+  if (pathname === "/api/access/unlock" && method === "POST") {
+    if (!PREVIEW_MODE) return json(res, 200, { ok: true, previewMode: false, unlocked: true });
+    if (!PREVIEW_KEY) return json(res, 503, { ok: false, code: "PREVIEW_KEY_MISSING", error: "预览模式尚未配置密钥" });
+    const incoming = await body(req);
+    const key = String(incoming.key || "");
+    if (!key || !safeEqualText(key, PREVIEW_KEY)) {
+      return json(res, 401, { ok: false, code: "PREVIEW_KEY_INVALID", error: "预览密钥不正确" });
+    }
+    const issuedAt = Date.now();
+    setPreviewCookie(res, issuedAt);
+    return json(res, 200, { ok: true, previewMode: true, unlocked: true });
+  }
+  if (pathname === "/api/access/lock" && method === "POST") {
+    res.setHeader("Set-Cookie", `${PREVIEW_COOKIE}=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0`);
+    return json(res, 200, { ok: true, previewMode: PREVIEW_MODE, unlocked: !PREVIEW_MODE });
+  }
   if (pathname === "/api/runtime" && method === "GET") {
     const state = await store.readState();
-    const profiles = await ai.profiles();
-    return json(res, 200, { ok: true, appVersion: BUILD_VERSION, stateRevision: state.revision, catalog: await catalogInfo(), ai: { configured: profiles.length > 0, profiles: profiles.length }, python: { optional: true, configured: process.env.DAGUAN_PYTHON !== "disabled" }, time: nowIso() });
+    const profiles = !PREVIEW_MODE || hasPreviewAccess(req) ? await ai.profiles() : [];
+    return json(res, 200, { ok: true, appVersion: BUILD_VERSION, stateRevision: PREVIEW_MODE && !hasPreviewAccess(req) ? 0 : state.revision, catalog: await catalogInfo(), ai: { configured: profiles.length > 0, profiles: profiles.length }, python: { optional: true, configured: process.env.DAGUAN_PYTHON !== "disabled" }, time: nowIso() });
   }
   if (pathname === "/api/catalog/refresh" && method === "POST") return json(res, 202, startCatalogRefresh());
   if (pathname.startsWith("/api/catalog/refresh/") && method === "GET") {
     const task = catalogTasks.get(pathname.slice("/api/catalog/refresh/".length));
     return task ? json(res, 200, task) : json(res, 404, { ok: false, error: "题库刷新任务不存在" });
   }
+  if (privateApiPath(pathname) && !requirePreviewAccess(req, res)) return;
   if (pathname === "/api/state" && method === "GET") return json(res, 200, await store.readState());
   if (pathname === "/api/state" && method === "PUT") {
     const incoming = await body(req);

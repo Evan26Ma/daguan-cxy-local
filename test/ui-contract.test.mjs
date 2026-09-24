@@ -89,8 +89,8 @@ test("首屏不阻塞加载题库索引", () => {
 
 test("Service Worker 不预缓存首屏之外的大型索引和字体", () => {
   const sw = fs.readFileSync(new URL("../web/service-worker.js", import.meta.url), "utf8");
-  assert.match(sw, /daguan-shell-v69/);
-  assert.match(app, /service-worker\.js\?v=66/);
+  assert.match(sw, /daguan-shell-v74/);
+  assert.match(app, /service-worker\.js\?v=71/);
   assert.doesNotMatch(sw, /data\/(category_questions|id_index|search_index)\.json/);
   assert.doesNotMatch(sw, /vendor\/fonts\//);
 });
@@ -98,6 +98,15 @@ test("Service Worker 不预缓存首屏之外的大型索引和字体", () => {
 test("Service Worker 响应始终重新校验，避免线上继续命中旧脚本", () => {
   assert.match(server, /const isServiceWorker = path\.basename\(file\) === "service-worker\.js"/);
   assert.match(server, /isHtml \|\| isServiceWorker \? "no-cache"/);
+});
+
+test("公开预览版只读，个人功能需要预览密钥", () => {
+  assert.match(server, /DAGUAN_PREVIEW_KEY/);
+  assert.match(server, /PREVIEW_LOCKED/);
+  assert.match(server, /api\/access\/unlock/);
+  assert.match(app, /api\/access\/status/);
+  assert.match(app, /previewPrivateAllowed/);
+  assert.match(html, /dlg-preview-access/);
 });
 
 test("首页继续按钮回到上次刷题题目", () => {

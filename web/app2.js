@@ -2,7 +2,7 @@
   "use strict";
 
   if ("serviceWorker" in navigator && location.protocol !== "file:") {
-    navigator.serviceWorker.register("./service-worker.js?v=66").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=71").catch(() => {});
   }
 
   const DATA = "./data";
@@ -16,7 +16,7 @@
   const AI_PREFS_KEY = "daguan_ai_preferences_v1";
   const AI_WIDTH_KEY = "daguan_ai_drawer_width_v1";
   const UI_BACKGROUND_KEY = "ui-background";
-  const APP_VERSION = "2026.09.21-r29";
+  const APP_VERSION = "2026.09.24-r34";
   const POSITION_KEY = "daguan_learning_position_v2";
   const UI_THEMES = ["official-light", "official-dark", "eye-care", "custom"];
   const DEFAULT_UI_PREFS = Object.freeze({
@@ -45,6 +45,8 @@
   let uiPrefs = loadUiPrefs();
   let uiBackgroundUrl = "";
   let lastDialogTrigger = null;
+  let previewMode = false;
+  let previewUnlocked = true;
 
   const state = {
     manifest: null,
@@ -162,6 +164,108 @@
     topbarMore: $("#topbar-more-menu"),
     moreTrigger: $("#btn-more"),
   };
+
+  const PREVIEW_PRIVATE_SELECTORS = [
+    "#nav-favorites", "#nav-todo", "#nav-forgot", "#nav-paper", "#nav-notes", "#nav-sync",
+    "#btn-sync", "#btn-online-sync", "#btn-top-online-sync", "#btn-home-sync", "#btn-reset-progress",
+    "#btn-toggle-favorite", "#btn-single-note", "#single-error-toggle", "#single-mastery",
+  ];
+
+  function previewPrivateAllowed(showDialog = true) {
+    if (!previewMode || previewUnlocked) return true;
+    if (showDialog) openPreviewAccess();
+    return false;
+  }
+
+  function clearPrivatePreviewState() {
+    state.progress = {};
+    state.annotations = {};
+    state.picked = new Set();
+    state.favorites = new Set();
+    state.remote_activity = null;
+    state.last_study = null;
+    serverStateAvailable = false;
+  }
+
+  function applyPreviewAccessUI() {
+    document.body.classList.toggle("preview-mode", previewMode);
+    document.body.classList.toggle("preview-locked", previewMode && !previewUnlocked);
+    document.body.dataset.previewUnlocked = String(previewUnlocked);
+    PREVIEW_PRIVATE_SELECTORS.forEach((selector) => {
+      document.querySelectorAll(selector).forEach((element) => {
+        element.dataset.private = "true";
+        element.setAttribute("aria-disabled", String(previewMode && !previewUnlocked));
+      });
+    });
+    const banner = $("#preview-access-banner");
+    if (banner) banner.hidden = !previewMode || previewUnlocked;
+    const status = $("#preview-access-status");
+    if (status) status.textContent = !previewMode ? "普通本地模式" : previewUnlocked ? "个人功能已解锁" : "当前为只读预览模式";
+    const lock = $("#btn-preview-lock");
+    if (lock) lock.hidden = !previewMode || !previewUnlocked;
+  }
+
+  async function hydratePreviewAccess() {
+    try {
+      const response = await fetch("./api/access/status", { cache: "no-store", credentials: "include" });
+      if (!response.ok) throw new Error("access status unavailable");
+      const data = await response.json();
+      previewMode = data.previewMode === true;
+      previewUnlocked = !previewMode || data.unlocked === true;
+    } catch {
+      previewMode = false;
+      previewUnlocked = true;
+    }
+    if (previewMode && !previewUnlocked) clearPrivatePreviewState();
+    applyPreviewAccessUI();
+  }
+
+  function openPreviewAccess() {
+    const dialog = $("#dlg-preview-access");
+    if (!dialog) return;
+    const input = $("#preview-access-key");
+    const status = $("#preview-access-feedback");
+    if (status) status.textContent = "输入访问 Token 后即可使用收藏、错题、批注和同步。";
+    if (!dialog.open) dialog.showModal();
+    input?.focus();
+  }
+
+  async function unlockPreview(event) {
+    event?.preventDefault();
+    const input = $("#preview-access-key");
+    const status = $("#preview-access-feedback");
+    const key = String(input?.value || "");
+    if (!key) { if (status) status.textContent = "请输入访问 Token。"; return; }
+    if (status) status.textContent = "正在验证…";
+    try {
+      const response = await fetch("./api/access/unlock", { method: "POST", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ key }) });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || "预览密钥不正确");
+      previewMode = data.previewMode === true;
+      previewUnlocked = true;
+      input.value = "";
+      $("#dlg-preview-access")?.close();
+      applyPreviewAccessUI();
+      serverStateHydrated = false;
+      await hydrateServerState();
+      refreshHomeSyncCard();
+      renderHome();
+      refreshPickUI();
+      toast("个人功能已解锁");
+    } catch (error) {
+      if (status) status.textContent = error.message || "验证失败，请重试。";
+    }
+  }
+
+  async function lockPreview() {
+    await fetch("./api/access/lock", { method: "POST", credentials: "include" }).catch(() => {});
+    previewUnlocked = false;
+    clearPrivatePreviewState();
+    applyPreviewAccessUI();
+    if (state.view === "feature") goHome();
+    renderHome();
+    toast("已回到只读预览模式");
+  }
 
   function loadProgress() {
     try {
@@ -318,6 +422,7 @@
   }
 
   function setFavorite(id, on) {
+    if (!previewPrivateAllowed()) return;
     const key = String(id);
     if (on) state.favorites.add(key);
     else state.favorites.delete(key);
@@ -329,6 +434,7 @@
   }
 
   function setErrorProne(id, on) {
+    if (!previewPrivateAllowed()) return;
     const key = String(id);
     const cur = state.progress[key] || {};
     const at = Date.now();
@@ -365,6 +471,7 @@
   }
 
   function setPicked(id, on) {
+    if (!previewPrivateAllowed()) return;
     const key = String(id);
     if (on) state.picked.add(key);
     else state.picked.delete(key);
@@ -694,6 +801,7 @@
   }
 
   async function hydrateStores() {
+    if (!previewPrivateAllowed(false)) return;
     try {
       const [p, pick, savedAt] = await Promise.all([
         idbGet("progress"),
@@ -718,6 +826,10 @@
   }
 
   async function hydrateServerState() {
+    if (!previewPrivateAllowed(false)) {
+      serverStateHydrated = true;
+      return;
+    }
     try {
       const response = await fetch("./api/state", { cache: "no-store" });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -1408,6 +1520,7 @@
   }
 
   function setMastery(id, mastery) {
+    if (!previewPrivateAllowed()) return;
     const key = String(id);
     const cur = state.progress[key] || {};
     const at = Date.now();
@@ -1424,6 +1537,8 @@
   }
 
   function markSeen(id) {
+    // 预览访客可以浏览和作答；自动记录“已看”不应把进入题目变成权限门槛。
+    if (!previewPrivateAllowed(false)) return;
     const key = String(id);
     const cur = state.progress[key] || {};
     const at = Date.now();
@@ -1439,6 +1554,8 @@
   }
 
   function markAnswered(id, ok) {
+    // 预览模式下作答仍可进行，只是不保存私人刷题记录。
+    if (!previewPrivateAllowed(false)) return;
     const key = String(id);
     const cur = state.progress[key] || {};
     const at = Date.now();
@@ -2984,6 +3101,7 @@
   }
 
   function openFeaturePage(kind) {
+    if (["favorites", "mastery", "retest", "paper", "notes", "learning-records", "sync"].includes(kind) && !previewPrivateAllowed()) return;
     state.feature = kind;
     state.specialQueue = null;
     state.currentCatId = null;
@@ -3923,6 +4041,7 @@
   }
 
   async function importProgressText(text) {
+    if (!previewPrivateAllowed()) return;
     const raw = String(text || "").trim();
     if (!raw) {
       toast("没有可导入的内容");
@@ -4118,6 +4237,11 @@
     } catch { state.aiProfiles = []; renderAiProfilesSettings(); }
   }
 
+  function openAiSettings() {
+    openSheet("dlg-appearance");
+    window.setTimeout(() => $("#ai-settings-title")?.scrollIntoView({ block: "center" }), 80);
+  }
+
   function applyAiComposePosition() {
     const form = $("#ai-compose");
     if (!form) return;
@@ -4140,6 +4264,7 @@
   }
 
   function openAiDrawer(q = currentAiQuestion(), tab = "chat") {
+    if (!previewPrivateAllowed()) return;
     if (!q) { toast("请先打开一道题"); return; }
     clearAiForQuestion(q);
     state.aiOpen = true;
@@ -4277,6 +4402,7 @@
   }
 
   async function saveQuestionNote() {
+    if (!previewPrivateAllowed()) return;
     const q = currentAiQuestion();
     if (!q || !els.noteEditor) return;
     const id = String(q.id);
@@ -4312,11 +4438,13 @@
   }
 
   async function sendAiMessage(prompt = els.aiPrompt?.value || "") {
+    if (!previewPrivateAllowed()) return;
     const q = currentAiQuestion();
     const text = String(prompt || "").trim();
     if (!q || !text) return;
     const questionId = String(q.id);
-    if (!state.aiProfileId) { toast("请先在设置中配置 AI 服务"); openSheet("dlg-appearance"); return; }
+    if (!state.aiProfileId) await loadAiProfiles();
+    if (!state.aiProfileId) { toast("请先配置 AI 服务"); openAiSettings(); return; }
     const userItem = renderAiMessage(text, "user");
     const pending = renderAiMessage("", "assistant", true);
     els.aiMessages?.append(userItem, pending);
@@ -4414,6 +4542,7 @@
     root.querySelectorAll("[data-ai-edit]").forEach((button) => button.addEventListener("click", () => openAiProfileForm(button.dataset.aiEdit)));
     root.querySelectorAll("[data-ai-use]").forEach((button) => button.addEventListener("click", () => { state.aiProfileId = button.dataset.aiUse; saveAiPrefs({ ...aiPrefs(), profileId: state.aiProfileId }); if (els.aiProfileSelect) els.aiProfileSelect.value = state.aiProfileId; renderAiProfilesSettings(); toast("已切换 AI 服务"); }));
     root.querySelectorAll("[data-ai-delete]").forEach((button) => button.addEventListener("click", async () => {
+      if (!previewPrivateAllowed()) return;
       const profile = state.aiProfiles.find((item) => item.id === button.dataset.aiDelete);
       if (!profile || !confirm(`删除“${profile.name}”？历史记录默认保留。`)) return;
       const clearHistory = confirm("是否同时删除这个服务的全部 AI 历史？点击“取消”将只删除服务配置。");
@@ -4425,6 +4554,7 @@
   }
 
   function openAiProfileForm(id = "") {
+    if (!previewPrivateAllowed()) return;
     const form = $("#ai-profile-form"); if (!form) return;
     const item = state.aiProfiles.find((profile) => profile.id === id);
     $("#ai-profile-id").value = item?.id || "";
@@ -4441,6 +4571,7 @@
 
   async function saveAiProfile(event) {
     event.preventDefault();
+    if (!previewPrivateAllowed()) return;
     const id = $("#ai-profile-id").value;
     const body = { name: $("#ai-profile-name").value, model: $("#ai-profile-model").value, baseUrl: $("#ai-profile-url").value, key: $("#ai-profile-key").value };
     try {
@@ -4451,6 +4582,7 @@
   }
 
   async function aiProfileAction(kind) {
+    if (!previewPrivateAllowed()) return;
     const id = $("#ai-profile-id").value;
     if (!id) { $("#ai-test-result").textContent = "请先保存服务，再测试。"; return; }
     const result = $("#ai-test-result"); result.textContent = "正在测试…";
@@ -4464,6 +4596,9 @@
   }
 
   function bindUI() {
+    $("#preview-access-form")?.addEventListener("submit", unlockPreview);
+    $("#btn-preview-lock")?.addEventListener("click", lockPreview);
+    $("#btn-preview-open")?.addEventListener("click", openPreviewAccess);
     $("#btn-open-sidebar").addEventListener("click", () => els.sidebar.classList.add("open"));
     $("#btn-close-sidebar").addEventListener("click", () => els.sidebar.classList.remove("open"));
     $("#btn-collapse-sidebar")?.addEventListener("click", () => {
@@ -4643,6 +4778,7 @@
     });
 
     $("#btn-reset-progress").addEventListener("click", () => {
+      if (!previewPrivateAllowed()) return;
       if (!confirm("确定清除本机全部做题进度？")) return;
       state.progress = {};
       state.annotations = {};
@@ -4681,6 +4817,7 @@
     });
 
     const openOnlineSyncPanel = async (actionId = "", trigger = document.activeElement) => {
+      if (!previewPrivateAllowed()) return;
       try {
         const status = await syncRequest("status");
         if (!status.authenticated) {
@@ -4799,10 +4936,12 @@
     });
 
     $("#btn-sync").addEventListener("click", () => {
+      if (!previewPrivateAllowed()) return;
       refreshSyncStats();
       openSheet("dlg-sync");
     });
     $("#btn-online-sync").addEventListener("click", () => {
+      if (!previewPrivateAllowed()) return;
       openOnlineSyncPanel();
     });
     $("#btn-sync-status").addEventListener("click", async () => {
@@ -4902,12 +5041,15 @@
       }
     });
     $("#btn-sync-export-local").addEventListener("click", () => {
+      if (!previewPrivateAllowed()) return;
       window.location.href = `${LOCAL_API_PREFIX}/integrations/cxyonly/export?source=local`;
     });
     $("#btn-sync-export-remote").addEventListener("click", () => {
+      if (!previewPrivateAllowed()) return;
       window.location.href = `${LOCAL_API_PREFIX}/integrations/cxyonly/export?source=remote`;
     });
     $("#btn-sync-export-android").addEventListener("click", () => {
+      if (!previewPrivateAllowed()) return;
       window.location.href = `${LOCAL_API_PREFIX}/integrations/cxyonly/export?source=android`;
     });
     $("#btn-update-refresh")?.addEventListener("click", () => {
@@ -4915,14 +5057,17 @@
       window.location.reload();
     });
     $("#btn-download-progress").addEventListener("click", () => {
+      if (!previewPrivateAllowed()) return;
       downloadText(backupFilename(), backupText(), "application/json");
       toast("已开始下载备份");
     });
     $("#btn-copy-backup").addEventListener("click", async () => {
+      if (!previewPrivateAllowed()) return;
       const ok = await copyText(backupText());
       toast(ok ? "已复制备份 JSON" : "复制失败，请改用下载");
     });
     $("#btn-share-progress").addEventListener("click", async () => {
+      if (!previewPrivateAllowed()) return;
       const name = backupFilename();
       const text = backupText();
       try {
@@ -5007,7 +5152,7 @@
       const item = selected ? state.noteHistory[Number(selected.dataset.noteHistoryIndex)] : null;
       if (item && els.noteEditor) { els.noteEditor.value = item.markdown || ""; scheduleQuestionNoteSave(); toast("已恢复历史批注"); }
     });
-    $("#btn-ai-settings")?.addEventListener("click", () => { openSheet("dlg-appearance"); window.setTimeout(() => $("#ai-settings-title")?.scrollIntoView({ block: "center" }), 80); });
+    $("#btn-ai-settings")?.addEventListener("click", openAiSettings);
     $("#btn-ai-add-profile")?.addEventListener("click", () => openAiProfileForm());
     $("#ai-profile-form")?.addEventListener("submit", saveAiProfile);
     $("#btn-ai-cancel-profile")?.addEventListener("click", closeAiProfileForm);
@@ -5121,6 +5266,7 @@
     checkRuntimeVersion();
     applyUiPreferences();
     loadUiBackground();
+    await hydratePreviewAccess();
     bindUI();
     applyModeUI();
     const hydrated = hydrateStores();

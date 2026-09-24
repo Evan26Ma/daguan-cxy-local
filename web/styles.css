@@ -2978,6 +2978,26 @@ body[data-view="browse"] #app.learning-shell .topbar { gap: .7rem; padding-inlin
 
 /* r6 navigation recovery, workspace feedback and sync guide */
 .home-sync-foot-actions { display: flex; align-items: center; gap: .45rem; flex-shrink: 0; }
+
+.preview-access-banner { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin: .75rem 1rem 0; padding: .7rem .85rem; color: var(--color-foreground); background: color-mix(in srgb, var(--color-brand-soft) 72%, var(--color-surface)); border: 1px solid color-mix(in srgb, var(--color-brand) 28%, var(--color-border)); border-radius: 10px; }
+.preview-access-banner > div:first-child { display: flex; align-items: baseline; gap: .65rem; flex-wrap: wrap; }
+.preview-access-banner strong { color: var(--color-brand); }
+.preview-access-banner span { color: var(--color-foreground-muted); font-size: .88rem; }
+.preview-access-actions { display: flex; align-items: center; gap: .45rem; flex-shrink: 0; }
+.preview-access-dialog { width: min(100% - 2rem, 34rem); }
+.preview-access-form { display: grid; gap: .55rem; }
+.preview-access-form input { width: 100%; }
+.preview-download-hint { display: grid; gap: .3rem; margin-top: .45rem; padding: .75rem .8rem; color: var(--color-foreground-muted); background: var(--color-surface-subtle); border: 1px solid var(--color-border-subtle); border-radius: 10px; font-size: .82rem; line-height: 1.5; }
+.preview-download-hint strong { color: var(--color-foreground); }
+.preview-download-hint .btn { justify-self: start; margin-top: .2rem; }
+body.preview-locked [data-private="true"] { opacity: .62; }
+body.preview-locked [data-private="true"]::after { content: "🔒"; margin-left: .35rem; font-size: .72rem; }
+
+@media (max-width: 680px) {
+  .preview-access-banner { align-items: stretch; flex-direction: column; margin-inline: .65rem; }
+  .preview-access-actions { width: 100%; }
+  .preview-access-actions .btn { flex: 1; }
+}
 .tool-card-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .chapter-menu-navigation { display: flex; align-items: center; gap: .55rem; min-width: 0; padding: .55rem .1rem .35rem; }
 .chapter-menu-back { min-width: 6.25rem; min-height: 2.75rem; flex: 0 0 auto; gap: .35rem; justify-content: center; }

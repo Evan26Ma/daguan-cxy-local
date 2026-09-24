@@ -14,6 +14,7 @@ Environment=CXY_AUTH_UPSTREAM=http://127.0.0.1:8080
 Environment=CXY_AUTH_TOKEN_FILE=/etc/daguan-cxy-auth/token
 Environment=CXY_AUTH_SECRET_FILE=/var/lib/daguan-cxy-auth/cookie-secret
 Environment=CXY_AUTH_TRUST_DAYS=180
+Environment=CXY_AUTH_PUBLIC_PREVIEW=0
 Restart=always
 RestartSec=3
 UMask=0077

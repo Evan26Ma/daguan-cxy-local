@@ -7,7 +7,7 @@
   <meta name="description" content="大观园数学题库本地静态刷题站" />
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="stylesheet" href="./vendor/katex.min.css" />
-    <link rel="stylesheet" href="./styles.css?v=56" />
+    <link rel="stylesheet" href="./styles.css?v=57" />
   <script>
     (() => {
       if (location.search.includes("purge=1")) {
@@ -184,6 +184,10 @@
       <div id="update-banner" role="status" aria-live="polite">
         <span>本地题库有新版本，刷新后会恢复当前章节、题号和滚动位置。</span>
         <button type="button" class="btn primary" id="btn-update-refresh">立即刷新</button>
+      </div>
+      <div id="preview-access-banner" class="preview-access-banner" role="status" aria-live="polite" hidden>
+        <div><strong>只读预览模式</strong><span id="preview-access-status">当前为只读预览模式</span></div>
+        <div class="preview-access-actions"><button type="button" class="btn" id="btn-preview-open">输入访问 Token</button><button type="button" class="btn ghost" id="btn-preview-lock" hidden>锁定个人功能</button></div>
       </div>
 
       <main class="main learning-shell__main" id="main">
@@ -414,6 +418,27 @@
       <button type="button" class="btn" id="btn-welcome-later">以后再看</button>
       <button type="button" class="btn primary" id="btn-welcome-tutorial">查看完整教程</button>
     </div>
+  </dialog>
+
+  <dialog id="dlg-preview-access" class="sheet preview-access-dialog">
+    <div class="sheet-head">
+      <div>
+        <p class="dialog-kicker">访问权限</p>
+        <h2>解锁个人功能</h2>
+      </div>
+      <button type="button" class="icon-btn" data-close="dlg-preview-access" aria-label="关闭"><svg class="ui-icon"><use href="#icon-close"></use></svg></button>
+    </div>
+    <p class="sheet-lead">题库、题目、答案和解析可以直接浏览。只有进行收藏、错题、掌握度、批注、进度备份、官网同步或 AI 等操作时，才需要输入访问 Token。</p>
+    <form id="preview-access-form" class="preview-access-form">
+      <label class="field-label" for="preview-access-key">访问 Token</label>
+      <input id="preview-access-key" type="password" autocomplete="current-password" placeholder="输入访问 Token" required />
+      <div id="preview-access-feedback" class="setup-feedback" role="status" aria-live="polite">输入访问 Token 后即可解锁个人功能。</div>
+      <div class="preview-download-hint"><strong>如果你是其他用户</strong><span>建议下载一键安装版，在自己的电脑上独立刷题。</span><a class="btn ghost" href="https://github.com/Evan26Ma/daguan-cxy-local/releases/latest/download/DaguanMath-windows-x64.exe" target="_blank" rel="noopener">下载一键安装版 EXE</a></div>
+      <div class="sheet-actions">
+        <button type="button" class="btn" data-close="dlg-preview-access">暂不解锁</button>
+        <button type="submit" class="btn primary">解锁</button>
+      </div>
+    </form>
   </dialog>
 
   <dialog id="dlg-tutorial" class="sheet sheet-wide">
@@ -784,6 +809,6 @@
 
   <script defer src="./vendor/marked.min.js"></script>
   <script defer src="./vendor/katex.min.js"></script>
-    <script defer src="./app2.js?v=40"></script>
+    <script defer src="./app2.js?v=45"></script>
 </body>
 </html>
