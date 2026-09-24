@@ -2,7 +2,7 @@
   "use strict";
 
   if ("serviceWorker" in navigator && location.protocol !== "file:") {
-    navigator.serviceWorker.register("./service-worker.js?v=73").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=75").catch(() => {});
   }
 
   const DATA = "./data";
@@ -913,9 +913,8 @@
   }
 
   function loadMode() {
-    // Single-question view is now the transient immersive state. Do not
-    // restore the old persisted single mode without its focus shell.
-    return "list";
+    // The redesigned learning surface starts with one-question focus.
+    return "single";
   }
 
   function saveMode() {
@@ -1119,6 +1118,7 @@
     els.browse.classList.toggle("hidden", name !== "browse");
     els.searchView.classList.toggle("hidden", name !== "search");
     els.feature?.classList.toggle("hidden", name !== "feature");
+    $("#view-catalog")?.classList.toggle("hidden", name !== "catalog");
     document.body.dataset.view = name;
     const toolsWorkspace = name === "feature" && state.feature === "tools";
     els.workspaceLearning?.classList.toggle("active", !toolsWorkspace);
@@ -1129,6 +1129,7 @@
       const specialNav = state.specialQueue === "todo" ? "mastery" : state.specialQueue === "forgot" ? "retest" : "";
       const active =
         (name === "home" && el.dataset.nav === "home") ||
+        (name === "catalog" && el.dataset.nav === "catalog") ||
         (name === "feature" && el.dataset.nav === state.feature) ||
         (name === "browse" && specialNav && el.dataset.nav === specialNav);
       el.classList.toggle("active", active);
@@ -3097,7 +3098,7 @@
     if (kind === "tools") {
       $("#feature-open-tutorial")?.addEventListener("click", () => openSheet("dlg-tutorial"));
       $("#feature-open-sync-guide")?.addEventListener("click", (event) => openSheet("dlg-sync-guide", event.currentTarget));
-      $("#feature-open-sync")?.addEventListener("click", () => $("#btn-online-sync")?.click());
+      $("#feature-open-sync")?.addEventListener("click", () => $("#btn-home-sync")?.click());
       $("#feature-open-appearance")?.addEventListener("click", () => openSheet("dlg-appearance"));
     }
   }
@@ -4603,6 +4604,7 @@
     $("#btn-preview-open")?.addEventListener("click", openPreviewAccess);
     $("#btn-open-sidebar").addEventListener("click", () => els.sidebar.classList.add("open"));
     $("#btn-close-sidebar").addEventListener("click", () => els.sidebar.classList.remove("open"));
+    $("#sidebar-backdrop")?.addEventListener("click", () => els.sidebar.classList.remove("open"));
     $("#btn-collapse-sidebar")?.addEventListener("click", () => {
       const app = $("#app");
       const collapsed = app?.dataset.sidebar === "collapsed";
@@ -4616,6 +4618,19 @@
     });
     $("#btn-appearance")?.addEventListener("click", (event) => openSheet("dlg-appearance", event.currentTarget));
     $("#nav-settings")?.addEventListener("click", (event) => openSheet("dlg-appearance", event.currentTarget));
+    document.querySelectorAll("[data-settings-tab]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const tab = button.dataset.settingsTab;
+        document.querySelectorAll("[data-settings-tab]").forEach((item) => {
+          const active = item.dataset.settingsTab === tab;
+          item.classList.toggle("active", active);
+          item.setAttribute("aria-pressed", String(active));
+        });
+        document.querySelectorAll("[data-settings-panel]").forEach((panel) => {
+          panel.hidden = panel.dataset.settingsPanel !== tab;
+        });
+      });
+    });
     document.querySelectorAll("[data-theme-choice]").forEach((button) => {
       button.addEventListener("click", () => setUiTheme(button.dataset.themeChoice));
     });
@@ -4720,6 +4735,18 @@
       goHome();
     });
     $("#nav-home").addEventListener("click", goHome);
+    $("#nav-catalog")?.addEventListener("click", () => {
+      state.specialQueue = null;
+      state.currentCatId = null;
+      state.chapterPathIds = [];
+      setView("catalog");
+      paintTree();
+      els.main?.scrollTo({ top: 0, behavior: "auto" });
+    });
+    $("#nav-review")?.addEventListener("click", () => openFeaturePage("retest"));
+    $("#nav-records")?.addEventListener("click", () => openFeaturePage("learning-records"));
+    $("#nav-tools")?.addEventListener("click", () => openFeaturePage("tools"));
+    $("#review-subnav")?.removeAttribute("hidden");
     $("#nav-favorites")?.addEventListener("click", () => openFeaturePage("favorites"));
     $("#nav-todo").addEventListener("click", () => openFeaturePage("mastery"));
     $("#nav-knowledge")?.addEventListener("click", () => toast("知识图谱建设中，敬请期待"));
@@ -4729,6 +4756,16 @@
     $("#workspace-learning")?.addEventListener("click", goHome);
     $("#workspace-tools")?.addEventListener("click", () => openFeaturePage("tools"));
     $("#btn-learning-records")?.addEventListener("click", () => openFeaturePage("learning-records"));
+    document.querySelectorAll("[data-open-feature]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const kind = button.dataset.openFeature;
+        if (kind === "catalog") {
+          $("#nav-catalog")?.click();
+          return;
+        }
+        if (kind) openFeaturePage(kind);
+      });
+    });
     $("#btn-start").addEventListener("click", async () => {
       if (await resumeSavedLearningPosition()) return;
       let target = state.heroRecommendCatId ? findCat(state.heroRecommendCatId) : null;
@@ -4779,7 +4816,7 @@
       });
     });
 
-    $("#btn-reset-progress").addEventListener("click", () => {
+    $("#btn-reset-progress")?.addEventListener("click", () => {
       if (!previewPrivateAllowed()) return;
       if (!confirm("确定清除本机全部做题进度？")) return;
       state.progress = {};
@@ -4937,12 +4974,12 @@
       if (!on) $("#export-expl").checked = false;
     });
 
-    $("#btn-sync").addEventListener("click", () => {
+    $("#btn-sync")?.addEventListener("click", () => {
       if (!previewPrivateAllowed()) return;
       refreshSyncStats();
       openSheet("dlg-sync");
     });
-    $("#btn-online-sync").addEventListener("click", () => {
+    $("#btn-online-sync")?.addEventListener("click", () => {
       if (!previewPrivateAllowed()) return;
       openOnlineSyncPanel();
     });

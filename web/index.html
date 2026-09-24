@@ -3,11 +3,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>大观园 · 本地刷题</title>
-  <meta name="description" content="大观园数学题库本地静态刷题站" />
+  <title>学习空间 · 本地大观园</title>
+  <meta name="description" content="非官方本地数学学习空间：章节练习、错题复习与个人学习记录。" />
+  <meta name="theme-color" content="#fafaf7" />
+  <link rel="icon" type="image/svg+xml" href="./assets/landing/local-mark.svg" />
+  <link rel="stylesheet" href="./design-tokens.css?v=1" />
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="stylesheet" href="./vendor/katex.min.css" />
-    <link rel="stylesheet" href="./styles.css?v=57" />
+  <link rel="stylesheet" href="./styles.css?v=61" />
   <script>
     (() => {
       if (location.search.includes("purge=1")) {
@@ -61,59 +64,35 @@
     <symbol id="icon-check" viewBox="0 0 24 24"><path d="m5 12 4.5 4.5L19 7" /></symbol>
   </svg>
   <div id="app" class="learning-shell" data-sidebar="expanded">
-    <aside class="sidebar learning-shell__sidebar" id="sidebar">
+    <a class="skip-link" href="#main">跳到学习内容</a>
+    <button type="button" class="sidebar-backdrop" id="sidebar-backdrop" aria-label="关闭导航" hidden></button>
+    <aside class="sidebar learning-shell__sidebar" id="sidebar" aria-label="学习导航">
       <div class="sidebar-head learning-shell__brand-row">
-        <a class="brand learning-shell__brand" href="#" id="btn-brand" aria-label="大观园学习首页">
-          <img class="brand-mark" src="./assets/landing/daguan-curve-logo.png" alt="" width="28" height="28" />
-          <strong>大观园</strong>
-          <span>数学</span>
+        <a class="brand learning-shell__brand" href="#" id="btn-brand" aria-label="本地大观园学习首页">
+          <img class="brand-mark" src="./assets/landing/local-mark.svg" alt="" width="34" height="34" />
+          <span class="brand-copy"><strong>本地大观园</strong><small>LOCAL DAGUAN</small></span>
         </a>
-        <button type="button" class="icon-btn sidebar-collapse" id="btn-collapse-sidebar" aria-label="收起侧栏" aria-expanded="true"><svg class="ui-icon"><use href="#icon-collapse"></use></svg></button>
         <button type="button" class="icon-btn" id="btn-close-sidebar" aria-label="关闭侧栏"><svg class="ui-icon"><use href="#icon-close"></use></svg></button>
       </div>
-
-      <div class="sidebar-nav learning-shell__chapter-shortcuts">
-        <button type="button" class="side-link active" id="nav-home" data-nav="home"><svg class="ui-icon"><use href="#icon-home"></use></svg><span>首页</span></button>
-        <button type="button" class="side-link" id="nav-favorites" data-nav="favorites"><svg class="ui-icon"><use href="#icon-star"></use></svg><span>收藏本</span></button>
-        <button type="button" class="side-link" id="nav-todo" data-nav="mastery"><svg class="ui-icon"><use href="#icon-chart"></use></svg><span>掌握地图</span></button>
-        <button type="button" class="side-link" id="nav-knowledge"><svg class="ui-icon"><use href="#icon-grid"></use></svg><span>知识图谱</span></button>
-        <button type="button" class="side-link" id="nav-forgot" data-nav="retest"><svg class="ui-icon"><use href="#icon-gauge"></use></svg><span>错题复测</span></button>
-        <button type="button" class="side-link" id="nav-paper" data-nav="paper"><svg class="ui-icon"><use href="#icon-file"></use></svg><span>智能组卷</span></button>
-        <button type="button" class="side-link" id="nav-notes" data-nav="notes"><svg class="ui-icon"><use href="#icon-note"></use></svg><span>题目笔记</span></button>
-        <button type="button" class="side-link utility-link" id="nav-sync" data-nav="sync"><svg class="ui-icon"><use href="#icon-cloud-upload"></use></svg><span>同步</span></button>
-        <button type="button" class="side-link utility-link" id="nav-settings" data-nav="settings"><svg class="ui-icon"><use href="#icon-palette"></use></svg><span>外观</span></button>
-      </div>
-
-      <div class="sidebar-tools">
-        <input id="search" type="search" placeholder="搜索题号 / 来源 / 题干…" autocomplete="off" />
-        <div class="tool-row">
-          <label class="check"><input type="checkbox" id="filter-core" /> 严选</label>
-          <label class="check"><input type="checkbox" id="filter-todo" /> 未掌握</label>
+      <p class="sidebar-caption">YOUR LEARNING SPACE</p>
+      <nav class="sidebar-nav" aria-label="主要功能">
+        <button type="button" class="side-link active" id="nav-home" data-nav="home" title="学习首页"><svg class="ui-icon"><use href="#icon-home"></use></svg><span>学习</span><small>01</small></button>
+        <button type="button" class="side-link" id="nav-catalog" data-nav="catalog" title="题库目录"><svg class="ui-icon"><use href="#icon-book"></use></svg><span>题库</span><small>02</small></button>
+        <button type="button" class="side-link" id="nav-review" data-nav="review" title="复习空间"><svg class="ui-icon"><use href="#icon-gauge"></use></svg><span>复习</span><small>03</small></button>
+        <div class="sidebar-subnav" id="review-subnav" hidden>
+          <button type="button" class="side-link" id="nav-forgot" data-nav="retest">错题复测</button>
+          <button type="button" class="side-link" id="nav-favorites" data-nav="favorites">收藏本</button>
+          <button type="button" class="side-link" id="nav-todo" data-nav="mastery">掌握地图</button>
+          <button type="button" class="side-link" id="nav-notes" data-nav="notes">学习笔记</button>
         </div>
-      </div>
-
-      <div class="chapter-head">
-        <div class="chapter-head-main">
-          <span>题库目录</span>
-          <button type="button" class="chapter-filter-button" id="btn-adv-filter" title="按题源、章节、知识点、题型等条件筛选">
-            <svg class="ui-icon"><use href="#icon-grid"></use></svg><span>详细筛选</span>
-          </button>
-        </div>
-        <div class="scope-toggle" role="group" aria-label="题库范围">
-          <button type="button" class="scope-btn active" data-scope="all">完整</button>
-          <button type="button" class="scope-btn" data-scope="core">严选</button>
-          <button type="button" class="scope-btn" data-scope="real">真题</button>
-        </div>
-      </div>
-
-      <nav class="cat-tree" id="cat-tree" aria-label="分类"></nav>
-
+        <button type="button" class="side-link" id="nav-records" data-nav="learning-records" title="学习记录"><svg class="ui-icon"><use href="#icon-chart"></use></svg><span>记录</span><small>04</small></button>
+        <button type="button" class="side-link" id="nav-tools" data-nav="tools" title="工具与设置"><svg class="ui-icon"><use href="#icon-tool"></use></svg><span>工具与设置</span><small>05</small></button>
+      </nav>
       <div class="sidebar-foot">
-        <div id="stats-line">加载中…</div>
-        <button type="button" class="linkish" id="btn-tutorial">使用教程</button>
-        <button type="button" class="linkish" id="btn-sync">进度备份</button>
-        <button type="button" class="linkish" id="btn-online-sync">官网同步</button>
-        <button type="button" class="linkish" id="btn-reset-progress">清除本地进度</button>
+        <div class="local-badge"><i></i><span>非官方 · 本地增强版</span></div>
+        <div id="stats-line">题库加载中…</div>
+        <div class="sidebar-foot-links"><button type="button" class="linkish" id="btn-tutorial">使用教程</button><a href="./landing.html">项目首页 ↗</a></div>
+        <button type="button" class="icon-btn sidebar-collapse" id="btn-collapse-sidebar" aria-label="收起侧栏" aria-expanded="true"><svg class="ui-icon"><use href="#icon-collapse"></use></svg><span>收起导航</span></button>
       </div>
     </aside>
 
@@ -149,15 +128,12 @@
             </div>
           </div>
         </div>
-        <nav class="workspace-nav" aria-label="学习工作区">
-          <button type="button" class="workspace-link active" id="workspace-learning"><svg class="ui-icon"><use href="#icon-book"></use></svg><span>学习区</span></button>
-          <button type="button" class="workspace-link" id="workspace-tools"><svg class="ui-icon"><use href="#icon-tool"></use></svg><span>工具区</span></button>
-        </nav>
-        <div class="crumb" id="crumb">选择左侧分类开始</div>
+        <div class="workspace-title" id="workspace-title"><span>WORKSPACE / 01</span><strong id="workspace-heading">学习空间</strong></div>
+        <div class="crumb" id="crumb">从一道题开始</div>
         <div class="top-actions">
           <div class="mode-toggle" role="group" aria-label="浏览模式">
-            <button type="button" class="mode-btn active" id="mode-list" data-mode="list" title="列表模式：一页多题">列表</button>
-            <button type="button" class="mode-btn" id="mode-single" data-mode="single" title="沉浸模式：单题专注">沉浸</button>
+            <button type="button" class="mode-btn" id="mode-list" data-mode="list" title="连续浏览多道题">列表</button>
+            <button type="button" class="mode-btn active" id="mode-single" data-mode="single" title="一次专注一道题">沉浸</button>
           </div>
           <div class="chapter-section-nav" id="chapter-section-nav" hidden>
             <span class="chapter-progress-top" id="chapter-progress-top">0 / 0</span>
@@ -186,93 +162,44 @@
         <button type="button" class="btn primary" id="btn-update-refresh">立即刷新</button>
       </div>
       <div id="preview-access-banner" class="preview-access-banner" role="status" aria-live="polite" hidden>
-        <div><strong>只读预览模式</strong><span id="preview-access-status">当前为只读预览模式</span></div>
-        <div class="preview-access-actions"><button type="button" class="btn" id="btn-preview-open">输入访问 Token</button><button type="button" class="btn ghost" id="btn-preview-lock" hidden>锁定个人功能</button></div>
+        <div><strong>在线预览</strong><span id="preview-access-status">本站仅供功能预览，正式使用请下载到本地。</span></div>
+        <div class="preview-access-actions"><a class="btn ghost" href="./landing.html#start">下载本地版 ↗</a><button type="button" class="btn" id="btn-preview-open">输入访问 Token</button><button type="button" class="btn ghost" id="btn-preview-lock" hidden>锁定个人功能</button></div>
       </div>
 
-      <main class="main learning-shell__main" id="main">
-        <section class="home" id="view-home">
-          <div class="hero hero-learning">
-            <div class="hero-copy">
-              <h1>从一道题开始</h1>
-              <p class="hero-desc">先试着作答，再查看答案与解析。</p>
-              <div class="home-continue">
-                <h2 id="hero-chapter">选择一个章节开始学习</h2>
-                <div class="home-continue-actions">
-                  <button type="button" class="btn primary home-continue-btn" id="btn-start">练习这一节</button>
-                </div>
-              </div>
-              <p class="muted home-note" id="hero-date">进度已自动保存在本机；完成官网同步后可跨设备接续。</p>
-              <p class="home-countdown">考研初试 · <time id="exam-date">2026-12-19</time> · <span id="exam-days">还有 — 天</span></p>
-            </div>
+      <main class="main learning-shell__main" id="main" tabindex="-1">
+        <section class="home" id="view-home" aria-label="学习首页">
+          <div class="page-heading"><div><p class="eyebrow">A LITTLE FURTHER, EVERY DAY.</p><h1>今天，再进一步<span class="orange-period">。</span></h1><p class="page-description">从上次停下的地方，继续你的数学之旅。</p></div><span class="page-date" id="home-date"></span></div>
+          <div class="home-grid">
+            <section class="continue-card" aria-labelledby="hero-chapter">
+              <div class="continue-top"><span class="eyebrow">PICK UP WHERE YOU LEFT OFF</span><svg class="ui-icon"><use href="#icon-trend"></use></svg></div>
+              <span class="continue-label" id="continue-label">下一道，从这里开始</span>
+              <h2 id="hero-chapter">选择一个章节</h2><p id="hero-position">把专注留给思考。</p>
+              <div class="home-continue-actions"><button type="button" class="btn ink" id="btn-start">开始练习 <span aria-hidden="true">↗</span></button><button type="button" class="btn text-dark" data-open-feature="catalog">选择章节 →</button></div>
+              <div class="continue-foot"><span id="hero-date">学习进度随练习自动保存</span><svg class="continue-graphic" viewBox="0 0 150 55" aria-hidden="true"><path d="M0 40C30 40 20 5 50 18S90 65 110 30 140 5 150 3M0 46h150" /></svg></div>
+            </section>
+            <section class="review-card" aria-labelledby="home-review-title"><div class="panel-heading"><div><p class="eyebrow">A SECOND LOOK</p><h2 id="home-review-title">值得再想一遍</h2></div><svg class="ui-icon"><use href="#icon-gauge"></use></svg></div>
+              <button type="button" class="review-shortcut" data-open-feature="retest"><span class="shortcut-symbol"><svg class="ui-icon"><use href="#icon-gauge"></use></svg></span><span><strong>错题复测</strong><small>把卡住的地方，再想明白</small></span><b id="home-retest-count">—</b><span aria-hidden="true">↗</span></button>
+              <button type="button" class="review-shortcut" data-open-feature="favorites"><span class="shortcut-symbol"><svg class="ui-icon"><use href="#icon-star"></use></svg></span><span><strong>我的收藏</strong><small>收下值得回头的好题</small></span><b id="home-favorite-count">—</b><span aria-hidden="true">↗</span></button>
+              <button type="button" class="review-shortcut" data-open-feature="mastery"><span class="shortcut-symbol"><svg class="ui-icon"><use href="#icon-chart"></use></svg></span><span><strong>未掌握的题</strong><small>从学习中，走向真正理解</small></span><b id="home-learning-count">—</b><span aria-hidden="true">↗</span></button>
+            </section>
           </div>
-
-          <section class="home-sync" aria-labelledby="home-sync-title">
-            <div class="home-sync-head">
-              <div>
-                <p class="home-sync-kicker">数据同步中心</p>
-                <h2 id="home-sync-title">本地刷题，官网一键互通</h2>
-                <p class="muted home-sync-desc">刷题留在本地，中控台负责读取官网状态、保存进度和安全同步。</p>
-              </div>
-              <div class="sync-status-badge" id="home-sync-badge" data-state="setup" role="status">
-                <span class="sync-status-dot" aria-hidden="true"></span>
-                <span id="home-sync-status">尚未完成配置</span>
-              </div>
-            </div>
-            <div class="home-sync-actions">
-              <button type="button" class="sync-action sync-action-primary" id="btn-home-sync">
-                <span class="sync-action-kicker">官网同步</span>
-                <strong>同步进度</strong>
-                <span class="sync-action-desc">先检查两边变化，确认后再同步</span>
-                <span class="sync-action-arrow" aria-hidden="true">→</span>
-              </button>
-            </div>
-            <div class="home-sync-foot">
-              <span class="muted" id="home-sync-detail">首次使用只需完成一次登录配置，之后点击“同步进度”即可。</span>
-              <div class="home-sync-foot-actions">
-                <button type="button" class="btn ghost" id="btn-home-sync-guide">同步教程</button>
-              </div>
-            </div>
-          </section>
-
-          <div class="metric-strip" id="metric-strip">
-            <div class="metric">
-                <span class="metric-label"><svg class="ui-icon"><use href="#icon-calendar"></use></svg>考研倒计时</span>
-              <strong id="metric-total">—</strong>
-            </div>
-            <div class="metric">
-                <span class="metric-label"><svg class="ui-icon"><use href="#icon-trend"></use></svg>今日刷题数</span>
-              <strong id="metric-seen">—</strong>
-            </div>
-            <div class="metric">
-                <span class="metric-label"><svg class="ui-icon"><use href="#icon-flame"></use></svg>连续学习</span>
-              <strong id="metric-mastered">—</strong>
-            </div>
-            <div class="metric">
-                <span class="metric-label"><svg class="ui-icon"><use href="#icon-chart"></use></svg>题库总量</span>
-              <strong id="metric-forgot">—</strong>
-            </div>
+          <div class="metric-strip" aria-label="学习概况">
+            <div class="metric"><span class="metric-label">已记录题目</span><strong id="metric-total">—</strong><small>本地学习状态</small></div>
+            <div class="metric"><span class="metric-label">今日记录题目</span><strong id="metric-seen">—</strong><small>按最近作答时间</small></div>
+            <div class="metric"><span class="metric-label">已掌握</span><strong id="metric-mastered">—</strong><small>每一步都算数</small></div>
+            <div class="metric"><span class="metric-label">题库收录</span><strong id="metric-forgot">—</strong><small>真实题目，随时开始</small></div>
           </div>
-
-          <section class="activity-surface" aria-label="学习活动">
-            <div class="activity-main">
-              <header class="activity-header"><h2>学习活动</h2><button type="button" class="btn ghost" id="btn-learning-records">查看更多</button></header>
-              <div class="activity-heatmap">
-                <div class="heatmap-summary-head"><strong>长期活跃度</strong><span id="heatmap-summary">已记录 0 个作答日</span></div>
-                <div class="heatmap-months"><span>7月</span><span>8月</span><span>9月</span></div>
-                <div class="heatmap-body"><div class="heatmap-weekdays"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div><div class="heatmap-grid" id="heatmap-grid" aria-label="刷题强度热力图（按作答判定次数）"></div></div>
-                <div class="heatmap-legend"><span>刷题强度</span><i data-level="0"></i><i data-level="1"></i><i data-level="2"></i><i data-level="3"></i><i data-level="4"></i><span>无</span><span>轻</span><span>中</span><span>高</span><span>很高</span></div>
-              </div>
-            </div>
-            <aside class="activity-notices"><header><h3>通知</h3><svg class="ui-icon"><use href="#icon-bell"></use></svg></header><p>登录后查看通知</p></aside>
-          </section>
-
-          <h2 class="section-title">题库分区</h2>
+          <div class="section-heading"><div><p class="eyebrow">YOUR NEXT CHAPTER</p><h2>选一章，沉下心。</h2></div><button type="button" class="btn ghost" data-open-feature="catalog">全部题库 ↗</button></div>
           <div class="home-cards" id="home-cards"></div>
+          <section class="home-activity"><div class="panel-heading"><div><p class="eyebrow">SMALL STEPS ADD UP</p><h2>学习留下的印记</h2></div><button type="button" class="btn ghost" id="btn-learning-records">查看记录 ↗</button></div><p class="muted" id="heatmap-summary">还没有学习记录，从一道题开始。</p><div class="heatmap-scroll"><div class="heatmap-grid" id="heatmap-grid" aria-label="最近学习记录日期分布"></div></div><div class="heatmap-legend"><span>按题目最近记录日期展示</span><i data-level="0"></i><i data-level="1"></i><i data-level="2"></i><i data-level="3"></i><i data-level="4"></i><span>更多</span></div></section>
+          <section class="home-sync" aria-labelledby="home-sync-title"><div><p class="eyebrow">LOCAL FIRST</p><h2 id="home-sync-title">进度在身边，同步按需。</h2><p id="home-sync-detail" class="muted">备份与官网同步，按自己的需要开启。</p></div><div class="home-sync-actions"><span class="sync-status-badge" id="home-sync-badge" data-state="setup"><i></i><span id="home-sync-status">尚未配置同步</span></span><button type="button" class="btn" id="btn-home-sync">同步进度</button><button type="button" class="btn ghost" id="btn-home-sync-guide">同步教程</button></div></section>
+        </section>
 
-          <div class="home-hint">
-            <p><strong>沉浸模式</strong>支持快捷键操作。<span class="hint-sep">·</span> 列表模式可连续滚动，每题独立展开答案与标记掌握。</p>
-          </div>
+        <section class="catalog-view hidden" id="view-catalog" aria-label="数学题库">
+          <div class="page-heading"><div><p class="eyebrow">A WORLD OF MATHEMATICS</p><h1>每一章，都是新视角<span class="orange-period">。</span></h1><p class="page-description">展开目录，选择一个小节。从你最想弄懂的地方开始。</p></div></div>
+          <div class="chapter-head"><div class="catalog-toolbar"><label class="search-field"><svg class="ui-icon"><use href="#icon-grid"></use></svg><input id="search" type="search" aria-label="搜索题号、来源或题干" placeholder="搜索题号、来源或题干…" autocomplete="off" /></label><button type="button" class="btn" id="btn-adv-filter">详细筛选 <svg class="ui-icon"><use href="#icon-grid"></use></svg></button></div></div>
+          <div class="catalog-scopes"><div class="scope-toggle" role="group" aria-label="题库范围"><button type="button" class="scope-btn active" data-scope="all">完整题库</button><button type="button" class="scope-btn" data-scope="core">严选</button><button type="button" class="scope-btn" data-scope="real">真题</button></div><div class="tool-row"><label class="check"><input type="checkbox" id="filter-core" /> 仅严选</label><label class="check"><input type="checkbox" id="filter-todo" /> 未掌握</label></div></div>
+          <nav class="cat-tree" id="cat-tree" aria-label="分类"></nav>
         </section>
 
         <section class="browse hidden" id="view-browse">
@@ -313,16 +240,7 @@
               <div class="q-path" id="q-path"></div>
               <div class="md q-stem" id="q-stem"></div>
               <div class="question-options" id="q-options"></div>
-              <div class="q-actions">
-                <button type="button" class="btn" id="btn-prev" data-shortcut-label="up">上一题<kbd class="shortcut-hint" data-shortcut-hint="up">↑</kbd></button>
-                <button type="button" class="btn primary" id="btn-toggle-answer" data-shortcut-label="answer">显示答案<kbd class="shortcut-hint" data-shortcut-hint="answer">空格</kbd></button>
-                <button type="button" class="btn" id="btn-next" data-shortcut-label="down">下一题<kbd class="shortcut-hint" data-shortcut-hint="down">↓</kbd></button>
-                <button type="button" class="btn secondary focus-exit" id="btn-exit-focus" data-shortcut-label="focus">退出沉浸<kbd class="shortcut-hint" data-shortcut-hint="focus">F6</kbd></button>
-                <button type="button" class="btn ai-action" id="btn-single-ai" data-shortcut-label="ai"><svg class="ui-icon"><use href="#icon-spark"></use></svg><span class="action-label">AI 解答</span><kbd class="shortcut-hint" data-shortcut-hint="ai">A</kbd></button>
-                <button type="button" class="btn ghost" id="btn-copy-md" data-shortcut-label="copy" title="复制题目、答案与解析">复制题目和答案<kbd class="shortcut-hint" data-shortcut-hint="copy">C</kbd></button>
-                <button type="button" class="btn ghost" id="btn-toggle-favorite" data-favorite-id="" data-shortcut-label="favorite"><span class="action-label">收藏</span><kbd class="shortcut-hint" data-shortcut-hint="favorite">F</kbd></button>
-                <button type="button" class="btn ghost" id="btn-single-note" data-shortcut-label="note"><svg class="ui-icon"><use href="#icon-note"></use></svg><span class="action-label">批注</span><kbd class="shortcut-hint" data-shortcut-hint="note">N</kbd></button>
-              </div>
+              <div class="question-tools"><button type="button" class="btn ghost" id="btn-toggle-favorite" data-favorite-id="" data-shortcut-label="favorite"><span class="action-label">收藏</span><kbd class="shortcut-hint" data-shortcut-hint="favorite">F</kbd></button><button type="button" class="btn ghost" id="btn-single-note" data-shortcut-label="note"><svg class="ui-icon"><use href="#icon-note"></use></svg><span class="action-label">批注</span><kbd class="shortcut-hint" data-shortcut-hint="note">N</kbd></button><button type="button" class="btn ai-action" id="btn-single-ai" data-shortcut-label="ai"><svg class="ui-icon"><use href="#icon-spark"></use></svg><span class="action-label">AI 解答</span><kbd class="shortcut-hint" data-shortcut-hint="ai">A</kbd></button><button type="button" class="btn ghost" id="btn-copy-md" data-shortcut-label="copy" title="复制题目、答案与解析">复制题目和答案<kbd class="shortcut-hint" data-shortcut-hint="copy">C</kbd></button></div>
               <div class="mastery-row" id="single-mastery">
                 <span class="mastery-label">掌握程度</span>
                 <button type="button" class="chip" data-mastery="not_started" data-shortcut-label="mastery1">未开始<kbd class="shortcut-hint" data-shortcut-hint="mastery1">1</kbd></button>
@@ -341,6 +259,7 @@
                 </div>
               </div>
             </article>
+            <div class="practice-controls"><button type="button" class="btn" id="btn-prev" data-shortcut-label="up">上一题<kbd class="shortcut-hint" data-shortcut-hint="up">↑</kbd></button><button type="button" class="btn primary" id="btn-toggle-answer" data-shortcut-label="answer">显示答案<kbd class="shortcut-hint" data-shortcut-hint="answer">空格</kbd></button><button type="button" class="btn" id="btn-next" data-shortcut-label="down">下一题<kbd class="shortcut-hint" data-shortcut-hint="down">↓</kbd></button><button type="button" class="btn secondary focus-exit" id="btn-exit-focus" data-shortcut-label="focus">退出沉浸<kbd class="shortcut-hint" data-shortcut-hint="focus">F6</kbd></button></div>
             <div class="list-strip" id="list-strip" aria-label="题目跳转"></div>
           </div>
         </section>
@@ -357,8 +276,8 @@
   <aside class="ai-drawer" id="ai-drawer" aria-hidden="true" aria-labelledby="ai-drawer-title">
     <div class="ai-resize-handle" id="ai-resize-handle" role="separator" aria-orientation="vertical" aria-label="调整 AI 抽屉宽度" aria-valuemin="340" aria-valuemax="620" aria-valuenow="400" tabindex="0"></div>
     <div class="ai-drawer-head">
-      <div><p class="dialog-kicker">学习助手</p><h2 id="ai-drawer-title">AI 解答</h2><p class="ai-context-line" id="ai-context-line">先选择一道题</p></div>
-      <button type="button" class="icon-btn" id="btn-ai-close" aria-label="关闭 AI 解答"><svg class="ui-icon"><use href="#icon-close"></use></svg></button>
+      <div><p class="dialog-kicker">THINK IT THROUGH</p><h2 id="ai-drawer-title">AI 解答</h2><p class="ai-context-line" id="ai-context-line">先选择一道题</p></div>
+      <button type="button" class="icon-btn" id="btn-ai-close" aria-label="返回题目，关闭 AI 面板"><svg class="ui-icon"><use href="#icon-close"></use></svg></button>
     </div>
     <div class="ai-tabs" role="tablist"><button type="button" class="ai-tab active" id="ai-tab-chat" data-ai-tab="chat" role="tab" aria-selected="true">AI 解答</button><button type="button" class="ai-tab" id="ai-tab-note" data-ai-tab="note" role="tab" aria-selected="false">题目批注</button></div>
     <div class="ai-drawer-body">
@@ -408,9 +327,9 @@
       </div>
       <button type="button" class="icon-btn" data-close="dlg-welcome" aria-label="关闭"><svg class="ui-icon"><use href="#icon-close"></use></svg></button>
     </div>
-    <p class="sheet-lead">这是本地优先版本：题库和刷题进度由本机中控台保存，断网也能继续刷。只有同步时才会访问大观园 API。</p>
+    <p class="sheet-lead">本地大观园是非官方学习工具。本机部署时，题库与进度保存在本机；公开站点供预览，正式使用请下载到自己的电脑。</p>
     <ol class="tutorial-steps compact">
-      <li><span class="tutorial-step-no">1</span><div><strong>先刷题</strong><p>点击“从高等数学开始”，在题目卡片上展开答案并标记掌握状态。</p></div></li>
+      <li><span class="tutorial-step-no">1</span><div><strong>先刷题</strong><p>进入“题库”选择小节，先思考，再展开解析并标记掌握。</p></div></li>
       <li><span class="tutorial-step-no">2</span><div><strong>要换设备，再备份</strong><p>打开“进度备份”下载 JSON；在另一台设备选择文件即可恢复。</p></div></li>
       <li><span class="tutorial-step-no">3</span><div><strong>要和官网互通，再同步</strong><p>点击“同步进度”开始首次配置，输入一次大观园登录码，之后每次先检查再确认。</p></div></li>
     </ol>
@@ -449,7 +368,7 @@
       </div>
       <button type="button" class="icon-btn" data-close="dlg-tutorial" aria-label="关闭"><svg class="ui-icon"><use href="#icon-close"></use></svg></button>
     </div>
-    <p class="sheet-lead">日常只需要两个动作：双击启动脚本打开本地题库，刷完后按需点击“官网同步”。</p>
+    <p class="sheet-lead">日常只需要两个动作：运行本地程序打开题库，刷完后按需点击“官网同步”。</p>
     <ol class="tutorial-steps">
       <li>
         <span class="tutorial-step-no">1</span>
@@ -461,7 +380,7 @@
       </li>
       <li>
         <span class="tutorial-step-no">3</span>
-        <div><h3>备份或迁移进度</h3><p>打开侧栏“进度备份”→“下载备份”。换设备时在同一处选择 JSON 文件，写入前不会覆盖题库内容。</p></div>
+        <div><h3>备份或迁移进度</h3><p>打开“工具与设置 → 进度备份”→“下载备份”。换设备时在同一处选择 JSON 文件，写入前不会覆盖题库内容。</p></div>
       </li>
       <li>
         <span class="tutorial-step-no">4</span>
@@ -735,25 +654,27 @@
     <div class="sheet-head">
       <div>
         <p class="dialog-kicker">界面设置</p>
-        <h2>把本地题库调成你喜欢的样子</h2>
+        <h2>你的空间，你的偏好。</h2>
       </div>
       <button type="button" class="icon-btn" data-close="dlg-appearance" aria-label="关闭界面设置"><svg class="ui-icon"><use href="#icon-close"></use></svg></button>
     </div>
     <p class="sheet-lead">外观设置只保存在当前设备，不会进入官网同步包，也不会上传背景图片。</p>
+    <nav class="settings-tabs" aria-label="设置分类"><button type="button" class="active" data-settings-tab="appearance" aria-pressed="true">外观与阅读</button><button type="button" data-settings-tab="ai" aria-pressed="false">AI 服务</button><button type="button" data-settings-tab="shortcuts" aria-pressed="false">快捷键</button></nav>
+    <div data-settings-panel="appearance">
     <fieldset class="appearance-group">
       <legend>主题</legend>
       <div class="theme-choice-grid" role="listbox" aria-label="选择主题">
         <button type="button" class="theme-choice" data-theme-choice="official-light" role="option">
           <span class="theme-preview theme-preview-light" aria-hidden="true"><i></i><b></b><em></em></span>
-          <strong>官网浅色</strong><small>默认工作台</small>
+          <strong>纸白橙色</strong><small>默认工作台</small>
         </button>
         <button type="button" class="theme-choice" data-theme-choice="official-dark" role="option">
           <span class="theme-preview theme-preview-dark" aria-hidden="true"><i></i><b></b><em></em></span>
-          <strong>官网深色</strong><small>夜间刷题</small>
+          <strong>深色</strong><small>夜间刷题</small>
         </button>
         <button type="button" class="theme-choice" data-theme-choice="eye-care" role="option">
           <span class="theme-preview theme-preview-eye" aria-hidden="true"><i></i><b></b><em></em></span>
-          <strong>米黄色护眼</strong><small>当前护眼配色</small>
+          <strong>暖色护眼</strong><small>当前护眼配色</small>
         </button>
         <button type="button" class="theme-choice" data-theme-choice="custom" role="option">
           <span class="theme-preview theme-preview-custom" aria-hidden="true"><i></i><b></b><em></em></span>
@@ -763,13 +684,14 @@
     </fieldset>
     <div class="appearance-custom-grid">
       <label class="appearance-field" for="ui-bg-color"><span>背景颜色</span><input id="ui-bg-color" type="color" value="#f5f7fa" /></label>
-      <label class="appearance-field" for="ui-ai-user-color"><span>用户消息颜色 <small>默认蓝色, AI 消息保持黑色</small></span><input id="ui-ai-user-color" type="color" value="#356fe5" /></label>
-      <label class="appearance-field" for="ui-ai-compose-position"><span>AI 输入框位置 <small>选择输入框的停靠区域</small></span><select id="ui-ai-compose-position"><option value="drawer">AI 面板内（原来位置）</option><option value="left">左下角</option><option value="right">右侧下方（不贴底）</option></select></label>
+      <label class="appearance-field" for="ui-ai-user-color"><span>用户消息颜色 <small>可自定义，AI 消息跟随主题</small></span><input id="ui-ai-user-color" type="color" value="#356fe5" /></label>
       <label class="appearance-field appearance-file" for="ui-bg-image"><span>本地背景图片 <small>PNG / JPG / WEBP，最大 5MB</small></span><input id="ui-bg-image" type="file" accept="image/png,image/jpeg,image/webp" /></label>
       <label class="appearance-field" for="ui-bg-position"><span>图片位置</span><select id="ui-bg-position"><option value="center">居中</option><option value="top">顶部</option><option value="bottom">底部</option><option value="left">左侧</option><option value="right">右侧</option></select></label>
       <label class="appearance-field" for="ui-bg-overlay"><span>背景遮罩 <output id="ui-bg-overlay-value">78%</output></span><input id="ui-bg-overlay" type="range" min="0.55" max="0.95" step="0.01" value="0.78" /></label>
+      <label class="appearance-field" for="ui-ai-compose-position"><span>AI 输入框位置</span><select id="ui-ai-compose-position"><option value="drawer">AI 面板内</option><option value="left">左下角</option><option value="right">右侧下方</option></select></label>
     </div>
-    <section class="ai-settings-section" aria-labelledby="ai-settings-title">
+    </div>
+    <section data-settings-panel="ai" hidden class="ai-settings-section" aria-labelledby="ai-settings-title">
       <div class="ai-settings-heading"><div><p class="dialog-kicker">可选连接</p><h3 id="ai-settings-title">AI 服务档案</h3><p class="muted">支持 OpenAI 兼容接口。密钥只保存在本机 Node 配置，不进入进度导出。</p></div><button type="button" class="btn primary" id="btn-ai-add-profile">添加服务</button></div>
       <div class="ai-profile-list" id="ai-profile-list"><div class="empty-state compact"><p>尚未配置 AI 服务。</p></div></div>
       <form class="ai-profile-form hidden" id="ai-profile-form">
@@ -779,15 +701,15 @@
         <div class="ai-test-result" id="ai-test-result" role="status" aria-live="polite"></div>
       </form>
     </section>
-    <section class="shortcut-settings" aria-labelledby="shortcut-settings-title">
+    <section data-settings-panel="shortcuts" hidden class="shortcut-settings" aria-labelledby="shortcut-settings-title">
       <div class="ai-settings-heading"><div><p class="dialog-kicker">沉浸操作</p><h3 id="shortcut-settings-title">沉浸模式快捷键</h3><p class="muted">点击按键后直接按下新键。输入框、批注和 AI 对话中会自动停用题目快捷键。</p></div><button type="button" class="btn ghost" id="btn-shortcuts-reset">恢复默认</button></div>
       <div id="shortcut-list" class="shortcut-list"></div>
       <p class="setup-feedback" id="shortcut-feedback" role="status" aria-live="polite"></p>
     </section>
     <div class="appearance-status" id="ui-theme-feedback" role="status" aria-live="polite"></div>
     <div class="sheet-actions">
-      <button type="button" class="btn" id="btn-appearance-reset">恢复官网默认</button>
-      <button type="button" class="btn ghost" id="btn-appearance-eye">恢复米黄色护眼</button>
+      <button type="button" class="btn" id="btn-appearance-reset">恢复纸白默认</button>
+      <button type="button" class="btn ghost" id="btn-appearance-eye">恢复暖色护眼</button>
       <button type="button" class="btn primary" data-close="dlg-appearance">完成</button>
     </div>
   </dialog>
@@ -809,6 +731,6 @@
 
   <script defer src="./vendor/marked.min.js"></script>
   <script defer src="./vendor/katex.min.js"></script>
-    <script defer src="./app2.js?v=47"></script>
+    <script defer src="./app2.js?v=49"></script>
 </body>
 </html>

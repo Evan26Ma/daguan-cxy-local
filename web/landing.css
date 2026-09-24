@@ -1,6 +1,6 @@
 :root {
-  --paper: #fafaf7;
-  --ink: #191919;
+  --paper: var(--dg-paper);
+  --ink: var(--dg-ink);
   --muted: #62625d;
   --line: #dcdcd5;
   --orange: #eb5128;

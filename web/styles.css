@@ -3110,7 +3110,21 @@ body.focus-mode[data-view="browse"] #app.learning-shell .learning-shell__sidebar
   visibility: hidden !important;
 }
 
-/* ==== 详细筛选（参考 luna 多维筛选） ==== */
+/* Keep accessibility helpers and overlays out of the learning shell grid. */
+#app.learning-shell > .skip-link {
+  position: fixed;
+  z-index: 100;
+  top: .75rem;
+  left: .75rem;
+  width: auto;
+  height: auto;
+  padding: .65rem .85rem;
+  color: var(--color-foreground-inverse, #fff);
+  background: var(--color-foreground);
+  transform: translateY(-160%);
+}
+#app.learning-shell > .skip-link:focus { transform: none; }
+#app.learning-shell > .sidebar-backdrop { position: fixed; inset: 0; z-index: 29; }
 .adv-filter-btn { width: 100%; justify-content: center; margin-top: .45rem; min-height: 2.1rem; font-size: .8rem; }
 .adv-filter-btn.active { color: #fff; background: var(--color-brand); border-color: var(--color-brand); }
 .adv-filter-btn.active span::after { content: " •"; }
@@ -3146,3 +3160,43 @@ body.focus-mode[data-view="browse"] #app.learning-shell .learning-shell__sidebar
 .filter-count strong { color: var(--color-brand); font-size: 1.1rem; }
 /* 修复：选项卡内文字层拦截指针导致勾选串行（点 B 行勾到 A 行） */
 .filter-option span, .filter-option small, .filter-option .filter-opt-name { pointer-events: none; }
+
+/* The browse shell uses two columns only while its sidebar is visible. */
+@media (min-width: 64rem) {
+  body[data-view="browse"]:not(.focus-mode) #app.learning-shell {
+    display: grid !important;
+    grid-template-columns: var(--shell-sidebar-width) minmax(0, 1fr) !important;
+    grid-template-rows: minmax(100dvh, auto) !important;
+    align-items: stretch;
+  }
+  body[data-view="browse"]:not(.focus-mode) #app.learning-shell > .skip-link,
+  body[data-view="browse"]:not(.focus-mode) #app.learning-shell > .sidebar-backdrop {
+    position: fixed !important;
+    grid-column: auto !important;
+    grid-row: auto !important;
+  }
+  body[data-view="browse"]:not(.focus-mode) #app.learning-shell > .learning-shell__sidebar {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    width: auto !important;
+    min-width: 0 !important;
+  }
+  body[data-view="browse"]:not(.focus-mode) #app.learning-shell > .learning-shell__workspace {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    width: auto !important;
+    min-width: 0 !important;
+  }
+}
+
+body.focus-mode[data-view="browse"] #app.learning-shell {
+  display: block !important;
+  grid-template-columns: none !important;
+}
+body.focus-mode[data-view="browse"] #app.learning-shell > .learning-shell__workspace {
+  width: 100% !important;
+  min-width: 0;
+}
+body[data-view="browse"] #app.learning-shell .workspace-title {
+  display: none;
+}
