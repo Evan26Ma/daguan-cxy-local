@@ -3,130 +3,166 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>考研学习资源｜题库刷题与智能组卷 · 大观园</title>
-  <meta name="description" content="面向中国大陆考研用户，提供题库、真题刷题、错题复习、学习记录与智能组卷，更多考研内容持续建设中。" />
-  <link rel="icon" type="image/png" href="./assets/landing/daguan-curve-logo.png" />
-  <link rel="manifest" href="./manifest.webmanifest" />
-  <link rel="stylesheet" href="./landing.css?v=3" />
+  <meta name="theme-color" content="#FAFAF7" />
+  <title>本地大观园｜非官方数学学习工具</title>
+  <meta name="description" content="本地大观园是基于大观园题库的非官方本地学习工具。本站仅供功能预览，正式使用请下载到自己的电脑，在本地运行，独立保存学习进度。" />
+  <link rel="icon" type="image/svg+xml" href="./assets/landing/local-mark.svg" />
+  <link rel="stylesheet" href="./landing.css?v=5" />
+  <script defer src="./landing.js?v=3"></script>
 </head>
 <body>
-  <div class="landing-page">
-    <a class="skip-link" href="#landing-main-content">跳到主要内容</a>
+  <svg class="icon-definitions" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h15m-6-6 6 6-6 6" /></symbol>
+    <symbol id="i-up-right" viewBox="0 0 24 24"><path d="M5 19 19 5M5 5h14v14" /></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24"><path d="M12 5v16M3 4h5a4 4 0 0 1 4 3 4 4 0 0 1 4-3h5v15h-5a4 4 0 0 0-4 2 4 4 0 0 0-4-2H3Z" /></symbol>
+    <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 3 2.8 5.6 6.2.9-4.5 4.4 1.1 6.2-5.6-2.9-5.6 2.9 1.1-6.2L3 9.5l6.2-.9Z" /></symbol>
+    <symbol id="i-repeat" viewBox="0 0 24 24"><path d="M20 7H7a4 4 0 0 0-4 4m14-8 4 4-4 4M4 17h13a4 4 0 0 0 4-4m-14 8-4-4 4-4" /></symbol>
+    <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 3v17h17M8 15l4-5 4 2 5-7" /></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6" /></symbol>
+    <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 6h7l2 3h9v11H3ZM3 6V4h7l2 3h7v2" /></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 8h16M4 16h16" /></symbol>
+  </svg>
+  <a class="skip-link" href="#main">跳到主要内容</a>
 
-    <header class="museum-nav" aria-label="首页导航">
-      <a class="nav-brand" href="./landing.html" aria-label="大观园 研学资源知识库">
-        <img class="nav-brand-mark" src="./assets/landing/daguan-curve-logo.png" alt="" width="64" height="64" />
-        <span class="nav-brand-title">大观园</span>
-        <span class="nav-brand-sub">研学资源知识库</span>
+  <header class="site-header">
+    <div class="header-inner wrap">
+      <a class="brand" href="./landing.html" aria-label="本地大观园首页">
+        <img src="./assets/landing/local-mark.svg" alt="" width="38" height="38" />
+        <span class="brand-name">本地大观园</span>
+        <span class="edition">非官方增强版</span>
       </a>
-      <nav class="nav-links" aria-label="页面章节">
-        <button type="button" class="nav-link is-active" data-target="hero" aria-current="location">首页</button>
-        <button type="button" class="nav-link" data-target="resources">资源中心</button>
-        <button type="button" class="nav-link" data-target="follow">关注我们</button>
+      <button class="menu-toggle" type="button" aria-label="打开导航" aria-expanded="false" aria-controls="site-nav"><svg class="icon"><use href="#i-menu" /></svg></button>
+      <nav class="site-nav" id="site-nav" aria-label="主导航">
+        <a href="#experience">功能体验</a>
+        <a href="#start">使用指南</a>
+        <a class="nav-cta" href="./index.html?entry=resume">预览题库 <svg class="icon"><use href="#i-up-right" /></svg></a>
       </nav>
-      <div class="nav-progress" aria-label="页面进度：第 01 节，共 3 节，首页">
-        <span id="nav-progress-index" aria-current="step">01</span><span></span><span aria-hidden="true"></span><span aria-hidden="true"></span>
+    </div>
+  </header>
+
+  <aside class="preview-notice" aria-label="网站预览说明">
+    <div class="preview-notice-inner wrap">
+      <span class="preview-badge">在线预览</span>
+      <p><strong>本站仅供功能预览。</strong>正式使用请下载到自己的电脑，在本地运行并保存学习进度。</p>
+      <a href="#start">如何下载 <svg class="icon"><use href="#i-arrow" /></svg></a>
+    </div>
+  </aside>
+
+  <main id="main" tabindex="-1">
+    <section class="hero wrap" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <div class="eyebrow"><span class="small-square"></span> LOCAL DAGUAN <span class="eyebrow-divider">/</span> 数学，自有天地</div>
+        <h1 id="hero-title">一道题。<br /><span>一个突破。</span></h1>
+        <p class="hero-description">把专注留给思考，把进步留在这里。<br />基于大观园题库的非官方本地学习工具，<br class="desktop-break" />让章节练习、错题复习和学习记录更顺手。</p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="https://github.com/Evan26Ma/daguan-cxy-local/releases/latest/download/DaguanMath-windows-x64.exe">下载 Windows 版 <svg class="icon"><use href="#i-download" /></svg></a>
+          <a class="button button-outline" href="./index.html?entry=resume">预览题库 <svg class="icon"><use href="#i-up-right" /></svg></a>
+        </div>
+        <p class="hero-note">非官方客户端 · 题库内容及相关权利归原权利人所有</p>
       </div>
-    </header>
-
-    <main id="landing-main-content" tabindex="-1">
-      <section id="hero" class="hero-section">
-        <div class="hero-inner">
-          <div class="hero-copy">
-            <h1 class="hero-title">大观园</h1>
-            <p class="hero-deck">系统知识 · 优质资源 · 研途相伴</p>
-            <div class="hero-actions">
-              <a class="hero-primary-btn" href="./index.html">开始学习
-                <svg xmlns="http://www.w3.org/2000/svg" width="27" height="27" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l14 0"></path><path d="M13 6l6 6"></path><path d="M13 18l6 -6"></path></svg>
-              </a>
-              <button type="button" class="hero-secondary-btn" id="btn-view-resources">查看资源
-                <svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l14 0"></path><path d="M13 6l6 6"></path><path d="M13 18l6 -6"></path></svg>
-              </button>
-            </div>
-          </div>
-          <div class="geometry">
-            <div class="geometry-scene" aria-hidden="true">
-              <img class="geometry-fallback is-animated" src="./assets/landing/landing-book-particles.jpg" alt="" />
-            </div>
-            <button type="button" class="motion-toggle" id="btn-motion-toggle" aria-label="暂停书页动画">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5.5v13M18 5.5v13"></path></svg>
-            </button>
-          </div>
-        </div>
-      </section>
-
-      <section id="resources" class="resource-section" aria-labelledby="resource-heading">
-        <h2 id="resource-heading" class="sr-only">研学资源中心</h2>
-        <div class="resource-navigator" aria-label="学科资源导航" aria-roledescription="轮播">
-          <div class="resource-map">
-            <svg class="map-lines" viewBox="0 0 1200 300" preserveAspectRatio="none" fill="none" aria-hidden="true">
-              <path d="M25 180C190 30 380 125 340 200S355 247 390 254M810 254C900 95 1000 110 1175 175" stroke="currentColor" stroke-width="1"></path>
-              <ellipse cx="600" cy="265" rx="210" ry="28" stroke="currentColor" opacity="0.18"></ellipse>
-              <ellipse cx="600" cy="265" rx="244" ry="42" stroke="currentColor" opacity="0.09"></ellipse>
-              <circle cx="340" cy="200" r="4" fill="currentColor"></circle>
-              <circle cx="834" cy="159" r="4" fill="currentColor"></circle>
-            </svg>
-            <!-- 学科节点由 landing.js 渲染 -->
-            <noscript><p style="text-align:center;padding-top:120px;color:#68768d">考研数学题库入口已开放，请启用 JavaScript 或直接点击“开始学习”。</p></noscript>
-          </div>
-          <div class="resource-controls">
-            <button type="button" class="switch-arrow" id="btn-subject-prev" aria-label="上一个学科">
-              <svg xmlns="http://www.w3.org/2000/svg" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l14 0"></path><path d="M5 12l6 6"></path><path d="M5 12l6 -6"></path></svg>
-            </button>
-            <div class="subject-tabs" role="tablist" aria-label="选择学科" id="subject-tabs"></div>
-            <button type="button" class="switch-arrow" id="btn-subject-next" aria-label="下一个学科">
-              <svg xmlns="http://www.w3.org/2000/svg" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l14 0"></path><path d="M13 6l6 6"></path><path d="M13 18l6 -6"></path></svg>
-            </button>
-          </div>
-          <p class="sr-only" role="status" id="subject-live">当前学科：考研数学，开放</p>
-        </div>
-      </section>
-
-      <section id="follow" class="wechat-section" aria-labelledby="follow-heading">
-        <div class="section-block">
-          <div class="section-block-head">
-            <p class="section-kicker">Follow Us</p>
-            <div class="wechat-title-row">
-              <h2 id="follow-heading" class="section-title">关注获取更多</h2>
-              <p class="section-desc">扫码关注微信公众号或服务号，获取更新通知与独家内容</p>
-            </div>
-          </div>
-          <div class="wechat-grid">
-            <div class="wechat-card">
-              <div class="wechat-info">
-                <span class="wechat-index">01</span>
-                <h3>微信公众号</h3>
-                <p>定期推送考研干货与资源</p>
-              </div>
-              <img src="./assets/landing/wechat_qrcode.png" alt="微信公众号" class="wechat-qrcode" />
-            </div>
-            <div class="wechat-card">
-              <div class="wechat-info">
-                <span class="wechat-index">02</span>
-                <h3>微信服务号</h3>
-                <p>获取大观园更多功能</p>
-              </div>
-              <img src="./assets/landing/wechat_qrcode.png" alt="微信服务号" class="wechat-qrcode" />
-            </div>
-            <div class="wechat-card">
-              <div class="wechat-info">
-                <span class="wechat-index">03</span>
-                <h3>B 站首页</h3>
-                <p><a class="wechat-description-link" href="https://www.bilibili.com/" target="_blank" rel="noreferrer">去 B 站看看更多内容</a></p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-    </main>
-
-    <footer class="footer">
-      <div class="footer-inner">
-        <span class="footer-brand-sub">© 大观园 · <a href="https://beian.miit.gov.cn/" target="_blank" rel="noreferrer" class="footer-icp-link">ICP备案</a> · <a href="https://www.beian.gov.cn/" target="_blank" rel="noreferrer" class="footer-icp-link">晋公网安备14102102000454号</a></span>
+      <div class="hero-art">
+        <div class="art-topline"><span>THE ART OF UNDERSTANDING</span><span>FIG. 01</span></div>
+        <img class="math-art" src="./assets/landing/math-surface.svg" alt="橙色坐标空间中的数学曲面线稿" width="580" height="480" fetchpriority="high" />
+        <div class="art-caption"><span>把抽象，变成理解。</span><span class="art-formula" aria-hidden="true">f(x, y) ↗</span></div>
+        <a class="art-sticker" href="#experience"><span class="sticker-dot"></span> 为专注而做 <svg class="icon"><use href="#i-arrow" /></svg></a>
       </div>
-    </footer>
-  </div>
+    </section>
 
-  <script defer src="./landing.js?v=2"></script>
+    <div class="principles wrap" aria-label="本地版特点">
+      <span><svg class="icon"><use href="#i-book" /></svg> 专注考研数学</span>
+      <span><svg class="icon"><use href="#i-folder" /></svg> 本机部署 · 本机保存</span>
+      <span><svg class="icon"><use href="#i-repeat" /></svg> 官网同步 · 按需开启</span>
+      <a href="https://github.com/Evan26Ma/daguan-cxy-local" target="_blank" rel="noopener noreferrer">开源项目 <svg class="icon"><use href="#i-up-right" /></svg></a>
+    </div>
+
+    <section class="experience section wrap" id="experience" aria-labelledby="experience-title">
+      <div class="section-heading">
+        <div><p class="eyebrow section-index">01 / 看见学习的另一种可能</p><h2 id="experience-title">顺手，才能更投入。</h2></div>
+        <p class="section-intro">从独立作答，到重新掌握。<br />让每一步，都围绕一道题展开。</p>
+      </div>
+      <div class="demo-tabs" role="tablist" aria-label="产品功能演示" hidden>
+        <button type="button" role="tab" id="tab-practice" aria-selected="true" aria-controls="panel-practice" tabindex="0" data-demo="practice"><span>01</span> 专注刷题</button>
+        <button type="button" role="tab" id="tab-review" aria-selected="false" aria-controls="panel-review" tabindex="-1" data-demo="review"><span>02</span> 错题复习</button>
+        <button type="button" role="tab" id="tab-records" aria-selected="false" aria-controls="panel-records" tabindex="-1" data-demo="records"><span>03</span> 学习记录</button>
+      </div>
+      <div class="product-frame">
+        <div class="frame-bar"><span class="window-dots" aria-hidden="true"><i></i><i></i><i></i></span><span>本地大观园 <span class="frame-separator">/</span> 你的数学学习空间</span><span class="demo-label">功能示意</span></div>
+        <div class="product-body">
+          <aside class="demo-sidebar" aria-label="演示界面的功能说明">
+            <span class="demo-sidebar-brand"><img src="./assets/landing/local-mark.svg" width="25" height="25" alt="" /> 本地大观园</span>
+            <span class="sidebar-caption">学习空间</span>
+            <span class="demo-nav is-current" data-demo-nav="practice"><svg class="icon"><use href="#i-book" /></svg> 章节练习</span>
+            <span class="demo-nav" data-demo-nav="review"><svg class="icon"><use href="#i-repeat" /></svg> 错题复测</span>
+            <span class="demo-nav" data-demo-nav="records"><svg class="icon"><use href="#i-chart" /></svg> 学习记录</span>
+            <span class="demo-nav"><svg class="icon"><use href="#i-star" /></svg> 收藏本</span>
+            <div class="sidebar-bottom"><span class="small-square"></span> 少一点干扰<br /><span>多一点心无旁骛</span></div>
+          </aside>
+          <div class="demo-content">
+            <section id="panel-practice" role="tabpanel" aria-labelledby="tab-practice" tabindex="0" class="demo-panel">
+              <div class="panel-topline"><span>高等数学 <span>/</span> 定积分</span><span class="status-pill">示例题目</span></div>
+              <div class="question-heading"><span class="question-number">01</span><div><span class="question-tag">先思考，再看解析</span><h3>把每一步，想明白。</h3></div><svg class="icon question-star" aria-hidden="true"><use href="#i-star" /></svg></div>
+              <div class="demo-question"><p>计算下列定积分：</p><math display="block" aria-label="零到一的 x 乘以一减 x 的定积分"><mrow><msubsup><mo>∫</mo><mn>0</mn><mn>1</mn></msubsup><mi>x</mi><mo>(</mo><mn>1</mn><mo>−</mo><mi>x</mi><mo>)</mo><mspace width="0.2em" /><mi mathvariant="normal">d</mi><mi>x</mi></mrow></math></div>
+              <div class="demo-answer" id="demo-answer" hidden><strong>展开，再逐项积分。</strong><math display="block" aria-label="二分之一减去三分之一等于六分之一"><mrow><msubsup><mrow><mo>[</mo><mfrac><msup><mi>x</mi><mn>2</mn></msup><mn>2</mn></mfrac><mo>−</mo><mfrac><msup><mi>x</mi><mn>3</mn></msup><mn>3</mn></mfrac><mo>]</mo></mrow><mn>0</mn><mn>1</mn></msubsup><mo>=</mo><mfrac><mn>1</mn><mn>2</mn></mfrac><mo>−</mo><mfrac><mn>1</mn><mn>3</mn></mfrac><mo>=</mo><mfrac><mn>1</mn><mn>6</mn></mfrac></mrow></math></div>
+              <div class="demo-actions"><button class="button button-ink button-small" id="demo-answer-toggle" type="button" aria-expanded="false" aria-controls="demo-answer" hidden>试着展开解析 <span aria-hidden="true">＋</span></button><a class="text-link" href="./index.html?entry=chapters">去题库练一题 <svg class="icon"><use href="#i-arrow" /></svg></a></div>
+            </section>
+            <section id="panel-review" role="tabpanel" aria-labelledby="tab-review" tabindex="0" class="demo-panel" hidden>
+              <div class="panel-topline"><span>复习空间 <span>/</span> 错题复测</span><span class="status-pill">功能示意</span></div>
+              <h3 class="panel-title">卡住的地方，<br />就是下一次突破的起点。</h3>
+              <p class="panel-description">将题目标记为“易错”，集中重做，再更新掌握状态。</p>
+              <div class="review-example"><span class="review-symbol" aria-hidden="true">∫</span><div><strong>定积分 · 再想一遍</strong><span>独立作答 → 对照解析 → 标记掌握</span></div><span class="error-label">易错示意</span></div>
+              <div class="review-stages" aria-label="可标记的学习状态"><span>未开始</span><svg class="icon"><use href="#i-arrow" /></svg><span>学习中</span><svg class="icon"><use href="#i-arrow" /></svg><span>已掌握</span></div>
+              <a class="text-link" href="./index.html?entry=retest">打开我的错题本 <svg class="icon"><use href="#i-arrow" /></svg></a>
+            </section>
+            <section id="panel-records" role="tabpanel" aria-labelledby="tab-records" tabindex="0" class="demo-panel" hidden>
+              <div class="panel-topline"><span>学习空间 <span>/</span> 学习记录</span><span class="status-pill">功能示意</span></div>
+              <h3 class="panel-title">走过的每一步，<br />都为下一步留下线索。</h3>
+              <p class="panel-description">在学习区回看作答记录，在掌握地图找到需要多练的章节。</p>
+              <div class="record-flow"><div><svg class="icon"><use href="#i-book" /></svg><strong>作答</strong><span>积累学习记录</span></div><span class="flow-line" aria-hidden="true"></span><div><svg class="icon"><use href="#i-chart" /></svg><strong>回看</strong><span>梳理掌握情况</span></div><span class="flow-line" aria-hidden="true"></span><div><svg class="icon"><use href="#i-repeat" /></svg><strong>再练</strong><span>巩固薄弱章节</span></div></div>
+              <a class="text-link" href="./index.html?entry=learning-records">查看我的学习记录 <svg class="icon"><use href="#i-arrow" /></svg></a>
+            </section>
+          </div>
+        </div>
+      </div>
+      <p class="demo-footnote"><span>在线功能示意，不读取个人学习数据；正式使用请下载本地版。</span><a href="./index.html?entry=resume">预览学习空间 <svg class="icon"><use href="#i-up-right" /></svg></a></p>
+    </section>
+
+    <section class="features section wrap" id="features" aria-labelledby="features-title">
+      <p class="eyebrow section-index">02 / 为认真学习，做一点改变</p>
+      <h2 id="features-title" class="features-title">工具退后一步。<br /><span>思考向前一步。</span></h2>
+      <div class="feature-row">
+        <div class="feature-copy"><span class="feature-number">01 — FOCUS</span><h3>把注意力，还给题目。</h3><p>按章节循序渐进，也可以进入单题沉浸模式。切题、看解析、标记掌握，几个快捷键就能完成，让思路连贯下去。</p><a class="text-link" href="./index.html?entry=chapters">选择一个章节 <svg class="icon"><use href="#i-arrow" /></svg></a></div>
+        <div class="shortcut-art" aria-label="沉浸模式快捷键：空格看解析，上下方向键切题，F 收藏"><span class="art-small-label">KEEP YOUR FLOW.</span><div class="key-composition"><div class="key-pair"><kbd>↑</kbd><kbd>↓</kbd><span>切题</span></div><div class="space-key"><kbd>space<span>看解析</span></kbd></div><div class="key-pair favorite-key"><kbd>F</kbd><span>收藏</span></div></div><p>手不离键盘，思路不中断。</p></div>
+      </div>
+      <div class="feature-row feature-row-reverse">
+        <div class="review-art" aria-hidden="true"><div class="note-sheet"><span class="art-small-label">A SECOND LOOK.</span><p>不会的题，<br /><span>有处可回。</span></p><div class="note-line"></div><span class="note-formula">∫ f(x) dx</span><div class="note-check"><svg class="icon"><use href="#i-check" /></svg> 这一次，想明白了。</div></div><svg class="review-art-star" viewBox="0 0 80 80"><path d="M40 0v80M0 40h80M12 12l56 56M12 68l56-56" fill="none" stroke="currentColor" stroke-width="10" /></svg></div>
+        <div class="feature-copy"><span class="feature-number">02 — REVIEW</span><h3>每次回头，都向前一点。</h3><p>值得再想的题，放进收藏；容易出错的题，留待复测。配合掌握地图回看薄弱章节，把“好像会了”变成真正理解。</p><div class="inline-links"><a class="text-link" href="./index.html?entry=retest">错题复测 <svg class="icon"><use href="#i-arrow" /></svg></a><a class="text-link" href="./index.html?entry=favorites">我的收藏 <svg class="icon"><use href="#i-arrow" /></svg></a></div></div>
+      </div>
+    </section>
+
+    <section class="local-section" aria-labelledby="local-title">
+      <div class="local-inner wrap">
+        <div class="local-copy"><p class="eyebrow">03 — YOUR OWN SPACE</p><h2 id="local-title">自己的节奏。<br /><span>自己的学习空间。</span></h2><p>在自己的电脑上运行，进度留在本机。<br />需要时再备份、同步，或接入自己的 AI 服务。</p><a class="button button-light" href="./index.html?entry=tools">打开工具区 <svg class="icon"><use href="#i-up-right" /></svg></a></div>
+        <div class="local-details">
+          <a href="./index.html?entry=backup"><span class="detail-index">01</span><div><h3>进度，留一份备份。</h3><p>导出本地进度，给自己的学习积累留底。</p></div><svg class="icon"><use href="#i-up-right" /></svg></a>
+          <a href="./index.html?entry=sync-guide"><span class="detail-index">02</span><div><h3>同步，按自己的需要。</h3><p>官网同步可选开启，看清变化，确认后再同步。</p></div><svg class="icon"><use href="#i-up-right" /></svg></a>
+          <a href="./index.html?entry=ai-settings"><span class="detail-index">03</span><div><h3>解题，多一个思考角度。</h3><p>自行配置 AI 服务，从具体题目开始提问。</p></div><svg class="icon"><use href="#i-up-right" /></svg></a>
+          <p class="deployment-note">本机部署时，学习数据保存在本机。远程部署的数据保存在相应服务器；公开预览中的个人功能需解锁后使用。AI 与官网同步需要网络及相应配置。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="start-section section wrap" id="start" aria-labelledby="start-title">
+      <div class="section-heading"><div><p class="eyebrow section-index">04 / 从这里开始</p><h2 id="start-title">喜欢这里？<br />下载到本地开始。</h2></div><a class="text-link" href="https://github.com/Evan26Ma/daguan-cxy-local/blob/codex/daguan-math-local-sync/docs/Windows新手安装与配置.md" target="_blank" rel="noopener noreferrer">查看完整安装指南 <svg class="icon"><use href="#i-up-right" /></svg></a></div>
+      <ol class="start-steps"><li><span>01</span><h3>下载到电脑</h3><p>选择 Windows x64 单文件版，<br />无需安装 Node.js。</p></li><li><span>02</span><h3>双击，打开</h3><p>运行 EXE，保持运行窗口开启，<br />浏览器会自动进入题库。</p></li><li><span>03</span><h3>从一道题出发</h3><p>选一个章节开始练习。<br />同步与 AI，都可以稍后再配置。</p></li></ol>
+      <div class="start-cta"><div><span class="eyebrow">LESS DISTRACTION. MORE UNDERSTANDING.</span><h3>下一道，从这里开始。<svg class="cta-star" viewBox="0 0 48 48" aria-hidden="true"><path d="M24 0v48M0 24h48M7 7l34 34M7 41 41 7" /></svg></h3></div><div class="start-actions"><a class="button button-ink" href="https://github.com/Evan26Ma/daguan-cxy-local/releases/latest/download/DaguanMath-windows-x64.exe">下载 Windows x64 <svg class="icon"><use href="#i-download" /></svg></a><a class="download-link" href="./index.html?entry=resume">先预览题库 <svg class="icon"><use href="#i-up-right" /></svg></a></div></div>
+    </section>
+  </main>
+
+  <footer class="site-footer wrap">
+    <div class="footer-top"><div class="footer-brand"><a class="brand" href="./landing.html"><img src="./assets/landing/local-mark.svg" alt="" width="32" height="32" /><span class="brand-name">本地大观园</span></a><p>非官方本地增强版 · 专注数学学习</p></div><nav aria-label="项目相关链接"><a href="https://github.com/Evan26Ma/daguan-cxy-local" target="_blank" rel="noopener noreferrer">GitHub <svg class="icon"><use href="#i-up-right" /></svg></a><a href="./index.html?entry=tutorial">使用教程</a><a href="https://space.bilibili.com/6536560" target="_blank" rel="noopener noreferrer">致谢原作者 <svg class="icon"><use href="#i-up-right" /></svg></a></nav></div>
+    <p class="project-note">本站仅供功能预览，正式使用请自行下载并在本地运行。本项目不是大观园官方客户端，不替代官网账号体系与官方服务。感谢澄潇宇（帕拉迪宇）对“大观”系列的整理与分享，题库内容及相关权利归原权利人所有。</p>
+    <div class="footer-bottom"><span>本地大观园 / LOCAL DAGUAN</span><div><a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">ICP备案</a><a href="https://www.beian.gov.cn/" target="_blank" rel="noopener noreferrer">晋公网安备14102102000454号</a></div><a href="#main">回到顶部 ↑</a></div>
+  </footer>
 </body>
 </html>

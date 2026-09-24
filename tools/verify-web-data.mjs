@@ -10,6 +10,11 @@ const data = join(web, "data");
 
 const required = [
   "index.html",
+  "landing.html",
+  "landing.css",
+  "landing.js",
+  "assets/landing/local-mark.svg",
+  "assets/landing/math-surface.svg",
   "styles.css",
   "app2.js",
   "manifest.webmanifest",
@@ -54,11 +59,18 @@ for (const meta of Object.values(manifest.shards || {})) {
 if (questionCount !== manifest.total) {
   throw new Error(`题目总量不一致: manifest=${manifest.total}, actual=${questionCount}`);
 }
-const html = await readFile(join(web, "index.html"), "utf8");
-if (/src=["']https?:\/\//i.test(html) || /href=["']https?:\/\//i.test(html)) {
-  throw new Error("index.html 仍包含外部脚本或样式");
+for (const file of ["index.html", "landing.html"]) {
+  const html = await readFile(join(web, file), "utf8");
+  // 导航和下载外链不影响离线加载；页面依赖仍须保存在本地。
+  for (const tag of html.matchAll(/<(?:script|link|img|source|video|audio|iframe|embed|object)\b[^>]*>/gi)) {
+    for (const attribute of tag[0].matchAll(/\b(?:src|href|srcset|poster|data)\s*=\s*["']([^"']*)["']/gi)) {
+      if (/(?:https?:)?\/\//i.test(attribute[1])) {
+        throw new Error(`${file} 仍包含外部加载资源`);
+      }
+    }
+  }
 }
-for (const file of ["app2.js", "styles.css", "manifest.webmanifest", "service-worker.js"]) {
+for (const file of ["app2.js", "styles.css", "landing.js", "landing.css", "manifest.webmanifest", "service-worker.js"]) {
   const text = await readFile(join(web, file), "utf8");
   if (/https?:\/\//i.test(text)) {
     throw new Error(`${file} 仍包含外部 URL`);

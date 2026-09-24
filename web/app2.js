@@ -2,7 +2,7 @@
   "use strict";
 
   if ("serviceWorker" in navigator && location.protocol !== "file:") {
-    navigator.serviceWorker.register("./service-worker.js?v=71").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=73").catch(() => {});
   }
 
   const DATA = "./data";
@@ -252,6 +252,8 @@
       renderHome();
       refreshPickUI();
       toast("个人功能已解锁");
+      const entry = pendingLandingEntry;
+      if (entry && getLandingEntry() === entry) await openLandingEntry(entry);
     } catch (error) {
       if (status) status.textContent = error.message || "验证失败，请重试。";
     }
@@ -5262,7 +5264,48 @@
     loadAiProfiles();
   }
 
+  function getLandingEntry(search = location.search) {
+    const params = new URLSearchParams(search);
+    if (!params.has("entry")) return null;
+    const entry = params.get("entry");
+    return ["resume", "chapters", "favorites", "retest", "mastery", "learning-records", "tools", "backup", "sync-guide", "ai-settings", "tutorial"].includes(entry) ? entry : "home";
+  }
+
+  let pendingLandingEntry = null;
+
+  async function openLandingEntry(entry) {
+    pendingLandingEntry = null;
+    goHome();
+    const privateEntry = ["favorites", "retest", "mastery", "learning-records", "backup", "ai-settings"].includes(entry);
+    if (privateEntry && !previewPrivateAllowed(false)) {
+      pendingLandingEntry = entry;
+      openPreviewAccess();
+      return;
+    }
+    if (entry === "resume" || entry === "chapters") {
+      if (entry === "resume" && await resumeSavedLearningPosition()) return;
+      state.crumb = "选择一个小节";
+      setView("browse");
+      applyMode("list");
+      openChapterMenu();
+      return;
+    }
+    if (["favorites", "retest", "mastery", "learning-records", "tools"].includes(entry)) {
+      openFeaturePage(entry);
+    } else if (entry === "backup") {
+      refreshSyncStats();
+      openSheet("dlg-sync");
+    } else if (entry === "sync-guide") {
+      openSheet("dlg-sync-guide");
+    } else if (entry === "ai-settings") {
+      openAiSettings();
+    } else if (entry === "tutorial") {
+      openSheet("dlg-tutorial");
+    }
+  }
+
   async function init() {
+    const landingEntry = getLandingEntry();
     checkRuntimeVersion();
     applyUiPreferences();
     loadUiBackground();
@@ -5284,16 +5327,20 @@
       renderHome();
       refreshHomeSyncCard();
       setView("home");
-      restoreLearningPosition();
+      if (landingEntry === null) restoreLearningPosition();
       refreshPickUI();
-      if (!localStorage.getItem(TUTORIAL_SEEN_KEY)) {
+      if (landingEntry === null && !localStorage.getItem(TUTORIAL_SEEN_KEY)) {
         openSheet("dlg-welcome");
       }
-      // 进度和 IndexedDB 状态不阻塞首屏；加载完成后只刷新受影响的首页区域。
-      Promise.allSettled([hydrated, serverHydrated]).then(() => {
+      // 首页直达需要完整进度；普通首屏仍不等待 IndexedDB 和服务端状态。
+      Promise.allSettled([hydrated, serverHydrated]).then(async () => {
         refreshHomeSyncCard();
         if (state.view === "home") renderHome();
         refreshPickUI();
+        if (landingEntry !== null) await openLandingEntry(landingEntry);
+      }).catch(() => {
+        goHome();
+        toast("暂时无法打开这个入口，请从学习区重试。");
       });
     } catch (err) {
       console.error(err);
