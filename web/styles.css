@@ -1086,6 +1086,7 @@ summary:focus-visible {
   font-weight: 650;
   text-decoration: none;
 }
+.answer-video-links { display: grid; gap: 0.35rem; }
 .answer-video-link:hover { text-decoration: underline; }
 .answer-video-link:focus-visible { outline: 2px solid var(--brand); outline-offset: 3px; }
 

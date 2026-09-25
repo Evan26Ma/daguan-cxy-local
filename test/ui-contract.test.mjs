@@ -6,6 +6,9 @@ const html = fs.readFileSync(new URL("../web/index.html", import.meta.url), "utf
 const app = fs.readFileSync(new URL("../web/app2.js", import.meta.url), "utf8");
 const css = fs.readFileSync(new URL("../web/styles.css", import.meta.url), "utf8");
 const server = fs.readFileSync(new URL("../local-server/server.mjs", import.meta.url), "utf8");
+const lectureVideos = JSON.parse(fs.readFileSync(new URL("../web/data/lecture-video-mappings.json", import.meta.url), "utf8"));
+const unmatchedLectureVideos = JSON.parse(fs.readFileSync(new URL("../web/data/lecture-video-unmatched-audit.json", import.meta.url), "utf8"));
+const questionIdIndex = JSON.parse(fs.readFileSync(new URL("../web/data/id_index.json", import.meta.url), "utf8"));
 
 test("工具区拥有独立选中态和清晰的同步入口", () => {
   assert.match(app, /const toolsWorkspace = name === "feature" && state\.feature === "tools"/);
@@ -89,10 +92,37 @@ test("首屏不阻塞加载题库索引", () => {
 
 test("Service Worker 不预缓存首屏之外的大型索引和字体", () => {
   const sw = fs.readFileSync(new URL("../web/service-worker.js", import.meta.url), "utf8");
-  assert.match(sw, /daguan-shell-v76/);
-  assert.match(app, /service-worker\.js\?v=73/);
+  assert.match(sw, /daguan-shell-v77/);
+  assert.match(app, /service-worker\.js\?v=74/);
   assert.doesNotMatch(sw, /data\/(category_questions|id_index|search_index)\.json/);
   assert.doesNotMatch(sw, /vendor\/fonts\//);
+});
+
+test("讲解视频映射覆盖两位新老师且只保留前端需要的字段", () => {
+  const entries = Object.values(lectureVideos.questions).flat();
+  const teachers = new Set(entries.map((entry) => entry.teacher));
+  assert.equal(entries.length, 1172);
+  assert.deepEqual([...teachers].sort(), ["李艳芳", "没咋了"].sort());
+  assert.equal(Object.keys(lectureVideos.questions).length, 897);
+  for (const [id, videos] of Object.entries(lectureVideos.questions)) {
+    assert.ok(Object.hasOwn(questionIdIndex, id), `unknown question ID ${id}`);
+    assert.ok(Array.isArray(videos) && videos.length > 0);
+    for (const entry of videos) {
+      assert.ok(Number.isInteger(entry.page) && entry.page > 0);
+      assert.ok(Number.isFinite(entry.startSeconds) && entry.startSeconds >= 0);
+      assert.ok(entry.bvid.startsWith("BV"));
+      assert.doesNotMatch(JSON.stringify(entry), /evidence|confidence/);
+    }
+  }
+  assert.ok(lectureVideos.questions["157"].length > 1, "a question can have multiple lecture links");
+  assert.match(app, /data\/lecture-video-mappings\.json/);
+  assert.match(app, /videoTeachers\.some\(\(teacher\) => videoTeacherMatches/);
+  assert.match(app, /\{ name: "李艳芳讲过"/);
+  assert.match(app, /\{ name: "没咋了讲过"/);
+  const sw = fs.readFileSync(new URL("../web/service-worker.js", import.meta.url), "utf8");
+  assert.match(sw, /data\/lecture-video-mappings\.json/);
+  assert.doesNotMatch(sw, /lecture-video-unmatched-audit\.json/);
+  assert.equal(unmatchedLectureVideos.unmatched.length, 73);
 });
 
 test("Service Worker 响应始终重新校验，避免线上继续命中旧脚本", () => {

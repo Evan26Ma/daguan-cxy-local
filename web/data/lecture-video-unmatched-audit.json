@@ -1,0 +1,637 @@
+{
+  "unmatched": [
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV1Ut411p7k3",
+      "page": 19,
+      "questionId": "10981",
+      "title": "2013 数学一 第4题",
+      "reason": "窗口内主要读出四条曲线/椭圆的几何条件，尚未开始判别或计算。; Restates line integrals and asks how to solve; no method before window end.; 45秒仍在解释难度并讨论逐条参数化、计算四个曲线积分的低效假设；结束前尚未给出实际比较/求解方法，暂无法确认。"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV1Ut411p7k3",
+      "page": 20,
+      "questionId": "10985",
+      "title": "2013 数学一 第8题",
+      "reason": "45秒内仅介绍t/F分布及概率条件，没有进入分布关系推导。; Introduces T/F relationship and recalls T distribution construction; background explanation.; 继续一般复习卡方、t/F分布构造，尚未回到题目选项或对当前题进行运算，不能把泛讲作为起点。"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV1Ut411p7k3",
+      "page": 39,
+      "questionId": "8213",
+      "title": "2016 数学一 第14题",
+      "reason": "介绍正态总体区间估计背景并读取样本信息，尚未建立置信区间端点公式。; Identifies single normal population mean interval estimation and reviews variance cases.; 仍在复习正态总体均值区间估计和方差已知公式，片段末尚未代入本题数据或形成针对本题的解题步骤。"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV1Ut411p7k3",
+      "page": 50,
+      "questionId": "8253",
+      "title": "2018 数学一 第8题",
+      "reason": "识别为假设检验并讨论是否超纲，尚未说明检验统计量或拒绝域。; Discusses hypothesis-testing syllabus and identifies the item as a one-population normal mean test; no calculations yet.; 仍在谈假设检验考纲、冷门程度及需了解的概念，没有选取当前题的假设、显著性水平或计算步骤。"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV1Ut411p7k3",
+      "page": 54,
+      "questionId": "8268",
+      "title": "2018 数学一 第23题",
+      "reason": "Reads the MLE question and identifies requested statistics; no estimation procedure begins in-window.; 扩窗继续复习最大似然估计的一般定义和参数范围，尚未对本题密度写似然函数、求导或求估计量。"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV1Ut411p7k3",
+      "page": 55,
+      "questionId": "8272",
+      "title": "2019 数学一 第4题",
+      "reason": "Reads the path-independence condition and begins a general concept review; no test/application in-window.; 扩窗继续给出路径无关的通用定义与任意曲线判据，尚未用于本题P、Q或任一选项，不能确认具体解题已开始。"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV1Ut411p7k3",
+      "page": 66,
+      "questionId": "8311",
+      "title": "2020 数学一 第20题",
+      "reason": "Summarizes the two quadratic-form tasks and difficulty; no concrete calculation begins.; 扩窗仍在解释正交矩阵定义、回顾变换含义，尚未将二次型矩阵代入或求参数A、B、Q，未能确认进入解题。"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV1Ut411p7k3",
+      "page": 68,
+      "questionId": "8597",
+      "title": "2021 数学一 第9题",
+      "reason": "Reads the bivariate-normal estimator setup; no statistic or estimator calculation appears yet.; 本扩窗主要补充题面中的二维正态样本、目标参数与样本均值差；截止处仍未计算期望/协方差，未出现实质求解步骤。"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV1Ut411p7k3",
+      "page": 68,
+      "questionId": "8324",
+      "title": "2021 数学一 第10题",
+      "reason": "Introduces the hypothesis-testing question and identifies type-II error; no calculation method yet.; 扩窗继续复习第一类/第二类错误定义，未代入本题mu=11.5和拒绝域x̄>11计算第二类错误概率。"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV1Ut411p7k3",
+      "page": 77,
+      "questionId": "7939",
+      "title": "2023 数学一 第4题",
+      "reason": "Reads the implication about absolute convergence and recalls definitions; no case analysis/application begins.; 扩窗仅定义绝对收敛与条件收敛，尚未分析题中两级数之间的充分/必要关系或给出反例。"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV1Ut411p7k3",
+      "page": 85,
+      "questionId": "7931",
+      "title": "2024 数学一 第18题",
+      "reason": "Introduces the tangent-plane geometry topic and says the steps are routine; no step begins in this clip.; 扩窗仍在介绍题给曲面z=f(x,y)及其图形，没有写切平面公式或计算偏导、法向量，暂不确认进入解题。"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV1Ut411p7k3",
+      "page": 91,
+      "questionId": "7911",
+      "title": "2025 数学一 第20题",
+      "reason": "Introduces the curve/surface-integral setup and interprets its rotation axis; no evaluation method in-window.; 扩窗只识别旋转轴、描述生成曲面的几何轨迹；未设置曲面积分、法向或被积量，尚不能确认进入本题计算。"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV13b411H74Q",
+      "page": 37,
+      "questionId": "8340",
+      "title": "2016 数学三 第1题",
+      "reason": "说明导函数图像用于判断函数极值和曲线拐点，窗口内仍处于概念说明，尚未逐区间分析符号。; Explains locating critical and nondifferentiable points and using derivative sign changes to count extrema.; 继续泛讲导数变号判定极值、二阶导数候选拐点，并提及2015年的讲解；本扩窗未代入当前题函数或确认题目所问对象，无法断定已进入当前题解答。"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV13b411H74Q",
+      "page": 45,
+      "questionId": "8506",
+      "title": "2017 数学三 第10题",
+      "reason": "将差分方程列为数三特色并回顾历年考题，窗口内未写差分方程的通解步骤。; Identifies the first-order constant-coefficient linear difference equation and its basic solution method.; 扩窗仍主要谈差分方程考频与复习必要性，没有开始写本题方程或使用解法；初窗识别知识点不足以确认解题已开始。"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV13b411H74Q",
+      "page": 51,
+      "questionId": "8530",
+      "title": "2018 数学三 第11题",
+      "reason": "介绍差分方程是数三特色并回顾罕见考频，45秒内未进入特征方程或通解求解。; Explains that the constant-coefficient ODE has a standard general-solution method.; 仍在复习差分方程考纲、记号及概念，扩窗内未进入本题方程的通解/特解计算。"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV13b411H74Q",
+      "page": 66,
+      "questionId": "8311",
+      "title": "2020 数学三 第20题",
+      "reason": "Introduces the two quadratic forms and requested parameters/orthogonal matrix; no calculation yet.; 扩窗只解释正交矩阵定义与Q^{-1}=Q^T，未把两个二次型矩阵列出或求参数A、B及Q。"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV13b411H74Q",
+      "page": 67,
+      "questionId": "8319",
+      "title": "2021 数学三 第5题",
+      "reason": "Reviews positive/negative inertia-index definitions and standard form; no calculation for the specific quadratic form.; 扩窗仍复习正负惯性指数、标准形及合同变换不变性，没有对题给二次型配方/化标准形，暂不能确认题目计算已开始。"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV13b411H74Q",
+      "page": 73,
+      "questionId": "8186",
+      "title": "2022 数学三 第9题",
+      "reason": "介绍依概率收敛与大数定律背景，窗口内尚未计算E(X₁²)或应用大数定律。; Explains the definition of convergence in probability for a random-variable sequence.; 仍在定义依概率收敛及量词意义，扩窗末尾尚未对本题随机变量平方平均或概率极限应用定义。"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV13b411H74Q",
+      "page": 74,
+      "questionId": "8190",
+      "title": "2022 数学三 第13题",
+      "reason": "比较直接求三阶导与巧算并指出应尽量简算，45秒内尚未写出具体恒等变形。; Reviews periodicity and parity properties of derivatives needed for the item.; 扩窗继续证明周期函数/奇偶函数导数性质，未把等式或性质代入本题目标积分/选项；保留未确认，避免把泛讲当作起讲。"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV13b411H74Q",
+      "page": 77,
+      "questionId": "7939",
+      "title": "2023 数学三 第4题",
+      "reason": "Defines absolute versus conditional convergence but does not apply a criterion to the given series.; 扩窗只是定义绝对收敛/条件收敛，没有把题给a_n、b_n比较，也没有判断充分必要关系。"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV13b411H74Q",
+      "page": 86,
+      "questionId": "8154",
+      "title": "2024 数学三 第21题",
+      "reason": "Introduces a linear-system question and its tasks; no rank or elimination step in-window.; 扩窗主要对比2024数二的另一道线性组题，未分析当前数三题给的A、B或所求通解，不能将类题对比记为当前题开讲。"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV164411o7Qo",
+      "page": 49,
+      "questionId": "7607",
+      "title": "2017 数学二 第4题",
+      "reason": "复述常系数非齐次微分方程特解设型考点，窗口末尾仍在回顾可直接设型的类别，尚未分解右端或设具体特解。; Explains characteristic-root solution forms for the ODE under discussion.; 继续讲特征根重数对应通解形式，并未代入本题差分/微分方程或确定本题根，当前题的实质解答尚未确认。"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV164411o7Qo",
+      "page": 78,
+      "questionId": "8070",
+      "title": "2022 数学二 第3题",
+      "reason": "区分二阶导存在与连续性，窗口内尚未分析四个命题或构造反例。; Reviews monotonicity/concavity criteria needed to solve the problem.; 继续讲一般导数符号与单调/凹凸的充分条件，扩窗内没有代入当前题的函数或选项，仍无法确认进入具体解答。"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV164411o7Qo",
+      "page": 84,
+      "questionId": "8052",
+      "title": "2023 数学二 第7题",
+      "reason": "辨析函数无极值与曲线有拐点条件，窗口内尚未通过f'、f''的符号条件求a范围。; Applies the first-derivative extremum test to determine whether the point is an extremum.; 继续泛讲一阶导数变号的极大/极小判定及连续性条件，扩窗内未检验题中指定点左右符号，暂不将通用定理复述当作解题开始。"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV13b411H74Q",
+      "page": 4,
+      "markerSeconds": 560,
+      "questionId": "2791",
+      "title": "2010 数三 第16题",
+      "reason": "562.48 只称二重积分计算题；565.54–599.86 讲考点并回顾通用步骤，599.86 才问第一步怎么做。没有本题积分区域/被积函数的列式。 | extension 602.00–645.28 只讲二重积分题通常先观察区域和被积函数对称性以简化计算；没有具体描述本题D或利用奇偶性/变量代换。 | second extension second extension 647.24–691.98 仍泛讲二重积分选坐标系以及三角形/圆形区域适用方法，未分析本题边界或对称性；继续留空。 | third extension 692.00–719.67: 如果碰到X平方加Y平方的式子出現了那麼可以考慮考慮這個極作標這是我們的第二步通過對背機函數還有積分區域的觀察我們要選擇一個合適的作標系然後第三步選擇好了作標系之後下一步就是寫成二次積分了在這一步裏邊 / 720.06–736.90: 大家需要注意的一点就是说我们在写成二次积分的时候呢要注意一个积分次序这个呢对于这个不同的题目它有不同的这个选择在这我们不会细细的去说但大家在算的时候一定要注意选择一个比较好的积分次序这样能够"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV13b411H74Q",
+      "page": 8,
+      "markerSeconds": 1071,
+      "questionId": "5250",
+      "title": "2011 数三 第7题",
+      "reason": "1073.72–1084.62 读分布函数/密度并提出判断；1088.14–1112.25 回顾分布函数一般性质，未对四个候选函数作验证。 | extension 1113.00–1156.63 继续逐项回顾分布函数的连续性、取值范围及无穷远极限等一般性质；没有将F₁、F₂的密度组合成候选函数或检验选项。 | second extension second extension 1158.78–1202.98 回顾概率密度的通用条件并问哪个选项符合，但未检验任何具体候选函数；继续留空。 | third extension 1203.21–1233.14: 会满足第一条恢复明天我们知道分布函数和盖雷密尊的都是恢复的所以这四个他们都恢复所以区别在于他们在整个时轴上的一个积分所以跟积分有关系了我们再来看一下这四个里边哪一个比较像会满足第二条的我们在这里其实可以看到它为什么看它呢大家需要明白还有一个关系 / 1233.50–1245.55: 就是说对于同一个变量的分布函数和概率密度来说,分布函数的导数是这个概率密度。"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV13b411H74Q",
+      "page": 12,
+      "markerSeconds": 2337,
+      "questionId": "5337",
+      "title": "2011数三",
+      "reason": "formula_ambiguity_possible_mismatch   "
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV13b411H74Q",
+      "page": 14,
+      "markerSeconds": 807,
+      "questionId": "5420",
+      "title": "2012数三",
+      "reason": "formula_ambiguity_possible_mismatch   "
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV13b411H74Q",
+      "page": 15,
+      "markerSeconds": 596,
+      "questionId": "2218",
+      "title": "2012 数三 第11题",
+      "reason": "610.78–615.14 才读连续f(x,y)极限条件；618.94 复述求偏导目标，626.22–634.22 仍讨论条件不足，没建立极限与偏导的具体关系。 | extension 638.00–680.39 解释需要全微分概念、转而复习定义并结合图形；未对题目F(x)求全微分或实际偏导。 | second extension second extension 683.00–727.29 仍以图形复习全微分定义，没有把题给极限式转成全微分或计算dz；继续留空。 | third extension 729.49–761.55: 然后这一段我认为它叫delta y好 那么这个x加delta xy加delta y应该是哪一个点了呢是不是我这里标记的一个点呀我说它对应的这个函数值是不是就说在这减去fxy也就是说这一个点对应的函数值其实就是这样一小段距离了对不对好 / 761.99–772.67: 我說這樣一小段距離它能夠怎麼表示呢它可以用這個datax和datay的一個線性組合加上一個小歐肉"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV13b411H74Q",
+      "page": 16,
+      "markerSeconds": 680,
+      "questionId": "2793",
+      "title": "2012数三",
+      "reason": "partial_asr_possible_mismatch   "
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV13b411H74Q",
+      "page": 22,
+      "markerSeconds": 20,
+      "questionId": "3526",
+      "title": "2013 数三 第15题",
+      "reason": "Cross-check: source is bucket 30–49.9 rank8 / external ID1885; evidence and ASR describe 1−cos(x)cos(2x)cos(3x) equivalent to a·xⁿ and solving n,a. Manifest stem ID3526 asks for the same expression divided by x². The specified 50–59 and 60–69 independent audit CSVs contain no ID1885 entry or duplicate/correction for this target. The requested outputs differ, so retain possible stem/ID mismatch; do not timestamp. | extension: 扩窗ASR在62.00–102.61直接展开cos x、cos2x、cos3x，确有具体计算；但v2独立ID审计仍发现来源题与manifest ID3526的问项不一致，且50–59/60–69审计没有对应更正记录。按错配项不定点处理。 | 第二扩窗复核：第二扩窗107.00–151.59确有展开计算，但ASR计算对象为1−cos(x)cos(2x)cos(3x)相对a·x^n；manifest ID3526题干要求同一乘积除以x²，输出目标不一致。保持possible_wrong_id，不定时，需先核实题目ID/版本。"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV13b411H74Q",
+      "page": 25,
+      "markerSeconds": 913,
+      "questionId": "1644",
+      "title": "2014 数三 第2题",
+      "reason": "913.74–923.86 确认题目问哪条曲线有渐近线；928.10–951.95 回顾渐近线定义，未检验具体选项。 | extension: 955.34–995.05 继续解释渐近线的定义并画一般示意图；没有检查具体选项曲线或算极限。 | 第二扩窗复核：第二扩窗1000.00–1044.78仍讲铅直/水平渐近线的通用判别和例子，未对本题具体曲线求极限或逐项判断；建议再扩45秒。 | Third-window review: Still explains vertical, horizontal and oblique asymptotes with generic examples; does not test the target curves."
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV13b411H74Q",
+      "page": 25,
+      "markerSeconds": 1978,
+      "questionId": "1918",
+      "title": "2014 数三 第4题",
+      "reason": "1990.48–2008.60 观察选项比较f与弦函数g，猜测涉及单调/凹凸；2010.62 起回顾凹凸定义，仍未导出本题不等式。 | extension: 2020.00–2061.63 回顾凸函数与两点函数值平均的几何定义；尚未据题设仅有二阶导数的条件判定选项或构造反例。 | 第二扩窗复核：第二扩窗2067.76–2109.75继续讲凸/凹定义和弦线性质，未利用题目条件判断选项或构造反例；建议再扩45秒。 | Third-window review: Still explains generic convex/concave geometry and chord properties; does not derive or test the target inequalities."
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV13b411H74Q",
+      "page": 26,
+      "markerSeconds": 257,
+      "questionId": "420",
+      "title": "2014 数三 第6题",
+      "reason": "276.58 只说需考虑充分性与必要性；284.82–297.62 回顾线性无关定义，窗口未检验任一方向。 | extension: 299.72–339.03 回顾向量组线性无关的定义及其蕴含每个向量非零；没有验证题目选项中的充分/必要方向。 | 第二扩窗复核：第二扩窗345.42–388.80证明含零向量会导致线性相关，仍未把题目中α₁+kα₃、α₂+lα₃与原向量组关系代入分析充分/必要方向；建议再扩45秒。 | Third-window review: Explains the general fact that a linearly independent vector group cannot contain the zero vector, but does not apply it to α1+kα3 and α2+lα3 or check either implication."
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV13b411H74Q",
+      "page": 27,
+      "markerSeconds": 1962,
+      "questionId": "884",
+      "title": "2014 数三 第13题",
+      "reason": "1963.86–1998.62 读二次型并回顾惯性指数定义；1989.00–1995.44 说需先找标准形，但未构造矩阵或求特征值。 | extension: 2004.00–2045.41 回顾二次型标准形及由特征值符号计数惯性指数的一般方法；未对题给矩阵求特征值或限制a。 | 第二扩窗复核：第二扩窗2049.00–2093.87只选择配方法作为二次型标准形的通用路线，窗口内未对题设二次型完成配方或推导参数范围；建议再扩45秒。 | Third-window review: Continues the general completing-square procedure without completing the target quadratic form or deriving the parameter range."
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV13b411H74Q",
+      "page": 30,
+      "markerSeconds": 2287,
+      "questionId": "5391",
+      "title": "2014 数三 第23题",
+      "reason": "ASR把边缘概率记为“1.3、2.3”，把相关系数记为“1.2”；目标stem对应1/3、2/3和1/2。符号/分数口述转写有歧义，且数值决定联合分布，不能据常见写法猜测。 | extension: 扩窗2329.00–2368.95继续讨论由边缘分布和相关系数恢复联合表，但ASR继续将给定分数/相关系数转写成有歧义的数字。不能据转写猜联合概率，暂不定点。 | 第二扩窗复核：第二扩窗2374.00–2418.69开始填联合分布表，但边缘概率仍被转写为有歧义的分数（如“1¾”），参数数值决定方程，不能据ASR猜测。保持formula_ambiguity并留空；需先听音核实给定分数/相关系数，再扩窗。 | Third-window review: Begins calculating joint probabilities, but spoken probability fractions remain ambiguous; do not infer them from the target stem."
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV13b411H74Q",
+      "page": 33,
+      "markerSeconds": 667,
+      "questionId": "10946",
+      "title": "2015 数三 第11题",
+      "reason": "669.24–676.54 读隐函数与求微分；681.06–707.92 回顾全微分通式，尚未在(0,0)代入原方程隐式求偏导/确定z(0,0)。 | extension: 709.00–750.99 讲隐函数求偏导、两边微分和全微分的通用方法；扩窗没有代入e^{x+2y+3z}+xyz=1或在(0,0)求dz。 | 第二扩窗复核：第二扩窗754.00–798.96仍复习隐函数存在定理条件，未对e^(x+2y+3z)+xyz=1在(0,0)求z值、偏导或dz；建议再扩45秒。 | Third-window review: Still states the implicit-function theorem conditions generally, without substituting the target equation at (0,0)."
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV13b411H74Q",
+      "page": 40,
+      "markerSeconds": 593,
+      "questionId": "8489",
+      "title": "2016 数三 第16题",
+      "reason": "594.36–632.46 读最大需求量、需求弹性及两问；当前窗口尚未用弹性公式建立dQ/dp方程，或求需求函数。 | extension: 636.59–679.13 解释要先求需求函数，再回顾需求弹性的定义q关于p的导数与p/q比例；扩窗结束前未代入题目弹性条件列微分方程。 | 第二扩窗复核：第二扩窗680.00–724.96继续解释需求弹性的定义，未代入η=p/(120−p)列微分方程或求需求函数；建议再扩45秒。 | Third-window review: Still explains demand elasticity generally, without substituting η=p/(120−p) to form the target differential equation."
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV13b411H74Q",
+      "page": 44,
+      "markerSeconds": 1055,
+      "questionId": "5483",
+      "title": "2017 数三 第7题",
+      "reason": "第二扩窗1143.14–1185.89仍解释互斥与独立的定义和例子，尚未代入A、B、C推必要充分条件；建议再扩45秒。"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV13b411H74Q",
+      "page": 51,
+      "markerSeconds": 228,
+      "questionId": "5516",
+      "title": "2018 数三 第10题",
+      "reason": "无扩窗ASR文件。保留原审计结论：图像/ID5516是概率题P(AC|A∪B)，marker附近讲解却为不定积分，题面与视频内容冲突，不能定点。"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV13b411H74Q",
+      "page": 83,
+      "markerSeconds": 15,
+      "questionId": "8031",
+      "title": "2024 数三 第6题",
+      "reason": "ASR 22–54秒所述为含初等矩阵P、PᵀAP²并求A的矩阵方程，和manifest旧ID 8140（余子式题）不符；独立审计推荐8140，但其候选8031与转写题干相符，故暂按8031校正。窗口到54.81秒仅说“由这个方程”，未看到实际逆变换/求解。 | extension: 扩窗58.30–95.65实际按ASR中的矩阵方程作左右乘逆矩阵的变形；但manifest/audit推荐ID8140与ASR所述方程不一致，候选8031虽与转写内容接近，仍有ID映射分歧，按题目身份不确定不赋时间。 | Third-window review: Continues a matrix-equation derivation that matches candidate ID 8031, while the image-backed target remains ID 8140; keep blank due the unresolved identity mismatch."
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV164411o7Qo",
+      "page": 6,
+      "markerSeconds": 20,
+      "questionId": "2816",
+      "title": "2010 数二 第21题",
+      "reason": "ASR 17.78–58.98 讲 f(0)=0、f(1)=1/3 并以中值定理证明存在ξ、η；与manifest题干“xy f_xy”双重积分不符。未发现经审计确认的更正ID，故标疑似错配，不赋时间。 | extension: 62.00–105.88 ASR扩窗转入微分中值定理辅助函数构造，内容是证明性函数等式，与manifest双重积分题干不符；没有可信的更正ID，保持疑似错配，不定点。"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV164411o7Qo",
+      "page": 10,
+      "markerSeconds": 766,
+      "questionId": "1845",
+      "title": "2011 数二 第16题",
+      "reason": "EXT135 898.00–923.86: X0它可能为0它也可能不存在所以根据这个我们能够写一个找拐点的一般步骤好第一步先求这个二阶导数f2px然后第二步解出来这个f2px等于0在这个区间里面的所有的根并且还要找出来这些不存在的点 | 924.29–942.71: 就是二阶岛不存在点也是我们需要考虑的地方然后对这些点我们来划分这个区间划分这个凹凸区间对不对好了 第三步我们看什么样的点是拐点做完这两步之后把这些点都考虑一下判断这个点的左和右"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV164411o7Qo",
+      "page": 13,
+      "markerSeconds": 29,
+      "questionId": "1690",
+      "title": "2012 数二 第1题",
+      "reason": "EXT135 161.92–189.62: 这个时候它就没有这个水平界限我们要考虑它有没有斜界界限那么下面我们就来看这个斜界界的情况在这复无穷大家自己看一下斜界界限我们要考虑这么一个极限先考虑fx比以上x的这样一个极限这里是这个x区域重物穷方向的一个极限对这个区域复无穷也是一样考虑的 | 190.39–205.00: 如果在这儿这个极限是一个非0的长数A并且这个fx减去这个A乘上x极限它也存在等于一个长数B这个时候"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV164411o7Qo",
+      "page": 13,
+      "markerSeconds": 1259,
+      "questionId": "3952",
+      "title": "2012 数二 第3题",
+      "reason": "EXT135 1391.78–1424.97: 然后反过来我们还可以说B是AA的必要条件这就是对这个表达式的一个说法我们可以这么来读它再来看我们是不是还是那么非必要非充分啊我们反过来再看一下假如A不能推出B这个时候我们说什么我们说A不是B的充分条件 | 1427.21–1434.55: 还可以怎么说我们还可以说B不是A的必要条件"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV164411o7Qo",
+      "page": 26,
+      "markerSeconds": 1195,
+      "questionId": "420",
+      "title": "2014 数二 第8题",
+      "reason": "第三扩窗仍在回顾含零向量的线性相关判定，未推导题给两个向量组的充分/必要关系。"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV164411o7Qo",
+      "page": 49,
+      "markerSeconds": 862,
+      "questionId": "3507",
+      "title": "2012数三",
+      "reason": " confirmed 图题审计按目标的 source bucket/rank 匹配；题目 ID 对照独立全桶图题审计和本地完整题干。 ID 对应原图题目，但该时间点的 ASR 与题面不符。 Marker/question mismatch: the picture and bank stem for ID 3507 are an exponential-limit problem, while this ASR window is about sequence-limit statements."
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV164411o7Qo",
+      "page": 55,
+      "markerSeconds": 81,
+      "questionId": "8391",
+      "title": "2018 数二 第1题",
+      "reason": "EXT135 213.00–241.04: 我还需要再乘以下这个e的x方加ax方加bx-1然后把原来的这个指数x方分之1再写进来所以呢 横等变形完我们得到这样的一个式子现在我把这一块圈出来它是不是一个重要极限的这个形式啊所以我们看利用这个 | 241.38–257.51: 我们是不是把原来的这个极限变成了e的Limit x 趋0e的x方加ax方加bx-e在b上x方"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV164411o7Qo",
+      "page": 74,
+      "markerSeconds": 439,
+      "questionId": "3859",
+      "title": "2021 数二 第7题",
+      "reason": "EXT135 571.00–600.95: 然后尽肆的用它来代替这个高所以这个就是f cosi那么这个东西不就是这个举行面积了吗一共是有 n 个小曲边提醒那一共是用 n 个这个小举行来代替他们所以我们来求和i 从 1 到 n 求和那这个就是这个尽肆的面积了然后呢我们来取一个极限取极限 | 601.19–615.77: 就是我让这个分化越来越细 越来越细怎么样表示呢 在这里啊我们规定这个lander它是我这 n 个小区间长度的最大值"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV164411o7Qo",
+      "page": 79,
+      "markerSeconds": 821,
+      "questionId": "7961",
+      "title": "2022 数二 第7题",
+      "reason": "The external image is 2022 Math II Q7, whose independently audited bank ID is 7961 (not stale target ID 1323); however, this marker ASR is about comparing three definite integrals, so the timestamp cannot be assigned to this question."
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV164411o7Qo",
+      "page": 88,
+      "markerSeconds": 1948,
+      "questionId": "8027",
+      "title": "2024数二",
+      "reason": " confirmed 原图给a_n非零且发散，四个选项询问哪个序列必发散；ID8027题干和选项结构一致。 The marker discusses the relative difficulty and past coverage of a “fourth question” but does not explain the displayed sequence-divergence stem; treat this as a marker/stem mismatch."
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV1Ut411p7k3",
+      "page": 13,
+      "markerSeconds": 12,
+      "questionId": "1690",
+      "title": "2012 数一 第1题",
+      "reason": "11.32–40.90 读曲线并回顾渐近线定义、一般求法；40.92–53.83 仍是通用步骤介绍，未对本题函数因式分解或求间断点。 | EXT45 54.27–82.07: 我们找这个函数的无穷阶段点然后就把这个x等于x0这一条垂直于x轴的这个线叫做它的这个签值建讯线在这我们再说一下这什么叫做无穷阶段点就是说这个点它至少有一侧的极限是无穷大那么它就是一个无穷阶段点了它可能两个单侧极限都取于无穷这当然也是但它只叫有一次是无穷 / 82.35–99.28: 它们它就是一个无穷键段点好讲完了这个签值建计线之后我们再来考虑水平建计线怎么考虑呢我们看下面这个极限我们要考虑这样两个极限当x趋于正无穷和当x趋于负责 | EXT135 144.00–165.56: 考虑这个小fx-ax极限如果它等于b是一个存在的一个有限的长数的话那么我们就把这个y等于ax加b继承这个协进线在这里我们发现一下我们这个极限如果是如果是有了这个水平进性线的话这个极限它一定是等于0的 | 165.90–188.80: 对不对因为这里是已经是有穷的了然后再比一个XX去无穷的这个基金必然是一个等于零的极限那么就是说如果沿着这个某一个无穷的方向它有了水平渐进线的话那么沿着这个无穷的方向就必然没有这个斜渐进线好这就是我们关于这个曲线渐进线的求法了一个简单的回顾"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV1Ut411p7k3",
+      "page": 13,
+      "markerSeconds": 901,
+      "questionId": "2223",
+      "title": "2012 数一 第3题",
+      "reason": "898.00–928.30 读题并介绍可微性判别条件；928.63–942.25 继续讲一般判别式，未逐项检验选项。 | EXT45 943.00–968.52: x0y与x0y0之间的一个距离然后分子呢它是什么呀它是这个fxy减去后面这一串有这个x0y0处的这个函数值有这个x0y0处的两个偏导数那么如果说这个极限值存在并且等于0呢我们就说这个函数在这 x0y0处可谓好 / 969.36–987.83: 大家可能觉得这个极限式的这个理解起来有点困难然后不是很好记对不对下面呢我们先看一看怎么样从几何上理解它因为我们学数一的话是会学到这个多元微分的几何应用的所以说能够更好地来理解这个可危的一个定义我们来看这个 | EXT135 1033.00–1062.26: 它实际上就是我们的一个切平面的一个式子呀Z等于fx0y0加上f1πx0y0x-x0加上fyπx0y0y-y0对不对是这样后面这一串它跟我们的切平面是有关系的也就是说这个分子表示的是这一段距离然后分目表的是什么呢 | 1062.63–1077.99: 分母表示是不是就这段距离呀也就是我们下面画的橙色这一部分是x-x 明方加上y-y0明方开更号那么它的极限等于0说明什么说明当这个点越来越靠近这个定点"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV1Ut411p7k3",
+      "page": 19,
+      "markerSeconds": 1000,
+      "questionId": "359",
+      "title": "2013 数一 第3题",
+      "reason": "ASR内容为2013数一Q3傅里叶级数题（f(x)=|x−1/2|并求S(−9/4)），与目标本地题干ID359（向量组线性表示）不符；图像审计描述也指向傅里叶级数题。ID映射未核实，不能标时。"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV1Ut411p7k3",
+      "page": 25,
+      "markerSeconds": 29,
+      "questionId": "1644",
+      "title": "2014 数一 第1题",
+      "reason": "26.00–48.48 读选项并回顾渐近线定义/一般求法；50.64–70.98 只讲一般定义，未逐项判断曲线。 | EXT45 71.44–106.74: 大概比方说画一个简单的例子就这样子然后我们这条粉色的线然后是这样子的然后这根白色的线越来越接近这条粉色的直线我们就说这条粉色的直线是这条白色的曲线的一条鉴金线还有三种情况根据这个鉴金线的这个方向来看的首先呢叫做什么 鉴值鉴金线也就是说我们的这个鉴值的鉴金线它是这样子的 / 106.84–114.02: 就是垂直于这个x轴的它的形式就等于x0这样子的一条形式 | EXT135 161.00–181.46: 说这个在无穷远处的极限就可以了然后对这个斜近线我们看到这个定义里边我们要考虑这样的一个极限就是说这个函数fx比上x的这个极限首先它应该存在并且不等于0如果它不等于0之后我们考虑这个式子就是用我们的这个函数减去这个ax | 182.30–205.92: 如果说它的极限等于B的话我们就把这个Y等于AX加B这条直线叫做这个曲线的斜剑进线同理对于这个X区附穷的情况也是一样子的那么这就是我们讲过的这三种剑进线的定义讲完之后我们来讲这个曲线的剑进线的一个"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV1Ut411p7k3",
+      "page": 25,
+      "markerSeconds": 770,
+      "questionId": "1918",
+      "title": "2014 数一 第2题",
+      "reason": "767.00–790.22 读弦函数题并介绍选项；790.94–811.96 区分一阶、二阶导数条件，未比较f与g或判断选项。 | EXT45 812.00–834.68: 很显然这道题主要考察的就是利用导数来分析这个函数的一个信害那么就是说它和我们这个函数曲线的这个几何性质是密切相关的对于这样的题目我们主要要采用这个数形结合的方法像这道题主要是考察了什么?考察了一个曲线的凹凸性的一些 / 834.99–856.89: 相关的性质 下面我们就来简单的回顾一下这个凹凸曲线的定义以及它的一些非常重要的性质我们看一下先来看这个定义假设这个fx是区间i上的一个连续函数然后呢 x1 x2是这i里边的任意两个点我们说它x1 | EXT135 902.00–931.14: 和FX2的平均值要大那么这个曲线我们叫它是一个凸曲线这个就是我们这个凹凸曲线的一个定义它是通过这个几何性质来定义出来的然后我们给它两给出这个凹凸曲线的两条非常重要的几何性质大家看一下首先我们要讲的是这个曲线与弦的位置关系这个在我们这道题里边会用的到我们重点来讲讲这个看这个 | 931.66–946.98: 过凹曲线 y 等于 f 上任意两点的弦我们来画一个图这个凹曲线可能是这样子的对吧过它上面任意两点我们用这个黄色的点标记一下然后弦是什么呀就是连接这两个点"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV1Ut411p7k3",
+      "page": 27,
+      "markerSeconds": 2610,
+      "questionId": "884",
+      "title": "2014 数一 第13题",
+      "reason": "2635.24–2651.92 解释负惯性指数等于标准形负系数个数，并开始说“把含参数二次型变成标准形”；语音在展开参数条件前被窗口截断，未见实际化简或求解。 | EXT45 2652.00–2681.62: 标准形里边它的复系数的各数是1通过这个条件我们要来求这个A的取值范围所以说我们做这道题可以先考虑一下能不能找到这个二次形的标准形那么怎么来找呢像这样的比较简单的这个二次形我们可以考虑直接配方这样会比较方便一点那么在这里面我们先来回顾一下配方法的 / 2681.87–2696.85: 一般步骤配方它有两种情形第一种情形就是二次形里边含有平方向的情形如果说给的二次形里边有某一个变量的 | EXT135 2742.00–2770.12: 然后再配方在这我们举个例子我们另这个x1就等于y1加y2x2等于y1-y2那么x1x2利用平方差公式一算发现它等于什么它等于y1-y2然后到这我们发现这个是不是就多了平方向它甚至说是一个标准型的形式了对吧所以这是我们的第二种情形不含平方向的这个情形的处理方法 | 2770.35–2786.89: 任何一个二次形我们配方的时候一般都是遇到这两种情况我们会处理这两种情况的话就可以处理任何一种二次形了但是配方法的话一般还是用于比较简单的二次形像我们这道题用"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV1Ut411p7k3",
+      "page": 30,
+      "markerSeconds": 1845,
+      "questionId": "5475",
+      "title": "2014 数一 第23题",
+      "reason": "1842.00–1870.16 读分布函数和三问；1870.52–1886.84 提到需由分布函数求密度，但未求导、算期望或写似然函数。 | EXT45 1887.14–1898.76: 對分布含數求導就能夠得到概率密度所以算期望的話可以先求導算概率密度然後根據定義來算思路是比較直接的第二問 / 1899.27–1926.20: 求這個肥塔的最大肆然估計量這也是一個我們非常熟悉的考點最大肆然估計法對不對那麼根據這個求最大肆然估計量的一個一般的解題步驟來做按部就班的來算一算就可以了這兩位呢可能計算量上會比較大一點但是實際上緊急思路是很直接的再來看這個第三問第三問呢可能相對來說會陌生一點 / 1926.61–1931.77: 他问的是是不是存在一个实数A使得那对于任何一个正数Ethn | EXT135 1977.00–1999.89: 射X1 X2一直這樣點點點一直到無窮多個他們是相互獨立並且服從同一個分布的隨機變量的序列他們的期望都等於mew現在我們做前面n個變量的算數平均也就是k從1開始到n球和Xk然後再除以n | 2000.47–2022.45: 我们说这个结论是对于任意的正数Eeps Note我们有这么一个极限等于1这个说法是1概率收敛到1在这里面这个概率是什么是这个xk的这个算数平均减去这个mew它的这个绝对值小于Eeps Note"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV1Ut411p7k3",
+      "page": 32,
+      "markerSeconds": 1472,
+      "questionId": "5375",
+      "title": "2015 数一 第8题",
+      "reason": "ASR讲解2015数一第8题为“不相关、E(X)=2、E(Y)=1、D(X)=3，求E[X(X+Y−2)]”，与目标本地ID5375题干（独立同分布且P(X²+Y²=0)=0，求E[X²/(X²+Y²)]）不符。疑似错配截图/ID，不能标时。"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV1Ut411p7k3",
+      "page": 33,
+      "markerSeconds": 2106,
+      "questionId": "8074",
+      "title": "2015 数一 第13题",
+      "reason": "ASR讲解为2015数一第13题高阶行列式，题干谈矩阵结构，与目标本地ID8074（三个定积分I₁、I₂、I₃比较）不符；原图审计给出的题干与本地ID8074一致，但语音属于另一题，映射错误，不能标时。"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV1Ut411p7k3",
+      "page": 36,
+      "markerSeconds": 20,
+      "questionId": "947",
+      "title": "2015 数一 第20题",
+      "reason": "第四扩窗约197–244秒仍在总结向量空间基、维数和坐标的定义，未代入本题向量或建立参数方程；仍留空。"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV1Ut411p7k3",
+      "page": 38,
+      "markerSeconds": 382,
+      "questionId": "949",
+      "title": "2016 数一 第6题",
+      "reason": "第四扩窗约559–607秒继续用旋转双曲线举例推导单叶/双叶双曲面的通式，未化简题目给定二次型；仍留空。"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV1Ut411p7k3",
+      "page": 40,
+      "markerSeconds": 1920,
+      "questionId": "8216",
+      "title": "2016 数一 第17题",
+      "reason": "第四扩窗约2097–2142秒讲势函数/路径无关定理的定义与条件，未使用题目给定偏导和边值计算I(t)；仍留空。"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV1Ut411p7k3",
+      "page": 41,
+      "markerSeconds": 891,
+      "questionId": "8218",
+      "title": "2016 数一 第19题",
+      "reason": "第四扩窗1068–1113秒列题目条件并复述第一问目标为证明绝对收敛，但窗口内尚未出现证明不等式或应用中值定理的具体推导；仍留空。"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV1Ut411p7k3",
+      "page": 43,
+      "markerSeconds": 326,
+      "questionId": "1915",
+      "title": "2017 数一 第2题",
+      "reason": "v2: ASR内容为导数单调性比较，与已匹配的寿命分布/最大似然题 ID5478 不一致；按要求留空。"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV1Ut411p7k3",
+      "page": 45,
+      "markerSeconds": 20,
+      "questionId": "8231",
+      "title": "2017 数一 第9题",
+      "reason": "第四扩窗约197–242秒排除莱布尼茨公式后继续讲泰勒公式唯一性的一般思路，尚未对1/(1+x²)求导或写级数；仍留空。"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV1Ut411p7k3",
+      "page": 47,
+      "markerSeconds": 20,
+      "questionId": "1868",
+      "title": "2017 数一 第18题",
+      "reason": "v2: ASR内容为方程根存在性证明，与该位置截图匹配的切线面积题 ID4659 不一致；按要求留空。"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV1Ut411p7k3",
+      "page": 60,
+      "markerSeconds": 20,
+      "questionId": "957",
+      "title": "2019 数一 第20题",
+      "reason": "窗口内复述基与坐标条件，并概括要求求a,b,c及过渡矩阵；未建立坐标方程或求解。 | EXT135 152.00–181.35: 自身必须得过硬对吧他一定要现行无关你一个现性相关的项量组是没有资格去做这个限量空间的机的其次他无关还不够还需要怎么样呢既然你要能够做这个限量空间的机你还就必须得足够强怎么强呢这个限量空间里的任何一个项量他都能够被这样一个项量组 | 181.61–196.82: 里边的是相量R81 R82 R82这R个相量 现性表示这样满足这两点要求之后我们就说这样一个相量组它是 相量空间V的一个机了 | FOURTH: 第四扩窗约197–244秒仍讲向量空间基、维数定义，没有代入题目三向量求a,b,c或过渡矩阵；继续留空。"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV1Ut411p7k3",
+      "page": 61,
+      "markerSeconds": 1266,
+      "questionId": "8303",
+      "title": "2020 数一 第3题",
+      "reason": "ASR讲f(0,0)、向量n及α⊥n，和本地题干f(x,y)=∫₀ˣʸe^(xt²)dt求混合偏导不符；不标记。"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV1Ut411p7k3",
+      "page": 61,
+      "markerSeconds": 2693,
+      "questionId": "8295",
+      "title": "2020 数一 第4题",
+      "reason": "说明幂级数收敛半径并分组读选项，窗口内未依据R与r关系判定任一选项。 | EXT135 2826.96–2857.71: 现在我们的密集数它的收敛中心是在0然后我又知道它不是在这个整个数轴上都收敛那么我们这个正数大R在我说在这我的这个第一条是说呀你到这个x落在这样一个区间里边的时候那么我的密集数啊它是绝对收敛的对不对这就是我们所说的然后呢 | 2857.89–2869.92: 当你的这个x的绝对值大于这个r的时候也就是你落在哪儿落在这个外边的时候这个密集数它 | FOURTH: 第四扩窗约2870–2915秒继续说明幂级数收敛区间/半径及端点一般性质，未用本题偶数项级数判定任一选项；继续留空。"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV1Ut411p7k3",
+      "page": 62,
+      "markerSeconds": 2277,
+      "questionId": "5410",
+      "title": "2020 数一 第8题",
+      "reason": "引入中心极限定理并读出伯努利总体参数；窗口结束仍在回顾定理，未标准化样本和或算近似值。 | EXT135 2409.00–2437.90: 这边啊中间这块呢其实你也可以不用去看后边很关键了这里出现了这个标准正态分布的这个分布函数也就是说当你这个小n就是你的这个样本啊这块n他取得这个足够多的时候往乌铜大走他是越来越接近于这个标准正态分布的分布函数的所以这样一个定理他实际上可以怎么理解呢我们简单的写一下 | 2440.34–2453.96: 其实就是说我现在你考虑这个x1x2一直到这个x大n然后他们的这个期望如果说都是这个mew然后这个 | FOURTH: 第四扩窗约2454–2499秒回顾中心极限定理，说明样本和在n足够大时近似正态；未标准化本题100次伯努利和或计算P值；继续留空。"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV1Ut411p7k3",
+      "page": 63,
+      "markerSeconds": 371,
+      "questionId": "359",
+      "title": "2020 数一 第10题",
+      "reason": "ASR在讲参数方程求二阶导，和本地向量组线性表示题不符；不标记。"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV1Ut411p7k3",
+      "page": 67,
+      "markerSeconds": 1192,
+      "questionId": "3859",
+      "title": "2021 数一 第4题",
+      "reason": "辨认题中各选项为n项和极限并回顾积分定义；未对应具体分割写出黎曼和。 | EXT135 1324.00–1352.50: 就是说你的这个爱从1到n去求和现在我要求什么呢我就要求你这n个小区间啊它的这个分化是越来越细的也就是说我会要求你在这儿记一个数lambda它是这n个小区间长度的最大值要求lambda它区域里所以现在你考虑这样一个极限 | 1354.05–1368.97: 假如让这个 lambda 趋于0的时候你的这个极限和你的这个区间的一个分法我不一定是 n 等分我可以随便的分只需要什么只需要这个 n 个小区间长多 | FOURTH: 第四扩窗约1369–1414秒解释任意细分、任意取点的定积分定义，未把选项的具体和式化为黎曼和；继续留空。"
+    }
+  ]
+}

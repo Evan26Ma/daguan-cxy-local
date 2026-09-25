@@ -1,4 +1,4 @@
-const CACHE = "daguan-shell-v76";
+const CACHE = "daguan-shell-v77";
 const SHELL = [
   "./",
   "./landing.html",
@@ -8,14 +8,15 @@ const SHELL = [
   "./assets/landing/math-surface.svg",
   "./assets/landing/daguan-curve-logo.png",
   "./index.html",
-  "./styles.css?v=57",
-  "./app2.js?v=46",
+  "./styles.css?v=58",
+  "./app2.js?v=48",
   "./vendor/marked.min.js",
   "./vendor/katex.min.js",
   "./vendor/katex.min.css",
   "./data/manifest.json",
   "./data/categories.json",
   "./data/paradiyu-linear-video.json",
+  "./data/lecture-video-mappings.json",
 ];
 
 self.addEventListener("install", (event) => {
