@@ -3,9 +3,9 @@
   --ink: var(--dg-ink);
   --muted: #62625d;
   --line: #dcdcd5;
-  --orange: #eb5128;
-  --orange-dark: #b63b1c;
-  --peach: #f9ece5;
+  --orange: #f97316;
+  --orange-dark: #c2410c;
+  --peach: #fdf0e0;
   --green: #30634d;
   --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
   --mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
@@ -76,7 +76,7 @@ h1, h2, h3, p { margin: 0; }
 .button:hover > .icon { transform: translate(2px, -2px); }
 .button:active { transform: translateY(1px); }
 .button-primary { background: var(--orange); color: #171713; }
-.button-primary:hover { background: #fa6941; }
+.button-primary:hover { background: #ff8c1a; }
 .button-outline { border-color: #b7b7ae; background: transparent; }
 .button-outline:hover { border-color: var(--ink); background: #f0f0e9; }
 .button-ink { background: var(--ink); color: white; }
@@ -120,7 +120,7 @@ h2 { font-size: clamp(30px, 3.4vw, 46px); line-height: 1.3; font-weight: 800; le
 .sidebar-caption { padding: 24px 12px 10px; font-size: 10px; color: #85857b; }
 .demo-nav { display: flex; gap: 10px; align-items: center; padding: 13px 12px; font-size: 12px; color: #6a6a62; border-radius: 4px; }
 .demo-nav .icon { width: 17px; height: 17px; }
-.demo-nav.is-current { background: #f5e3d9; color: #a23216; font-weight: 600; }
+.demo-nav.is-current { background: #fdeedc; color: #c2410c; font-weight: 600; }
 .sidebar-bottom { margin-top: auto; padding: 28px 12px 3px; font-size: 11px; line-height: 1.9; }
 .sidebar-bottom > span:last-child { color: #929288; margin-left: 17px; }
 .sidebar-bottom .small-square { margin-right: 7px; height: 5px; width: 5px; }
@@ -181,7 +181,7 @@ kbd { font-family: var(--mono); }
 .key-composition kbd { display: grid; place-items: center; width: 51px; height: 51px; background: #fafbf6; border: 1px solid #b3b7a6; border-radius: 8px; box-shadow: 0 5px 0 #d3d7c8, 0 6px 0 #a9af9b; font-size: 25px; font-weight: 500; }
 .key-pair { display: flex; flex-wrap: wrap; gap: 8px; max-width: 112px; justify-content: center; }
 .key-pair > span { flex: 0 0 100%; text-align: center; margin-top: 14px; font-size: 10px; color: #747967; }
-.space-key kbd { width: 150px; background: var(--orange); border-color: #ab391b; box-shadow: 0 5px 0 #c44420, 0 6px 0 #923317; font-size: 16px; display: flex; flex-direction: column; gap: 3px; }
+.space-key kbd { width: 150px; background: var(--orange); border-color: #b4530c; box-shadow: 0 5px 0 #d1480d, 0 6px 0 #8f3408; font-size: 16px; display: flex; flex-direction: column; gap: 3px; }
 .space-key kbd > span { font-family: var(--font); font-size: 9px; }
 .favorite-key { max-width: 51px; }
 .shortcut-art > p { font-size: 11px; color: #656c58; margin-top: auto; text-align: center; }

@@ -2,7 +2,7 @@
   "use strict";
 
   if ("serviceWorker" in navigator && location.protocol !== "file:") {
-    navigator.serviceWorker.register("./service-worker.js?v=80").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=73").catch(() => {});
   }
 
   const DATA = "./data";
@@ -23,9 +23,7 @@
   const DEFAULT_UI_PREFS = Object.freeze({
     version: 1,
     theme: "official-light",
-    accent: "vibrant",
-    uiVersion: "new",
-    backgroundColor: "#fafaf7",
+    backgroundColor: "#f5f7fa",
     aiUserColor: "#356fe5",
     aiComposePosition: "left",
     backgroundImageKey: "",
@@ -600,8 +598,6 @@
       const raw = JSON.parse(localStorage.getItem(UI_PREFS_KEY) || "{}");
       const value = { ...DEFAULT_UI_PREFS, ...(raw && typeof raw === "object" ? raw : {}) };
       if (!UI_THEMES.includes(value.theme)) value.theme = DEFAULT_UI_PREFS.theme;
-      if (!["vibrant", "classic"].includes(value.accent)) value.accent = DEFAULT_UI_PREFS.accent;
-      if (!["new", "old"].includes(value.uiVersion)) value.uiVersion = DEFAULT_UI_PREFS.uiVersion;
       if (!/^#[0-9a-f]{6}$/i.test(String(value.backgroundColor || ""))) {
         value.backgroundColor = DEFAULT_UI_PREFS.backgroundColor;
       }
@@ -640,8 +636,6 @@
   function applyUiPreferences() {
     const root = document.documentElement;
     root.dataset.theme = uiPrefs.theme;
-    root.dataset.accent = uiPrefs.accent === "classic" ? "classic" : "vibrant";
-    root.dataset.uiVersion = uiPrefs.uiVersion === "old" ? "old" : "new";
     root.style.colorScheme = uiPrefs.theme === "official-dark" ? "dark" : "light";
     root.style.setProperty("--custom-bg-color", uiPrefs.backgroundColor || DEFAULT_UI_PREFS.backgroundColor);
     root.style.setProperty("--ai-user-color", uiPrefs.aiUserColor || DEFAULT_UI_PREFS.aiUserColor);
@@ -664,17 +658,6 @@
       const active = button.dataset.themeChoice === uiPrefs.theme;
       button.classList.toggle("active", active);
       button.setAttribute("aria-selected", String(active));
-    });
-    document.querySelectorAll("[data-accent-choice]").forEach((button) => {
-      const active = button.dataset.accentChoice === uiPrefs.accent;
-      button.classList.toggle("active", active);
-      button.setAttribute("aria-checked", String(active));
-    });
-    document.querySelectorAll("[data-version-choice]").forEach((button) => {
-      const active = button.dataset.versionChoice === uiPrefs.uiVersion;
-      button.classList.toggle("active", active);
-      button.setAttribute("aria-pressed", String(active));
-      button.setAttribute("aria-checked", String(active));
     });
     const color = $("#ui-bg-color");
     const aiUserColor = $("#ui-ai-user-color");
@@ -702,28 +685,7 @@
     uiPrefs.theme = theme;
     saveUiPrefs();
     applyUiPreferences();
-    setThemeFeedback(`已切换到${theme === "official-light" ? "纸白橙色" : theme === "official-dark" ? "深色" : theme === "eye-care" ? "暖色护眼" : "自定义"}主题。`);
-  }
-
-  function setUiAccent(accent) {
-    if (!["vibrant", "classic"].includes(accent)) return;
-    uiPrefs.accent = accent;
-    saveUiPrefs();
-    applyUiPreferences();
-    setThemeFeedback(accent === "classic" ? "已切换到朱砂橙（经典）品牌色。" : "已切换到活力橙品牌色。");
-  }
-
-  function setUiVersion(version) {
-    if (!["new", "old"].includes(version)) return;
-    uiPrefs.uiVersion = version;
-    saveUiPrefs();
-    if (version === "old") {
-      // 旧大观是完整的旧版前端（legacy.html），整页跳转过去。
-      window.location.href = "./legacy.html";
-      return;
-    }
-    applyUiPreferences();
-    setThemeFeedback("已切换到新大观（纸白橙）界面。");
+    setThemeFeedback(`已切换到${theme === "official-light" ? "官网浅色" : theme === "official-dark" ? "官网深色" : theme === "eye-care" ? "米黄色护眼" : "自定义"}主题。`);
   }
 
   async function loadUiBackground() {
@@ -779,7 +741,7 @@
     uiPrefs = { ...DEFAULT_UI_PREFS, theme };
     saveUiPrefs();
     applyUiPreferences();
-    setThemeFeedback(theme === "eye-care" ? "已恢复暖色护眼主题。" : "已恢复纸白橙色主题。", false);
+    setThemeFeedback(theme === "eye-care" ? "已恢复米黄色护眼主题。" : "已恢复官网浅色主题。", false);
   }
 
   function mergeProgress(a, b) {
@@ -952,8 +914,9 @@
   }
 
   function loadMode() {
-    // The redesigned learning surface starts with one-question focus.
-    return "single";
+    // Single-question view is now the transient immersive state. Do not
+    // restore the old persisted single mode without its focus shell.
+    return "list";
   }
 
   function saveMode() {
@@ -1157,7 +1120,6 @@
     els.browse.classList.toggle("hidden", name !== "browse");
     els.searchView.classList.toggle("hidden", name !== "search");
     els.feature?.classList.toggle("hidden", name !== "feature");
-    $("#view-catalog")?.classList.toggle("hidden", name !== "catalog");
     document.body.dataset.view = name;
     const toolsWorkspace = name === "feature" && state.feature === "tools";
     els.workspaceLearning?.classList.toggle("active", !toolsWorkspace);
@@ -1168,7 +1130,6 @@
       const specialNav = state.specialQueue === "todo" ? "mastery" : state.specialQueue === "forgot" ? "retest" : "";
       const active =
         (name === "home" && el.dataset.nav === "home") ||
-        (name === "catalog" && el.dataset.nav === "catalog") ||
         (name === "feature" && el.dataset.nav === state.feature) ||
         (name === "browse" && specialNav && el.dataset.nav === specialNav);
       el.classList.toggle("active", active);
@@ -3093,7 +3054,7 @@
         "学习记录",
         "按时间回看你的刷题轨迹和掌握变化。",
         `<button type="button" class="btn" id="feature-records-home">回到学习区</button>`,
-        `<section class="feature-panel"><div class="feature-stat-grid three">${featureStat("已作答", String(Object.keys(state.progress).length), "道题", "trend")}${featureStat("已掌握", String(buckets.mastered.length), "道题", "flame")}${featureStat("连续学习", buckets.mastered.length || buckets.learning.length ? "进行中" : "待开始", "学习状态", "calendar")}</div><p class="muted" id="heatmap-summary">还没有学习记录，从一道题开始。</p><div class="heatmap-scroll"><div class="heatmap-grid" id="heatmap-grid" aria-label="最近学习记录日期分布"></div></div><div class="heatmap-legend"><span>按题目最近记录日期展示</span><i data-level="0"></i><i data-level="1"></i><i data-level="2"></i><i data-level="3"></i><i data-level="4"></i><span>更多</span></div></section>`
+        `<section class="feature-panel"><div class="feature-stat-grid three">${featureStat("已作答", String(Object.keys(state.progress).length), "道题", "trend")}${featureStat("已掌握", String(buckets.mastered.length), "道题", "flame")}${featureStat("连续学习", buckets.mastered.length || buckets.learning.length ? "进行中" : "待开始", "学习状态", "calendar")}</div><div class="empty-state compact"><p>更详细的每日记录会随着刷题自动积累。</p></div></section>`
       );
     } else {
       html = featureShell(
@@ -3107,7 +3068,6 @@
     els.feature.innerHTML = html;
     const featureEyebrow = els.feature.querySelector(".eyebrow");
     if (featureEyebrow) featureEyebrow.textContent = kind === "tools" ? "工具区" : "学习区";
-    if (kind === "learning-records") renderActivityHeatmap();
     if (kind === "favorites") $("#feature-open-favorites")?.addEventListener("click", openFavoritesQueue);
     if (kind === "mastery") $("#feature-practice-mastery")?.addEventListener("click", () => openSpecial("todo"));
     if (kind === "retest") $("#feature-start-retest")?.addEventListener("click", () => openSpecial("forgot"));
@@ -3138,7 +3098,7 @@
     if (kind === "tools") {
       $("#feature-open-tutorial")?.addEventListener("click", () => openSheet("dlg-tutorial"));
       $("#feature-open-sync-guide")?.addEventListener("click", (event) => openSheet("dlg-sync-guide", event.currentTarget));
-      $("#feature-open-sync")?.addEventListener("click", () => $("#btn-home-sync")?.click());
+      $("#feature-open-sync")?.addEventListener("click", () => $("#btn-online-sync")?.click());
       $("#feature-open-appearance")?.addEventListener("click", () => openSheet("dlg-appearance"));
     }
   }
@@ -4648,7 +4608,6 @@
     $("#btn-preview-open")?.addEventListener("click", openPreviewAccess);
     $("#btn-open-sidebar").addEventListener("click", () => els.sidebar.classList.add("open"));
     $("#btn-close-sidebar").addEventListener("click", () => els.sidebar.classList.remove("open"));
-    $("#sidebar-backdrop")?.addEventListener("click", () => els.sidebar.classList.remove("open"));
     $("#btn-collapse-sidebar")?.addEventListener("click", () => {
       const app = $("#app");
       const collapsed = app?.dataset.sidebar === "collapsed";
@@ -4662,27 +4621,8 @@
     });
     $("#btn-appearance")?.addEventListener("click", (event) => openSheet("dlg-appearance", event.currentTarget));
     $("#nav-settings")?.addEventListener("click", (event) => openSheet("dlg-appearance", event.currentTarget));
-    document.querySelectorAll("[data-settings-tab]").forEach((button) => {
-      button.addEventListener("click", () => {
-        const tab = button.dataset.settingsTab;
-        document.querySelectorAll("[data-settings-tab]").forEach((item) => {
-          const active = item.dataset.settingsTab === tab;
-          item.classList.toggle("active", active);
-          item.setAttribute("aria-pressed", String(active));
-        });
-        document.querySelectorAll("[data-settings-panel]").forEach((panel) => {
-          panel.hidden = panel.dataset.settingsPanel !== tab;
-        });
-      });
-    });
     document.querySelectorAll("[data-theme-choice]").forEach((button) => {
       button.addEventListener("click", () => setUiTheme(button.dataset.themeChoice));
-    });
-    document.querySelectorAll("[data-accent-choice]").forEach((button) => {
-      button.addEventListener("click", () => setUiAccent(button.dataset.accentChoice));
-    });
-    document.querySelectorAll("[data-version-choice]").forEach((button) => {
-      button.addEventListener("click", () => setUiVersion(button.dataset.versionChoice));
     });
     $("#ui-bg-color")?.addEventListener("input", (event) => {
       uiPrefs.backgroundColor = event.target.value;
@@ -4775,10 +4715,6 @@
         els.moreTrigger?.setAttribute("aria-expanded", "true");
       } else closeMoreMenu();
     });
-    // 点击菜单里的任意项后立即收起菜单，避免弹窗打开后菜单仍悬在后面。
-    els.topbarMore?.addEventListener("click", (event) => {
-      if (event.target.closest("button")) closeMoreMenu({ restoreFocus: false });
-    });
     document.addEventListener("pointerdown", (event) => {
       if (state.chapterMenuOpen && !els.chapterPicker?.contains(event.target)) closeChapterMenu({ restoreFocus: false });
       if (!els.topbarMore?.classList.contains("hidden") && !event.target.closest?.(".topbar-more-wrap")) closeMoreMenu();
@@ -4789,18 +4725,6 @@
       goHome();
     });
     $("#nav-home").addEventListener("click", goHome);
-    $("#nav-catalog")?.addEventListener("click", () => {
-      state.specialQueue = null;
-      state.currentCatId = null;
-      state.chapterPathIds = [];
-      setView("catalog");
-      paintTree();
-      els.main?.scrollTo({ top: 0, behavior: "auto" });
-    });
-    $("#nav-review")?.addEventListener("click", () => openFeaturePage("retest"));
-    $("#nav-records")?.addEventListener("click", () => openFeaturePage("learning-records"));
-    $("#nav-tools")?.addEventListener("click", () => openFeaturePage("tools"));
-    $("#review-subnav")?.removeAttribute("hidden");
     $("#nav-favorites")?.addEventListener("click", () => openFeaturePage("favorites"));
     $("#nav-todo").addEventListener("click", () => openFeaturePage("mastery"));
     $("#nav-knowledge")?.addEventListener("click", () => toast("知识图谱建设中，敬请期待"));
@@ -4810,16 +4734,6 @@
     $("#workspace-learning")?.addEventListener("click", goHome);
     $("#workspace-tools")?.addEventListener("click", () => openFeaturePage("tools"));
     $("#btn-learning-records")?.addEventListener("click", () => openFeaturePage("learning-records"));
-    document.querySelectorAll("[data-open-feature]").forEach((button) => {
-      button.addEventListener("click", () => {
-        const kind = button.dataset.openFeature;
-        if (kind === "catalog") {
-          $("#nav-catalog")?.click();
-          return;
-        }
-        if (kind) openFeaturePage(kind);
-      });
-    });
     $("#btn-start").addEventListener("click", async () => {
       if (await resumeSavedLearningPosition()) return;
       let target = state.heroRecommendCatId ? findCat(state.heroRecommendCatId) : null;
@@ -4870,7 +4784,7 @@
       });
     });
 
-    $("#btn-reset-progress")?.addEventListener("click", () => {
+    $("#btn-reset-progress").addEventListener("click", () => {
       if (!previewPrivateAllowed()) return;
       if (!confirm("确定清除本机全部做题进度？")) return;
       state.progress = {};
@@ -5028,12 +4942,12 @@
       if (!on) $("#export-expl").checked = false;
     });
 
-    $("#btn-sync")?.addEventListener("click", () => {
+    $("#btn-sync").addEventListener("click", () => {
       if (!previewPrivateAllowed()) return;
       refreshSyncStats();
       openSheet("dlg-sync");
     });
-    $("#btn-online-sync")?.addEventListener("click", () => {
+    $("#btn-online-sync").addEventListener("click", () => {
       if (!previewPrivateAllowed()) return;
       openOnlineSyncPanel();
     });
@@ -5407,11 +5321,6 @@
     const landingEntry = getLandingEntry();
     checkRuntimeVersion();
     applyUiPreferences();
-    if (uiPrefs.uiVersion === "old") {
-      // 偏好停在旧大观：直接去旧版前端，保留 entry 等查询参数。
-      window.location.replace("./legacy.html" + location.search);
-      return;
-    }
     loadUiBackground();
     await hydratePreviewAccess();
     bindUI();

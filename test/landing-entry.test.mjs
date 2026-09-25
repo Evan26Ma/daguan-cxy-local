@@ -96,6 +96,7 @@ test("首次使用的直达入口等待进度加载，且不被欢迎弹窗覆�
   context.location.search = "?entry=resume";
   Object.assign(context, {
     checkRuntimeVersion() {}, applyUiPreferences() {}, loadUiBackground() {},
+    uiPrefs: { uiVersion: "new" }, location: context.location,
     hydratePreviewAccess: async () => {}, bindUI() {}, applyModeUI() {},
     hydrateStores: () => progress, hydrateServerState: async () => {},
     fetchJSON: async () => [], DATA: "./data", paintTree() {}, renderHome() {},

@@ -89,10 +89,51 @@ test("首屏不阻塞加载题库索引", () => {
 
 test("Service Worker 不预缓存首屏之外的大型索引和字体", () => {
   const sw = fs.readFileSync(new URL("../web/service-worker.js", import.meta.url), "utf8");
-  assert.match(sw, /daguan-shell-v79/);
-  assert.match(app, /service-worker\.js\?v=75/);
+  assert.match(sw, /daguan-shell-v88/);
+  assert.match(app, /service-worker\.js\?v=80/);
+  assert.match(sw, /"\.\/legacy\.html"/);
+  assert.match(sw, /"\.\/legacy\.css\?v=1"/);
   assert.doesNotMatch(sw, /data\/(category_questions|id_index|search_index)\.json/);
   assert.doesNotMatch(sw, /vendor\/fonts\//);
+});
+
+test("更新横幅按已读版本提醒，不再常驻", () => {
+  const legacyApp = fs.readFileSync(new URL("../web/app-legacy.js", import.meta.url), "utf8");
+  assert.match(server, /BUILD_VERSION = "2026\.09\.24-r34"/);
+  assert.match(app, /APP_VERSION = "2026\.09\.24-r34"/);
+  assert.match(app, /RUNTIME_SEEN_KEY = "daguan_runtime_version_seen_v1"/);
+  assert.match(app, /runtime\.appVersion !== APP_VERSION && runtime\.appVersion !== seen/);
+  assert.match(app, /localStorage\.setItem\(RUNTIME_SEEN_KEY, runtime\.appVersion\)/);
+  assert.match(legacyApp, /RUNTIME_SEEN_KEY = "daguan_runtime_version_seen_v1"/);
+  assert.match(legacyApp, /runtime\.appVersion !== APP_VERSION && runtime\.appVersion !== seen/);
+});
+
+test("界面版本：旧大观承载完整旧版前端", () => {
+  const legacyHtml = fs.readFileSync(new URL("../web/legacy.html", import.meta.url), "utf8");
+  const legacyCss = fs.readFileSync(new URL("../web/legacy.css", import.meta.url), "utf8");
+  const legacyApp = fs.readFileSync(new URL("../web/app-legacy.js", import.meta.url), "utf8");
+  assert.match(legacyHtml, /<title>大观园 · 本地刷题<\/title>/);
+  assert.match(legacyHtml, /legacy\.css\?v=1/);
+  assert.match(legacyHtml, /app-legacy\.js\?v=2/);
+  assert.match(legacyHtml, /legacy-version-toggle/);
+  assert.match(legacyCss, /--color-brand:\s*#1e4a5c|hero-copy/);
+  assert.doesNotMatch(legacyHtml, /styles\.css\?v=/);
+  assert.doesNotMatch(legacyHtml, /app2\.js/);
+  assert.match(legacyApp, /PROGRESS_KEY = "daguan_local_progress_v1"/);
+  assert.match(app, /window\.location\.href = "\.\/legacy\.html"/);
+  assert.match(app, /window\.location\.replace\("\.\/legacy\.html" \+ location\.search\)/);
+});
+
+test("品牌橙双方案：活力橙默认，朱砂橙可在设置切换", () => {
+  assert.match(css, /html\[data-accent="classic"\]\s*\{[\s\S]*--color-brand:\s*#eb5128/);
+  assert.match(css, /html\[data-theme="official-dark"\]\[data-accent="classic"\]/);
+  assert.match(css, /html\[data-theme="eye-care"\]\[data-accent="classic"\]/);
+  assert.match(html, /data-accent-choice="vibrant"/);
+  assert.match(html, /data-accent-choice="classic"/);
+  assert.match(app, /accent:\s*"vibrant"/);
+  assert.match(app, /function setUiAccent\(accent\)/);
+  assert.match(app, /root\.dataset\.accent = uiPrefs\.accent === "classic"/);
+  assert.match(html, /dataset\.accent = value\.accent === "classic"/);
 });
 
 test("Service Worker 响应始终重新校验，避免线上继续命中旧脚本", () => {
@@ -284,4 +325,16 @@ test("AI 学习助手支持鼠标拖拽和键盘调整宽度", () => {
   assert.match(css, /\.ai-message-body pre\s*\{[\s\S]*white-space:\s*pre-wrap/);
   assert.match(css, /overflow-x:\s*clip/);
   assert.match(app, /lostpointercapture/);
+});
+
+test("题册编辑风：全书卷衬线、大题号与行宽约束", () => {
+  const tokens = fs.readFileSync(new URL("../web/design-tokens.css", import.meta.url), "utf8");
+  assert.match(tokens, /--font-family-serif:\s*"Songti SC", "SimSun"/);
+  assert.match(tokens, /--question-number-ink:\s*#d5d5c9/);
+  assert.match(tokens, /html\[data-theme="official-dark"\]\s*\{[\s\S]*--question-number-ink:/);
+  assert.match(css, /#app\.learning-shell #q-single-num\s*\{[\s\S]*font:\s*400 44px\/1 var\(--font-family-mono\)/);
+  assert.match(css, /#app\.learning-shell \.q-stem,[\s\S]*?#app\.learning-shell #q-expl\s*\{[\s\S]*font-family:\s*var\(--font-family-serif\)/);
+  assert.match(css, /max-width:\s*34em/);
+  assert.match(css, /#app\.learning-shell \.answer-block,[\s\S]*border-left:\s*2px solid var\(--color-brand\)/);
+  assert.doesNotMatch(css, /fonts\.googleapis|@import\s+url\(/);
 });
