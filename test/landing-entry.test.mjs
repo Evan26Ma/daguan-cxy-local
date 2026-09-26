@@ -98,6 +98,8 @@ test("首次使用的直达入口等待进度加载，且不被欢迎弹窗覆�
     checkRuntimeVersion() {}, checkGithubCatalogVersion() {}, applyUiPreferences() {}, loadUiBackground() {},
     hydratePreviewAccess: async () => {}, bindUI() {}, applyModeUI() {},
     hydrateStores: () => progress, hydrateServerState: async () => {},
+    indexLectureVideoQuestions: () => ({}),
+    els: { stats: {}, home: {} },
     fetchJSON: async () => [], DATA: "./data", paintTree() {}, renderHome() {},
     refreshHomeSyncCard() {}, refreshPickUI() {},
     restoreLearningPosition: () => calls.push("restore-old-position"),

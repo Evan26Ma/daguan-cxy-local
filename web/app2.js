@@ -2,7 +2,7 @@
   "use strict";
 
   if ("serviceWorker" in navigator && location.protocol !== "file:") {
-    navigator.serviceWorker.register("./service-worker.js?v=73").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=74").catch(() => {});
   }
 
   const DATA = "./data";
@@ -51,6 +51,8 @@
   const state = {
     manifest: null,
     videoMapping: null,
+    videoQuestionIdsByTeacher: null,
+    paradiyuVideoMapping: null,
     categories: [],
     catQuestions: {},
     idIndex: {},
@@ -1096,24 +1098,73 @@
 
   function videoExplanationMarkup(q) {
     const categoryPath = String(q?.category_path || "");
-    if (!categoryPath.startsWith("线性代数")) return "";
-    const mapping = state.videoMapping;
-    const entry = mapping?.questions?.[String(q?.id)];
-    const seconds = Number(entry?.startSeconds);
-    if (!mapping || !Number.isFinite(seconds) || seconds < 0) return "";
-    const videoUrl = String(mapping.videoUrl || "").trim();
-    if (!videoUrl) return "";
-    let href;
-    try {
-      const url = new URL(videoUrl);
+    const questionId = String(q?.id ?? "");
+    const entries = Array.isArray(state.videoMapping?.questions?.[questionId])
+      ? state.videoMapping.questions[questionId]
+      : [];
+    const links = [];
+    for (const entry of entries) {
+      const bvid = String(entry?.bvid || "").trim();
+      const page = Number(entry?.page);
+      const seconds = Number(entry?.startSeconds);
+      if (!/^BV[\w]+$/.test(bvid) || !Number.isInteger(page) || page < 1 || !Number.isFinite(seconds) || seconds < 0) continue;
+      const url = new URL(`https://www.bilibili.com/video/${encodeURIComponent(bvid)}/`);
+      url.searchParams.set("p", String(page));
       url.searchParams.set("t", String(Math.floor(seconds)));
-      href = url.toString();
-    } catch {
-      return "";
+      const time = formatVideoTime(seconds);
+      const teacher = String(entry.teacher || "视频").trim();
+      const title = String(entry.title || entry.seriesTitle || bvid).trim();
+      links.push(`<a class="answer-video-link" data-video-teacher="${escapeHtml(teacher)}" href="${escapeHtml(url.toString())}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(`${teacher} · ${title} · ${time}`)}">${escapeHtml(teacher)} · ${escapeHtml(title)} · ${escapeHtml(time)}<span aria-hidden="true"> ↗</span></a>`);
     }
-    const time = new Date(Math.floor(seconds) * 1000).toISOString().slice(11, 19);
-    const title = String(entry.title || "").trim();
-    return `<div class="answer-block answer-video-block"><h3>帕拉迪宇视频讲解</h3><a class="answer-video-link" href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(title || "在新标签页打开视频讲解")}">跳转到 ${escapeHtml(time)}${title ? ` · ${escapeHtml(title)}` : ""}<span aria-hidden="true"> ↗</span></a></div>`;
+
+    // Keep supporting the original Paradiyu schema and its existing linear algebra scope.
+    const legacyMapping = state.paradiyuVideoMapping;
+    if (categoryPath.startsWith("线性代数")) {
+      const legacyEntry = legacyMapping?.questions?.[questionId];
+      const seconds = Number(legacyEntry?.startSeconds);
+      const videoUrl = String(legacyMapping?.videoUrl || "").trim();
+      if (legacyEntry && Number.isFinite(seconds) && seconds >= 0 && videoUrl) {
+        try {
+          const url = new URL(videoUrl);
+          url.searchParams.set("t", String(Math.floor(seconds)));
+          const time = formatVideoTime(seconds);
+          const title = String(legacyEntry.title || "").trim();
+          links.unshift(`<a class="answer-video-link" data-video-teacher="帕拉迪宇" href="${escapeHtml(url.toString())}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(title || "在新标签页打开视频讲解")}">帕拉迪宇 · ${escapeHtml(time)}${title ? ` · ${escapeHtml(title)}` : ""}<span aria-hidden="true"> ↗</span></a>`);
+        } catch { /* Ignore malformed legacy video URLs without breaking answers. */ }
+      }
+    }
+    if (!links.length) return "";
+    return `<div class="answer-block answer-video-block"><h3>视频讲解</h3><div class="answer-video-links">${links.join("")}</div></div>`;
+  }
+
+  function formatVideoTime(seconds) {
+    const total = Math.floor(Number(seconds));
+    if (!Number.isFinite(total) || total < 0) return "";
+    const hours = Math.floor(total / 3600);
+    const minutes = Math.floor((total % 3600) / 60);
+    const remainder = total % 60;
+    return hours
+      ? `${hours}:${String(minutes).padStart(2, "0")}:${String(remainder).padStart(2, "0")}`
+      : `${String(minutes).padStart(2, "0")}:${String(remainder).padStart(2, "0")}`;
+  }
+
+  function indexLectureVideoQuestions(mapping) {
+    const index = { "李艳芳": new Set(), "没咋了": new Set() };
+    for (const [questionId, entries] of Object.entries(mapping?.questions || {})) {
+      for (const entry of Array.isArray(entries) ? entries : []) {
+        if (index[entry?.teacher]) index[entry.teacher].add(String(questionId));
+      }
+    }
+    return index;
+  }
+
+  function videoTeacherMatches(id, teacher, annotation) {
+    const questionId = String(id);
+    if (teacher === "帕拉迪宇讲过") {
+      return annotation?.chapter === "线性代数" && (state.paradiyuVideoQuestionIds || new Set()).has(questionId);
+    }
+    const teacherName = teacher.replace(/讲过$/, "");
+    return Boolean(state.videoQuestionIdsByTeacher?.[teacherName]?.has(questionId));
   }
 
   function setView(name) {
@@ -1710,7 +1761,8 @@
     const f = state.advFilter || {};
     if (!advFilterActive()) return true;
     if (!A) return false;
-    if ((f["视频讲解"] || []).includes("帕拉迪宇讲过") && (A.chapter !== "线性代数" || !(state.paradiyuVideoQuestionIds || new Set()).has(String(id)))) return false;
+    const videoTeachers = f["视频讲解"] || [];
+    if (videoTeachers.length && !videoTeachers.some((teacher) => videoTeacherMatches(id, teacher, A))) return false;
     if ((f["快捷入口"] || []).length && !f["快捷入口"].includes(A.src)) return false;
     if ((f["题源"] || []).length && !f["题源"].includes(A.src)) return false;
     if ((f["章节"] || []).length && !f["章节"].includes(A.chapter)) return false;
@@ -1803,19 +1855,32 @@
       const res = await fetch("./data/paradiyu-linear-video.json");
       if (!res.ok) return new Set();
       const data = await res.json();
+      state.paradiyuVideoMapping = data;
       return new Set((Array.isArray(data.questionIds) ? data.questionIds : []).map(String));
     } catch {
       return new Set();
     }
   }
+  async function loadLectureVideoData() {
+    try {
+      const res = await fetch("./data/lecture-video-mappings.json");
+      if (!res.ok) return { schemaVersion: 1, questions: {} };
+      return await res.json();
+    } catch {
+      return { schemaVersion: 1, questions: {} };
+    }
+  }
   async function openFilterDialog() {
-    if (!state.bankTags || !state.paradiyuVideoQuestionIds) {
-      const [bankTags, paradiyuVideoQuestionIds] = await Promise.all([
+    if (!state.bankTags || !state.paradiyuVideoQuestionIds || !state.videoQuestionIdsByTeacher) {
+      const [bankTags, paradiyuVideoQuestionIds, videoMapping] = await Promise.all([
         state.bankTags ? Promise.resolve(state.bankTags) : loadAnnotationsData(),
         state.paradiyuVideoQuestionIds ? Promise.resolve(state.paradiyuVideoQuestionIds) : loadParadiyuVideoData(),
+        state.videoQuestionIdsByTeacher ? Promise.resolve(state.videoMapping) : loadLectureVideoData(),
       ]);
       state.bankTags = bankTags;
       state.paradiyuVideoQuestionIds = paradiyuVideoQuestionIds;
+      state.videoMapping = videoMapping || { schemaVersion: 1, questions: {} };
+      state.videoQuestionIdsByTeacher = indexLectureVideoQuestions(state.videoMapping);
       window.__fdbg = { hasAnn: !!state.bankTags, keys: state.bankTags ? Object.keys(state.bankTags.annotations || {}).length : -1, facets: state.bankTags ? (state.bankTags.facets || []).length : -1 };
     }
     if (!state.advFilter) {
@@ -1834,8 +1899,14 @@
     const tabs = $("#filter-tabs");
     if (tabs && !tabs.childElementCount && state.bankTags) {
       const facets = (state.bankTags.facets || []).map((x) => x);
-      const videoCount = [...(state.paradiyuVideoQuestionIds || [])].filter((id) => state.bankTags.annotations[String(id)]?.chapter === "线性代数").length;
-      facets.push({ dim: "视频讲解", options: [{ name: "帕拉迪宇讲过", count: videoCount }] });
+      const annotations = state.bankTags.annotations || {};
+      const countVideoTeacher = (teacher) => [...(state.videoQuestionIdsByTeacher?.[teacher] || [])].filter((id) => annotations[id]).length;
+      const paradiyuCount = [...(state.paradiyuVideoQuestionIds || [])].filter((id) => annotations[id]?.chapter === "线性代数").length;
+      facets.push({ dim: "视频讲解", options: [
+        { name: "帕拉迪宇讲过", count: paradiyuCount },
+        { name: "李艳芳讲过", count: countVideoTeacher("李艳芳") },
+        { name: "没咋了讲过", count: countVideoTeacher("没咋了") },
+      ] });
       const mc = masteryFacetCounts();
       facets.push({ dim: "掌握状态", options: Object.entries(mc).map(([name, count]) => ({ name, count })) });
       state._facets = facets;
@@ -5335,14 +5406,18 @@
     const hydrated = hydrateStores();
     const serverHydrated = hydrateServerState();
     try {
-      const [manifest, categories, videoMapping] = await Promise.all([
+      const [manifest, categories, videoMapping, paradiyuVideoMapping] = await Promise.all([
         fetchJSON(`${DATA}/manifest.json`),
         fetchJSON(`${DATA}/categories.json`),
+        fetchJSON(`${DATA}/lecture-video-mappings.json`).catch(() => ({ schemaVersion: 1, questions: {} })),
         fetchJSON(`${DATA}/paradiyu-linear-video.json`).catch(() => null),
       ]);
       state.manifest = manifest;
       state.categories = categories;
       state.videoMapping = videoMapping;
+      state.videoQuestionIdsByTeacher = indexLectureVideoQuestions(videoMapping);
+      state.paradiyuVideoMapping = paradiyuVideoMapping;
+      state.paradiyuVideoQuestionIds = new Set((Array.isArray(paradiyuVideoMapping?.questionIds) ? paradiyuVideoMapping.questionIds : []).map(String));
       paintTree();
       renderHome();
       refreshHomeSyncCard();
