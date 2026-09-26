@@ -7,7 +7,7 @@
   <meta name="description" content="大观园数学题库本地静态刷题站" />
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="stylesheet" href="./vendor/katex.min.css" />
-    <link rel="stylesheet" href="./styles.css?v=57" />
+    <link rel="stylesheet" href="./styles.css?v=58" />
   <script>
     (() => {
       if (location.search.includes("purge=1")) {
@@ -182,7 +182,7 @@
         </div>
       </header>
       <div id="update-banner" role="status" aria-live="polite">
-        <span>本地题库有新版本，刷新后会恢复当前章节、题号和滚动位置。</span>
+        <span>GitHub 题库有新版本，更新本地文件后刷新会恢复当前章节、题号和滚动位置。</span>
         <button type="button" class="btn primary" id="btn-update-refresh">立即刷新</button>
       </div>
       <div id="preview-access-banner" class="preview-access-banner" role="status" aria-live="polite" hidden>
@@ -367,7 +367,7 @@
         <div class="ai-privacy-note" id="ai-privacy-note">已附带题干、选项、答案和解析；本地批注与掌握状态不会发送。</div>
         <div class="ai-messages" id="ai-messages" aria-live="polite"><div class="ai-empty"><svg class="ui-icon"><use href="#icon-spark"></use></svg><strong>先问一个问题</strong><p>题目上下文已经准备好，选择下方提示或直接输入你的疑问。</p></div></div>
         <div class="ai-suggestions" id="ai-suggestions">
-          <button type="button" class="ai-suggestion" data-ai-prompt="请按步骤逐步依次解答这道题。解答过程中说明每一步的知识点是什么、思路是什么、具体过程是什么，并说明每个过程用到的信息可以从题目、图像、条件、选项或答案解析中的哪里提取。解答结束后说明答案是什么、遇到这类题第一时间应该想到什么、此类题解的通式是什么，以及有没有类似题。只围绕这些内容回答，不要添加其他无关内容。">完整解答</button>
+          <button type="button" class="ai-suggestion" data-ai-prompt="请对这道题进行可追踪的逐步解题，不要只给结论或一段连续推导。一、总体思路：先用 1、2、3……列出完整解题路线，说明每一步要解决什么问题，以及这些步骤之间的关系。二、逐步解题：按照总体思路逐步展开。每一步都必须明确写出：1. 这是总体思路中的第几步，本步的目标是什么；2. 本步使用的知识点名称；3. 这个知识点的具体内容，包括定义、定理、公式、适用条件或判断依据；4. 从题目中的什么信息知道要使用这个知识点；5. 题干、图像、条件、选项中的具体信息是什么；6. 由这些信息如何进行推导、计算或判断；7. 本步得到的结果是什么，以及它如何用于下一步。请严格区分题目直接给出的信息、根据题目推出的中间结论、上一步已经得到的结果、官方解析中提供但题干没有直接给出的内容。如果某个知识点不是从题干直接判断出来的，而是由前一步结果推出的，要明确说明这是由前一步结果得到的。三、最终答案：完成所有步骤后，再单独给出最终答案，并说明答案是如何由前面的步骤得到的。四、方法总结：最后说明这类题遇到时应该优先识别哪些信息、第一时间想到什么方法，以及本题的通用解题套路。只围绕以上结构回答，不省略关键依据，不把多个推理步骤合并成一句话。数学公式使用 LaTeX。">完整解答</button>
           <button type="button" class="ai-suggestion" data-ai-prompt="先不要直接跳到结论，给我一个解题提示。">给我提示</button>
           <button type="button" class="ai-suggestion" data-ai-prompt="请指出这道题最容易犯的错误。">易错点</button>
           <button type="button" class="ai-suggestion" data-ai-prompt="请判断这道题是否适合画图，并用图形解释。">画图解释</button>

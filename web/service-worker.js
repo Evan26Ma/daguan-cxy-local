@@ -8,7 +8,7 @@ const SHELL = [
   "./assets/landing/math-surface.svg",
   "./assets/landing/daguan-curve-logo.png",
   "./index.html",
-  "./styles.css?v=57",
+  "./styles.css?v=58",
   "./app2.js?v=46",
   "./vendor/marked.min.js",
   "./vendor/katex.min.js",

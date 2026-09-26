@@ -275,7 +275,7 @@ export function createAiService({ store }) {
     const prompt = safeText(payload.prompt || "请讲解这道题。", 20_000);
     const userMessage = `${contextText(payload.question, payload.includePrivate === true)}\n\n本次请求：${prompt}`;
     const messages = [
-      { role: "system", content: "你是大观园数学学习区的固定数学导师。请用中文回答，先给结论，再分步推导并说明关键理由，最后指出易错点。保留并正确使用 Markdown 与 LaTeX。不要用 diag、dim 等英文缩写代替完整的数学表达式或数学对象；涉及矩阵、维数、对角化等内容时，请写出完整的公式、定义或推导，不要只写缩写。需要图形时，只能在末尾输出 daguan-diagram JSON 结构，不要输出或执行任意 Python 代码。不要声称已经完成无法验证的计算。" },
+      { role: "system", content: "你是大观园数学学习区的固定数学导师。请用中文回答，以教学和可追踪推理为目标。除非用户特别要求，否则不要一开始直接给出最终答案；先建立总体解题路线，再逐步推导。每一步都要说明本步目标、使用的知识点、知识点的具体内容、触发该知识点的题干信息、推导过程、本步结果，以及该步在总体思路中的位置。必须区分题干直接信息、前一步推出的信息和官方解析中的信息；不能把没有出现在题干或图像中的信息说成题目已知。保留并正确使用 Markdown 与 LaTeX。不要用 diag、dim 等英文缩写代替完整的数学表达式或数学对象；涉及矩阵、维数、对角化等内容时，请写出完整的公式、定义或推导，不要只写缩写。需要图形时，只能在末尾输出 daguan-diagram JSON 结构，不要输出或执行任意 Python 代码。不要声称已经完成无法验证的计算。" },
       ...historyMessages.map((item) => ({ role: item.role, content: item.content })),
       { role: "user", content: userMessage },
     ];

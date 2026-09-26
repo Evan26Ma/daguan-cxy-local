@@ -6,6 +6,8 @@ const html = fs.readFileSync(new URL("../web/index.html", import.meta.url), "utf
 const app = fs.readFileSync(new URL("../web/app2.js", import.meta.url), "utf8");
 const css = fs.readFileSync(new URL("../web/styles.css", import.meta.url), "utf8");
 const server = fs.readFileSync(new URL("../local-server/server.mjs", import.meta.url), "utf8");
+const windowsBuild = fs.readFileSync(new URL("../scripts/build-windows-exe.mjs", import.meta.url), "utf8");
+const seaEntry = fs.readFileSync(new URL("../packaging/sea-entry.cjs", import.meta.url), "utf8");
 
 test("工具区拥有独立选中态和清晰的同步入口", () => {
   assert.match(app, /const toolsWorkspace = name === "feature" && state\.feature === "tools"/);
@@ -100,6 +102,15 @@ test("Service Worker 响应始终重新校验，避免线上继续命中旧脚�
   assert.match(server, /isHtml \|\| isServiceWorker \? "no-cache"/);
 });
 
+test("Windows EXE 不包含落地页并直接进入刷题页", () => {
+  assert.match(windowsBuild, /WINDOWS_EXCLUDED_WEB_FILES/);
+  assert.match(windowsBuild, /web\/landing\.html/);
+  assert.match(windowsBuild, /packageServiceWorker/);
+  assert.match(server, /DAGUAN_DEFAULT_PAGE/);
+  assert.match(seaEntry, /\/index\.html`/);
+  assert.match(seaEntry, /DAGUAN_DEFAULT_PAGE = "\/index\.html"/);
+});
+
 test("公开预览版只读，个人功能需要预览密钥", () => {
   assert.match(server, /DAGUAN_PREVIEW_KEY/);
   assert.match(server, /PREVIEW_LOCKED/);
@@ -107,6 +118,15 @@ test("公开预览版只读，个人功能需要预览密钥", () => {
   assert.match(app, /api\/access\/status/);
   assert.match(app, /previewPrivateAllowed/);
   assert.match(html, /dlg-preview-access/);
+  assert.match(css, /\.preview-access-banner\[hidden\]\s*\{\s*display:\s*none\s*!important/);
+  assert.match(app, /banner\.hidden = !visible/);
+});
+
+test("题库更新提醒以 GitHub 题库清单为准", () => {
+  assert.match(app, /raw\.githubusercontent\.com\/Evan26Ma\/daguan-cxy-local\/codex\/daguan-math-local-sync\/web\/data\/manifest\.json/);
+  assert.match(app, /function catalogFingerprint\(manifest\)/);
+  assert.match(app, /catalogFingerprint\(remoteManifest\) !== catalogFingerprint\(state\.manifest\)/);
+  assert.match(html, /GitHub 题库有新版本/);
 });
 
 test("首页继续按钮回到上次刷题题目", () => {
@@ -121,6 +141,7 @@ test("沉浸模式隐藏左侧导航并让 AI 抽屉宽度参与页面布局", (
   assert.match(css, /body\.focus-mode #app\.learning-shell \.learning-shell__sidebar\s*,[\s\S]*display:\s*none\s*!important/s);
   assert.match(css, /body\.focus-mode #app\.learning-shell\s*\{[\s\S]*?grid-template-columns:\s*1fr\s*!important/s);
   assert.match(css, /body\.ai-drawer-open #app\.learning-shell\s*\{\s*margin-right:\s*var\(--ai-drawer-width/s);
+  assert.match(css, /#app\.learning-shell \.q-feed\s*\{\s*grid-template-columns:\s*minmax\(0, 1fr\)/);
   assert.match(css, /\.ai-drawer\s*\{[\s\S]*container-type:\s*inline-size/s);
   assert.match(css, /@container \(max-width:\s*380px\)/);
 });
@@ -198,13 +219,13 @@ test("AI 流式回答节流渲染并在回到前台时恢复", () => {
 });
 
 test("AI 题目入口提供完整解答和错题分析模板", () => {
-  assert.match(html, /请按步骤逐步依次解答这道题[\s\S]*每个过程用到的信息可以从题目、图像、条件、选项或答案解析中的哪里提取/);
-  assert.match(html, /解答结束后说明答案是什么[\s\S]*第一时间应该想到什么[\s\S]*此类题解的通式是什么[\s\S]*有没有类似题/);
-  assert.match(html, /只围绕这些内容回答，不要添加其他无关内容/);
+  assert.match(html, /请对这道题进行可追踪的逐步解题[\s\S]*总体思路[\s\S]*列出完整解题路线/);
+  assert.match(html, /总体思路中的第几步[\s\S]*知识点的具体内容[\s\S]*从题目中的什么信息知道/);
+  assert.match(html, /题目直接给出的信息[\s\S]*根据题目推出的中间结论[\s\S]*官方解析中提供/);
+  assert.match(html, /最终答案[\s\S]*方法总结[\s\S]*通用解题套路/);
   assert.match(html, /错题模板/);
   assert.match(html, /错题分析/);
-  assert.match(html, /所有数学公式都使用 LaTeX 格式/);
-  assert.match(html, /只使用半角标点符号/);
+  assert.match(html, /数学公式使用 LaTeX/);
 });
 
 test("AI 输入框回车发送且 Shift+Enter 换行", () => {

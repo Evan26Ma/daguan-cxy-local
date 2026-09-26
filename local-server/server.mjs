@@ -13,6 +13,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const WEB_ROOT = path.join(ROOT, "web");
 const PORT = Number(process.env.PORT || 8080);
 const HOST = process.env.HOST || "127.0.0.1";
+const DEFAULT_PAGE = process.env.DAGUAN_DEFAULT_PAGE === "/index.html" ? "/index.html" : "/landing.html";
 const BUILD_VERSION = "2026.09.24-r26";
 const MAX_BODY = 10 * 1024 * 1024;
 const PREVIEW_KEY = String(process.env.DAGUAN_PREVIEW_KEY || "");
@@ -517,7 +518,7 @@ const MIME = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; cha
 async function serveStatic(requestPath, res) {
   let relative;
   try { relative = decodeURIComponent(requestPath); } catch { return json(res, 400, { error: "路径错误" }); }
-  if (relative === "/" || relative === "") relative = "/landing.html";
+  if (relative === "/" || relative === "") relative = DEFAULT_PAGE;
   const target = path.resolve(WEB_ROOT, `.${relative}`);
   if (!target.startsWith(`${WEB_ROOT}${path.sep}`)) return json(res, 403, { error: "禁止访问" });
   try {

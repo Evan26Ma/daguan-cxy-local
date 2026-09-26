@@ -16,7 +16,7 @@
   const AI_PREFS_KEY = "daguan_ai_preferences_v1";
   const AI_WIDTH_KEY = "daguan_ai_drawer_width_v1";
   const UI_BACKGROUND_KEY = "ui-background";
-  const APP_VERSION = "2026.09.24-r34";
+  const GITHUB_CATALOG_MANIFEST_URL = "https://raw.githubusercontent.com/Evan26Ma/daguan-cxy-local/codex/daguan-math-local-sync/web/data/manifest.json";
   const POSITION_KEY = "daguan_learning_position_v2";
   const UI_THEMES = ["official-light", "official-dark", "eye-care", "custom"];
   const DEFAULT_UI_PREFS = Object.freeze({
@@ -198,7 +198,11 @@
       });
     });
     const banner = $("#preview-access-banner");
-    if (banner) banner.hidden = !previewMode || previewUnlocked;
+    if (banner) {
+      const visible = previewMode && !previewUnlocked;
+      banner.hidden = !visible;
+      banner.setAttribute("aria-hidden", String(!visible));
+    }
     const status = $("#preview-access-status");
     if (status) status.textContent = !previewMode ? "普通本地模式" : previewUnlocked ? "个人功能已解锁" : "当前为只读预览模式";
     const lock = $("#btn-preview-lock");
@@ -3403,12 +3407,29 @@
     el.textContent = text;
   }
 
-  async function checkRuntimeVersion() {
+  function catalogFingerprint(manifest) {
+    const shards = Object.fromEntries(
+      Object.entries(manifest?.shards || {})
+        .sort(([left], [right]) => left.localeCompare(right))
+        .map(([name, value]) => [name, { file: value?.file || null, count: Number(value?.count || 0) }])
+    );
+    return JSON.stringify({
+      version: manifest?.version ?? null,
+      total: Number(manifest?.total || manifest?.question_count || 0) || 0,
+      types: manifest?.types || {},
+      shards,
+      asset_count: Number(manifest?.asset_count || 0) || 0,
+      synced_at: manifest?.synced_at || manifest?.updated_at || manifest?.generated_at || null,
+    });
+  }
+
+  async function checkGithubCatalogVersion() {
+    if (!state.manifest) return;
     try {
-      const response = await fetch("./api/runtime", { cache: "no-store" });
+      const response = await fetch(`${GITHUB_CATALOG_MANIFEST_URL}?t=${Date.now()}`, { cache: "no-store" });
       if (!response.ok) return;
-      const runtime = await response.json();
-      if (runtime.appVersion && runtime.appVersion !== APP_VERSION) {
+      const remoteManifest = await response.json();
+      if (catalogFingerprint(remoteManifest) !== catalogFingerprint(state.manifest)) {
         const banner = $("#update-banner");
         if (banner) banner.dataset.visible = "1";
       }
@@ -5306,7 +5327,6 @@
 
   async function init() {
     const landingEntry = getLandingEntry();
-    checkRuntimeVersion();
     applyUiPreferences();
     loadUiBackground();
     await hydratePreviewAccess();
@@ -5326,6 +5346,7 @@
       paintTree();
       renderHome();
       refreshHomeSyncCard();
+      checkGithubCatalogVersion();
       setView("home");
       if (landingEntry === null) restoreLearningPosition();
       refreshPickUI();

@@ -129,7 +129,7 @@ async function main() {
   const root = appRoot();
   await fsp.mkdir(root, { recursive: true });
   const choice = await choosePort();
-  const url = `http://127.0.0.1:${choice.port}/`;
+  const url = `http://127.0.0.1:${choice.port}/index.html`;
   if (choice.reuse && !process.argv.includes("--check")) {
     openBrowser(url);
     return;
@@ -142,6 +142,7 @@ async function main() {
   process.env.HOST = "127.0.0.1";
   process.env.PORT = String(choice.port);
   process.env.DAGUAN_DATA_DIR = path.join(root, "data");
+  process.env.DAGUAN_DEFAULT_PAGE = "/index.html";
   setTimeout(() => openBrowser(url), 900);
   await import(pathToFileURL(path.join(appDir, "local-server", "server.mjs")).href);
 }

@@ -11,6 +11,26 @@ const BUILD = path.join(ARTIFACT_ROOT, ".build", "sea");
 const DIST = path.join(ARTIFACT_ROOT, "dist");
 const OUT = path.join(DIST, "大观园数学题库.exe");
 const NODE_SEA_FUSE = "NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2";
+const WINDOWS_EXCLUDED_WEB_FILES = new Set([
+  "web/landing.html",
+  "web/landing.css",
+  "web/landing.js",
+  "web/assets/landing/local-mark.svg",
+  "web/assets/landing/math-surface.svg",
+  "web/assets/landing/landing-book-particles.jpg",
+  "web/assets/landing/wechat_qrcode.png",
+]);
+
+function shouldBundle(relative) {
+  return !WINDOWS_EXCLUDED_WEB_FILES.has(relative);
+}
+
+function packageServiceWorker(relative, data) {
+  if (relative !== "web/service-worker.js") return data;
+  const text = data.toString("utf8");
+  const withoutLandingShell = text.replace(/^\s+"\.\/(?:landing\.html|landing\.css\?v=\d+|landing\.js\?v=\d+|assets\/landing\/(?:local-mark\.svg|math-surface\.svg)),\r?\n/gm, "");
+  return Buffer.from(withoutLandingShell, "utf8");
+}
 
 function writeField(buffer, offset, length, value) {
   Buffer.from(String(value)).copy(buffer, offset, 0, Math.min(length, Buffer.byteLength(String(value))));
@@ -62,11 +82,11 @@ async function makeBundle(output) {
     ...(await walk(path.join(ROOT, "web"))),
     ...(await walk(path.join(ROOT, "local-server"))),
     ...(await walk(path.join(ROOT, "shared"))),
-  ];
+  ].filter((file) => shouldBundle(path.relative(ROOT, file).replaceAll(path.sep, "/")));
   const chunks = [];
   for (const file of files) {
     const relative = path.relative(ROOT, file).replaceAll(path.sep, "/");
-    const data = await fsp.readFile(file);
+    const data = packageServiceWorker(relative, await fsp.readFile(file));
     chunks.push(tarHeader(relative, data.length), data);
     const padding = (512 - (data.length % 512)) % 512;
     if (padding) chunks.push(Buffer.alloc(padding));
