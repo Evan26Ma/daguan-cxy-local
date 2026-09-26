@@ -1,15 +1,20 @@
-const CACHE = "daguan-shell-v77";
+const CACHE = "daguan-shell-v89";
 const SHELL = [
   "./",
   "./landing.html",
-  "./landing.css?v=5",
+  "./landing.css?v=7",
+  "./design-tokens.css?v=2",
   "./landing.js?v=3",
   "./assets/landing/local-mark.svg",
   "./assets/landing/math-surface.svg",
   "./assets/landing/daguan-curve-logo.png",
   "./index.html",
-  "./styles.css?v=58",
-  "./app2.js?v=48",
+  "./ui-version.js?v=89",
+  "./legacy.html",
+  "./legacy.css?v=89",
+  "./app-legacy.js?v=89",
+  "./styles.css?v=89",
+  "./app2.js?v=89",
   "./vendor/marked.min.js",
   "./vendor/katex.min.js",
   "./vendor/katex.min.css",
@@ -28,7 +33,7 @@ self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches
       .keys()
-      .then((keys) => Promise.all(keys.filter((key) => key !== CACHE).map((key) => caches.delete(key))))
+      .then((keys) => Promise.all(keys.filter((key) => key.startsWith("daguan-shell-") && key !== CACHE).map((key) => caches.delete(key))))
       .then(() => self.clients.claim())
   );
 });
@@ -43,7 +48,7 @@ self.addEventListener("fetch", (event) => {
       ? fetch(request).then((response) => {
           if (response.ok) caches.open(CACHE).then((cache) => cache.put(request, response.clone()));
           return response;
-        }).catch(() => caches.match(request).then((cached) => cached || caches.match("./index.html")))
+        }).catch(() => caches.match(request).then((cached) => cached || caches.match(new URL(request.url).pathname.endsWith("legacy.html") ? "./legacy.html" : "./index.html")))
       : caches.match(request).then((cached) => cached || fetch(request).then((response) => {
           if (response.ok && new URL(request.url).origin === location.origin) caches.open(CACHE).then((cache) => cache.put(request, response.clone()));
           return response;

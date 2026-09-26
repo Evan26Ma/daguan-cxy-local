@@ -14,7 +14,7 @@ const WEB_ROOT = path.join(ROOT, "web");
 const PORT = Number(process.env.PORT || 8080);
 const HOST = process.env.HOST || "127.0.0.1";
 const DEFAULT_PAGE = process.env.DAGUAN_DEFAULT_PAGE === "/index.html" ? "/index.html" : "/landing.html";
-const BUILD_VERSION = "2026.09.24-r26";
+const BUILD_VERSION = "2026.09.26-dual-ui-r1";
 const MAX_BODY = 10 * 1024 * 1024;
 const PREVIEW_KEY = String(process.env.DAGUAN_PREVIEW_KEY || "");
 const PREVIEW_MODE = process.env.DAGUAN_PREVIEW_MODE === "1" || Boolean(PREVIEW_KEY);
