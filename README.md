@@ -51,7 +51,7 @@
 ---
 
 > **Windows 新手推荐：直接下载 EXE，不要下载 Source code。**
-> [⬇️ 下载 `DaguanMath-windows-x64.exe`](https://github.com/Evan26Ma/daguan-cxy-local/releases/latest/download/DaguanMath-windows-x64.exe) · [📖 完全零基础安装与配置教程](docs/Windows新手安装与配置.md)
+> [⬇️ 下载 `DaguanMath-windows-x64.exe`](https://github.com/Evan26Ma/daguan-cxy-local/releases/download/v2026.09.27-r27/DaguanMath-windows-x64.exe) · [📖 完全零基础安装与配置教程](docs/Windows新手安装与配置.md)
 
 一个在自己电脑上运行的大观园数学题库增强版：题目更适合连续刷，学习进度保存在本机，可选同步官网进度，也可选连接 AI 助教。普通 Windows 用户只需“下载 EXE → 双击运行 → 浏览器自动打开”，不需要安装 Node.js、不需要使用命令行，也不需要浏览器扩展。
 
@@ -69,7 +69,7 @@
 
 AI 能力取决于你配置的服务：普通文本模型不能自动获得视觉或绘图能力；API 费用、速率限制、内容策略和服务稳定性由对应厂商或中转站负责。
 
-更新记录见 [CHANGELOG.md](CHANGELOG.md)，当前发布版本为 `v2026.09.22-r12`。
+更新记录见 [CHANGELOG.md](CHANGELOG.md)，当前部署对应发布版本为 `v2026.09.27-r27`。
 
 `android/` 保留原 Flutter 客户端和兼容数据格式，`web/` 是刷题页面，`local-server/` 是本地中控台，`sync-extension/` 仅作为旧版浏览器桥接兼容方案保留。
 
@@ -79,7 +79,7 @@ AI 能力取决于你配置的服务：普通文本模型不能自动获得视�
 
 #### 普通用户（推荐）
 
-直接下载 [DaguanMath-windows-x64.exe](https://github.com/Evan26Ma/daguan-cxy-local/releases/latest/download/DaguanMath-windows-x64.exe)：
+直接下载 [DaguanMath-windows-x64.exe](https://github.com/Evan26Ma/daguan-cxy-local/releases/download/v2026.09.27-r27/DaguanMath-windows-x64.exe)：
 
 1. 双击 EXE；
 2. 如果 Windows 显示“已保护你的电脑”，核对文件来自本项目 Release 后，点击“更多信息 → 仍要运行”；

@@ -4,7 +4,7 @@
 
 ## 先看结论：你只需要这个 EXE
 
-[⬇️ 下载最新 EXE 安装包](https://github.com/Evan26Ma/daguan-cxy-local/releases/latest/download/DaguanMath-windows-x64.exe) · [下载最新 ZIP 安装包](https://github.com/Evan26Ma/daguan-cxy-local/releases/latest/download/DaguanMath-windows-x64.zip)
+[⬇️ 下载当前部署版 EXE 安装包](https://github.com/Evan26Ma/daguan-cxy-local/releases/download/v2026.09.27-r27/DaguanMath-windows-x64.exe) · [下载当前部署版 ZIP 安装包](https://github.com/Evan26Ma/daguan-cxy-local/releases/download/v2026.09.27-r27/DaguanMath-windows-x64.zip)
 
 下载完成后双击它，等待浏览器自动打开就行。
 
@@ -142,7 +142,7 @@ API Key 只保存在本机。截图求助时，请先遮住 API Key、大观园�
 
 ## 10. 怎样更新
 
-1. 打开 [GitHub Releases](https://github.com/Evan26Ma/daguan-cxy-local/releases/latest)。
+1. 打开 [当前部署版 GitHub Release](https://github.com/Evan26Ma/daguan-cxy-local/releases/tag/v2026.09.27-r27)。
 2. 下载新的 `DaguanMath-windows-x64.exe`。
 3. 先关闭旧版的黑色运行窗口。
 4. 用新 EXE 替换旧 EXE，然后双击新版。
