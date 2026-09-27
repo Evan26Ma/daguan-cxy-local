@@ -59,7 +59,7 @@ for (const meta of Object.values(manifest.shards || {})) {
 if (questionCount !== manifest.total) {
   throw new Error(`题目总量不一致: manifest=${manifest.total}, actual=${questionCount}`);
 }
-for (const file of ["index.html", "landing.html"]) {
+for (const file of ["index.html", "legacy.html", "landing.html"]) {
   const html = await readFile(join(web, file), "utf8");
   // 导航和下载外链不影响离线加载；页面依赖仍须保存在本地。
   for (const tag of html.matchAll(/<(?:script|link|img|source|video|audio|iframe|embed|object)\b[^>]*>/gi)) {
@@ -70,9 +70,11 @@ for (const file of ["index.html", "landing.html"]) {
     }
   }
 }
-for (const file of ["app2.js", "styles.css", "landing.js", "landing.css", "manifest.webmanifest", "service-worker.js"]) {
+for (const file of ["app2.js", "app-legacy.js", "ui-version.js", "styles.css", "legacy.css", "design-tokens.css", "landing.js", "landing.css", "manifest.webmanifest", "service-worker.js"]) {
   const text = await readFile(join(web, file), "utf8");
-  if (/https?:\/\//i.test(text)) {
+  // Bilibili links are explicit navigation, never fetched for offline rendering.
+  const dependencies = text.replace(/https:\/\/www\.bilibili\.com\/video\//g, "");
+  if (/https?:\/\//i.test(dependencies)) {
     throw new Error(`${file} 仍包含外部 URL`);
   }
 }

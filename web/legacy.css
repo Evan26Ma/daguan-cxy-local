@@ -1086,6 +1086,7 @@ summary:focus-visible {
   font-weight: 650;
   text-decoration: none;
 }
+.answer-video-links { display: grid; gap: 0.35rem; }
 .answer-video-link:hover { text-decoration: underline; }
 .answer-video-link:focus-visible { outline: 2px solid var(--brand); outline-offset: 3px; }
 
@@ -2584,6 +2585,8 @@ body[data-view="browse"] .top-actions .mode-toggle, body[data-view="browse"] .to
 /* Learning-zone compatibility layer: 100% scale on wide screens, dense without
    browser zoom on narrow desktop viewports. Every selector stays under the app
    root so host-page styles such as `.options` cannot create overlay boxes. */
+#app.learning-shell .q-feed { grid-template-columns: minmax(0, 1fr); min-width: 0; }
+#app.learning-shell .q-card { min-width: 0; }
 #app.learning-shell .question-options { position: static; z-index: auto; width: auto; min-height: 0; }
 #app.learning-shell .question-options:empty { display: none; }
 #app.learning-shell .opt { position: relative; z-index: 0; min-width: 0; }
@@ -2796,6 +2799,11 @@ body.focus-mode #app.learning-shell .q-actions { position: sticky; bottom: 0; ba
   .ai-drawer { width: min(var(--ai-drawer-width, 400px), 100vw); }
   body.ai-drawer-open .ai-edge-tab { right: 0; }
 }
+@media (min-width: 42.0625rem) and (max-width: 79.999rem) {
+  /* Keep the question fully clickable while the assistant is open. */
+  body.ai-drawer-open #app.learning-shell { margin-right: var(--ai-drawer-width, 400px); transition: margin-right .2s ease; }
+  body.ai-drawer-open .ai-edge-tab { right: var(--ai-drawer-width, 400px); }
+}
 @media (min-width: 80rem) {
   /* Keep the assistant as an overlay until there is enough room for both columns. */
   body.ai-drawer-open #app.learning-shell { margin-right: var(--ai-drawer-width, 400px); transition: margin-right .2s ease; }
@@ -2980,6 +2988,7 @@ body[data-view="browse"] #app.learning-shell .topbar { gap: .7rem; padding-inlin
 .home-sync-foot-actions { display: flex; align-items: center; gap: .45rem; flex-shrink: 0; }
 
 .preview-access-banner { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin: .75rem 1rem 0; padding: .7rem .85rem; color: var(--color-foreground); background: color-mix(in srgb, var(--color-brand-soft) 72%, var(--color-surface)); border: 1px solid color-mix(in srgb, var(--color-brand) 28%, var(--color-border)); border-radius: 10px; }
+.preview-access-banner[hidden] { display: none !important; }
 .preview-access-banner > div:first-child { display: flex; align-items: baseline; gap: .65rem; flex-wrap: wrap; }
 .preview-access-banner strong { color: var(--color-brand); }
 .preview-access-banner span { color: var(--color-foreground-muted); font-size: .88rem; }
@@ -3146,3 +3155,7 @@ body.focus-mode[data-view="browse"] #app.learning-shell .learning-shell__sidebar
 .filter-count strong { color: var(--color-brand); font-size: 1.1rem; }
 /* 修复：选项卡内文字层拦截指针导致勾选串行（点 B 行勾到 A 行） */
 .filter-option span, .filter-option small, .filter-option .filter-opt-name { pointer-events: none; }
+
+.practice-version-toggle { display: flex; justify-content: flex-end; gap: .4rem; margin-bottom: .6rem; }
+.practice-version-toggle [aria-pressed="true"], .legacy-version-toggle [aria-pressed="true"] { border-color: var(--color-brand); color: var(--color-brand); }
+.legacy-version-toggle { display: flex; flex-wrap: wrap; gap: .4rem; padding: .5rem; }

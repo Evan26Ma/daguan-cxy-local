@@ -15,7 +15,6 @@ const WINDOWS_EXCLUDED_WEB_FILES = new Set([
   "web/landing.html",
   "web/landing.css",
   "web/landing.js",
-  "web/assets/landing/local-mark.svg",
   "web/assets/landing/math-surface.svg",
   "web/assets/landing/landing-book-particles.jpg",
   "web/assets/landing/wechat_qrcode.png",
@@ -28,7 +27,7 @@ function shouldBundle(relative) {
 function packageServiceWorker(relative, data) {
   if (relative !== "web/service-worker.js") return data;
   const text = data.toString("utf8");
-  const withoutLandingShell = text.replace(/^\s+"\.\/(?:landing\.html|landing\.css\?v=\d+|landing\.js\?v=\d+|assets\/landing\/(?:local-mark\.svg|math-surface\.svg)),\r?\n/gm, "");
+  const withoutLandingShell = text.replace(/^\s+"\.\/(?:landing\.html|landing\.css\?v=\d+|landing\.js\?v=\d+|assets\/landing\/(?:math-surface\.svg))",\r?\n/gm, "");
   return Buffer.from(withoutLandingShell, "utf8");
 }
 

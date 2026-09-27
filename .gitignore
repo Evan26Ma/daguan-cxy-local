@@ -15,6 +15,9 @@ data/.runtime/
 .build/
 dist/
 
+# deepseek-idesign（Design Studio 插件）的会话产物目录，非产品代码、不入库
+design/
+
 # Flutter outputs (the Android project has its own ignore rules too)
 android/.dart_tool/
 android/build/

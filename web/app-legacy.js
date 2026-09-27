@@ -2,7 +2,7 @@
   "use strict";
 
   if ("serviceWorker" in navigator && location.protocol !== "file:") {
-    navigator.serviceWorker.register("./service-worker.js?v=73").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=89").catch(() => {});
   }
 
   const DATA = "./data";
@@ -11,15 +11,27 @@
   const PICK_KEY = "daguan_local_picked_v1";
   const FAVORITE_KEY = "daguan_local_favorites_v1";
   const ANNOTATION_KEY = "daguan_question_annotations_v1";
-  const UI_PREFS_KEY = "daguan_ui_preferences_v1";
+  const UI_PREFS_KEY = window.DaguanVersions.appearanceKey;
   const SHORTCUTS_KEY = "daguan_focus_shortcuts_v1";
   const AI_PREFS_KEY = "daguan_ai_preferences_v1";
   const AI_WIDTH_KEY = "daguan_ai_drawer_width_v1";
-  const UI_BACKGROUND_KEY = "ui-background";
-  const APP_VERSION = "2026.09.24-r34";
+  const UI_BACKGROUND_KEY = window.DaguanVersions.current === "old" ? "ui-background" : "ui-background-new";
+  const APP_VERSION = "2026.09.26-dual-ui-r1";
   const RUNTIME_SEEN_KEY = "daguan_runtime_version_seen_v1";
   const POSITION_KEY = "daguan_learning_position_v2";
   const UI_THEMES = ["official-light", "official-dark", "eye-care", "custom"];
+
+  // 待同步日志（与新版共用同一份实现与键 daguan_pending_sync_v1）：
+  // 记录“本机已写入、服务端未确认”的收藏/逐题状态与批注编辑，离线、写入失败、
+  // 刷新、跨新旧版切换都不会丢掉刚写入的本地编辑，恢复在线后再补写。
+  const PendingSync = typeof window !== "undefined" ? window.DaguanPendingSync || null : null;
+  function pendingJournal() {
+    try { return PendingSync ? PendingSync.read() : { version: 1, annotations: {}, questions: {} }; }
+    catch { return { version: 1, annotations: {}, questions: {} }; }
+  }
+  function pendingHasAny() {
+    try { return !!PendingSync && !!PendingSync.hasAny(); } catch { return false; }
+  }
   const DEFAULT_UI_PREFS = Object.freeze({
     version: 1,
     theme: "official-light",
@@ -52,6 +64,8 @@
   const state = {
     manifest: null,
     videoMapping: null,
+    videoQuestionIdsByTeacher: null,
+    paradiyuVideoMapping: null,
     categories: [],
     catQuestions: {},
     idIndex: {},
@@ -199,7 +213,11 @@
       });
     });
     const banner = $("#preview-access-banner");
-    if (banner) banner.hidden = !previewMode || previewUnlocked;
+    if (banner) {
+      const visible = previewMode && !previewUnlocked;
+      banner.hidden = !visible;
+      banner.setAttribute("aria-hidden", String(!visible));
+    }
     const status = $("#preview-access-status");
     if (status) status.textContent = !previewMode ? "普通本地模式" : previewUnlocked ? "个人功能已解锁" : "当前为只读预览模式";
     const lock = $("#btn-preview-lock");
@@ -520,6 +538,9 @@
   let serverRevision = 0;
   const serverQuestionQueue = new Map();
   let serverQuestionTimer = 0;
+  let pendingAnnotationSyncing = false;
+  let pendingReplayTimer = 0;
+  let pendingReplayAttempts = 0;
 
   function openIdb() {
     if (idbPromise) return idbPromise;
@@ -567,9 +588,11 @@
         new Promise((resolve) => {
           if (!db) return resolve();
           try {
-            const req = db.transaction("kv", "readwrite").objectStore("kv").put(value, key);
-            req.onsuccess = () => resolve();
-            req.onerror = () => resolve();
+            const transaction = db.transaction("kv", "readwrite");
+            transaction.objectStore("kv").put(value, key);
+            transaction.oncomplete = () => resolve();
+            transaction.onerror = () => resolve();
+            transaction.onabort = () => resolve();
           } catch {
             resolve();
           }
@@ -618,6 +641,60 @@
       return value;
     } catch {
       return { ...DEFAULT_UI_PREFS };
+    }
+  }
+
+
+  let switchingVersion = false;
+  let noteSaveInFlight = null;
+  let noteSaveError = null;
+  let noteDirty = false;
+  function saveAiDraft() {
+    if (state.aiQuestionId && els.aiPrompt && previewPrivateAllowed(false)) {
+      localStorage.setItem(window.DaguanVersions.draftKey(state.aiQuestionId), els.aiPrompt.value);
+    }
+  }
+  async function setUiVersion(version) {
+    const versions = window.DaguanVersions;
+    if (!["new", "old"].includes(version) || version === versions.current || switchingVersion) return;
+    if ((aiStreamStates.size || state.aiRuns.size) && !confirm("切换界面会结束当前 AI 生成。是否保存进度并切换？")) return;
+    switchingVersion = true;
+    const controls = [...document.querySelectorAll("[data-version-choice]")];
+    controls.forEach(button => { button.disabled = true; });
+    try {
+      saveAiDraft();
+      if (previewPrivateAllowed(false)) {
+      clearTimeout(noteSaveTimer);
+      if (noteSaveInFlight) await noteSaveInFlight;
+      if (noteDirty || (state.aiOpen && state.aiTab === "note")) await saveQuestionNote();
+      if (noteSaveError) throw noteSaveError;
+      clearTimeout(persistTimer);
+      flushPersist();
+      // These writes are strict: never navigate after a quota or permission failure.
+      for (const [key, value] of [[PROGRESS_KEY, state.progress], [PICK_KEY, [...state.picked]], [FAVORITE_KEY, [...state.favorites]], [ANNOTATION_KEY, state.annotations]]) {
+        localStorage.setItem(key, JSON.stringify(value));
+      }
+      const deadline = Date.now() + 10000;
+      while (serverStateSyncing && Date.now() < deadline) await new Promise(resolve => setTimeout(resolve, 50));
+      if (serverStateSyncing) throw new Error("学习记录仍在保存，请稍后重试");
+      clearTimeout(serverQuestionTimer);
+      if (serverStateAvailable) {
+        await Promise.race([flushQuestionSync(), new Promise((_, reject) => setTimeout(() => reject(new Error("保存超时，请重试")), 10000))]);
+        if (serverQuestionQueue.size) throw new Error("学习记录未能保存到本地服务，请重试");
+      }
+      await Promise.all([idbSet("progress", state.progress), idbSet("picked", [...state.picked]), idbSet("favorites", [...state.favorites]), idbSet("annotations", state.annotations)]);
+      }
+      saveLearningPosition(true);
+      localStorage.setItem(versions.selectionKey, version);
+      const runIds = new Set([...state.aiRuns.keys(), activeAiRunId].filter(Boolean));
+      aiStreamStates.forEach(stream => { stream.disposed = true; clearTimeout(stream.timer); stream.controller?.abort(); });
+      await Promise.allSettled([...runIds].map(id => fetch(`./api/ai/runs/${encodeURIComponent(id)}`, { method: "DELETE", signal: AbortSignal.timeout(3000) })));
+      window.location.assign(versions.targetUrl(location.href, version, true));
+    } catch (error) {
+      toast(`未切换界面：${error.message || "保存失败，请重试"}`);
+    } finally {
+      switchingVersion = false;
+      controls.forEach(button => { button.disabled = false; });
     }
   }
 
@@ -837,10 +914,26 @@
       const response = await fetch("./api/state", { cache: "no-store" });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const remote = await response.json();
+      const journal = pendingJournal();
       if (remote?.progress && typeof remote.progress === "object") state.progress = mergeProgress(remote.progress, state.progress);
       if (Array.isArray(remote?.favorites)) state.favorites = new Set(remote.favorites.map(String));
       if (Array.isArray(remote?.picked)) state.picked = new Set(remote.picked.map(String));
-      if (remote?.annotations && typeof remote.annotations === "object") state.annotations = remote.annotations;
+      if (remote?.annotations && typeof remote.annotations === "object") state.annotations = { ...remote.annotations };
+      // 待同步的本地编辑（新版离线/写入失败时产生）优先于服务端旧值，不能被刷新覆盖掉。
+      for (const [id, entry] of Object.entries(journal.questions || {})) {
+        const patch = entry && entry.patch;
+        if (!patch || !Object.keys(patch).length) continue;
+        state.progress[String(id)] = { ...(state.progress[String(id)] || {}), ...patch };
+        if (typeof patch.favorite === "boolean") {
+          if (patch.favorite) state.favorites.add(String(id));
+          else state.favorites.delete(String(id));
+        }
+      }
+      for (const [id, entry] of Object.entries(journal.annotations || {})) {
+        if (!entry || typeof entry.markdown !== "string") continue;
+        const local = state.annotations[String(id)] || {};
+        state.annotations[String(id)] = { ...local, markdown: entry.markdown, updated_at: entry.updated_at || new Date().toISOString() };
+      }
       state.remote_activity = remote.remote_activity || null;
       state.last_study = remote.last_study || null;
       serverRevision = Number(remote.revision) || 0;
@@ -851,7 +944,70 @@
     } finally {
       serverStateHydrated = true;
       if (serverStateAvailable && serverQuestionQueue.size && !serverQuestionTimer) serverQuestionTimer = setTimeout(flushQuestionSync, 350);
+      if (serverStateAvailable && pendingHasAny()) replayPendingSync();
+      if (serverStateAvailable && pendingHasAny()) void replayPendingAnnotations();
+      else if (!serverStateAvailable && pendingHasAny()) schedulePendingReplay();
     }
+  }
+
+  function schedulePendingReplay() {
+    if (pendingReplayTimer || !pendingHasAny() || pendingReplayAttempts >= 20) return;
+    pendingReplayTimer = setTimeout(async () => {
+      pendingReplayTimer = 0;
+      if (!pendingHasAny()) { pendingReplayAttempts = 0; return; }
+      pendingReplayAttempts += 1;
+      if (!serverStateAvailable) await hydrateServerState();
+      else await replayPendingAnnotations();
+    }, 8000);
+  }
+
+  async function replayPendingAnnotations() {
+    if (!serverStateAvailable || !PendingSync || pendingAnnotationSyncing) return;
+    pendingAnnotationSyncing = true;
+    try {
+      for (const id of Object.keys(pendingJournal().annotations || {})) {
+        const entry = pendingJournal().annotations[id];
+        if (!entry) continue;
+        const local = state.annotations[id];
+        const markdown = timestampOf(local?.updated_at) > timestampOf(entry.updated_at)
+          ? String(local.markdown || "") : entry.markdown;
+        for (let attempt = 0; attempt < 2; attempt++) {
+          const response = await fetch(`./api/state/questions/${encodeURIComponent(id)}/annotation`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json", "If-Match": String(serverRevision) },
+            body: JSON.stringify({ markdown, revision: serverRevision }),
+            signal: AbortSignal.timeout(10000),
+          });
+          if (response.status === 409 && attempt === 0) {
+            const conflict = await response.json().catch(() => ({}));
+            if (conflict.current) serverRevision = Number(conflict.current.revision) || serverRevision;
+            continue;
+          }
+          if (!response.ok) throw new Error(`批注补写失败（HTTP ${response.status}）`);
+          serverRevision = Number((await response.json()).revision) || serverRevision;
+          PendingSync.clearAnnotation(id, markdown);
+          break;
+        }
+      }
+      if (!pendingHasAny()) pendingReplayAttempts = 0;
+    } catch {
+      schedulePendingReplay();
+    } finally {
+      pendingAnnotationSyncing = false;
+      if (Object.keys(pendingJournal().annotations || {}).length) schedulePendingReplay();
+    }
+  }
+
+  // 把待同步日志里尚未确认的逐题编辑重新排队（离线期间的收藏/错题/掌握度编辑）
+  function replayPendingSync() {
+    if (!serverStateAvailable || !PendingSync) return;
+    try {
+      const journal = pendingJournal();
+      for (const [id, entry] of Object.entries(journal.questions || {})) {
+        const patch = entry && entry.patch;
+        if (patch && Object.keys(patch).length) queueQuestionSync(id, patch);
+      }
+    } catch { /* 待同步日志不可读时不影响正常加载 */ }
   }
 
   function scheduleServerStatePersist() {
@@ -865,6 +1021,8 @@
   function queueQuestionSync(id, patch) {
     const key = String(id);
     serverQuestionQueue.set(key, { ...(serverQuestionQueue.get(key) || {}), ...patch });
+    // 本机已写入、服务端未确认 → 记入待同步日志（内存队列刷新即丢，日志不丢）
+    if (PendingSync) { try { PendingSync.queueQuestion(key, patch); } catch {} }
     if (serverStateAvailable && serverStateHydrated) {
       if (serverQuestionTimer) clearTimeout(serverQuestionTimer);
       serverQuestionTimer = setTimeout(flushQuestionSync, 350);
@@ -889,8 +1047,7 @@
           if (conflict.current) {
             serverRevision = Number(conflict.current.revision) || serverRevision;
             state.progress = mergeProgress(conflict.current.progress || {}, state.progress);
-            state.favorites = new Set((conflict.current.favorites || []).map(String));
-            if (conflict.current.annotations && typeof conflict.current.annotations === "object") state.annotations = conflict.current.annotations;
+            // Keep pending local edits intact; retry patches against the new revision.
           }
           entries.forEach(([queuedId, queuedPatch]) => serverQuestionQueue.set(queuedId, queuedPatch));
           break;
@@ -898,6 +1055,7 @@
         if (!response.ok) throw new Error(`状态写入失败（HTTP ${response.status}）`);
         const result = await response.json();
         serverRevision = Number(result.revision) || serverRevision;
+        if (PendingSync) { try { PendingSync.clearQuestion(id, patch); } catch {} }
       }
     } catch {
       entries.forEach(([queuedId, queuedPatch]) => serverQuestionQueue.set(queuedId, queuedPatch));
@@ -1093,24 +1251,73 @@
 
   function videoExplanationMarkup(q) {
     const categoryPath = String(q?.category_path || "");
-    if (!categoryPath.startsWith("线性代数")) return "";
-    const mapping = state.videoMapping;
-    const entry = mapping?.questions?.[String(q?.id)];
-    const seconds = Number(entry?.startSeconds);
-    if (!mapping || !Number.isFinite(seconds) || seconds < 0) return "";
-    const videoUrl = String(mapping.videoUrl || "").trim();
-    if (!videoUrl) return "";
-    let href;
-    try {
-      const url = new URL(videoUrl);
+    const questionId = String(q?.id ?? "");
+    const entries = Array.isArray(state.videoMapping?.questions?.[questionId])
+      ? state.videoMapping.questions[questionId]
+      : [];
+    const links = [];
+    for (const entry of entries) {
+      const bvid = String(entry?.bvid || "").trim();
+      const page = Number(entry?.page);
+      const seconds = Number(entry?.startSeconds);
+      if (!/^BV[\w]+$/.test(bvid) || !Number.isInteger(page) || page < 1 || !Number.isFinite(seconds) || seconds < 0) continue;
+      const url = new URL(`https://www.bilibili.com/video/${encodeURIComponent(bvid)}/`);
+      url.searchParams.set("p", String(page));
       url.searchParams.set("t", String(Math.floor(seconds)));
-      href = url.toString();
-    } catch {
-      return "";
+      const time = formatVideoTime(seconds);
+      const teacher = String(entry.teacher || "视频").trim();
+      const title = String(entry.title || entry.seriesTitle || bvid).trim();
+      links.push(`<a class="answer-video-link" data-video-teacher="${escapeHtml(teacher)}" href="${escapeHtml(url.toString())}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(`${teacher} · ${title} · ${time}`)}">${escapeHtml(teacher)} · ${escapeHtml(title)} · ${escapeHtml(time)}<span aria-hidden="true"> ↗</span></a>`);
     }
-    const time = new Date(Math.floor(seconds) * 1000).toISOString().slice(11, 19);
-    const title = String(entry.title || "").trim();
-    return `<div class="answer-block answer-video-block"><h3>帕拉迪宇视频讲解</h3><a class="answer-video-link" href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(title || "在新标签页打开视频讲解")}">跳转到 ${escapeHtml(time)}${title ? ` · ${escapeHtml(title)}` : ""}<span aria-hidden="true"> ↗</span></a></div>`;
+
+    // Keep supporting the original Paradiyu schema and its existing linear algebra scope.
+    const legacyMapping = state.paradiyuVideoMapping;
+    if (categoryPath.startsWith("线性代数")) {
+      const legacyEntry = legacyMapping?.questions?.[questionId];
+      const seconds = Number(legacyEntry?.startSeconds);
+      const videoUrl = String(legacyMapping?.videoUrl || "").trim();
+      if (legacyEntry && Number.isFinite(seconds) && seconds >= 0 && videoUrl) {
+        try {
+          const url = new URL(videoUrl);
+          url.searchParams.set("t", String(Math.floor(seconds)));
+          const time = formatVideoTime(seconds);
+          const title = String(legacyEntry.title || "").trim();
+          links.unshift(`<a class="answer-video-link" data-video-teacher="帕拉迪宇" href="${escapeHtml(url.toString())}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(title || "在新标签页打开视频讲解")}">帕拉迪宇 · ${escapeHtml(time)}${title ? ` · ${escapeHtml(title)}` : ""}<span aria-hidden="true"> ↗</span></a>`);
+        } catch { /* Ignore malformed legacy video URLs without breaking answers. */ }
+      }
+    }
+    if (!links.length) return "";
+    return `<div class="answer-block answer-video-block"><h3>视频讲解</h3><div class="answer-video-links">${links.join("")}</div></div>`;
+  }
+
+  function formatVideoTime(seconds) {
+    const total = Math.floor(Number(seconds));
+    if (!Number.isFinite(total) || total < 0) return "";
+    const hours = Math.floor(total / 3600);
+    const minutes = Math.floor((total % 3600) / 60);
+    const remainder = total % 60;
+    return hours
+      ? `${hours}:${String(minutes).padStart(2, "0")}:${String(remainder).padStart(2, "0")}`
+      : `${String(minutes).padStart(2, "0")}:${String(remainder).padStart(2, "0")}`;
+  }
+
+  function indexLectureVideoQuestions(mapping) {
+    const index = { "李艳芳": new Set(), "没咋了": new Set() };
+    for (const [questionId, entries] of Object.entries(mapping?.questions || {})) {
+      for (const entry of Array.isArray(entries) ? entries : []) {
+        if (index[entry?.teacher]) index[entry.teacher].add(String(questionId));
+      }
+    }
+    return index;
+  }
+
+  function videoTeacherMatches(id, teacher, annotation) {
+    const questionId = String(id);
+    if (teacher === "帕拉迪宇讲过") {
+      return annotation?.chapter === "线性代数" && (state.paradiyuVideoQuestionIds || new Set()).has(questionId);
+    }
+    const teacherName = teacher.replace(/讲过$/, "");
+    return Boolean(state.videoQuestionIdsByTeacher?.[teacherName]?.has(questionId));
   }
 
   function setView(name) {
@@ -1707,7 +1914,8 @@
     const f = state.advFilter || {};
     if (!advFilterActive()) return true;
     if (!A) return false;
-    if ((f["视频讲解"] || []).includes("帕拉迪宇讲过") && (A.chapter !== "线性代数" || !(state.paradiyuVideoQuestionIds || new Set()).has(String(id)))) return false;
+    const videoTeachers = f["视频讲解"] || [];
+    if (videoTeachers.length && !videoTeachers.some((teacher) => videoTeacherMatches(id, teacher, A))) return false;
     if ((f["快捷入口"] || []).length && !f["快捷入口"].includes(A.src)) return false;
     if ((f["题源"] || []).length && !f["题源"].includes(A.src)) return false;
     if ((f["章节"] || []).length && !f["章节"].includes(A.chapter)) return false;
@@ -1800,19 +2008,32 @@
       const res = await fetch("./data/paradiyu-linear-video.json");
       if (!res.ok) return new Set();
       const data = await res.json();
+      state.paradiyuVideoMapping = data;
       return new Set((Array.isArray(data.questionIds) ? data.questionIds : []).map(String));
     } catch {
       return new Set();
     }
   }
+  async function loadLectureVideoData() {
+    try {
+      const res = await fetch("./data/lecture-video-mappings.json");
+      if (!res.ok) return { schemaVersion: 1, questions: {} };
+      return await res.json();
+    } catch {
+      return { schemaVersion: 1, questions: {} };
+    }
+  }
   async function openFilterDialog() {
-    if (!state.bankTags || !state.paradiyuVideoQuestionIds) {
-      const [bankTags, paradiyuVideoQuestionIds] = await Promise.all([
+    if (!state.bankTags || !state.paradiyuVideoQuestionIds || !state.videoQuestionIdsByTeacher) {
+      const [bankTags, paradiyuVideoQuestionIds, videoMapping] = await Promise.all([
         state.bankTags ? Promise.resolve(state.bankTags) : loadAnnotationsData(),
         state.paradiyuVideoQuestionIds ? Promise.resolve(state.paradiyuVideoQuestionIds) : loadParadiyuVideoData(),
+        state.videoQuestionIdsByTeacher ? Promise.resolve(state.videoMapping) : loadLectureVideoData(),
       ]);
       state.bankTags = bankTags;
       state.paradiyuVideoQuestionIds = paradiyuVideoQuestionIds;
+      state.videoMapping = videoMapping || { schemaVersion: 1, questions: {} };
+      state.videoQuestionIdsByTeacher = indexLectureVideoQuestions(state.videoMapping);
       window.__fdbg = { hasAnn: !!state.bankTags, keys: state.bankTags ? Object.keys(state.bankTags.annotations || {}).length : -1, facets: state.bankTags ? (state.bankTags.facets || []).length : -1 };
     }
     if (!state.advFilter) {
@@ -1831,8 +2052,14 @@
     const tabs = $("#filter-tabs");
     if (tabs && !tabs.childElementCount && state.bankTags) {
       const facets = (state.bankTags.facets || []).map((x) => x);
-      const videoCount = [...(state.paradiyuVideoQuestionIds || [])].filter((id) => state.bankTags.annotations[String(id)]?.chapter === "线性代数").length;
-      facets.push({ dim: "视频讲解", options: [{ name: "帕拉迪宇讲过", count: videoCount }] });
+      const annotations = state.bankTags.annotations || {};
+      const countVideoTeacher = (teacher) => [...(state.videoQuestionIdsByTeacher?.[teacher] || [])].filter((id) => annotations[id]).length;
+      const paradiyuCount = [...(state.paradiyuVideoQuestionIds || [])].filter((id) => annotations[id]?.chapter === "线性代数").length;
+      facets.push({ dim: "视频讲解", options: [
+        { name: "帕拉迪宇讲过", count: paradiyuCount },
+        { name: "李艳芳讲过", count: countVideoTeacher("李艳芳") },
+        { name: "没咋了讲过", count: countVideoTeacher("没咋了") },
+      ] });
       const mc = masteryFacetCounts();
       facets.push({ dim: "掌握状态", options: Object.entries(mc).map(([name, count]) => ({ name, count })) });
       state._facets = facets;
@@ -3090,7 +3317,8 @@
         const value = $("#feature-notes-editor")?.value || "";
         localStorage.setItem("daguan_feature_notes_v1", value);
         const status = $("#feature-note-status");
-        if (status) status.textContent = "已保存";
+        if (els.noteEditor?.value === markdown) noteDirty = false;
+    if (status) status.textContent = "已保存";
         toast("笔记已保存");
       });
     }
@@ -3420,10 +3648,10 @@
     } catch { /* local server may be unavailable in offline mode */ }
   }
 
-  function saveLearningPosition() {
+  function saveLearningPosition(strict = false) {
     try {
-      sessionStorage.setItem(POSITION_KEY, JSON.stringify({ view: state.view, cat: state.currentCatId, index: state.index, mode: state.mode, scroll: $("#main")?.scrollTop || 0 }));
-    } catch {}
+      sessionStorage.setItem(POSITION_KEY, JSON.stringify({ view: state.view, cat: state.currentCatId, question: currentQ()?.id, queueIds: state.currentCatId == null ? state.queue.map(q => String(q.id)) : null, index: state.index, mode: state.mode, scroll: $("#main")?.scrollTop || 0 }));
+    } catch (error) { if (strict === true) throw error; }
   }
 
   function queueLastStudyPosition() {
@@ -3444,7 +3672,17 @@
     try {
       const saved = JSON.parse(sessionStorage.getItem(POSITION_KEY) || "null");
       const position = saved || (state.last_study ? { view: "browse", cat: state.last_study.category_id, question: state.last_study.question_id, mode: state.last_study.mode } : null);
-      if (!position || position.view !== "browse" || position.cat == null) return;
+      if (!position || position.view !== "browse") return;
+      if (position.cat == null && Array.isArray(position.queueIds) && position.queueIds.length) {
+        await ensureIndexes();
+        const questions = await loadQueueQuestions(position.queueIds);
+        beginBrowse(questions, "继续练习", null);
+        state.index = Math.max(0, questions.findIndex(q => String(q.id) === String(position.question)));
+        if (position.mode === "single") enterFocusMode(); else applyMode("list");
+        if (state.mode === "single") renderSingle();
+        return;
+      }
+      if (position.cat == null) return;
       // A single-question view needs a loaded queue. Applying it before
       // openCategory() would switch the home view to an empty browse view,
       // which looks like a white screen when restoring a saved session.
@@ -3462,7 +3700,7 @@
       const opened = leafId != null
         ? await openCategory(leafId, position.question || state.last_study?.question_id, { silent: true })
         : false;
-      if (Number.isFinite(Number(position.index))) state.index = Math.max(0, Number(position.index));
+      if (!position.question && Number.isFinite(Number(position.index))) state.index = Math.min(state.queue.length - 1, Math.max(0, Number(position.index)));
       if (opened && position.mode === "single") enterFocusMode();
       requestAnimationFrame(() => { if ($("#main")) $("#main").scrollTop = Number(position.scroll) || 0; });
     } catch {}
@@ -4379,6 +4617,8 @@
   function clearAiForQuestion(q) {
     const nextId = q?.id == null ? null : String(q.id);
     if (state.aiQuestionId === nextId) return;
+    try { saveAiDraft(); } catch {}
+    if (noteDirty) { clearTimeout(noteSaveTimer); saveQuestionNote(); }
     state.aiQuestionId = nextId;
     const runIds = new Set([...state.aiRuns.keys(), activeAiRunId].filter(Boolean));
     aiStreamStates.forEach((stream) => {
@@ -4392,7 +4632,9 @@
     activeAiRunId = "";
     runIds.forEach((runId) => fetch(`./api/ai/runs/${encodeURIComponent(runId)}`, { method: "DELETE" }).catch(() => {}));
     $("#btn-ai-stop")?.setAttribute("hidden", "");
-    if (els.aiPrompt) els.aiPrompt.value = "";
+    if (els.aiPrompt) {
+      try { els.aiPrompt.value = nextId ? localStorage.getItem(window.DaguanVersions.draftKey(nextId)) || "" : ""; } catch { els.aiPrompt.value = ""; }
+    }
     renderAiHistory(null);
     const line = $("#ai-context-line");
     if (line) line.textContent = q ? `#${q.id} · ${q.source || TYPE_LABEL[q.type] || "当前题目"}` : "先选择一道题";
@@ -4408,7 +4650,13 @@
     });
   }
 
-  async function saveQuestionNote() {
+  function saveQuestionNote() {
+    noteSaveError = null;
+    noteSaveInFlight = persistQuestionNote().catch(error => { noteSaveError = error; const status = $("#question-note-status"); if (status) status.textContent = "保存失败，请重试"; }).finally(() => { noteSaveInFlight = null; });
+    return noteSaveInFlight;
+  }
+
+  async function persistQuestionNote() {
     if (!previewPrivateAllowed()) return;
     const q = currentAiQuestion();
     if (!q || !els.noteEditor) return;
@@ -4420,20 +4668,30 @@
     const entry = { markdown, updated_at: new Date().toISOString(), history };
     state.annotations[id] = entry;
     try { localStorage.setItem(ANNOTATION_KEY, JSON.stringify(state.annotations)); } catch {}
+    // 本机已写入 → 先记待同步；服务端确认成功后按内容指纹清除
+    if (PendingSync) { try { PendingSync.queueAnnotation(id, markdown, entry.updated_at); } catch {} }
     const status = $("#question-note-status"); if (status) status.textContent = "保存中…";
     if (serverStateAvailable && serverStateHydrated) {
-      try {
-        const response = await fetch(`./api/state/questions/${encodeURIComponent(id)}/annotation`, { method: "PATCH", headers: { "Content-Type": "application/json", "If-Match": String(serverRevision) }, body: JSON.stringify({ markdown, revision: serverRevision }) });
-        if (response.status === 409) { const conflict = await response.json().catch(() => ({})); if (conflict.current) serverRevision = Number(conflict.current.revision) || serverRevision; }
-        else if (response.ok) serverRevision = Number((await response.json()).revision) || serverRevision;
-      } catch {}
+      for (let attempt = 0; attempt < 2; attempt++) {
+        const response = await fetch(`./api/state/questions/${encodeURIComponent(id)}/annotation`, { method: "PATCH", headers: { "Content-Type": "application/json", "If-Match": String(serverRevision) }, body: JSON.stringify({ markdown, revision: serverRevision }), signal: AbortSignal.timeout(10000) });
+        if (response.status === 409 && attempt === 0) {
+          const conflict = await response.json();
+          if (conflict.current) serverRevision = Number(conflict.current.revision) || serverRevision;
+          continue;
+        }
+        if (!response.ok) throw new Error(`批注保存失败（HTTP ${response.status}）`);
+        serverRevision = Number((await response.json()).revision) || serverRevision;
+        if (PendingSync) { try { PendingSync.clearAnnotation(id, markdown); } catch {} }
+        break;
+      }
     }
-    if (status) status.textContent = "已保存";
+    if (els.noteEditor?.value === markdown) noteDirty = false;
+    if (status) status.textContent = pendingJournal().annotations[id] ? "已保存到本地，联网后自动同步" : "已保存";
     state.noteHistory = history;
     renderNoteHistory();
   }
 
-  function scheduleQuestionNoteSave() { clearTimeout(noteSaveTimer); noteSaveTimer = setTimeout(saveQuestionNote, 600); }
+  function scheduleQuestionNoteSave() { noteDirty = true; clearTimeout(noteSaveTimer); noteSaveTimer = setTimeout(saveQuestionNote, 600); }
 
   function appendToAnnotation(content) {
     const text = String(content || "").trim();
@@ -4457,6 +4715,7 @@
     els.aiMessages?.append(userItem, pending);
     els.aiMessages?.scrollTo({ top: els.aiMessages.scrollHeight, behavior: "smooth" });
     if (els.aiPrompt) els.aiPrompt.value = "";
+    try { saveAiDraft(); } catch {}
     const controller = new AbortController();
     const stream = { timer: 0, disposed: false, flush: null, answer: "", controller };
     const paintNow = () => {
@@ -4603,6 +4862,7 @@
   }
 
   function bindUI() {
+    document.querySelectorAll("[data-version-choice]").forEach(button => button.addEventListener("click", () => setUiVersion(button.dataset.versionChoice)));
     $("#preview-access-form")?.addEventListener("submit", unlockPreview);
     $("#btn-preview-lock")?.addEventListener("click", lockPreview);
     $("#btn-preview-open")?.addEventListener("click", openPreviewAccess);
@@ -4662,9 +4922,15 @@
     $("#btn-appearance-reset")?.addEventListener("click", () => resetUiPreferences("official-light"));
     $("#btn-appearance-eye")?.addEventListener("click", () => resetUiPreferences("eye-care"));
     window.addEventListener("pagehide", flushPersist);
+    window.addEventListener("online", () => {
+      if (pendingHasAny()) void hydrateServerState();
+    });
     document.addEventListener("visibilitychange", () => {
       if (document.visibilityState === "hidden") flushPersist();
-      else refreshAiAfterResume();
+      else {
+        refreshAiAfterResume();
+        if (pendingHasAny()) void hydrateServerState();
+      }
     });
     $("#btn-browse-back")?.addEventListener("click", goHome);
     $("#chapter-trigger")?.addEventListener("click", (event) => {
@@ -5060,15 +5326,8 @@
       window.location.href = `${LOCAL_API_PREFIX}/integrations/cxyonly/export?source=android`;
     });
     $("#btn-update-refresh")?.addEventListener("click", async () => {
+      try { const response = await fetch("./api/runtime", { cache: "no-store" }); const runtime = await response.json(); if (runtime.appVersion) localStorage.setItem(RUNTIME_SEEN_KEY, runtime.appVersion); } catch {}
       saveLearningPosition();
-      // 记下这版已经确认过，刷新后不再重复提醒。
-      try {
-        const response = await fetch("./api/runtime", { cache: "no-store" });
-        if (response.ok) {
-          const runtime = await response.json();
-          if (runtime.appVersion) localStorage.setItem(RUNTIME_SEEN_KEY, runtime.appVersion);
-        }
-      } catch { /* ignore */ }
       window.location.reload();
     });
     $("#btn-download-progress").addEventListener("click", () => {
@@ -5318,8 +5577,8 @@
   }
 
   async function init() {
-    const landingEntry = getLandingEntry();
-    checkRuntimeVersion();
+    const switched = new URLSearchParams(location.search).has("uiSwitch");
+    const landingEntry = switched ? null : getLandingEntry();
     applyUiPreferences();
     loadUiBackground();
     await hydratePreviewAccess();
@@ -5328,21 +5587,26 @@
     const hydrated = hydrateStores();
     const serverHydrated = hydrateServerState();
     try {
-      const [manifest, categories, videoMapping] = await Promise.all([
+      const [manifest, categories, videoMapping, paradiyuVideoMapping] = await Promise.all([
         fetchJSON(`${DATA}/manifest.json`),
         fetchJSON(`${DATA}/categories.json`),
+        fetchJSON(`${DATA}/lecture-video-mappings.json`).catch(() => ({ schemaVersion: 1, questions: {} })),
         fetchJSON(`${DATA}/paradiyu-linear-video.json`).catch(() => null),
       ]);
       state.manifest = manifest;
       state.categories = categories;
       state.videoMapping = videoMapping;
+      state.videoQuestionIdsByTeacher = indexLectureVideoQuestions(videoMapping);
+      state.paradiyuVideoMapping = paradiyuVideoMapping;
+      state.paradiyuVideoQuestionIds = new Set((Array.isArray(paradiyuVideoMapping?.questionIds) ? paradiyuVideoMapping.questionIds : []).map(String));
       paintTree();
       renderHome();
       refreshHomeSyncCard();
+      checkRuntimeVersion();
       setView("home");
-      if (landingEntry === null) restoreLearningPosition();
+
       refreshPickUI();
-      if (landingEntry === null && !localStorage.getItem(TUTORIAL_SEEN_KEY)) {
+      if (landingEntry === null && !switched && !localStorage.getItem(TUTORIAL_SEEN_KEY)) {
         openSheet("dlg-welcome");
       }
       // 首页直达需要完整进度；普通首屏仍不等待 IndexedDB 和服务端状态。
@@ -5351,6 +5615,8 @@
         if (state.view === "home") renderHome();
         refreshPickUI();
         if (landingEntry !== null) await openLandingEntry(landingEntry);
+        else await restoreLearningPosition();
+        if (switched) { const url = new URL(location.href); url.searchParams.delete("uiSwitch"); history.replaceState(null, "", url); }
       }).catch(() => {
         goHome();
         toast("暂时无法打开这个入口，请从学习区重试。");
@@ -5364,7 +5630,7 @@
     }
   }
 
-  window.addEventListener("pagehide", saveLearningPosition);
+  window.addEventListener("pagehide", () => saveLearningPosition());
   window.addEventListener("pageshow", refreshAiAfterResume);
   init();
 })();

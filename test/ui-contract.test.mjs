@@ -2,9 +2,16 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 
-const html = fs.readFileSync(new URL("../web/index.html", import.meta.url), "utf8");
-const app = fs.readFileSync(new URL("../web/app2.js", import.meta.url), "utf8");
-const css = fs.readFileSync(new URL("../web/styles.css", import.meta.url), "utf8");
+// 双版本布局：index.html 承载新版（app-new.js / styles-new.css），
+// legacy.html 承载完整旧版前端（app-legacy.js / legacy.css）。
+// 本文件中的“首页/单题/同步中心”等界面契约针对旧版前端；
+// 新版入口契约见文件末尾的“新版入口”测试。
+const html = fs.readFileSync(new URL("../web/legacy.html", import.meta.url), "utf8");
+const app = fs.readFileSync(new URL("../web/app-legacy.js", import.meta.url), "utf8");
+const css = fs.readFileSync(new URL("../web/legacy.css", import.meta.url), "utf8");
+const newHtml = fs.readFileSync(new URL("../web/index.html", import.meta.url), "utf8");
+const newApp = fs.readFileSync(new URL("../web/app-new.js", import.meta.url), "utf8");
+const newCss = fs.readFileSync(new URL("../web/styles-new.css", import.meta.url), "utf8");
 const server = fs.readFileSync(new URL("../local-server/server.mjs", import.meta.url), "utf8");
 const windowsBuild = fs.readFileSync(new URL("../scripts/build-windows-exe.mjs", import.meta.url), "utf8");
 const seaEntry = fs.readFileSync(new URL("../packaging/sea-entry.cjs", import.meta.url), "utf8");
@@ -96,12 +103,31 @@ test("首屏不阻塞加载题库索引", () => {
 
 test("Service Worker 不预缓存首屏之外的大型索引和字体", () => {
   const sw = fs.readFileSync(new URL("../web/service-worker.js", import.meta.url), "utf8");
-  assert.match(sw, /daguan-shell-v89/);
+  assert.match(sw, /daguan-shell-v112/);
   assert.match(app, /service-worker\.js\?v=89/);
+  assert.match(newApp, /service-worker\.js\?v=112/);
   assert.match(sw, /"\.\/legacy\.html"/);
   assert.match(sw, /"\.\/legacy\.css\?v=89"/);
+  assert.match(sw, /"\.\/styles-new\.css\?v=110"/);
+  assert.match(sw, /"\.\/app-new\.js\?v=110"/);
+  assert.match(sw, /"\.\/assets\/math-mark\.svg"/);
   assert.doesNotMatch(sw, /data\/(category_questions|id_index|search_index)\.json/);
   assert.doesNotMatch(sw, /vendor\/fonts\//);
+});
+
+test("新版入口承载新版前端并与旧版共享版本选择", () => {
+  assert.match(newHtml, /styles-new\.css\?v=110/);
+  assert.match(newHtml, /ui-version\.js\?v=106/);
+  assert.match(newHtml, /app-new\.js\?v=110/);
+  assert.match(newHtml, /DaguanVersions\.selected\(localStorage\)/);
+  assert.match(newHtml, /dlg-preview-access/);
+  assert.match(newHtml, /preview-banner/);
+  assert.match(newApp, /DaguanVersions\.draftKey/);
+  assert.match(newApp, /DaguanVersions\.appearanceKey/);
+  assert.match(newApp, /daguan_ai_draft_v1:/);
+  assert.match(newCss, /\.preview-banner/);
+  assert.doesNotMatch(newHtml, /app2\.js/);
+  assert.doesNotMatch(newHtml, /legacy\.css/);
 });
 
 test("讲解视频映射覆盖两位新老师且只保留前端需要的字段", () => {
@@ -159,15 +185,15 @@ test("界面版本：旧大观承载完整旧版前端", () => {
 });
 
 test("品牌橙双方案：活力橙默认，朱砂橙可在设置切换", () => {
-  assert.match(css, /html\[data-accent="classic"\]\s*\{[\s\S]*--color-brand:\s*#eb5128/);
-  assert.match(css, /html\[data-theme="official-dark"\]\[data-accent="classic"\]/);
-  assert.match(css, /html\[data-theme="eye-care"\]\[data-accent="classic"\]/);
-  assert.match(html, /data-accent-choice="vibrant"/);
-  assert.match(html, /data-accent-choice="classic"/);
-  assert.match(app, /accent:\s*"vibrant"/);
-  assert.match(app, /function setUiAccent\(accent\)/);
-  assert.match(app, /root\.dataset\.accent = uiPrefs\.accent === "classic"/);
-  assert.match(html, /dataset\.accent = value\.accent === "classic"/);
+  // 该特性属于 styles.css + app2.js 兼容前端（离线壳保留，两个入口页面不再引用）
+  const compatCss = fs.readFileSync(new URL("../web/styles.css", import.meta.url), "utf8");
+  const compatApp = fs.readFileSync(new URL("../web/app2.js", import.meta.url), "utf8");
+  assert.match(compatCss, /html\[data-accent="classic"\]\s*\{[\s\S]*--color-brand:\s*#eb5128/);
+  assert.match(compatCss, /html\[data-theme="official-dark"\]\[data-accent="classic"\]/);
+  assert.match(compatCss, /html\[data-theme="eye-care"\]\[data-accent="classic"\]/);
+  assert.match(compatApp, /accent:\s*"vibrant"/);
+  assert.match(compatApp, /function setUiAccent\(accent\)/);
+  assert.match(compatApp, /root\.dataset\.accent = uiPrefs\.accent === "classic"/);
 });
 
 test("Service Worker 响应始终重新校验，避免线上继续命中旧脚本", () => {
@@ -286,7 +312,7 @@ test("AI 流式回答节流渲染并在回到前台时恢复", () => {
   assert.match(app, /const aiStreamStates = new Set\(\)/);
   assert.match(app, /stream\.timer = window\.setTimeout\(paintNow, 120\)/);
   assert.match(app, /function refreshAiAfterResume\(\)/);
-  assert.match(app, /else refreshAiAfterResume\(\)/);
+  assert.match(app, /document\.visibilityState === "hidden"\) flushPersist\(\);\s*else\s*\{\s*refreshAiAfterResume\(\)/);
   assert.match(app, /window\.addEventListener\("pageshow", refreshAiAfterResume\)/);
 });
 
@@ -381,12 +407,14 @@ test("AI 学习助手支持鼠标拖拽和键盘调整宽度", () => {
 
 test("题册编辑风：全书卷衬线、大题号与行宽约束", () => {
   const tokens = fs.readFileSync(new URL("../web/design-tokens.css", import.meta.url), "utf8");
+  // 该特性属于 styles.css + app2.js 兼容前端（离线壳保留，两个入口页面不再引用）
+  const compatCss = fs.readFileSync(new URL("../web/styles.css", import.meta.url), "utf8");
   assert.match(tokens, /--font-family-serif:\s*"Songti SC", "SimSun"/);
   assert.match(tokens, /--question-number-ink:\s*#d5d5c9/);
   assert.match(tokens, /html\[data-theme="official-dark"\]\s*\{[\s\S]*--question-number-ink:/);
-  assert.match(css, /#app\.learning-shell #q-single-num\s*\{[\s\S]*font:\s*400 44px\/1 var\(--font-family-mono\)/);
-  assert.match(css, /#app\.learning-shell \.q-stem,[\s\S]*?#app\.learning-shell #q-expl\s*\{[\s\S]*font-family:\s*var\(--font-family-serif\)/);
-  assert.match(css, /max-width:\s*34em/);
-  assert.match(css, /#app\.learning-shell \.answer-block,[\s\S]*border-left:\s*2px solid var\(--color-brand\)/);
-  assert.doesNotMatch(css, /fonts\.googleapis|@import\s+url\(/);
+  assert.match(compatCss, /#app\.learning-shell #q-single-num\s*\{[\s\S]*font:\s*400 44px\/1 var\(--font-family-mono\)/);
+  assert.match(compatCss, /#app\.learning-shell \.q-stem,[\s\S]*?#app\.learning-shell #q-expl\s*\{[\s\S]*font-family:\s*var\(--font-family-serif\)/);
+  assert.match(compatCss, /max-width:\s*34em/);
+  assert.match(compatCss, /#app\.learning-shell \.answer-block,[\s\S]*border-left:\s*2px solid var\(--color-brand\)/);
+  assert.doesNotMatch(compatCss, /fonts\.googleapis|@import\s+url\(/);
 });

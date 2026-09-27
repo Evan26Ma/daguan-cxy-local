@@ -28,10 +28,10 @@ test("appearance migration preserves existing data and is idempotent", () => {
   const prefs = JSON.stringify({ theme: "custom", backgroundColor: "#123456" });
   const f = fixture({ daguan_ui_preferences_v1: prefs, daguan_local_progress_v1: "KEEP" });
   assert.equal(f.data.get(f.api.appearanceKeys.old), prefs);
-  assert.equal(f.data.get(f.api.appearanceKeys.new), "{}");
+  assert.equal(JSON.parse(f.data.get(f.api.appearanceKeys.new)).theme, "orange-white");
   f.storage.setItem(f.api.appearanceKeys.new, '{"theme":"eye-care"}');
   f.api.migrate(f.storage);
-  assert.equal(f.data.get(f.api.appearanceKeys.new), '{"theme":"eye-care"}');
+  assert.equal(JSON.parse(f.data.get(f.api.appearanceKeys.new)).theme, 'eye-care');
   assert.equal(f.data.get("daguan_local_progress_v1"), "KEEP");
 });
 test("switch URL preserves path prefix, query and hash; marks restoration", () => {

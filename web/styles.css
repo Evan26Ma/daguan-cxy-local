@@ -3704,3 +3704,40 @@ html[data-ui-version="old"] #accent-fieldset { display: none; }
 
 /* 修复：旧官网对齐层把首页章节选择卡整体隐藏，导致「选一章」标题下无内容。 */
 .home-cards { display: grid; }
+
+.practice-version-toggle { display: flex; justify-content: flex-end; gap: .4rem; margin-bottom: .6rem; }
+.practice-version-toggle [aria-pressed="true"], .legacy-version-toggle [aria-pressed="true"] { border-color: var(--color-brand); color: var(--color-brand); }
+.legacy-version-toggle { display: flex; flex-wrap: wrap; gap: .4rem; padding: .5rem; }
+
+/* Keep the redesigned identity visible despite the old shell's compact rules. */
+#app.learning-shell:not([data-sidebar="collapsed"]) .brand .brand-copy { display: grid; gap: 2px; }
+#app.learning-shell .brand-copy strong { font-size: .85rem; }
+#app.learning-shell .brand-copy small { font-size: .55rem; letter-spacing: .05em; }
+#app.learning-shell .sidebar-head { flex-wrap: wrap; }
+#app.learning-shell .sidebar-foot { display: grid; margin-top: auto; }
+#app.learning-shell .sidebar-foot-links { display: flex; gap: .8rem; }
+@media (max-width: 900px) {
+  #app.learning-shell:has(.sidebar.open) > .sidebar-backdrop { display: block !important; background: #0005; border: 0; }
+  #app.learning-shell .sidebar { z-index: 40; }
+  #app.learning-shell .learning-shell__brand-row { display: flex; }
+}
+#app.learning-shell .sidebar-head .brand { display: flex; flex-direction: row; align-items: center; gap: .5rem; }
+#app.learning-shell .sidebar-collapse { width: auto; height: auto; min-height: 44px; padding: .5rem; gap: .4rem; white-space: nowrap; }
+@media (max-width: 900px) {
+  #app.learning-shell { padding-bottom: 0; }
+  #app.learning-shell .learning-shell__sidebar {
+    position: fixed !important; inset: 0 auto 0 0 !important; width: min(300px, 85vw) !important;
+    height: 100dvh !important; display: flex !important; flex-direction: column;
+    transform: translateX(-105%); overflow-y: auto; border-right: 1px solid var(--color-border);
+    border-top: 0; background: var(--color-surface);
+  }
+  #app.learning-shell .learning-shell__sidebar.open { transform: translateX(0); }
+  #app.learning-shell .sidebar > .sidebar-nav { height: auto; display: grid; grid-template-columns: 1fr; gap: 4px; padding: .5rem; }
+  #app.learning-shell .sidebar .side-link { display: flex; flex-direction: row; justify-content: flex-start; min-height: 44px; padding: .6rem .8rem; font-size: .85rem; gap: .6rem; text-align: left; }
+  #app.learning-shell .sidebar .sidebar-subnav { display: grid; grid-template-columns: 1fr; padding-left: 1.5rem; }
+  #app.learning-shell #btn-open-sidebar { display: inline-flex; }
+  #app.learning-shell .sidebar .sidebar-foot { height: auto; }
+  #app.learning-shell .sidebar .sidebar-collapse { display: none; }
+}
+
+@media (max-width: 900px) { #app.learning-shell .sidebar #btn-close-sidebar { display: inline-flex; margin-left: auto; } }
