@@ -220,6 +220,8 @@
     }
     const status = $("#preview-access-status");
     if (status) status.textContent = !previewMode ? "普通本地模式" : previewUnlocked ? "个人功能已解锁" : "当前为只读预览模式";
+    const unlock = $("#btn-preview-open");
+    if (unlock) unlock.hidden = !previewMode || previewUnlocked;
     const lock = $("#btn-preview-lock");
     if (lock) lock.hidden = !previewMode || !previewUnlocked;
   }

@@ -733,6 +733,10 @@ const PreviewAccess = {
         if (banner) banner.hidden = !(this.mode && !this.unlocked);
         const status = document.getElementById('preview-status');
         if (status) status.textContent = !this.mode ? '普通本地模式' : this.unlocked ? '个人功能已解锁' : '只读预览模式：收藏、掌握、批注、AI 与同步需要解锁';
+        const unlock = document.getElementById('btn-preview-unlock');
+        if (unlock) unlock.hidden = !this.mode || this.unlocked;
+        const lock = document.getElementById('btn-preview-lock');
+        if (lock) lock.hidden = !this.mode || !this.unlocked;
     },
     openUnlockDialog() {
         const dialog = document.getElementById('dlg-preview-access');
@@ -4836,7 +4840,6 @@ document.getElementById('btn-dl').addEventListener('click', function () {
         PreviewAccess.applyUi();
         UIRenderer.bindThemeSettings();
         this.renderShortcutSettings();
-        document.getElementById('btn-preview-lock').hidden = !PreviewAccess.mode || !PreviewAccess.unlocked;
         document.getElementById('btn-ai-profile-save')?.addEventListener('click', () => this.saveAIProfile());
         document.getElementById('btn-ai-profile-test')?.addEventListener('click', () => this.testAIProfile());
         document.getElementById('btn-ai-profile-delete')?.addEventListener('click', () => this.deleteAIProfile());
