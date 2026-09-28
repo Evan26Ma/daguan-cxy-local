@@ -30,7 +30,7 @@ function freePort() {
 async function waitFor(check, label, timeout = 20_000) {
   const deadline = Date.now() + timeout;
   while (Date.now() < deadline) {
-    const result = await check().catch(() => null);
+    const result = await Promise.resolve().then(check).catch(() => null);
     if (result) return result;
     await delay(100);
   }
@@ -69,7 +69,7 @@ let desktopPid = null;
 const service = spawn(process.execPath, [path.join(root, "local-server", "server.mjs")], {
   cwd: root,
   stdio: ["ignore", "pipe", "pipe", "ipc"],
-  env: { ...process.env, HOST: "127.0.0.1", PORT: String(servicePort), DAGUAN_DATA_DIR: dataDir, DAGUAN_OPEN_BROWSER: "0" },
+  env: { ...process.env, HOST: "127.0.0.1", PORT: String(servicePort), DAGUAN_DATA_DIR: dataDir, DAGUAN_OPEN_BROWSER: "0", DAGUAN_LAUNCHER_KIND: "browser" },
 });
 let desktop;
 let browser;
@@ -80,8 +80,9 @@ try {
     return owner.pid === service.pid && health.instanceId === owner.instanceId ? owner : null;
   }, "browser-owned local service");
 
-  const electron = path.join(root, "node_modules", "electron", "dist", "electron.exe");
-  desktop = spawn(electron, [".", `--remote-debugging-port=${cdpPort}`], {
+  const packagedDesktop = process.env.DAGUAN_DESKTOP_EXE;
+  const electron = packagedDesktop || path.join(root, "node_modules", "electron", "dist", "electron.exe");
+  desktop = spawn(electron, [...(packagedDesktop ? [] : ["."]), `--remote-debugging-port=${cdpPort}`], {
     cwd: root,
     stdio: "ignore",
     env: { ...process.env, DAGUAN_DATA_DIR: dataDir, DAGUAN_USER_DATA_DIR: profileDir },
@@ -98,7 +99,10 @@ try {
   const windowsBeforeHide = visibleWindowsForPid(desktop.pid);
 
   const ownerBeforeHide = JSON.parse(await fs.readFile(path.join(dataDir, ".service-instance.json"), "utf8"));
-  assert.equal(ownerBeforeHide.pid, service.pid, "desktop should attach to the browser-owned service PID");
+  assert.notEqual(ownerBeforeHide.pid, service.pid, "desktop should replace the browser-owned service PID");
+  assert.equal(ownerBeforeHide.port, servicePort, "desktop should keep the browser origin for pending records");
+  assert.equal(ownerBeforeHide.launcherKind, "desktop");
+  await waitFor(() => service.exitCode !== null, "browser service to exit after handoff");
   assert.equal(await fetch(`http://127.0.0.1:${servicePort}/api/health`).then(r => r.ok), true);
   assert.equal(sendNativeCloseForPid(desktop.pid), true, "native WM_CLOSE should reach the Electron window");
   await delay(500);
@@ -119,9 +123,8 @@ try {
   browser = null;
   await killTree(desktop);
   desktop = null;
-  const preservedOwner = JSON.parse(await fs.readFile(path.join(dataDir, ".service-instance.json"), "utf8"));
-  const serviceSurvivedDesktopExit = preservedOwner.instanceId === ownerBeforeHide.instanceId && await fetch(`http://127.0.0.1:${servicePort}/api/health`).then(r => r.ok);
-  assert.equal(serviceSurvivedDesktopExit, true, "the browser-owned service must survive desktop process exit");
+  const browserServiceSurvivedDesktopExit = service.exitCode === null;
+  assert.equal(browserServiceSurvivedDesktopExit, false, "the browser service must remain stopped after desktop exit");
   console.log(JSON.stringify({
     launchOrder: "browser service -> Electron desktop",
     dataDir,
@@ -132,7 +135,7 @@ try {
     rootStatus: rootResponse.status(),
     rootEvidence,
     afterWindowClose: { documentVisibility: hiddenVisibility, rendererTargetStillAttached: pageTargetStillAttached, desktopProcessAlive: stillAliveAfterHide, nativeWindowHidden, windowsBeforeHide, windowsAfterHide, serviceHealthy: serviceHealthyAfterHide, ownerPid: ownerAfterHide.pid },
-    afterDesktopExit: { browserOwnedServiceStillHealthy: serviceSurvivedDesktopExit, ownerPid: preservedOwner.pid, instanceId: preservedOwner.instanceId },
+    afterDesktopExit: { browserOwnedServiceStillRunning: browserServiceSurvivedDesktopExit },
     isolatedDirectory: tempRoot,
   }, null, 2));
 } finally {
@@ -145,5 +148,7 @@ try {
       catch { service.kill("SIGTERM"); resolve(); }
     });
   }
-  await fs.rm(tempRoot, { recursive: true, force: true });
+  const resolvedTemp = path.resolve(tempRoot);
+  if (!resolvedTemp.startsWith(`${path.resolve(os.tmpdir())}${path.sep}`)) throw new Error("Refusing to remove a directory outside the temporary root");
+  await fs.rm(resolvedTemp, { recursive: true, force: true, maxRetries: 15, retryDelay: 200 });
 }

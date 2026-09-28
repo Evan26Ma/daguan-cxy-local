@@ -34,36 +34,92 @@ async function freeLoopbackPort() {
     probe.listen(0, "127.0.0.1", () => { const port = probe.address().port; probe.close((error) => error ? reject(error) : resolve(port)); });
   });
 }
+async function stopStartupChild(child) {
+  if (child.exitCode !== null || child.signalCode !== null) return;
+  try { child.send({ type: "shutdown" }); } catch {}
+  await Promise.race([
+    new Promise((resolve) => child.once("exit", resolve)),
+    new Promise((resolve) => setTimeout(resolve, 5000)),
+  ]);
+}
+async function startServiceCandidate(dataDir, port) {
+  const child = spawn(process.execPath, [SERVER_SCRIPT], {
+    cwd: APP_PATH, windowsHide: true, stdio: ["ignore", "pipe", "pipe", "ipc"],
+    env: Object.assign({}, process.env, {
+      ELECTRON_RUN_AS_NODE: "1", HOST: "127.0.0.1", PORT: String(port),
+      DAGUAN_DATA_DIR: dataDir, DAGUAN_ROOT_DIR: APP_PATH, DAGUAN_WEB_ROOT: WEB_ROOT,
+      DAGUAN_OPEN_BROWSER: "0", DAGUAN_LAUNCHER_KIND: "desktop", DAGUAN_AUTO_UPDATE_BANK: "1",
+    }),
+  });
+  let output = "";
+  child.stdout.on("data", (chunk) => { output = (output + chunk).slice(-4000); });
+  child.stderr.on("data", (chunk) => { output = (output + chunk).slice(-4000); });
+  try {
+    const deadline = Date.now() + 25000;
+    while (Date.now() < deadline) {
+      const candidate = await lock.readServiceOwner(dataDir);
+      if (candidate) {
+        const health = await lock.waitForServiceIdentity(candidate, { timeoutMs: 350 });
+        if (health) {
+          if (candidate.pid === child.pid && health.apiProtocol === lock.SERVICE_API_PROTOCOL) {
+            serverChild = child;
+            return { owner: candidate, own: true };
+          }
+          if (candidate.pid !== child.pid) {
+            await stopStartupChild(child);
+            if (child.exitCode === null && child.signalCode === null) throw new Error("竞争启动的服务进程未退出");
+            return { owner: candidate, health, own: false };
+          }
+          throw new Error("新服务协议不兼容");
+        }
+      }
+      if (child.exitCode !== null || child.signalCode !== null) break;
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+    const candidate = await lock.readServiceOwner(dataDir);
+    if (candidate && candidate.pid !== child.pid) {
+      const health = await lock.waitForServiceIdentity(candidate);
+      if (health) return { owner: candidate, health, own: false };
+    }
+    throw new Error("本地服务启动失败。" + (output || "没有收到服务就绪信号。"));
+  } catch (error) {
+    await stopStartupChild(child);
+    throw error;
+  }
+}
 async function connectOrStartService() {
   const dataDir = dataDirectory();
   lock = await import(pathToFileURL(path.join(APP_PATH, "local-server", "instance-lock.mjs")).href);
-  const existing = await lock.readServiceOwner(dataDir);
-  if (existing) {
-    if (await lock.waitForServiceOwner(existing)) { owner = existing; ownsService = false; return; }
-    throw new Error("发现服务实例 PID " + existing.pid + "、端口 " + existing.port + "，但健康检查失败。为保护学习数据，桌面版不会再启动第二个写入进程。请检查该 PID 和端口；确认没有服务后，检查并清理 " + path.join(dataDir, ".service-instance.json") + "。切勿在服务进程仍运行时删除锁。");
+  const handoff = await import(pathToFileURL(path.join(APP_PATH, "desktop", "service-handoff.mjs")).href);
+  let preferredPort = null;
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    const existing = await lock.readServiceOwner(dataDir);
+    if (existing) {
+      const status = lock.serviceOwnerProcessStatus(existing.pid);
+      if (status !== "absent") {
+        const health = await lock.waitForServiceIdentity(existing);
+        if (!health) throw new Error(`服务实例 PID ${existing.pid}、端口 ${existing.port} 健康检查失败；进程状态为${status === "alive" ? "存活" : "不明"}。桌面版无法确认安全交接，请检查该进程；服务运行时切勿删除实例锁。`);
+        const kind = await handoff.classifyServiceOwner(existing, health);
+        if (kind === "desktop" && health.apiProtocol === lock.SERVICE_API_PROTOCOL && existing.apiProtocol === lock.SERVICE_API_PROTOCOL) {
+          owner = existing; ownsService = false; return;
+        }
+        if (kind !== "browser") throw new Error(`服务实例 PID ${existing.pid}、端口 ${existing.port} 的来源无法确认，桌面版不会停止该进程。`);
+        await handoff.stopBrowserService(existing, dataDir);
+      }
+      preferredPort = existing.port;
+    }
+    const result = await startServiceCandidate(dataDir, preferredPort || await freeLoopbackPort());
+    if (result.own) { owner = result.owner; ownsService = true; return; }
+    // Another launcher won the instance lock while this desktop window started.
+    // Reinspect it instead of attaching to a browser service that should hand off.
+    preferredPort = result.owner.port;
   }
-  const port = await freeLoopbackPort();
-  serverChild = spawn(process.execPath, [SERVER_SCRIPT], {
-    cwd: APP_PATH, windowsHide: true, stdio: ["ignore", "pipe", "pipe", "ipc"],
-    env: Object.assign({}, process.env, { ELECTRON_RUN_AS_NODE: "1", HOST: "127.0.0.1", PORT: String(port), DAGUAN_DATA_DIR: dataDir, DAGUAN_ROOT_DIR: APP_PATH, DAGUAN_WEB_ROOT: WEB_ROOT, DAGUAN_OPEN_BROWSER: "0" }),
-  });
-  let childOutput = "";
-  serverChild.stdout.on("data", (chunk) => { childOutput = (childOutput + chunk).slice(-4000); });
-  serverChild.stderr.on("data", (chunk) => { childOutput = (childOutput + chunk).slice(-4000); });
-  const deadline = Date.now() + 12000;
-  while (Date.now() < deadline && serverChild.exitCode === null) {
-    const candidate = await lock.readServiceOwner(dataDir);
-    if (candidate && await lock.waitForServiceOwner(candidate, { timeoutMs: 350 })) { owner = candidate; ownsService = candidate.pid === serverChild.pid; return; }
-    await new Promise((resolve) => setTimeout(resolve, 100));
-  }
-  const candidate = await lock.readServiceOwner(dataDir);
-  if (candidate && await lock.waitForServiceOwner(candidate)) { owner = candidate; ownsService = candidate.pid === serverChild.pid; return; }
-  throw new Error("本地服务启动失败。" + (childOutput || "没有收到服务就绪信号。"));
+  throw new Error("浏览器服务持续抢占同一数据目录，桌面版未能安全完成交接。请先退出浏览器版启动器。" );
 }
 async function serveAppRequest(request) {
   const requestUrl = new URL(request.url);
   if (requestUrl.protocol !== "daguan:" || requestUrl.hostname !== "app") return new Response("Forbidden", { status: 403 });
-  if (requestUrl.pathname.indexOf("/api/") === 0) {
+  if (requestUrl.pathname.indexOf("/api/") === 0 || requestUrl.pathname.indexOf("/data/") === 0) {
     if (!owner) return new Response("Service unavailable", { status: 503 });
     const target = serviceEndpoint() + requestUrl.pathname + requestUrl.search;
     const init = { method: request.method, headers: policy.proxyHeaders(request.headers), redirect: "manual" };

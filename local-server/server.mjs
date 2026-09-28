@@ -10,6 +10,7 @@ import { refreshCatalog } from "./catalog.mjs";
 import { applyLocalChanges, buildPullMerge, buildReconcilePlan, localToAndroidDocument, normalizeLocalState, nowIso, remoteStatesDocument } from "./sync-format.mjs";
 import { createAiService } from "./ai-service.mjs";
 import { acquireServiceInstance, serviceOwnerUrl, SERVICE_API_PROTOCOL, waitForServiceOwner } from "./instance-lock.mjs";
+import { createQuestionBankUpdater } from "./question-bank-updater.mjs";
 
 const ROOT = path.resolve(process.env.DAGUAN_ROOT_DIR || path.resolve(path.dirname(fileURLToPath(import.meta.url)), ".."));
 const WEB_ROOT = path.resolve(process.env.DAGUAN_WEB_ROOT || path.join(ROOT, "web"));
@@ -36,6 +37,7 @@ const ai = createAiService({ store });
 let serviceInstance = null;
 const stateEventClients = new Set();
 let requestGracefulShutdown = null;
+let questionBank = null;
 
 function json(res, status, value) {
   res.writeHead(status, { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" });
@@ -104,7 +106,7 @@ async function body(req) {
 
 async function knownIds() {
   if (!knownIdsPromise) {
-    knownIdsPromise = fs.readFile(path.join(WEB_ROOT, "data", "id_index.json"), "utf8")
+    knownIdsPromise = fs.readFile(path.join(questionBank?.dataRoot() || path.join(WEB_ROOT, "data"), "id_index.json"), "utf8")
       .then((text) => new Set(Object.keys(JSON.parse(text)).map(String)))
       .catch(() => null);
   }
@@ -140,7 +142,7 @@ function localStateShape(value) {
 
 async function catalogInfo() {
   try {
-    const manifest = JSON.parse(await fs.readFile(path.join(WEB_ROOT, "data", "manifest.json"), "utf8"));
+    const manifest = JSON.parse(await fs.readFile(path.join(questionBank?.dataRoot() || path.join(WEB_ROOT, "data"), "manifest.json"), "utf8"));
     return { version: manifest.version || manifest.generated_at || manifest.updated_at || null, total: Number(manifest.total || manifest.question_count || 0) || null };
   } catch { return { version: null, total: null }; }
 }
@@ -347,7 +349,8 @@ async function route(req, res) {
     setImmediate(() => requestGracefulShutdown());
     return;
   }
-  if (pathname === "/api/health" && method === "GET") return json(res, 200, { ok: true, service: "daguan-local-console", apiProtocol: SERVICE_API_PROTOCOL, instanceId: serviceInstance?.instanceId || null, pid: process.pid, port: PORT, time: nowIso() });
+  if (pathname === "/api/health" && method === "GET") return json(res, 200, { ok: true, service: "daguan-local-console", apiProtocol: SERVICE_API_PROTOCOL, instanceId: serviceInstance?.instanceId || null, launcherKind: serviceInstance?.launcherKind || null, pid: process.pid, port: PORT, time: nowIso() });
+  if (pathname === "/api/question-bank/status" && method === "GET") return json(res, 200, questionBank?.status() || { enabled: false, activeId: "bundled" });
   if (pathname === "/api/access/status" && method === "GET") {
     const unlocked = !PREVIEW_MODE || hasPreviewAccess(req);
     if (PREVIEW_MODE && unlocked) setPreviewCookie(res);
@@ -557,25 +560,48 @@ async function route(req, res) {
     res.writeHead(200, { "Content-Type": "application/json; charset=utf-8", "Content-Disposition": `attachment; filename=daguan-${source}-${new Date().toISOString().slice(0, 10)}.json`, "Cache-Control": "no-store" });
     return res.end(JSON.stringify(value, null, 2));
   }
-  return serveStatic(pathname, res);
+  return serveStatic(pathname, res, url.searchParams.get("bank"));
 }
 
 const MIME = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8", ".json": "application/json; charset=utf-8", ".png": "image/png", ".svg": "image/svg+xml", ".woff2": "font/woff2", ".webp": "image/webp", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".gif": "image/gif", ".ico": "image/x-icon" };
-async function serveStatic(requestPath, res) {
+async function serveStatic(requestPath, res, bankId = null) {
   let relative;
   try { relative = decodeURIComponent(requestPath); } catch { return json(res, 400, { error: "路径错误" }); }
   if (relative === "/" || relative === "") relative = DEFAULT_PAGE;
-  const target = path.resolve(WEB_ROOT, `.${relative}`);
-  if (!target.startsWith(`${WEB_ROOT}${path.sep}`)) return json(res, 403, { error: "禁止访问" });
+  const isBankData = relative.startsWith("/data/");
+  const bankRoot = isBankData ? questionBank?.dataRoot(bankId) : null;
+  if (isBankData && bankId && !bankRoot) return json(res, 404, { error: "题库版本不存在" });
+  const staticRoot = bankRoot || WEB_ROOT;
+  const staticPath = bankRoot ? relative.slice("/data".length) : relative;
+  const target = path.resolve(staticRoot, `.${staticPath}`);
+  if (!target.startsWith(`${staticRoot}${path.sep}`)) return json(res, 403, { error: "禁止访问" });
   try {
-    const stat = await fs.stat(target);
-    const file = stat.isDirectory() ? path.join(target, "index.html") : target;
+    let file = target;
+    try { const stat = await fs.stat(file); if (stat.isDirectory()) file = path.join(file, "index.html"); }
+    catch {
+      if (!bankRoot || !staticPath.startsWith("/assets/")) throw new Error("resource missing");
+      const assetName = path.basename(staticPath);
+      if (!/^[0-9a-f]{64}\.png$/.test(assetName)) throw new Error("resource missing");
+      file = path.join(WEB_ROOT, "data", "assets", assetName);
+      try { await fs.access(file); }
+      catch {
+        const versionsRoot = path.join(store.dataDir, "question-bank", "versions");
+        const versions = await fs.readdir(versionsRoot).catch(() => []);
+        let found = false;
+        for (const version of versions) {
+          if (!/^[0-9a-f-]{36}$/.test(version)) continue;
+          const candidate = path.join(versionsRoot, version, "assets", assetName);
+          try { await fs.access(candidate); file = candidate; found = true; break; } catch {}
+        }
+        if (!found) throw new Error("resource missing");
+      }
+    }
     const ext = path.extname(file).toLowerCase();
     const isHtml = ext === ".html";
     const isServiceWorker = path.basename(file) === "service-worker.js";
     res.writeHead(200, {
       "Content-Type": MIME[ext] || "application/octet-stream",
-      "Cache-Control": isHtml || isServiceWorker ? "no-cache" : "public, max-age=3600",
+      "Cache-Control": isBankData || isHtml || isServiceWorker ? "no-store" : "public, max-age=3600",
     });
     return res.end(await fs.readFile(file));
   } catch {
@@ -610,6 +636,17 @@ if (!lease?.acquired) {
   serviceInstance = lease.owner;
   try {
     await store.readState();
+    questionBank = await createQuestionBankUpdater({
+      dataDir: store.dataDir, bundledDataDir: path.join(WEB_ROOT, "data"),
+      enabled: process.env.DAGUAN_AUTO_UPDATE_BANK === "1",
+      onUpdate: (pointer) => {
+        knownIdsPromise = null;
+        const event = `event: bank-updated\ndata: ${JSON.stringify({ activeId: pointer.id, total: pointer.total })}\n\n`;
+        for (const response of stateEventClients) {
+          try { response.write(event); } catch { stateEventClients.delete(response); }
+        }
+      },
+    });
     await new Promise((resolve, reject) => {
       const onError = (error) => { server.off("listening", onListening); reject(error); };
       const onListening = () => { server.off("error", onError); resolve(); };
@@ -622,6 +659,7 @@ if (!lease?.acquired) {
     throw error;
   }
   console.log(`SERVICE_INSTANCE_READY http://${HOST}:${PORT}/ ${serviceInstance.instanceId}`);
+  questionBank.start();
   openBrowser(`http://${HOST}:${PORT}/index.html${process.env.DAGUAN_BROWSER_PACKAGE === "1" ? "?browserPackage=1" : ""}`);
 
   let shuttingDown = false;
@@ -633,6 +671,7 @@ if (!lease?.acquired) {
     }
     stateEventClients.clear();
     server.close(async () => {
+      await questionBank?.stop();
       await lease.release();
       process.exit(0);
     });
@@ -642,6 +681,7 @@ if (!lease?.acquired) {
   requestGracefulShutdown = shutdown;
   process.on("SIGINT", shutdown);
   process.on("SIGTERM", shutdown);
+  process.on("disconnect", shutdown);
   process.on("message", (message) => {
     if (message?.type === "shutdown") void shutdown();
   });

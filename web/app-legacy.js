@@ -2,7 +2,7 @@
   "use strict";
 
   if ("serviceWorker" in navigator && location.protocol !== "file:") {
-    navigator.serviceWorker.register("./service-worker.js?v=117").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=120").catch(() => {});
   }
 
   const DATA = "./data";
@@ -5718,5 +5718,21 @@
   window.addEventListener("daguan:state-changed", () => { void refreshStateFromServerEvent(); });
   // The Electron tray and title bar use the same save-first path as the browser version switcher.
   window.DaguanDesktopSwitch = setUiVersion;
+  window.DaguanBrowserMigration = {
+    async flushPending() {
+      await hydrateServerState();
+      if (!serverStateAvailable) return false;
+      replayPendingSync();
+      const deadline = Date.now() + 10_000;
+      while (serverStateSyncing && Date.now() < deadline) await new Promise(resolve => setTimeout(resolve, 50));
+      if (serverQuestionTimer) { clearTimeout(serverQuestionTimer); serverQuestionTimer = 0; }
+      await flushQuestionSync();
+      await replayPendingAnnotations();
+      return !pendingHasAny() && !serverQuestionQueue.size && !serverStateSyncing;
+    },
+    downloadBackup() {
+      downloadText(backupFilename(), backupText(), "application/json");
+    },
+  };
   init();
 })();
