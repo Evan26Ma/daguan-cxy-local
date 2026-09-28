@@ -5,7 +5,7 @@ function addDesktopBar() {
   if (!document.body || document.getElementById("daguan-desktop-bar")) return;
   const bar = document.createElement("header");
   bar.id = "daguan-desktop-bar";
-  bar.innerHTML = '<div id="daguan-desktop-brand"><img src="daguan://app/assets/math-mark.svg" alt=""><span>大观园数学</span><i></i><small>本地学习</small></div><div id="daguan-desktop-actions"><button data-action="switch" title="切换新旧版">切换版本</button><button data-action="print" title="打印当前页面">打印</button><button data-action="updates" title="检查桌面版更新">检查更新</button><button class="quit" data-action="quit">退出</button></div>';
+  bar.innerHTML = '<div id="daguan-desktop-brand"><img src="daguan://app/assets/landing/local-mark.png" alt=""><span>大观园数学</span><i></i><small>本地学习</small></div><div id="daguan-desktop-actions"><button data-action="switch" title="切换新旧版">切换版本</button><button data-action="print" title="打印当前页面">打印</button><button data-action="updates" title="检查桌面版更新">检查更新</button><button class="quit" data-action="quit" title="退出">退出</button></div>';
   const style = document.createElement("style");
   style.textContent = `
     #daguan-desktop-bar {

@@ -168,7 +168,7 @@ function buildTrayMenu() {
   ]));
 }
 function makeTray() {
-  let icon = nativeImage.createFromPath(path.join(WEB_ROOT, "assets", "landing", "daguan-curve-logo.png"));
+  let icon = nativeImage.createFromPath(path.join(WEB_ROOT, "assets", "landing", "local-mark.png"));
   if (icon.isEmpty()) icon = nativeImage.createFromPath(path.join(WEB_ROOT, "assets", "math-mark.svg"));
   if (!icon.isEmpty()) icon = icon.resize({ width: 16, height: 16 });
   tray = new Tray(icon); tray.setToolTip("大观园数学学习桌面版");
@@ -178,6 +178,7 @@ function makeTray() {
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1320, height: 860, minWidth: 900, minHeight: 620, show: false,
+    icon: path.join(WEB_ROOT, "assets", "landing", "local-mark.png"),
     backgroundColor: "#f6f7f9", autoHideMenuBar: true,
     titleBarStyle: "hidden",
     ...(process.platform !== "darwin" ? { titleBarOverlay: { color: "#ffffff", symbolColor: "#3d4650", height: 42 } } : {}),

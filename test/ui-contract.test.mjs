@@ -104,15 +104,16 @@ test("首屏不阻塞加载题库索引", () => {
 
 test("Service Worker 不预缓存首屏之外的大型索引和字体", () => {
   const sw = fs.readFileSync(new URL("../web/service-worker.js", import.meta.url), "utf8");
-  assert.match(sw, /daguan-shell-v116/);
-  assert.match(app, /service-worker\.js\?v=116/);
-  assert.match(newApp, /service-worker\.js\?v=116/);
+  assert.match(sw, /daguan-shell-v117/);
+  assert.match(app, /service-worker\.js\?v=117/);
+  assert.match(newApp, /service-worker\.js\?v=117/);
   assert.match(sw, /"\.\/legacy\.html"/);
   assert.match(sw, /"\.\/legacy\.css\?v=89"/);
   assert.match(sw, /"\.\/app-legacy\.js\?v=91"/);
   assert.match(sw, /"\.\/styles-new\.css\?v=110"/);
   assert.match(sw, /"\.\/app-new\.js\?v=113"/);
   assert.match(sw, /"\.\/assets\/math-mark\.svg"/);
+  assert.match(sw, /"\.\/assets\/landing\/local-mark\.png"/);
   assert.doesNotMatch(sw, /data\/(category_questions|id_index|search_index)\.json/);
   assert.doesNotMatch(sw, /vendor\/fonts\//);
 });

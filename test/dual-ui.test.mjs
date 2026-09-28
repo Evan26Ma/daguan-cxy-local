@@ -78,7 +78,7 @@ test("Windows bundle retains both frontends and new logo in its offline shell", 
   vm.runInContext(build.slice(start, end) + '\nthis.bundle = shouldBundle; this.transform = packageServiceWorker;', ctx);
   const sw = fs.readFileSync(new URL("../web/service-worker.js", import.meta.url));
   const packaged = ctx.transform("web/service-worker.js", sw).toString();
-  for (const asset of ["index.html", "legacy.html", "app2.js", "app-legacy.js", "ui-version.js", "design-tokens.css", "assets/landing/local-mark.svg"]) {
+  for (const asset of ["index.html", "legacy.html", "app2.js", "app-legacy.js", "ui-version.js", "design-tokens.css", "assets/landing/local-mark.svg", "assets/landing/local-mark.png"]) {
     assert.equal(ctx.bundle(`web/${asset}`), true, asset);
     assert.ok(packaged.includes(`./${asset}`), asset);
   }
