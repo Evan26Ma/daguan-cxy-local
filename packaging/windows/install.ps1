@@ -21,7 +21,8 @@ foreach ($scriptName in $ScriptFiles) {
 if ($ValidateOnly) { Write-Host "Browser package validation passed."; exit 0 }
 
 $InstallRoot = if ($InstallRootOverride) { [IO.Path]::GetFullPath($InstallRootOverride) } else { Join-Path $env:LOCALAPPDATA "DaguanMathBrowser" }
-$StartMenu = if ($StartMenuRootOverride) { [IO.Path]::GetFullPath($StartMenuRootOverride) } else { Join-Path ([Environment]::GetFolderPath([Environment+SpecialFolder]::Programs)) "大观园数学" }
+$ProgramsRoot = [Environment]::GetFolderPath([Environment+SpecialFolder]::Programs)
+$StartMenu = if ($StartMenuRootOverride) { [IO.Path]::GetFullPath($StartMenuRootOverride) } else { Join-Path $ProgramsRoot "大观园浏览器本地版" }
 $Desktop = if ($DesktopRootOverride) { [IO.Path]::GetFullPath($DesktopRootOverride) } else { [Environment]::GetFolderPath([Environment+SpecialFolder]::DesktopDirectory) }
 $SharedDataRoot = [IO.Path]::GetFullPath((Join-Path $env:LOCALAPPDATA "DaguanMath\data")).TrimEnd([IO.Path]::DirectorySeparatorChar)
 $ResolvedInstallRoot = [IO.Path]::GetFullPath($InstallRoot).TrimEnd([IO.Path]::DirectorySeparatorChar)
@@ -46,12 +47,13 @@ function New-Shortcut([string]$Path, [string]$Target, [string]$Arguments, [strin
   $shortcut.Save()
 }
 $launcherArg = '"' + $launcher + '"'
-New-Shortcut (Join-Path $StartMenu "大观园数学.lnk") $wscript $launcherArg "启动本地数学题库（仅本机保存数据）"
-New-Shortcut (Join-Path $StartMenu "停止大观园本地服务.lnk") (Join-Path $env:WINDIR "System32\WindowsPowerShell\v1.0\powershell.exe") ('-NoProfile -ExecutionPolicy Bypass -File "' + (Join-Path $InstallRoot "stop-daguan-service.ps1") + '"') "平稳停止本地学习服务"
-New-Shortcut (Join-Path $StartMenu "卸载大观园浏览器版.lnk") (Join-Path $env:WINDIR "System32\WindowsPowerShell\v1.0\powershell.exe") ('-NoProfile -ExecutionPolicy Bypass -File "' + (Join-Path $InstallRoot "uninstall-browser-package.ps1") + '" -InstallRootOverride "' + $InstallRoot + '" -StartMenuRootOverride "' + $StartMenu + '"') "卸载程序但保留共享学习记录"
-New-Shortcut (Join-Path $Desktop "大观园数学.lnk") $wscript $launcherArg "启动本地数学题库（仅本机保存数据）"
+$powershell = Join-Path $env:WINDIR "System32\WindowsPowerShell\v1.0\powershell.exe"
+New-Shortcut (Join-Path $StartMenu "大观园浏览器本地版.lnk") $wscript $launcherArg "启动本地浏览器版；在默认浏览器打开学习页"
+New-Shortcut (Join-Path $StartMenu "停止浏览器本地服务.lnk") $powershell ('-NoProfile -ExecutionPolicy Bypass -File "' + (Join-Path $InstallRoot "stop-daguan-service.ps1") + '"') "平稳停止浏览器版本地学习服务"
+New-Shortcut (Join-Path $StartMenu "卸载浏览器本地版.lnk") $powershell ('-NoProfile -ExecutionPolicy Bypass -File "' + (Join-Path $InstallRoot "uninstall-browser-package.ps1") + '" -InstallRootOverride "' + $InstallRoot + '" -StartMenuRootOverride "' + $StartMenu + '"') "卸载浏览器版程序但保留共享学习记录"
+New-Shortcut (Join-Path $Desktop "大观园浏览器本地版.lnk") $wscript $launcherArg "启动本地浏览器版；在默认浏览器打开学习页"
 Write-Host "Installed browser package to: $InstallRoot"
 $DataRoot = Join-Path $env:LOCALAPPDATA "DaguanMath\data"
 Write-Host "Shared data remains at: $DataRoot"
-Write-Host "Start menu entries created: launch, stop service, and uninstall."
+Write-Host "Browser edition shortcuts created: launch, stop service, and uninstall."
 if (-not $NoLaunch) { Start-Process -FilePath $wscript -ArgumentList $launcherArg -WindowStyle Hidden }

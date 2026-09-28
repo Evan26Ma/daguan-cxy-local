@@ -171,12 +171,13 @@ function makeTray() {
   let icon = nativeImage.createFromPath(path.join(WEB_ROOT, "assets", "landing", "daguan-curve-logo.png"));
   if (icon.isEmpty()) icon = nativeImage.createFromPath(path.join(WEB_ROOT, "assets", "math-mark.svg"));
   if (!icon.isEmpty()) icon = icon.resize({ width: 16, height: 16 });
-  tray = new Tray(icon); tray.setToolTip("大观园数学学习桌面版");
+  tray = new Tray(icon); tray.setToolTip("大观园数学 Electron 桌面版");
   tray.on("double-click", () => { if (!mainWindow || mainWindow.isDestroyed()) createWindow(); else { mainWindow.show(); mainWindow.focus(); } });
   buildTrayMenu();
 }
 function createWindow() {
   mainWindow = new BrowserWindow({
+    title: "大观园数学 · Electron 桌面版",
     width: 1320, height: 860, minWidth: 900, minHeight: 620, show: false,
     backgroundColor: "#f6f7f9", autoHideMenuBar: true,
     titleBarStyle: "hidden",

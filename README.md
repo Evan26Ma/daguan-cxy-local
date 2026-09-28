@@ -50,10 +50,10 @@
 
 ---
 
-> **Windows 桌面版（推荐）：**普通用户从百度网盘下载，桌面版会在后台检查更新，下载后等你确认重启。
-> [⬇️ 下载桌面版 `DaguanMathDesktop-Setup.exe`（提取码 dgy1）](https://pan.baidu.com/netdisk/share?surl=VrW0Z-ThDSM7f_xx7uCUZw) · [网页版服务包 ZIP（提取码 wweb）](https://pan.baidu.com/netdisk/share?surl=VJwUxgElbURfw7Aj4Gpy4Q) · [📖 Windows 安装教程](docs/Windows新手安装与配置.md)
+> **Electron 桌面版（推荐）：**在独立桌面窗口和系统托盘中运行；更新会在后台下载，等你确认后才重启安装。
+> [⬇️ 下载 Electron 桌面版 `DaguanMathDesktop-Setup.exe`（提取码 dgy1）](https://pan.baidu.com/netdisk/share?surl=VrW0Z-ThDSM7f_xx7uCUZw) · [下载本地浏览器版 ZIP（提取码 wweb）](https://pan.baidu.com/netdisk/share?surl=VJwUxgElbURfw7Aj4Gpy4Q) · [📖 Windows 安装教程](docs/Windows新手安装与配置.md)
 
-一个在自己电脑上运行的大观园数学题库增强版：题目更适合连续刷，学习进度保存在本机，可选同步官网进度，也可选连接 AI 助教。普通 Windows 用户安装桌面版即可开始学习，不需要安装 Node.js 或使用命令行。
+一个在自己电脑上运行的大观园数学题库增强版：题目更适合连续刷，学习进度保存在本机，可选同步官网进度，也可选连接 AI 助教。普通 Windows 用户安装 Electron 桌面版即可开始学习，不需要安装 Node.js 或使用命令行；需要在默认浏览器打开页面时，可单独安装本地浏览器版。
 
 ## 源码版本怎么选
 
@@ -62,7 +62,7 @@
 | [`main`](https://github.com/Evan26Ma/daguan-cxy-local/tree/main) | 当前源码主线：默认打开新版学习空间，保留可切换的旧版界面。 |
 | [`legacy/pre-redesign-2026-09-27`](https://github.com/Evan26Ma/daguan-cxy-local/tree/legacy/pre-redesign-2026-09-27) | 改版前完整旧版的归档分支，固定在提交 `28a1a6c`；适合回看或从旧版源码继续开发。 |
 
-桌面版默认使用新版，也可切换到旧版；两套学习界面共用本机学习数据，外观偏好分别保存。桌面版后台检查 GitHub Release 更新，下载完成后由用户决定何时重启。
+Electron 桌面版默认使用新版，也可切换到旧版；两套学习界面共用本机学习数据，外观偏好分别保存。本地浏览器版由本机服务打开系统默认浏览器，界面中新版和旧版同样共享学习数据。Electron 桌面版后台检查 GitHub Release 更新，下载完成后由用户决定何时重启；本地浏览器版需手动替换程序包。
 
 ## 它和原版大观园有什么不同？
 
@@ -88,28 +88,28 @@ AI 能力取决于你配置的服务：普通文本模型不能自动获得视�
 
 #### 普通用户（推荐）
 
-普通用户可从[百度网盘下载桌面安装器 `DaguanMathDesktop-Setup.exe`](https://pan.baidu.com/netdisk/share?surl=VrW0Z-ThDSM7f_xx7uCUZw)（提取码 `dgy1`）并运行。桌面版使用系统托盘管理窗口和共享服务，默认不开机启动；关闭窗口会缩到托盘。另有[网页版本机服务包 ZIP](https://pan.baidu.com/netdisk/share?surl=VJwUxgElbURfw7Aj4Gpy4Q)（提取码 `wweb`）。
+普通用户推荐[百度网盘下载 Electron 桌面版安装器 `DaguanMathDesktop-Setup.exe`](https://pan.baidu.com/netdisk/share?surl=VrW0Z-ThDSM7f_xx7uCUZw)（提取码 `dgy1`）。它在独立窗口运行，使用系统托盘管理窗口和共享服务，默认不开机启动；关闭窗口会缩到托盘。需要使用系统默认浏览器时，可选[本地浏览器版服务包 ZIP](https://pan.baidu.com/netdisk/share?surl=VJwUxgElbURfw7Aj4Gpy4Q)（提取码 `wweb`）；它启动本机服务并打开浏览器页面，不会启动 Electron 窗口。两个版本共用 `%LOCALAPPDATA%\DaguanMath\data`。
 
 首版未签名，Windows 可能显示 SmartScreen 警告。桌面安装器 SHA-256：`2139a96a85cf3d5865acb3814ae4241edaa703b0e9ce95f86d327be15816f6ac`。首次安装建议阅读 [Windows 新手安装与配置教程](docs/Windows新手安装与配置.md)；维护者更换网盘地址请看[百度网盘下载与引导页配置](docs/百度网盘下载与引导页配置.md)。
 
 #### 开发者从源码启动
 
-如果是开发者或已经安装 Node.js 的用户，双击根目录的 `启动本地题库.cmd`：
+如果是开发者或已经安装 Node.js 的用户，双击根目录的 `启动本地题库.cmd` 启动本地浏览器版开发入口：
 
 1. 自动检查 Node.js 20；
 2. 没有 Node.js 时下载并校验便携运行时；
 3. 自动执行 `npm ci`；
 4. 启动本地中控台；
-5. 打开 `http://127.0.0.1:8080/`。
+5. 打开系统默认浏览器中的 `http://127.0.0.1:8080/`。这个命令行入口与上方的 Electron 桌面版安装器是两种独立启动方式。
 
-维护者可在本机执行下列命令构建独立浏览器容器，用于兼容性测试；该包不是当前公开发布的 Windows 安装版本：
+维护者可在本机执行下列命令构建本地浏览器版安装包：
 
 ```powershell
 npm run package:windows
 npm run package:windows:release
 ```
 
-生成的 `dist/DaguanMath-windows-x64.exe` 与 `dist/DaguanMath-windows-x64.zip` 仅用于本地测试，不随桌面版 Release 提供。普通 Windows 用户请使用上方的 Electron 桌面版安装器。运行数据统一保存在当前 Windows 用户的 `%LOCALAPPDATA%\DaguanMath\data`，程序升级不会覆盖进度和登录配置。
+生成的 `dist/DaguanMath-windows-x64.exe` 与 `dist/DaguanMath-windows-x64.zip` 是本地浏览器版产物；它们与 Electron 桌面版安装器不是同一个程序。运行数据统一保存在当前 Windows 用户的 `%LOCALAPPDATA%\DaguanMath\data`，更换程序不会覆盖进度和登录配置。
 
 ### 适用设备
 
