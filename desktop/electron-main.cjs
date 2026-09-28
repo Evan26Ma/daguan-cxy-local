@@ -48,7 +48,7 @@ async function startServiceCandidate(dataDir, port) {
     env: Object.assign({}, process.env, {
       ELECTRON_RUN_AS_NODE: "1", HOST: "127.0.0.1", PORT: String(port),
       DAGUAN_DATA_DIR: dataDir, DAGUAN_ROOT_DIR: APP_PATH, DAGUAN_WEB_ROOT: WEB_ROOT,
-      DAGUAN_OPEN_BROWSER: "0", DAGUAN_LAUNCHER_KIND: "desktop",
+      DAGUAN_OPEN_BROWSER: "0", DAGUAN_LAUNCHER_KIND: "desktop", DAGUAN_AUTO_UPDATE_BANK: "1",
     }),
   });
   let output = "";
@@ -119,7 +119,7 @@ async function connectOrStartService() {
 async function serveAppRequest(request) {
   const requestUrl = new URL(request.url);
   if (requestUrl.protocol !== "daguan:" || requestUrl.hostname !== "app") return new Response("Forbidden", { status: 403 });
-  if (requestUrl.pathname.indexOf("/api/") === 0) {
+  if (requestUrl.pathname.indexOf("/api/") === 0 || requestUrl.pathname.indexOf("/data/") === 0) {
     if (!owner) return new Response("Service unavailable", { status: 503 });
     const target = serviceEndpoint() + requestUrl.pathname + requestUrl.search;
     const init = { method: request.method, headers: policy.proxyHeaders(request.headers), redirect: "manual" };

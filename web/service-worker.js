@@ -1,4 +1,4 @@
-const CACHE = "daguan-shell-v119";
+const CACHE = "daguan-shell-v120";
 const SHELL = [
   "./",
   "./landing.html",
@@ -20,15 +20,12 @@ const SHELL = [
   "./app2.js?v=90",
   "./styles-new.css?v=110",
   "./app-new.js?v=113",
+  "./data-bank-client.js?v=1",
   "./browser-retirement.css?v=1",
   "./browser-retirement.js?v=1",
   "./vendor/marked.min.js",
   "./vendor/katex.min.js",
   "./vendor/katex.min.css",
-  "./data/manifest.json",
-  "./data/categories.json",
-  "./data/paradiyu-linear-video.json",
-  "./data/lecture-video-mappings.json",
 ];
 
 self.addEventListener("install", (event) => {
@@ -48,7 +45,7 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   const request = event.request;
   if (request.method !== "GET") return;
-  if (new URL(request.url).pathname.includes("/api/")) return;
+  if (new URL(request.url).pathname.includes("/api/") || new URL(request.url).pathname.includes("/data/")) return;
   const isNavigation = request.mode === "navigate" || request.destination === "document";
   event.respondWith(
     isNavigation

@@ -104,9 +104,9 @@ test("首屏不阻塞加载题库索引", () => {
 
 test("Service Worker 不预缓存首屏之外的大型索引和字体", () => {
   const sw = fs.readFileSync(new URL("../web/service-worker.js", import.meta.url), "utf8");
-  assert.match(sw, /daguan-shell-v119/);
-  assert.match(app, /service-worker\.js\?v=119/);
-  assert.match(newApp, /service-worker\.js\?v=119/);
+  assert.match(sw, /daguan-shell-v120/);
+  assert.match(app, /service-worker\.js\?v=120/);
+  assert.match(newApp, /service-worker\.js\?v=120/);
   assert.match(sw, /"\.\/legacy\.html"/);
   assert.match(sw, /"\.\/legacy\.css\?v=89"/);
   assert.match(sw, /"\.\/app-legacy\.js\?v=91"/);
@@ -115,6 +115,7 @@ test("Service Worker 不预缓存首屏之外的大型索引和字体", () => {
   assert.match(sw, /"\.\/assets\/math-mark\.svg"/);
   assert.match(sw, /"\.\/assets\/landing\/local-mark\.png"/);
   assert.doesNotMatch(sw, /data\/(category_questions|id_index|search_index)\.json/);
+  assert.match(sw, /pathname\.includes\("\/data\/"\)/);
   assert.doesNotMatch(sw, /vendor\/fonts\//);
 });
 
@@ -166,7 +167,7 @@ test("讲解视频映射覆盖两位新老师且只保留前端需要的字段",
   assert.match(app, /\{ name: "李艳芳讲过"/);
   assert.match(app, /\{ name: "没咋了讲过"/);
   const sw = fs.readFileSync(new URL("../web/service-worker.js", import.meta.url), "utf8");
-  assert.match(sw, /data\/lecture-video-mappings\.json/);
+  assert.doesNotMatch(sw, /data\/lecture-video-mappings\.json/);
   assert.doesNotMatch(sw, /lecture-video-unmatched-audit\.json/);
   assert.equal(unmatchedLectureVideos.unmatched.length, 73);
 });
@@ -212,7 +213,7 @@ test("品牌橙双方案：活力橙默认，朱砂橙可在设置切换", () =>
 
 test("Service Worker 响应始终重新校验，避免线上继续命中旧脚本", () => {
   assert.match(server, /const isServiceWorker = path\.basename\(file\) === "service-worker\.js"/);
-  assert.match(server, /isHtml \|\| isServiceWorker \? "no-cache"/);
+  assert.match(server, /isBankData \|\| isHtml \|\| isServiceWorker \? "no-store"/);
 });
 
 test("Windows EXE 不包含落地页并直接进入刷题页", () => {
