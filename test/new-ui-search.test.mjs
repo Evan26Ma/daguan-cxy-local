@@ -31,7 +31,7 @@ test('全库搜索将常见分数、括号和关系符公式写法归一', () =>
 test('全库搜索索引保留完整题库规模并可用路径、来源字段命中', () => {
   const { App } = loadApp();
   const rows = JSON.parse(fs.readFileSync(new URL('../web/data/search_index.json', import.meta.url), 'utf8'));
-  assert.equal(rows.length, 6342);
+  assert.equal(rows.length, 6473);
   const normalize = App.normalizeSearchText;
   const query = normalize('第5章 数理统计部分');
   assert.ok(rows.some(row => normalize(row.path).includes(query)));

@@ -104,9 +104,9 @@ test("首屏不阻塞加载题库索引", () => {
 
 test("Service Worker 不预缓存首屏之外的大型索引和字体", () => {
   const sw = fs.readFileSync(new URL("../web/service-worker.js", import.meta.url), "utf8");
-  assert.match(sw, /daguan-shell-v118/);
-  assert.match(app, /service-worker\.js\?v=118/);
-  assert.match(newApp, /service-worker\.js\?v=118/);
+  assert.match(sw, /daguan-shell-v119/);
+  assert.match(app, /service-worker\.js\?v=119/);
+  assert.match(newApp, /service-worker\.js\?v=119/);
   assert.match(sw, /"\.\/legacy\.html"/);
   assert.match(sw, /"\.\/legacy\.css\?v=89"/);
   assert.match(sw, /"\.\/app-legacy\.js\?v=91"/);
@@ -147,9 +147,9 @@ test("新版入口承载新版前端并与旧版共享版本选择", () => {
 test("讲解视频映射覆盖两位新老师且只保留前端需要的字段", () => {
   const entries = Object.values(lectureVideos.questions).flat();
   const teachers = new Set(entries.map((entry) => entry.teacher));
-  assert.equal(entries.length, 1172);
+  assert.equal(entries.length, 1026);
   assert.deepEqual([...teachers].sort(), ["李艳芳", "没咋了"].sort());
-  assert.equal(Object.keys(lectureVideos.questions).length, 897);
+  assert.equal(Object.keys(lectureVideos.questions).length, 776);
   for (const [id, videos] of Object.entries(lectureVideos.questions)) {
     assert.ok(Object.hasOwn(questionIdIndex, id), `unknown question ID ${id}`);
     assert.ok(Array.isArray(videos) && videos.length > 0);

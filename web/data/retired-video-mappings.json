@@ -1,0 +1,1888 @@
+{
+  "lecture": {
+    "460": [
+      {
+        "questionId": "460",
+        "teacher": "没咋了",
+        "seriesTitle": "没咋了 2027 李林880 数三",
+        "bvid": "BV1kGLG62Eem",
+        "page": 105,
+        "startSeconds": 661.4,
+        "title": "参数方程组系数矩阵 A，存在非零 B 使 AB=O；行列式 (λ−1)² 与题库题式、答案C一致。",
+        "subject": "数学三"
+      }
+    ],
+    "1323": [
+      {
+        "questionId": "1323",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数三真题精讲",
+        "bvid": "BV13b411H74Q",
+        "page": 90,
+        "startSeconds": 637.86,
+        "title": "2025 数三 第18题",
+        "subject": "数学三",
+        "year": 2025
+      },
+      {
+        "questionId": "1323",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数二真题精讲",
+        "bvid": "BV164411o7Qo",
+        "page": 96,
+        "startSeconds": 630.26,
+        "title": "2025 数二 第18题",
+        "subject": "数学二",
+        "year": 2025
+      }
+    ],
+    "2147": [
+      {
+        "questionId": "2147",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数一真题精讲",
+        "bvid": "BV1Ut411p7k3",
+        "page": 37,
+        "startSeconds": 55.1,
+        "title": "2016 数一 第1题",
+        "subject": "数学一",
+        "year": 2016
+      }
+    ],
+    "5438": [
+      {
+        "questionId": "5438",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数三真题精讲",
+        "bvid": "BV13b411H74Q",
+        "page": 68,
+        "startSeconds": 2260,
+        "title": "2021 数三 第9题",
+        "subject": "数学三",
+        "year": 2021
+      }
+    ],
+    "5603": [
+      {
+        "questionId": "5603",
+        "teacher": "没咋了",
+        "seriesTitle": "没咋了 2027 李林880 数三",
+        "bvid": "BV1kGLG62Eem",
+        "page": 87,
+        "startSeconds": 727.9,
+        "title": "线性无关向量组上给出 Aα₁、Aα₂、Aα₃，求",
+        "subject": "数学三"
+      }
+    ],
+    "6038": [
+      {
+        "questionId": "6038",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数一真题精讲",
+        "bvid": "BV1Ut411p7k3",
+        "page": 17,
+        "startSeconds": 99,
+        "title": "2012 数一 第18题",
+        "subject": "数学一",
+        "year": 2012
+      }
+    ],
+    "6765": [
+      {
+        "questionId": "6765",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数三真题精讲",
+        "bvid": "BV13b411H74Q",
+        "page": 29,
+        "startSeconds": 979.1,
+        "title": "2014 数三 第19题",
+        "subject": "数学三",
+        "year": 2014
+      }
+    ],
+    "7892": [
+      {
+        "questionId": "7892",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数一真题精讲",
+        "bvid": "BV1Ut411p7k3",
+        "page": 87,
+        "startSeconds": 29.1,
+        "title": "2025 数一 第1题",
+        "subject": "数学一",
+        "year": 2025
+      },
+      {
+        "questionId": "7892",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数三真题精讲",
+        "bvid": "BV13b411H74Q",
+        "page": 87,
+        "startSeconds": 381,
+        "title": "2025 数三 第2题",
+        "subject": "数学三",
+        "year": 2025
+      },
+      {
+        "questionId": "7892",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数二真题精讲",
+        "bvid": "BV164411o7Qo",
+        "page": 93,
+        "startSeconds": 245,
+        "title": "2025 数二 第2题",
+        "subject": "数学二",
+        "year": 2025
+      }
+    ],
+    "7893": [
+      {
+        "questionId": "7893",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数一真题精讲",
+        "bvid": "BV1Ut411p7k3",
+        "page": 87,
+        "startSeconds": 918.76,
+        "title": "2025 数一 第2题",
+        "subject": "数学一",
+        "year": 2025
+      }
+    ],
+    "7908": [
+      {
+        "questionId": "7908",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数三真题精讲",
+        "bvid": "BV13b411H74Q",
+        "page": 90,
+        "startSeconds": 77.48,
+        "title": "2025 数三 第17题",
+        "subject": "数学三",
+        "year": 2025
+      },
+      {
+        "questionId": "7908",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数二真题精讲",
+        "bvid": "BV164411o7Qo",
+        "page": 96,
+        "startSeconds": 28.46,
+        "title": "2025 数二 第17题",
+        "subject": "数学二",
+        "year": 2025
+      },
+      {
+        "questionId": "7908",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数一真题精讲",
+        "bvid": "BV1Ut411p7k3",
+        "page": 90,
+        "startSeconds": 29.76,
+        "title": "2025 数一 第17题",
+        "subject": "数学一",
+        "year": 2025
+      }
+    ],
+    "7914": [
+      {
+        "questionId": "7914",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数一真题精讲",
+        "bvid": "BV1Ut411p7k3",
+        "page": 82,
+        "startSeconds": 168.42,
+        "title": "2024 数一 第1题",
+        "subject": "数学一",
+        "year": 2024
+      }
+    ],
+    "7916": [
+      {
+        "questionId": "7916",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数三真题精讲",
+        "bvid": "BV13b411H74Q",
+        "page": 82,
+        "startSeconds": 2178.2,
+        "title": "2024 数三 第4题",
+        "subject": "数学三",
+        "year": 2024
+      },
+      {
+        "questionId": "7916",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数一真题精讲",
+        "bvid": "BV1Ut411p7k3",
+        "page": 82,
+        "startSeconds": 1499,
+        "title": "2024 数一 第3题",
+        "subject": "数学一",
+        "year": 2024
+      }
+    ],
+    "7932": [
+      {
+        "questionId": "7932",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数一真题精讲",
+        "bvid": "BV1Ut411p7k3",
+        "page": 85,
+        "startSeconds": 2508,
+        "title": "2024 数一 第19题",
+        "subject": "数学一",
+        "year": 2024
+      }
+    ],
+    "7936": [
+      {
+        "questionId": "7936",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数一真题精讲",
+        "bvid": "BV1Ut411p7k3",
+        "page": 77,
+        "startSeconds": 34,
+        "title": "2023 数一 第1题",
+        "subject": "数学一",
+        "year": 2023
+      },
+      {
+        "questionId": "7936",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数二真题精讲",
+        "bvid": "BV164411o7Qo",
+        "page": 83,
+        "startSeconds": 40,
+        "title": "2023 数二 第1题",
+        "subject": "数学二",
+        "year": 2023
+      }
+    ],
+    "7953": [
+      {
+        "questionId": "7953",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数一真题精讲",
+        "bvid": "BV1Ut411p7k3",
+        "page": 80,
+        "startSeconds": 698.8,
+        "title": "2023 数一 第18题",
+        "subject": "数学一",
+        "year": 2023
+      }
+    ],
+    "7955": [
+      {
+        "questionId": "7955",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数一真题精讲",
+        "bvid": "BV1Ut411p7k3",
+        "page": 81,
+        "startSeconds": 91.5,
+        "title": "2023 数一 第20题",
+        "subject": "数学一",
+        "year": 2023
+      },
+      {
+        "questionId": "7955",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数三真题精讲",
+        "bvid": "BV13b411H74Q",
+        "page": 81,
+        "startSeconds": 91.5,
+        "title": "2023 数三 第20题",
+        "subject": "数学三",
+        "year": 2023
+      }
+    ],
+    "7958": [
+      {
+        "questionId": "7958",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数一真题精讲",
+        "bvid": "BV1Ut411p7k3",
+        "page": 72,
+        "startSeconds": 67.37,
+        "title": "2022 数一 第1题",
+        "subject": "数学一",
+        "year": 2022
+      }
+    ],
+    "7960": [
+      {
+        "questionId": "7960",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数一真题精讲",
+        "bvid": "BV1Ut411p7k3",
+        "page": 72,
+        "startSeconds": 1088.24,
+        "title": "2022 数一 第3题",
+        "subject": "数学一",
+        "year": 2022
+      },
+      {
+        "questionId": "7960",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数二真题精讲",
+        "bvid": "BV164411o7Qo",
+        "page": 79,
+        "startSeconds": 42.6,
+        "title": "2022 数二 第6题",
+        "subject": "数学二",
+        "year": 2022
+      }
+    ],
+    "7970": [
+      {
+        "questionId": "7970",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数一真题精讲",
+        "bvid": "BV1Ut411p7k3",
+        "page": 74,
+        "startSeconds": 498.47,
+        "title": "2022 数一 第13题",
+        "subject": "数学一",
+        "year": 2022
+      }
+    ],
+    "7971": [
+      {
+        "questionId": "7971",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数一真题精讲",
+        "bvid": "BV1Ut411p7k3",
+        "page": 74,
+        "startSeconds": 1117.4,
+        "title": "2022 数一 第14题",
+        "subject": "数学一",
+        "year": 2022
+      }
+    ],
+    "7974": [
+      {
+        "questionId": "7974",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数一真题精讲",
+        "bvid": "BV1Ut411p7k3",
+        "page": 75,
+        "startSeconds": 37.2,
+        "title": "2022 数一 第17题",
+        "subject": "数学一",
+        "year": 2022
+      }
+    ],
+    "7975": [
+      {
+        "questionId": "7975",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数一真题精讲",
+        "bvid": "BV1Ut411p7k3",
+        "page": 75,
+        "startSeconds": 513,
+        "title": "2022 数一 第18题",
+        "subject": "数学一",
+        "year": 2022
+      },
+      {
+        "questionId": "7975",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数三真题精讲",
+        "bvid": "BV13b411H74Q",
+        "page": 75,
+        "startSeconds": 1571.2,
+        "title": "2022 数三 第19题",
+        "subject": "数学三",
+        "year": 2022
+      }
+    ],
+    "7977": [
+      {
+        "questionId": "7977",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数一真题精讲",
+        "bvid": "BV1Ut411p7k3",
+        "page": 76,
+        "startSeconds": 40.4,
+        "title": "2022 数一 第20题",
+        "subject": "数学一",
+        "year": 2022
+      },
+      {
+        "questionId": "7977",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数二真题精讲",
+        "bvid": "BV164411o7Qo",
+        "page": 82,
+        "startSeconds": 1002.3,
+        "title": "2022 数二 第21题",
+        "subject": "数学二",
+        "year": 2022
+      }
+    ],
+    "8002": [
+      {
+        "questionId": "8002",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数二真题精讲",
+        "bvid": "BV164411o7Qo",
+        "page": 93,
+        "startSeconds": 44.29,
+        "title": "2025 数二 第1题",
+        "subject": "数学二",
+        "year": 2025
+      }
+    ],
+    "8005": [
+      {
+        "questionId": "8005",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数二真题精讲",
+        "bvid": "BV164411o7Qo",
+        "page": 93,
+        "startSeconds": 2488.22,
+        "title": "2025 数二 第4题",
+        "subject": "数学二",
+        "year": 2025
+      }
+    ],
+    "8007": [
+      {
+        "questionId": "8007",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数二真题精讲",
+        "bvid": "BV164411o7Qo",
+        "page": 94,
+        "startSeconds": 114.86,
+        "title": "2025 数二 第6题",
+        "subject": "数学二",
+        "year": 2025
+      }
+    ],
+    "8008": [
+      {
+        "questionId": "8008",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数二真题精讲",
+        "bvid": "BV164411o7Qo",
+        "page": 94,
+        "startSeconds": 451.17,
+        "title": "2025 数二 第7题",
+        "subject": "数学二",
+        "year": 2025
+      }
+    ],
+    "8012": [
+      {
+        "questionId": "8012",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数三真题精讲",
+        "bvid": "BV13b411H74Q",
+        "page": 89,
+        "startSeconds": 575.56,
+        "title": "2025 数三 第12题",
+        "subject": "数学三",
+        "year": 2025
+      }
+    ],
+    "8013": [
+      {
+        "questionId": "8013",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数二真题精讲",
+        "bvid": "BV164411o7Qo",
+        "page": 95,
+        "startSeconds": 482.37,
+        "title": "2025 数二 第12题",
+        "subject": "数学二",
+        "year": 2025
+      }
+    ],
+    "8014": [
+      {
+        "questionId": "8014",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数二真题精讲",
+        "bvid": "BV164411o7Qo",
+        "page": 95,
+        "startSeconds": 798.86,
+        "title": "2025 数二 第13题",
+        "subject": "数学二",
+        "year": 2025
+      }
+    ],
+    "8020": [
+      {
+        "questionId": "8020",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数二真题精讲",
+        "bvid": "BV164411o7Qo",
+        "page": 96,
+        "startSeconds": 1124.54,
+        "title": "2025 数二 第19题",
+        "subject": "数学二",
+        "year": 2025
+      }
+    ],
+    "8024": [
+      {
+        "questionId": "8024",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数二真题精讲",
+        "bvid": "BV164411o7Qo",
+        "page": 88,
+        "startSeconds": 56.34,
+        "title": "2024 数二 第1题",
+        "subject": "数学二",
+        "year": 2024
+      }
+    ],
+    "8025": [
+      {
+        "questionId": "8025",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数二真题精讲",
+        "bvid": "BV164411o7Qo",
+        "page": 88,
+        "startSeconds": 681.8,
+        "title": "2024 数二 第2题",
+        "subject": "数学二",
+        "year": 2024
+      }
+    ],
+    "8028": [
+      {
+        "questionId": "8028",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数二真题精讲",
+        "bvid": "BV164411o7Qo",
+        "page": 88,
+        "startSeconds": 3269.3,
+        "title": "2024 数二 第5题",
+        "subject": "数学二",
+        "year": 2024
+      }
+    ],
+    "8038": [
+      {
+        "questionId": "8038",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数二真题精讲",
+        "bvid": "BV164411o7Qo",
+        "page": 90,
+        "startSeconds": 1590.55,
+        "title": "2024 数二 第15题",
+        "subject": "数学二",
+        "year": 2024
+      }
+    ],
+    "8040": [
+      {
+        "questionId": "8040",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数三真题精讲",
+        "bvid": "BV13b411H74Q",
+        "page": 85,
+        "startSeconds": 62.14,
+        "title": "2024 数三 第17题",
+        "subject": "数学三",
+        "year": 2024
+      },
+      {
+        "questionId": "8040",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数二真题精讲",
+        "bvid": "BV164411o7Qo",
+        "page": 91,
+        "startSeconds": 35.49,
+        "title": "2024 数二 第17题",
+        "subject": "数学二",
+        "year": 2024
+      }
+    ],
+    "8042": [
+      {
+        "questionId": "8042",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数二真题精讲",
+        "bvid": "BV164411o7Qo",
+        "page": 91,
+        "startSeconds": 3147.88,
+        "title": "2024 数二 第19题",
+        "subject": "数学二",
+        "year": 2024
+      }
+    ],
+    "8043": [
+      {
+        "questionId": "8043",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数二真题精讲",
+        "bvid": "BV164411o7Qo",
+        "page": 92,
+        "startSeconds": 41,
+        "title": "2024 数二 第20题",
+        "subject": "数学二",
+        "year": 2024
+      }
+    ],
+    "8048": [
+      {
+        "questionId": "8048",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数二真题精讲",
+        "bvid": "BV164411o7Qo",
+        "page": 83,
+        "startSeconds": 1065,
+        "title": "2023 数二 第3题",
+        "subject": "数学二",
+        "year": 2023
+      }
+    ],
+    "8051": [
+      {
+        "questionId": "8051",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数二真题精讲",
+        "bvid": "BV164411o7Qo",
+        "page": 84,
+        "startSeconds": 88.1,
+        "title": "2023 数二 第6题",
+        "subject": "数学二",
+        "year": 2023
+      }
+    ],
+    "8062": [
+      {
+        "questionId": "8062",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数二真题精讲",
+        "bvid": "BV164411o7Qo",
+        "page": 86,
+        "startSeconds": 48.65,
+        "title": "2023 数二 第17题",
+        "subject": "数学二",
+        "year": 2023
+      }
+    ],
+    "8063": [
+      {
+        "questionId": "8063",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数二真题精讲",
+        "bvid": "BV164411o7Qo",
+        "page": 86,
+        "startSeconds": 1194.9,
+        "title": "2023 数二 第18题",
+        "subject": "数学二",
+        "year": 2023
+      },
+      {
+        "questionId": "8063",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数二真题精讲",
+        "bvid": "BV164411o7Qo",
+        "page": 16,
+        "startSeconds": 643.96,
+        "title": "2012 数二 第16题",
+        "subject": "数学二",
+        "year": 2012
+      },
+      {
+        "questionId": "8063",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数一真题精讲",
+        "bvid": "BV1Ut411p7k3",
+        "page": 16,
+        "startSeconds": 758.1,
+        "title": "2012 数一 第16题",
+        "subject": "数学一",
+        "year": 2012
+      }
+    ],
+    "8064": [
+      {
+        "questionId": "8064",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数三真题精讲",
+        "bvid": "BV13b411H74Q",
+        "page": 80,
+        "startSeconds": 506.6,
+        "title": "2023 数三 第18题",
+        "subject": "数学三",
+        "year": 2023
+      },
+      {
+        "questionId": "8064",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数二真题精讲",
+        "bvid": "BV164411o7Qo",
+        "page": 86,
+        "startSeconds": 1799.3,
+        "title": "2023 数二 第19题",
+        "subject": "数学二",
+        "year": 2023
+      }
+    ],
+    "8065": [
+      {
+        "questionId": "8065",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数二真题精讲",
+        "bvid": "BV164411o7Qo",
+        "page": 87,
+        "startSeconds": 57.1,
+        "title": "2023 数二 第20题",
+        "subject": "数学二",
+        "year": 2023
+      }
+    ],
+    "8071": [
+      {
+        "questionId": "8071",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数三真题精讲",
+        "bvid": "BV13b411H74Q",
+        "page": 72,
+        "startSeconds": 1440.67,
+        "title": "2022 数三 第3题",
+        "subject": "数学三",
+        "year": 2022
+      },
+      {
+        "questionId": "8071",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数二真题精讲",
+        "bvid": "BV164411o7Qo",
+        "page": 78,
+        "startSeconds": 1694.29,
+        "title": "2022 数二 第4题",
+        "subject": "数学二",
+        "year": 2022
+      }
+    ],
+    "8072": [
+      {
+        "questionId": "8072",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数二真题精讲",
+        "bvid": "BV164411o7Qo",
+        "page": 78,
+        "startSeconds": 1963,
+        "title": "2022 数二 第5题",
+        "subject": "数学二",
+        "year": 2022
+      }
+    ],
+    "8084": [
+      {
+        "questionId": "8084",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数二真题精讲",
+        "bvid": "BV164411o7Qo",
+        "page": 81,
+        "startSeconds": 41.8,
+        "title": "2022 数二 第17题",
+        "subject": "数学二",
+        "year": 2022
+      }
+    ],
+    "8085": [
+      {
+        "questionId": "8085",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数二真题精讲",
+        "bvid": "BV164411o7Qo",
+        "page": 81,
+        "startSeconds": 634.39,
+        "title": "2022 数二 第18题",
+        "subject": "数学二",
+        "year": 2022
+      }
+    ],
+    "8086": [
+      {
+        "questionId": "8086",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数二真题精讲",
+        "bvid": "BV164411o7Qo",
+        "page": 81,
+        "startSeconds": 1214.9,
+        "title": "2022 数二 第19题",
+        "subject": "数学二",
+        "year": 2022
+      }
+    ],
+    "8114": [
+      {
+        "questionId": "8114",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数三真题精讲",
+        "bvid": "BV13b411H74Q",
+        "page": 87,
+        "startSeconds": 1284.89,
+        "title": "2025 数三 第3题",
+        "subject": "数学三",
+        "year": 2025
+      }
+    ],
+    "8124": [
+      {
+        "questionId": "8124",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数三真题精讲",
+        "bvid": "BV13b411H74Q",
+        "page": 89,
+        "startSeconds": 1023.52,
+        "title": "2025 数三 第13题",
+        "subject": "数学三",
+        "year": 2025
+      }
+    ],
+    "8125": [
+      {
+        "questionId": "8125",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数三真题精讲",
+        "bvid": "BV13b411H74Q",
+        "page": 89,
+        "startSeconds": 1270.59,
+        "title": "2025 数三 第14题",
+        "subject": "数学三",
+        "year": 2025
+      }
+    ],
+    "8134": [
+      {
+        "questionId": "8134",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数三真题精讲",
+        "bvid": "BV13b411H74Q",
+        "page": 82,
+        "startSeconds": 78.5,
+        "title": "2024 数三 第1题",
+        "subject": "数学三",
+        "year": 2024
+      }
+    ],
+    "8160": [
+      {
+        "questionId": "8160",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数三真题精讲",
+        "bvid": "BV13b411H74Q",
+        "page": 77,
+        "startSeconds": 3144,
+        "title": "2023 数三 第5题",
+        "subject": "数学三",
+        "year": 2023
+      }
+    ],
+    "8168": [
+      {
+        "questionId": "8168",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数三真题精讲",
+        "bvid": "BV13b411H74Q",
+        "page": 79,
+        "startSeconds": 629.14,
+        "title": "2023 数三 第13题",
+        "subject": "数学三",
+        "year": 2023
+      }
+    ],
+    "8174": [
+      {
+        "questionId": "8174",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数三真题精讲",
+        "bvid": "BV13b411H74Q",
+        "page": 80,
+        "startSeconds": 1070.9,
+        "title": "2023 数三 第19题",
+        "subject": "数学三",
+        "year": 2023
+      }
+    ],
+    "8179": [
+      {
+        "questionId": "8179",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数三真题精讲",
+        "bvid": "BV13b411H74Q",
+        "page": 72,
+        "startSeconds": 660.8,
+        "title": "2022 数三 第2题",
+        "subject": "数学三",
+        "year": 2022
+      }
+    ],
+    "8191": [
+      {
+        "questionId": "8191",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数三真题精讲",
+        "bvid": "BV13b411H74Q",
+        "page": 74,
+        "startSeconds": 1132.8,
+        "title": "2022 数三 第14题",
+        "subject": "数学三",
+        "year": 2022
+      }
+    ],
+    "8193": [
+      {
+        "questionId": "8193",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数三真题精讲",
+        "bvid": "BV13b411H74Q",
+        "page": 74,
+        "startSeconds": 1815.9,
+        "title": "2022 数三 第16题",
+        "subject": "数学三",
+        "year": 2022
+      }
+    ],
+    "8194": [
+      {
+        "questionId": "8194",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数三真题精讲",
+        "bvid": "BV13b411H74Q",
+        "page": 75,
+        "startSeconds": 37.1,
+        "title": "2022 数三 第17题",
+        "subject": "数学三",
+        "year": 2022
+      }
+    ],
+    "8197": [
+      {
+        "questionId": "8197",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数三真题精讲",
+        "bvid": "BV13b411H74Q",
+        "page": 76,
+        "startSeconds": 47.5,
+        "title": "2022 数三 第20题",
+        "subject": "数学三",
+        "year": 2022
+      }
+    ],
+    "8234": [
+      {
+        "questionId": "8234",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数一真题精讲",
+        "bvid": "BV1Ut411p7k3",
+        "page": 45,
+        "startSeconds": 1744.76,
+        "title": "2017 数一 第12题",
+        "subject": "数学一",
+        "year": 2017
+      }
+    ],
+    "8248": [
+      {
+        "questionId": "8248",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数一真题精讲",
+        "bvid": "BV1Ut411p7k3",
+        "page": 49,
+        "startSeconds": 1143.45,
+        "title": "2018 数一 第3题",
+        "subject": "数学一",
+        "year": 2018
+      }
+    ],
+    "8269": [
+      {
+        "questionId": "8269",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数一真题精讲",
+        "bvid": "BV1Ut411p7k3",
+        "page": 55,
+        "startSeconds": 58.57,
+        "title": "2019 数一 第1题",
+        "subject": "数学一",
+        "year": 2019
+      },
+      {
+        "questionId": "8269",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数三真题精讲",
+        "bvid": "BV13b411H74Q",
+        "page": 55,
+        "startSeconds": 48.1,
+        "title": "2019 数三 第1题",
+        "subject": "数学三",
+        "year": 2019
+      },
+      {
+        "questionId": "8269",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数二真题精讲",
+        "bvid": "BV164411o7Qo",
+        "page": 61,
+        "startSeconds": 56.2,
+        "title": "2019 数二 第1题",
+        "subject": "数学二",
+        "year": 2019
+      }
+    ],
+    "8271": [
+      {
+        "questionId": "8271",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数一真题精讲",
+        "bvid": "BV1Ut411p7k3",
+        "page": 55,
+        "startSeconds": 874.9,
+        "title": "2019 数一 第3题",
+        "subject": "数学一",
+        "year": 2019
+      }
+    ],
+    "8277": [
+      {
+        "questionId": "8277",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数一真题精讲",
+        "bvid": "BV1Ut411p7k3",
+        "page": 57,
+        "startSeconds": 44.09,
+        "title": "2019 数一 第9题",
+        "subject": "数学一",
+        "year": 2019
+      }
+    ],
+    "8279": [
+      {
+        "questionId": "8279",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数一真题精讲",
+        "bvid": "BV1Ut411p7k3",
+        "page": 57,
+        "startSeconds": 440.46,
+        "title": "2019 数一 第11题",
+        "subject": "数学一",
+        "year": 2019
+      }
+    ],
+    "8291": [
+      {
+        "questionId": "8291",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数一真题精讲",
+        "bvid": "BV1Ut411p7k3",
+        "page": 60,
+        "startSeconds": 3869.17,
+        "title": "2019 数一 第23题",
+        "subject": "数学一",
+        "year": 2019
+      },
+      {
+        "questionId": "8291",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数三真题精讲",
+        "bvid": "BV13b411H74Q",
+        "page": 60,
+        "startSeconds": 3448.28,
+        "title": "2019 数三 第23题",
+        "subject": "数学三",
+        "year": 2019
+      }
+    ],
+    "8302": [
+      {
+        "questionId": "8302",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数一真题精讲",
+        "bvid": "BV1Ut411p7k3",
+        "page": 63,
+        "startSeconds": 666.6,
+        "title": "2020 数一 第11题",
+        "subject": "数学一",
+        "year": 2020
+      }
+    ],
+    "8303": [
+      {
+        "questionId": "8303",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数一真题精讲",
+        "bvid": "BV1Ut411p7k3",
+        "page": 63,
+        "startSeconds": 1572.7,
+        "title": "2020 数一 第12题",
+        "subject": "数学一",
+        "year": 2020
+      }
+    ],
+    "8308": [
+      {
+        "questionId": "8308",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数一真题精讲",
+        "bvid": "BV1Ut411p7k3",
+        "page": 64,
+        "startSeconds": 1523,
+        "title": "2020 数一 第17题",
+        "subject": "数学一",
+        "year": 2020
+      }
+    ],
+    "8314": [
+      {
+        "questionId": "8314",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数一真题精讲",
+        "bvid": "BV1Ut411p7k3",
+        "page": 66,
+        "startSeconds": 2734,
+        "title": "2020 数一 第23题",
+        "subject": "数学一",
+        "year": 2020
+      }
+    ],
+    "8332": [
+      {
+        "questionId": "8332",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数一真题精讲",
+        "bvid": "BV1Ut411p7k3",
+        "page": 70,
+        "startSeconds": 727.1,
+        "title": "2021 数一 第18题",
+        "subject": "数学一",
+        "year": 2021
+      }
+    ],
+    "8360": [
+      {
+        "questionId": "8360",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数二真题精讲",
+        "bvid": "BV164411o7Qo",
+        "page": 49,
+        "startSeconds": 55.9,
+        "title": "2017 数二 第1题",
+        "subject": "数学二",
+        "year": 2017
+      }
+    ],
+    "8380": [
+      {
+        "questionId": "8380",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数二真题精讲",
+        "bvid": "BV164411o7Qo",
+        "page": 54,
+        "startSeconds": 79.7,
+        "title": "2017 数二 第21题",
+        "subject": "数学二",
+        "year": 2017
+      }
+    ],
+    "8410": [
+      {
+        "questionId": "8410",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数二真题精讲",
+        "bvid": "BV164411o7Qo",
+        "page": 62,
+        "startSeconds": 90.7,
+        "title": "2019 数二 第5题",
+        "subject": "数学二",
+        "year": 2019
+      }
+    ],
+    "8418": [
+      {
+        "questionId": "8418",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数二真题精讲",
+        "bvid": "BV164411o7Qo",
+        "page": 63,
+        "startSeconds": 900.64,
+        "title": "2019 数二 第13题",
+        "subject": "数学二",
+        "year": 2019
+      }
+    ],
+    "8422": [
+      {
+        "questionId": "8422",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数三真题精讲",
+        "bvid": "BV13b411H74Q",
+        "page": 58,
+        "startSeconds": 1551.6,
+        "title": "2019 数三 第17题",
+        "subject": "数学三",
+        "year": 2019
+      },
+      {
+        "questionId": "8422",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数二真题精讲",
+        "bvid": "BV164411o7Qo",
+        "page": 64,
+        "startSeconds": 1328.3,
+        "title": "2019 数二 第17题",
+        "subject": "数学二",
+        "year": 2019
+      }
+    ],
+    "8440": [
+      {
+        "questionId": "8440",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数二真题精讲",
+        "bvid": "BV164411o7Qo",
+        "page": 69,
+        "startSeconds": 910.3,
+        "title": "2020 数二 第12题",
+        "subject": "数学二",
+        "year": 2020
+      }
+    ],
+    "8446": [
+      {
+        "questionId": "8446",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数二真题精讲",
+        "bvid": "BV164411o7Qo",
+        "page": 71,
+        "startSeconds": 54,
+        "title": "2020 数二 第18题",
+        "subject": "数学二",
+        "year": 2020
+      }
+    ],
+    "8449": [
+      {
+        "questionId": "8449",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数二真题精讲",
+        "bvid": "BV164411o7Qo",
+        "page": 72,
+        "startSeconds": 96.7,
+        "title": "2020 数二 第21题",
+        "subject": "数学二",
+        "year": 2020
+      }
+    ],
+    "8464": [
+      {
+        "questionId": "8464",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数二真题精讲",
+        "bvid": "BV164411o7Qo",
+        "page": 75,
+        "startSeconds": 482.05,
+        "title": "2021 数二 第13题",
+        "subject": "数学二",
+        "year": 2021
+      }
+    ],
+    "8470": [
+      {
+        "questionId": "8470",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数二真题精讲",
+        "bvid": "BV164411o7Qo",
+        "page": 76,
+        "startSeconds": 1172.39,
+        "title": "2021 数二 第19题",
+        "subject": "数学二",
+        "year": 2021
+      }
+    ],
+    "8472": [
+      {
+        "questionId": "8472",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数二真题精讲",
+        "bvid": "BV164411o7Qo",
+        "page": 77,
+        "startSeconds": 798.6,
+        "title": "2021 数二 第21题",
+        "subject": "数学二",
+        "year": 2021
+      }
+    ],
+    "8476": [
+      {
+        "questionId": "8476",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数三真题精讲",
+        "bvid": "BV13b411H74Q",
+        "page": 37,
+        "startSeconds": 883.17,
+        "title": "2016 数三 第3题",
+        "subject": "数学三",
+        "year": 2016
+      }
+    ],
+    "8477": [
+      {
+        "questionId": "8477",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数三真题精讲",
+        "bvid": "BV13b411H74Q",
+        "page": 37,
+        "startSeconds": 1583.1,
+        "title": "2016 数三 第4题",
+        "subject": "数学三",
+        "year": 2016
+      }
+    ],
+    "8482": [
+      {
+        "questionId": "8482",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数三真题精讲",
+        "bvid": "BV13b411H74Q",
+        "page": 39,
+        "startSeconds": 48.1,
+        "title": "2016 数三 第9题",
+        "subject": "数学三",
+        "year": 2016
+      }
+    ],
+    "8492": [
+      {
+        "questionId": "8492",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数三真题精讲",
+        "bvid": "BV13b411H74Q",
+        "page": 41,
+        "startSeconds": 754.6,
+        "title": "2016 数三 第19题",
+        "subject": "数学三",
+        "year": 2016
+      }
+    ],
+    "8497": [
+      {
+        "questionId": "8497",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数一真题精讲",
+        "bvid": "BV1Ut411p7k3",
+        "page": 43,
+        "startSeconds": 51.1,
+        "title": "2017 数一 第1题",
+        "subject": "数学一",
+        "year": 2017
+      },
+      {
+        "questionId": "8497",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数三真题精讲",
+        "bvid": "BV13b411H74Q",
+        "page": 43,
+        "startSeconds": 55.62,
+        "title": "2017 数三 第1题",
+        "subject": "数学三",
+        "year": 2017
+      }
+    ],
+    "8500": [
+      {
+        "questionId": "8500",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数三真题精讲",
+        "bvid": "BV13b411H74Q",
+        "page": 43,
+        "startSeconds": 1516.28,
+        "title": "2017 数三 第4题",
+        "subject": "数学三",
+        "year": 2017
+      }
+    ],
+    "8505": [
+      {
+        "questionId": "8505",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数三真题精讲",
+        "bvid": "BV13b411H74Q",
+        "page": 45,
+        "startSeconds": 25.88,
+        "title": "2017 数三 第9题",
+        "subject": "数学三",
+        "year": 2017
+      }
+    ],
+    "8512": [
+      {
+        "questionId": "8512",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数三真题精讲",
+        "bvid": "BV13b411H74Q",
+        "page": 46,
+        "startSeconds": 473.9,
+        "title": "2017 数三 第16题",
+        "subject": "数学三",
+        "year": 2017
+      }
+    ],
+    "8515": [
+      {
+        "questionId": "8515",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数三真题精讲",
+        "bvid": "BV13b411H74Q",
+        "page": 47,
+        "startSeconds": 1251.4,
+        "title": "2017 数三 第19题",
+        "subject": "数学三",
+        "year": 2017
+      }
+    ],
+    "8531": [
+      {
+        "questionId": "8531",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数三真题精讲",
+        "bvid": "BV13b411H74Q",
+        "page": 51,
+        "startSeconds": 1335.44,
+        "title": "2018 数三 第12题",
+        "subject": "数学三",
+        "year": 2018
+      }
+    ],
+    "8534": [
+      {
+        "questionId": "8534",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数三真题精讲",
+        "bvid": "BV13b411H74Q",
+        "page": 52,
+        "startSeconds": 47.9,
+        "title": "2018 数三 第15题",
+        "subject": "数学三",
+        "year": 2018
+      }
+    ],
+    "8535": [
+      {
+        "questionId": "8535",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数三真题精讲",
+        "bvid": "BV13b411H74Q",
+        "page": 52,
+        "startSeconds": 409.6,
+        "title": "2018 数三 第16题",
+        "subject": "数学三",
+        "year": 2018
+      }
+    ],
+    "8546": [
+      {
+        "questionId": "8546",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数三真题精讲",
+        "bvid": "BV13b411H74Q",
+        "page": 55,
+        "startSeconds": 1073,
+        "title": "2019 数三 第4题",
+        "subject": "数学三",
+        "year": 2019
+      }
+    ],
+    "8558": [
+      {
+        "questionId": "8558",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数三真题精讲",
+        "bvid": "BV13b411H74Q",
+        "page": 58,
+        "startSeconds": 802.4,
+        "title": "2019 数三 第16题",
+        "subject": "数学三",
+        "year": 2019
+      }
+    ],
+    "8568": [
+      {
+        "questionId": "8568",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数三真题精讲",
+        "bvid": "BV13b411H74Q",
+        "page": 61,
+        "startSeconds": 1181.76,
+        "title": "2020 数三 第3题",
+        "subject": "数学三",
+        "year": 2020
+      }
+    ],
+    "8569": [
+      {
+        "questionId": "8569",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数三真题精讲",
+        "bvid": "BV13b411H74Q",
+        "page": 61,
+        "startSeconds": 1454.5,
+        "title": "2020 数三 第4题",
+        "subject": "数学三",
+        "year": 2020
+      }
+    ],
+    "8580": [
+      {
+        "questionId": "8580",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数三真题精讲",
+        "bvid": "BV13b411H74Q",
+        "page": 64,
+        "startSeconds": 40.94,
+        "title": "2020 数三 第15题",
+        "subject": "数学三",
+        "year": 2020
+      }
+    ],
+    "8582": [
+      {
+        "questionId": "8582",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数三真题精讲",
+        "bvid": "BV13b411H74Q",
+        "page": 64,
+        "startSeconds": 1008.38,
+        "title": "2020 数三 第17题",
+        "subject": "数学三",
+        "year": 2020
+      }
+    ],
+    "8583": [
+      {
+        "questionId": "8583",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数三真题精讲",
+        "bvid": "BV13b411H74Q",
+        "page": 65,
+        "startSeconds": 65.1,
+        "title": "2020 数三 第18题",
+        "subject": "数学三",
+        "year": 2020
+      }
+    ],
+    "8605": [
+      {
+        "questionId": "8605",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数三真题精讲",
+        "bvid": "BV13b411H74Q",
+        "page": 70,
+        "startSeconds": 54.24,
+        "title": "2021 数三 第17题",
+        "subject": "数学三",
+        "year": 2021
+      }
+    ],
+    "8606": [
+      {
+        "questionId": "8606",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数三真题精讲",
+        "bvid": "BV13b411H74Q",
+        "page": 70,
+        "startSeconds": 343.8,
+        "title": "2021 数三 第18题",
+        "subject": "数学三",
+        "year": 2021
+      }
+    ],
+    "8607": [
+      {
+        "questionId": "8607",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数三真题精讲",
+        "bvid": "BV13b411H74Q",
+        "page": 70,
+        "startSeconds": 1048.9,
+        "title": "2021 数三 第19题",
+        "subject": "数学三",
+        "year": 2021
+      }
+    ],
+    "10939": [
+      {
+        "questionId": "10939",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数二真题精讲",
+        "bvid": "BV164411o7Qo",
+        "page": 31,
+        "startSeconds": 731.19,
+        "title": "2015 数二 第3题",
+        "subject": "数学二",
+        "year": 2015
+      }
+    ],
+    "10941": [
+      {
+        "questionId": "10941",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数二真题精讲",
+        "bvid": "BV164411o7Qo",
+        "page": 32,
+        "startSeconds": 49.36,
+        "title": "2015 数二 第5题",
+        "subject": "数学二",
+        "year": 2015
+      }
+    ],
+    "10954": [
+      {
+        "questionId": "10954",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数三真题精讲",
+        "bvid": "BV13b411H74Q",
+        "page": 31,
+        "startSeconds": 1653.8,
+        "title": "2015 数三 第3题",
+        "subject": "数学三",
+        "year": 2015
+      }
+    ],
+    "10955": [
+      {
+        "questionId": "10955",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数三真题精讲",
+        "bvid": "BV13b411H74Q",
+        "page": 31,
+        "startSeconds": 2623.36,
+        "title": "2015 数三 第4题",
+        "subject": "数学三",
+        "year": 2015
+      }
+    ],
+    "10956": [
+      {
+        "questionId": "10956",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数三真题精讲",
+        "bvid": "BV13b411H74Q",
+        "page": 32,
+        "startSeconds": 1964.89,
+        "title": "2015 数三 第8题",
+        "subject": "数学三",
+        "year": 2015
+      }
+    ],
+    "10963": [
+      {
+        "questionId": "10963",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数一真题精讲",
+        "bvid": "BV1Ut411p7k3",
+        "page": 29,
+        "startSeconds": 1627,
+        "title": "2014 数一 第19题",
+        "subject": "数学一",
+        "year": 2014
+      }
+    ],
+    "10967": [
+      {
+        "questionId": "10967",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数二真题精讲",
+        "bvid": "BV164411o7Qo",
+        "page": 26,
+        "startSeconds": 555.75,
+        "title": "2014 数二 第6题",
+        "subject": "数学二",
+        "year": 2014
+      }
+    ],
+    "10969": [
+      {
+        "questionId": "10969",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数二真题精讲",
+        "bvid": "BV164411o7Qo",
+        "page": 27,
+        "startSeconds": 2128.78,
+        "title": "2014 数二 第13题",
+        "subject": "数学二",
+        "year": 2014
+      }
+    ],
+    "10973": [
+      {
+        "questionId": "10973",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数三真题精讲",
+        "bvid": "BV13b411H74Q",
+        "page": 27,
+        "startSeconds": 346.1,
+        "title": "2014 数三 第10题",
+        "subject": "数学三",
+        "year": 2014
+      }
+    ],
+    "10978": [
+      {
+        "questionId": "10978",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数一真题精讲",
+        "bvid": "BV1Ut411p7k3",
+        "page": 19,
+        "startSeconds": 94.77,
+        "title": "2013 数一 第1题",
+        "subject": "数学一",
+        "year": 2013
+      }
+    ],
+    "10983": [
+      {
+        "questionId": "10983",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数一真题精讲",
+        "bvid": "BV1Ut411p7k3",
+        "page": 20,
+        "startSeconds": 476.3,
+        "title": "2013 数一 第6题",
+        "subject": "数学一",
+        "year": 2013
+      },
+      {
+        "questionId": "10983",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数三真题精讲",
+        "bvid": "BV13b411H74Q",
+        "page": 20,
+        "startSeconds": 865,
+        "title": "2013 数三 第6题",
+        "subject": "数学三",
+        "year": 2013
+      },
+      {
+        "questionId": "10983",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数二真题精讲",
+        "bvid": "BV164411o7Qo",
+        "page": 20,
+        "startSeconds": 1470.2,
+        "title": "2013 数二 第8题",
+        "subject": "数学二",
+        "year": 2013
+      }
+    ],
+    "10984": [
+      {
+        "questionId": "10984",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数一真题精讲",
+        "bvid": "BV1Ut411p7k3",
+        "page": 20,
+        "startSeconds": 710.86,
+        "title": "2013 数一 第7题",
+        "subject": "数学一",
+        "year": 2013
+      },
+      {
+        "questionId": "10984",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数三真题精讲",
+        "bvid": "BV13b411H74Q",
+        "page": 20,
+        "startSeconds": 1209.54,
+        "title": "2013 数三 第7题",
+        "subject": "数学三",
+        "year": 2013
+      }
+    ],
+    "10992": [
+      {
+        "questionId": "10992",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数一真题精讲",
+        "bvid": "BV1Ut411p7k3",
+        "page": 22,
+        "startSeconds": 1388.5,
+        "title": "2013 数一 第16题",
+        "subject": "数学一",
+        "year": 2013
+      }
+    ],
+    "10998": [
+      {
+        "questionId": "10998",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数一真题精讲",
+        "bvid": "BV1Ut411p7k3",
+        "page": 24,
+        "startSeconds": 1497.3,
+        "title": "2013 数一 第22题",
+        "subject": "数学一",
+        "year": 2013
+      }
+    ],
+    "10999": [
+      {
+        "questionId": "10999",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数一真题精讲",
+        "bvid": "BV1Ut411p7k3",
+        "page": 24,
+        "startSeconds": 2125.5,
+        "title": "2013 数一 第23题",
+        "subject": "数学一",
+        "year": 2013
+      },
+      {
+        "questionId": "10999",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳数三真题精讲",
+        "bvid": "BV13b411H74Q",
+        "page": 24,
+        "startSeconds": 3231.8,
+        "title": "2013 数三 第23题",
+        "subject": "数学三",
+        "year": 2013
+      }
+    ]
+  },
+  "paradiyu": {
+    "192": {
+      "startSeconds": 6045,
+      "title": "2019数二三"
+    },
+    "254": {
+      "startSeconds": 9950,
+      "title": "2024数二三"
+    },
+    "286": {
+      "startSeconds": 11565,
+      "title": "2024数二"
+    },
+    "411": {
+      "startSeconds": 17485,
+      "title": "2024数一"
+    },
+    "574": {
+      "startSeconds": 21785,
+      "title": "2021数二"
+    },
+    "716": {
+      "startSeconds": 24000,
+      "title": "2024数二"
+    },
+    "5556": {
+      "startSeconds": 235,
+      "title": "2021数二三"
+    },
+    "5603": {
+      "startSeconds": 1245,
+      "title": "2018数三；25 版 880 行列式综合填空 5"
+    },
+    "5605": {
+      "startSeconds": 1385,
+      "title": "2023数二三"
+    }
+  }
+}

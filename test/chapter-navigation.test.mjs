@@ -36,7 +36,7 @@ test("章节索引把极限按叶子展开并保留深层顺序", () => {
 
 test("父级题目映射不会被当作可加载叶子，求函数表达式只有11题", () => {
   assert.ok(children(find(321)).length > 0);
-  assert.equal((categoryQuestions["321"] || []).length, 897);
+  assert.equal((categoryQuestions["321"] || []).length, 890);
   assert.equal((categoryQuestions["331"] || []).length, 11);
 });
 

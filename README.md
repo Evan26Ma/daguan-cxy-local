@@ -174,13 +174,13 @@ npm run verify
 
 默认服务地址：`http://127.0.0.1:8080/`。
 
-重新下载题库资源：
+从原版大观园官网同步最新题库与分类，并保留仓库内的专有题库：
 
 ```bash
 npm run sync:data
 ```
 
-题库缺图时，可按 `tools/sync-web-data.mjs` 的说明提供临时 `DAGUAN_ASSET_TOKEN`；本地页面不会回退加载外部图片或 CDN。
+官网题图接口需要授权；未设置 `DAGUAN_ASSET_TOKEN` 时脚本仍会同步题目文字，并报告未下载的题图数量。本地页面不会回退加载外部图片或 CDN。
 
 ## 安全边界
 
