@@ -140,6 +140,11 @@ test("desktop mirrors shared service revisions into both page runtimes", () => {
 test("desktop and browser installers keep program roots separate from shared learning data", () => {
   assert.equal(forgeConfig.makers[0].config.name, "DaguanMathDesktop");
   assert.equal(forgeConfig.makers[0].config.setupExe, "DaguanMathDesktop-Setup.exe");
+  assert.ok(forgeConfig.packagerConfig.ignore.some((pattern) => pattern.test(".git/refs/codex/checkpoints/local-ref")), "Git history and local checkpoints must never enter the desktop package");
+  assert.ok(forgeConfig.packagerConfig.ignore.some((pattern) => pattern.test(".github/workflows/build.yml")), "GitHub automation files must not enter the desktop package");
+  assert.ok(forgeConfig.packagerConfig.ignore.some((pattern) => pattern.test(`${ROOT}/_source.tar.gz`)), "local Android source archive must not be copied into the desktop package");
+  assert.ok(forgeConfig.packagerConfig.ignore.some((pattern) => pattern.test("android/app/build.gradle.kts")), "Android sources must be excluded when Forge supplies root-relative paths");
+  assert.ok(forgeConfig.packagerConfig.ignore.some((pattern) => pattern.test("dist/DaguanMath-windows-x64.zip")), "local browser release artifacts must not be copied into the desktop package");
   const browserInstall = fs.readFileSync(path.join(ROOT, "packaging", "windows", "install.ps1"), "utf8");
   const browserUninstall = fs.readFileSync(path.join(ROOT, "packaging", "windows", "uninstall.ps1"), "utf8");
   assert.match(browserInstall, /Join-Path \$env:LOCALAPPDATA "DaguanMathBrowser"/);
@@ -153,6 +158,11 @@ test("Squirrel shell identity is stable across app startup and preference change
   const main = fs.readFileSync(path.join(ROOT, "desktop", "electron-main.cjs"), "utf8");
   assert.equal((main.match(/app\.setAppUserModelId\("com\.squirrel\.DaguanMathDesktop\.DaguanMath"\);/g) || []).length, 2);
   assert.doesNotMatch(main, /com\.daguan\.math-local/);
+});
+test("date-revision browser package workflow does not run for desktop SemVer releases", () => {
+  const workflow = fs.readFileSync(path.join(ROOT, ".github", "workflows", "windows-release.yml"), "utf8");
+  assert.match(workflow, /tags:\s*\r?\n\s*-\s*"v\?\?\?\?\.\?\?\.\?\?-r\*"/);
+  assert.doesNotMatch(workflow, /-\s*"v\*"/);
 });
 test("Squirrel firstrun enters the app while install/update/uninstall hooks exit promptly", () => {
   const main = fs.readFileSync(path.join(ROOT, "desktop", "electron-main.cjs"), "utf8");

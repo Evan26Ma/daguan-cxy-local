@@ -3,7 +3,7 @@ name: Windows release
 on:
   push:
     tags:
-      - "v*"
+      - "v????.??.??-r*"
   workflow_dispatch:
 
 permissions:

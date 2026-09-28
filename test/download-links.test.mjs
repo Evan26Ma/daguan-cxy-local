@@ -41,3 +41,12 @@ test("v1.0.0 发布说明只列出桌面安装及其更新资产", () => {
   assert.match(releaseNotes, /`RELEASES`/);
   assert.doesNotMatch(releaseNotes, /DaguanMath-windows-x64\.(?:exe|zip)/);
 });
+
+test("v1.0.1 发布说明记录桌面在线更新所需资产与校验值", () => {
+  const releaseNotes = fs.readFileSync(new URL("../docs/release-v1.0.1.md", import.meta.url), "utf8");
+  assert.match(releaseNotes, /DaguanMathDesktop-Setup\.exe/);
+  assert.match(releaseNotes, /DaguanMathDesktop-1\.0\.1-full\.nupkg/);
+  assert.match(releaseNotes, /`RELEASES`/);
+  assert.match(releaseNotes, /重启并安装更新/);
+  assert.doesNotMatch(releaseNotes, /DaguanMath-windows-x64\.(?:exe|zip)/);
+});
