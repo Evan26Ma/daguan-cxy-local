@@ -1,6 +1,6 @@
 # 大观园数学桌面版 v1.0.0 发布说明
 
-首个桌面版使用 SemVer tag `v1.0.0`，用于 Electron 后台更新服务。桌面 Squirrel 安装器、`RELEASES` 和完整 nupkg 应一并附在同一个非草稿、非预发布 GitHub Release 中；更新服务需要这三项 Windows 资产。浏览器版仍手动更新。
+此版本已通过 GitHub Release `v1.0.0` 提供下载。桌面安装器、Squirrel 更新索引 `RELEASES` 和完整 nupkg 已随版本发布，用于桌面版后台更新；浏览器版仍手动更新。
 
 ## 本地学习
 
@@ -20,7 +20,7 @@
 
 - `DaguanMathDesktop-Setup.exe` — SHA-256 `2139a96a85cf3d5865acb3814ae4241edaa703b0e9ce95f86d327be15816f6ac`
 - `DaguanMathDesktop-1.0.0-full.nupkg` — SHA-256 `2b76325236409ae28aeaf2bfe4d9704f9797bc3dd1dfcc7e948295fa891ba379`
-- `RELEASES` — Squirrel Windows 更新索引，必须和安装器及完整 nupkg 同时发布
+- `RELEASES` — Squirrel Windows 更新索引，供桌面版后台更新使用
 - `DaguanMath-windows-x64.zip` — SHA-256 `bd21f9a6f0827cd1679f900cab9ce2efe08b5e77ca5e5b1bbf9a603f42cdc40f`
 - `DaguanMath-windows-x64.exe` — SHA-256 `3ed5c3757037726785d3a3d316fdc53dc85d27b9e952225065342676aeda4003`
 
