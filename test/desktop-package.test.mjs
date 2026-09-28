@@ -21,6 +21,8 @@ test("desktop packaging ASCII-normalizes shard paths without changing shard cont
       contents.set(path.basename(shard.file), bytes);
       await fs.writeFile(path.join(shards, path.basename(shard.file)), bytes);
     }
+    const unreferencedBytes = Buffer.from(JSON.stringify({ archived: true }));
+    await fs.writeFile(path.join(shards, "旧题库-核心.json"), unreferencedBytes);
     await fs.writeFile(path.join(data, "manifest.json"), JSON.stringify({ shards: originals }));
 
     await prepareDesktopPackage(root);
@@ -33,7 +35,8 @@ test("desktop packaging ASCII-normalizes shard paths without changing shard cont
     for (const [index, originalBytes] of [...contents.values()].entries()) {
       assert.deepEqual(await fs.readFile(path.join(shards, `shard-${String(index + 1).padStart(2, "0")}.json`)), originalBytes);
     }
-    assert.deepEqual((await fs.readdir(shards)).sort(), ["shard-01.json", "shard-02.json"]);
+    assert.deepEqual(await fs.readFile(path.join(data, "shards", "unreferenced-01.json")), unreferencedBytes);
+    assert.deepEqual((await fs.readdir(shards)).sort(), ["shard-01.json", "shard-02.json", "unreferenced-01.json"]);
   } finally {
     await fs.rm(root, { recursive: true, force: true });
   }
