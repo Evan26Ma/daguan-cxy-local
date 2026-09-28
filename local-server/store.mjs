@@ -11,6 +11,7 @@ export function createStore(rootDir, dataDirOverride = process.env.DAGUAN_DATA_D
   const historyFile = path.join(dataDir, "sync-history.jsonl");
   const aiProfilesFile = path.join(dataDir, "ai-profiles.json");
   const aiHistoryDir = path.join(dataDir, "ai-history");
+  let stateWriteQueue = Promise.resolve();
 
   async function ensure() {
     await fs.mkdir(backupDir, { recursive: true });
@@ -39,20 +40,28 @@ export function createStore(rootDir, dataDirOverride = process.env.DAGUAN_DATA_D
       return normalizeLocalState(await readJson(stateFile, { format: "daguan-local-state", version: 3, progress: {}, favorites: [], picked: [], updated_at: null }));
     },
     async writeState(value, options = {}) {
-      const current = await this.readState();
-      const expected = options.expectedRevision == null ? null : Number(options.expectedRevision);
-      if (expected != null && current.revision !== expected) {
-        const error = new Error(`本地状态版本已变化（当前 ${current.revision}，请求 ${expected}）`);
-        error.code = "STATE_CONFLICT";
-        error.status = 409;
-        error.current = current;
-        throw error;
+      const previous = stateWriteQueue;
+      let release;
+      stateWriteQueue = new Promise((resolve) => { release = resolve; });
+      await previous;
+      try {
+        const current = await this.readState();
+        const expected = options.expectedRevision == null ? null : Number(options.expectedRevision);
+        if (expected != null && current.revision !== expected) {
+          const error = new Error(`本地状态版本已变化（当前 ${current.revision}，请求 ${expected}）`);
+          error.code = "STATE_CONFLICT";
+          error.status = 409;
+          error.current = current;
+          throw error;
+        }
+        const next = normalizeLocalState(value);
+        if (options.increment !== false) next.revision = current.revision + 1;
+        next.updated_at = new Date().toISOString();
+        await writeJson(stateFile, next);
+        return next;
+      } finally {
+        release();
       }
-      const next = normalizeLocalState(value);
-      if (options.increment !== false) next.revision = current.revision + 1;
-      next.updated_at = new Date().toISOString();
-      await writeJson(stateFile, next);
-      return next;
     },
     async readProgress() { return readJson(progressFile, null); },
     async writeProgress(value) { return writeJson(progressFile, value); },

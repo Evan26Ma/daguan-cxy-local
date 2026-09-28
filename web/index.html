@@ -12,58 +12,19 @@
   <link rel="stylesheet" href="./styles-new.css?v=110" />
   <link rel="manifest" href="./manifest.webmanifest" />
   <script src="./ui-version.js?v=106"></script>
-  <script>
-    // 版本检查和主题初始化
-    (() => {
-      // 清理缓存
-      if (location.search.includes("purge=1")) {
-        navigator.serviceWorker.getRegistrations().then((rs) => rs.forEach((r) => r.unregister()));
-        caches.keys().then((ks) => ks.forEach((k) => caches.delete(k)));
-        if (!localStorage.getItem("daguan_purged")) {
-          localStorage.setItem("daguan_purged", "1");
-          location.replace(location.pathname + "?fresh=1");
-        }
-      }
-
-      // 版本偏好：统一走 ui-version.js 的选择键（daguan_ui_version_v1）
-      const urlParams = new URLSearchParams(window.location.search);
-      const uiParam = urlParams.get('ui');
-      const pref = (window.DaguanVersions && DaguanVersions.selected(localStorage)) || 'new';
-
-      if (uiParam === 'old' || (pref === 'old' && !uiParam)) {
-        window.location.replace('./legacy.html' + window.location.search);
-        return;
-      }
-      if (uiParam === 'new') {
-        try { localStorage.setItem('daguan_ui_version_v1', 'new'); } catch {}
-      }
-
-      // 应用主题（外观键由 ui-version.js 统一管理）
-      try {
-        const appearance = JSON.parse(localStorage.getItem((window.DaguanVersions && DaguanVersions.appearanceKey) || 'daguan_ui_appearance_new_v1') || '{}');
-        document.documentElement.dataset.theme = appearance.theme || 'light';
-        if (appearance.reduceMotion) {
-          document.documentElement.dataset.reduceMotion = 'true';
-        }
-      } catch {
-        document.documentElement.dataset.theme = 'light';
-      }
-
-      document.documentElement.dataset.uiVersion = "new";
-    })();
-  </script>
+  <script src="./ui-bootstrap.js?v=1"></script>
 </head>
 <body>
   <div class="app-container" id="app">
     <!-- 顶栏 -->
     <header class="app-topbar">
-      <button type="button" class="btn btn-icon" id="btn-toggle-nav" aria-label="打开导航" aria-controls="app-nav" aria-expanded="false" onclick="App.toggleNav()">
+      <button type="button" class="btn btn-icon" id="btn-toggle-nav" data-app-action="toggle-nav" aria-label="打开导航" aria-controls="app-nav" aria-expanded="false">
         <svg class="icon nav-icon" viewBox="0 0 24 24">
           <path d="M3 6h18M3 12h18M3 18h18"/>
         </svg>
       </button>
 
-      <a href="#" class="brand" onclick="App.showHome(); return false;">
+      <a href="#" class="brand" data-app-action="show-home">
         <svg class="brand-mark" viewBox="0 0 34 34" role="img" aria-label="大观园数学标记">
           <rect width="34" height="34" rx="8" fill="var(--brand-orange)" />
           <path d="M10 7H7v20h3M24 7h3v20h-3" fill="none" stroke="var(--text-on-brand)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
@@ -75,8 +36,8 @@
         </span>
       </a>
 
-      <button type="button" class="btn btn-secondary topbar-search-trigger" id="btn-global-search" onclick="App.openGlobalSearch()" aria-label="全库搜索">⌕ <span>搜索题目</span><kbd>/</kbd></button>
-      <button type="button" class="btn btn-text topbar-help-trigger" onclick="App.showShortcutHelp()" aria-label="快捷键帮助">快捷键 <kbd>?</kbd></button>
+      <button type="button" class="btn btn-secondary topbar-search-trigger" id="btn-global-search" data-app-action="open-search" aria-label="全库搜索">⌕ <span>搜索题目</span><kbd>/</kbd></button>
+      <button type="button" class="btn btn-text topbar-help-trigger" data-app-action="show-shortcuts" aria-label="快捷键帮助">快捷键 <kbd>?</kbd></button>
 
     </header>
 
@@ -142,10 +103,10 @@
           </button>
         </div>
         <div class="nav-utilities">
-          <button type="button" class="nav-utility-button" onclick="App.openGlobalSearch()" aria-label="搜索题目，快捷键斜杠">
+          <button type="button" class="nav-utility-button" data-app-action="open-search" aria-label="搜索题目，快捷键斜杠">
             <span>搜索题目</span><kbd>/</kbd>
           </button>
-          <button type="button" class="nav-utility-button" onclick="App.showShortcutHelp()" aria-label="快捷键帮助，快捷键问号">
+          <button type="button" class="nav-utility-button" data-app-action="show-shortcuts" aria-label="快捷键帮助，快捷键问号">
             <span>快捷键帮助</span><kbd>?</kbd>
           </button>
         </div>
@@ -162,26 +123,27 @@
     <footer class="app-statusbar">
       <span id="status-text">就绪</span>
       <span id="status-info"></span>
+      <span id="local-service-status" class="local-service-status" role="status" aria-live="polite" hidden></span>
     </footer>
   </div>
 
   <!-- 导航遮罩 -->
-  <div class="nav-overlay" id="nav-overlay" onclick="App.toggleNav()"></div>
+  <div class="nav-overlay" id="nav-overlay" data-app-action="toggle-nav"></div>
 
   <!-- 预览模式横幅与解锁对话框 -->
   <div class="preview-banner" id="preview-banner" hidden>
     <span>只读预览模式：收藏、掌握、批注、AI 与同步需要解锁。</span>
-    <button type="button" class="btn btn-secondary btn-sm" onclick="PreviewAccess.openUnlockDialog()">解锁</button>
+    <button type="button" class="btn btn-secondary btn-sm" data-app-action="open-unlock">解锁</button>
   </div>
   <dialog class="preview-dialog" id="dlg-preview-access">
     <form method="dialog" style="display: contents;">
       <h3>输入访问 Token</h3>
       <p class="text-helper" id="preview-access-feedback">输入访问 Token 后即可使用收藏、错题、批注和同步。</p>
       <input type="password" id="preview-access-key" autocomplete="off" placeholder="访问 Token" />
-      <p class="text-helper">希望在自己的电脑上使用？<a href="https://github.com/Evan26Ma/daguan-cxy-local/releases/download/v2026.09.27-r27/DaguanMath-windows-x64.exe" target="_blank" rel="noopener noreferrer">下载 Windows 单文件版</a></p>
+      <p class="text-helper">希望在自己的电脑上使用？<a href="https://github.com/Evan26Ma/daguan-cxy-local/releases/download/v1.0.0/DaguanMathDesktop-Setup.exe" target="_blank" rel="noopener noreferrer">下载 Windows 桌面版</a></p>
       <div class="tool-controls">
-        <button type="button" class="btn btn-primary" onclick="PreviewAccess.unlock(event)">解锁个人功能</button>
-        <button type="button" class="btn btn-text" onclick="document.getElementById('dlg-preview-access').close()">稍后再说</button>
+        <button type="button" class="btn btn-primary" data-app-action="unlock">解锁个人功能</button>
+        <button type="button" class="btn btn-text" data-app-action="close-preview">稍后再说</button>
       </div>
     </form>
   </dialog>
@@ -189,6 +151,7 @@
   <!-- KaTeX 和应用脚本 -->
   <script defer src="./vendor/marked.min.js"></script>
   <script defer src="./vendor/katex.min.js"></script>
-  <script defer src="./app-new.js?v=110"></script>
+  <script defer src="./backup-migration.js?v=1"></script>
+  <script defer src="./app-new.js?v=113"></script>
 </body>
 </html>

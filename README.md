@@ -50,10 +50,10 @@
 
 ---
 
-> **Windows 新手推荐：直接下载 EXE，不要下载 Source code。**
-> [⬇️ 下载 `DaguanMath-windows-x64.exe`](https://github.com/Evan26Ma/daguan-cxy-local/releases/download/v2026.09.27-r27/DaguanMath-windows-x64.exe) · [📖 完全零基础安装与配置教程](docs/Windows新手安装与配置.md)
+> **Windows 首选桌面版：**桌面版会在后台检查更新，下载后等你确认重启；也可下载独立浏览器版。
+> [⬇️ 桌面版安装器 `DaguanMathDesktop-Setup.exe`](https://github.com/Evan26Ma/daguan-cxy-local/releases/download/v1.0.0/DaguanMathDesktop-Setup.exe) · [下载浏览器版 ZIP](https://github.com/Evan26Ma/daguan-cxy-local/releases/download/v1.0.0/DaguanMath-windows-x64.zip) · [📖 Windows 安装教程](docs/Windows新手安装与配置.md)
 
-一个在自己电脑上运行的大观园数学题库增强版：题目更适合连续刷，学习进度保存在本机，可选同步官网进度，也可选连接 AI 助教。普通 Windows 用户只需“下载 EXE → 双击运行 → 浏览器自动打开”，不需要安装 Node.js、不需要使用命令行，也不需要浏览器扩展。
+一个在自己电脑上运行的大观园数学题库增强版：题目更适合连续刷，学习进度保存在本机，可选同步官网进度，也可选连接 AI 助教。普通 Windows 用户安装桌面版即可开始学习，不需要安装 Node.js 或使用命令行。
 
 ## 源码版本怎么选
 
@@ -62,7 +62,7 @@
 | [`main`](https://github.com/Evan26Ma/daguan-cxy-local/tree/main) | 当前源码主线：默认打开新版学习空间，保留可切换的旧版界面。 |
 | [`legacy/pre-redesign-2026-09-27`](https://github.com/Evan26Ma/daguan-cxy-local/tree/legacy/pre-redesign-2026-09-27) | 改版前完整旧版的归档分支，固定在提交 `28a1a6c`；适合回看或从旧版源码继续开发。 |
 
-在 `main` 中打开学习区后，可从新版“工具与设置”选择旧版；旧版也有返回新版的入口。两版共用学习数据，外观偏好分开保存。上述分支说明的是**源码**；页面上的 Windows 下载按钮仍指向已部署的 `v2026.09.27-r27` 发布包，尚未用本次新版源码重打包。
+桌面版默认使用新版，也可切换到旧版；新版、旧版和独立浏览器版共用本机学习数据，外观偏好分别保存。桌面版后台检查 GitHub Release 更新，下载完成后由用户决定何时重启；浏览器版保持手动更新。
 
 ## 它和原版大观园有什么不同？
 
@@ -78,7 +78,7 @@
 
 AI 能力取决于你配置的服务：普通文本模型不能自动获得视觉或绘图能力；API 费用、速率限制、内容策略和服务稳定性由对应厂商或中转站负责。
 
-更新记录见 [CHANGELOG.md](CHANGELOG.md)，当前部署对应发布版本为 `v2026.09.27-r27`。
+更新记录见 [CHANGELOG.md](CHANGELOG.md)。桌面版首发使用 SemVer 版本 `v1.0.0`。
 
 `android/` 保留原 Flutter 客户端和兼容数据格式，`web/` 是刷题页面，`local-server/` 是本地中控台，`sync-extension/` 仅作为旧版浏览器桥接兼容方案保留。
 
@@ -88,22 +88,17 @@ AI 能力取决于你配置的服务：普通文本模型不能自动获得视�
 
 #### 普通用户（推荐）
 
-直接下载 [DaguanMath-windows-x64.exe](https://github.com/Evan26Ma/daguan-cxy-local/releases/download/v2026.09.27-r27/DaguanMath-windows-x64.exe)：
+下载 [DaguanMathDesktop-Setup.exe](https://github.com/Evan26Ma/daguan-cxy-local/releases/download/v1.0.0/DaguanMathDesktop-Setup.exe) 并运行。桌面版使用系统托盘管理窗口和共享服务，默认不开机启动；关闭窗口会缩到托盘。也可下载[独立浏览器版 ZIP](https://github.com/Evan26Ma/daguan-cxy-local/releases/download/v1.0.0/DaguanMath-windows-x64.zip)，它需要手动更新。
 
-1. 双击 EXE；
-2. 如果 Windows 显示“已保护你的电脑”，核对文件来自本项目 Release 后，点击“更多信息 → 仍要运行”；
-3. 保持黑色运行窗口打开，稍等浏览器自动进入题库；
-4. 第一次使用可直接刷题；需要官网进度时，再点击首页“同步进度”。
-
-不要下载 GitHub 自动生成的 `Source code (zip)`，那是给开发者的源代码，不是可直接运行的安装包。第一次使用建议阅读 [Windows 新手安装与配置教程](docs/Windows新手安装与配置.md)。
+首版未签名，Windows 可能显示 SmartScreen 警告。下载后可按 Release 提供的 SHA-256 校验文件，再确认文件来自本项目 Release。不要下载 GitHub 自动生成的 `Source code` 压缩包。首次安装建议阅读 [Windows 新手安装与配置教程](docs/Windows新手安装与配置.md)。
 
 #### 需要桌面快捷方式
 
-如果希望安装到系统并创建桌面、开始菜单快捷方式，下载 `DaguanMath-windows-x64.zip`：
+需要独立运行浏览器版时，下载 `DaguanMath-windows-x64.zip`：
 
-1. 解压完整 ZIP 文件；
+1. 解压 ZIP 文件；
 2. 双击 `安装大观园数学题库.cmd`；
-3. 安装器会创建桌面和开始菜单快捷方式，并自动启动。
+3. 安装器会创建快捷方式，学习记录仍写入与桌面版共享的数据目录。
 
 两种发布包都不需要 Node.js，详细说明见 [Windows 安装说明](packaging/windows/安装说明.txt)。
 

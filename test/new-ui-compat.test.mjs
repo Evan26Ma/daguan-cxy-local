@@ -7,6 +7,17 @@ import vm from "node:vm";
 function createContext(initialStorage = {}) {
   const storage = new Map(Object.entries(initialStorage).map(([key, value]) => [key, String(value)]));
   const session = new Map();
+  const documentListeners = new Map();
+  const document = {
+    visibilityState: "visible",
+    addEventListener: (type, listener) => {
+      const listeners = documentListeners.get(type) || [];
+      listeners.push(listener);
+      documentListeners.set(type, listeners);
+    },
+    documentElement: { dataset: {} },
+    createElement: () => ({ set innerHTML(v) {}, get innerHTML() { return ""; }, set textContent(v) {} }),
+  };
   const localStorage = {
     getItem: key => (storage.has(key) ? storage.get(key) : null),
     setItem: (key, value) => storage.set(key, String(value)),
@@ -20,11 +31,12 @@ function createContext(initialStorage = {}) {
     removeItem: key => session.delete(key),
   };
   const sandbox = {
+    addEventListener: () => {},
     navigator: {},
     localStorage,
     sessionStorage,
     location: { pathname: "/index.html", href: "http://127.0.0.1/index.html", replace: () => {} },
-    document: { addEventListener: () => {}, documentElement: { dataset: {} }, createElement: () => ({ set innerHTML(v) {}, get innerHTML() { return ""; }, set textContent(v) {} }) },
+    document,
     URL,
     setTimeout,
     clearTimeout,
@@ -39,8 +51,49 @@ function createContext(initialStorage = {}) {
   const root = new URL("../web/", import.meta.url);
   vm.runInContext(fs.readFileSync(new URL("ui-version.js", root), "utf8"), sandbox, { filename: "ui-version.js" });
   vm.runInContext(fs.readFileSync(new URL("app-new.js", root), "utf8"), sandbox, { filename: "app-new.js" });
-  return { sandbox, storage, session, localStorage, sessionStorage };
+  return { sandbox, storage, session, localStorage, sessionStorage, document, documentListeners };
 }
+
+test("新版在后台错过 SSE 后于重新可见时补读状态，且保留未保存批注", async () => {
+  const { sandbox, document, documentListeners } = createContext();
+  const { StateSync, AppState, UIRenderer } = sandbox.window;
+  StateSync.hydrated = true;
+  StateSync.available = true;
+  StateSync.revision = 4;
+  AppState.currentView = "question";
+  AppState.annotationDirty = true;
+  let hydrated = 0;
+  let rendered = 0;
+  StateSync.hydrate = async () => {
+    hydrated += 1;
+    StateSync.revision = 5;
+    StateSync.available = true;
+  };
+  UIRenderer.renderQuestion = async () => { rendered += 1; };
+
+  document.visibilityState = "hidden";
+  await StateSync.refreshFromEvent();
+  assert.equal(hydrated, 0, "后台页面不发起 UI 同步");
+  document.visibilityState = "visible";
+  for (const listener of documentListeners.get("visibilitychange") || []) listener();
+  await new Promise(resolve => setTimeout(resolve, 0));
+
+  assert.equal(hydrated, 1, "重新可见时重新读取服务端状态");
+  assert.equal(StateSync.revision, 5);
+  assert.equal(rendered, 0, "未保存批注期间不重绘题目编辑器");
+});
+
+test("最近学习位置写入结束后释放 in-flight 状态，允许服务事件刷新", async () => {
+  const { sandbox } = createContext();
+  const { StateSync } = sandbox.window;
+  StateSync.available = true;
+  StateSync.hydrated = true;
+  StateSync.revision = 4;
+  sandbox.fetch = async () => ({ ok: true, status: 200, json: async () => ({ revision: 5 }) });
+  assert.equal(await StateSync.pushLastStudy("331", "3356"), true);
+  assert.equal(StateSync.revision, 5);
+  assert.equal(StateSync.lastStudyInFlight, null);
+});
 
 test("AI 草稿写入共享键 daguan_ai_draft_v1:<qid>", () => {
   const { sandbox, storage } = createContext();

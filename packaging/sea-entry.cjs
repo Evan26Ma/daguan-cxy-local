@@ -11,6 +11,7 @@ const { getRawAsset } = require("node:sea");
 const BUNDLE_KEY = "app.bundle.tgz";
 const APP_NAME = "DaguanMath";
 const SUBPATH = "daguan-math";
+const SERVICE_API_PROTOCOL = 1;
 
 function appRoot() {
   if (process.env.DAGUAN_RUNTIME_ROOT) {
@@ -89,13 +90,23 @@ async function ensureAppFiles(root) {
   return appDir;
 }
 
-async function isConsoleHealthy(port) {
+async function findSharedService(dataDir) {
+  let owner;
+  try { owner = JSON.parse(await fsp.readFile(path.join(dataDir, ".service-instance.json"), "utf8")); }
+  catch { return null; }
+  if (!Number.isInteger(Number(owner?.pid)) || !owner.instanceId || !Number.isInteger(Number(owner.port))) return null;
   try {
-    const response = await fetch(`http://127.0.0.1:${port}/api/health`, { signal: AbortSignal.timeout(800) });
-    const data = await response.json();
-    return data?.service === "daguan-local-console";
+    process.kill(Number(owner.pid), 0);
+  } catch (error) {
+    if (error?.code !== "EPERM") return null;
+  }
+  try {
+    const response = await fetch(`http://${owner.host}:${owner.port}/api/health`, { signal: AbortSignal.timeout(800) });
+    const health = await response.json();
+    return health?.service === "daguan-local-console" && health.apiProtocol === SERVICE_API_PROTOCOL &&
+      owner.apiProtocol === SERVICE_API_PROTOCOL && health.instanceId === owner.instanceId ? owner : null;
   } catch {
-    return false;
+    return null;
   }
 }
 
@@ -114,13 +125,13 @@ function isPortBusy(port) {
 
 async function choosePort() {
   for (let port = 8080; port <= 8099; port += 1) {
-    if (await isConsoleHealthy(port)) return { port, reuse: true };
     if (!(await isPortBusy(port))) return { port, reuse: false };
   }
   throw new Error("8080-8099 端口均不可用，请关闭占用端口的程序后重试");
 }
 
 function openBrowser(url) {
+  if (process.env.DAGUAN_NO_BROWSER === "1") return;
   const command = process.env.ComSpec || "cmd.exe";
   spawn(command, ["/c", "start", "", url], { detached: true, stdio: "ignore", windowsHide: true }).unref();
 }
@@ -128,12 +139,14 @@ function openBrowser(url) {
 async function main() {
   const root = appRoot();
   await fsp.mkdir(root, { recursive: true });
-  const choice = await choosePort();
-  const url = `http://127.0.0.1:${choice.port}/index.html`;
-  if (choice.reuse && !process.argv.includes("--check")) {
-    openBrowser(url);
+  const dataDir = path.join(root, "data");
+  const existing = await findSharedService(dataDir);
+  if (existing && !process.argv.includes("--check")) {
+    openBrowser(`http://${existing.host}:${existing.port}/index.html?browserPackage=1`);
     return;
   }
+  const choice = await choosePort();
+  const url = `http://127.0.0.1:${choice.port}/index.html`;
   const appDir = await ensureAppFiles(root);
   if (process.argv.includes("--check")) {
     console.log(`package-ok ${url}`);
@@ -141,9 +154,10 @@ async function main() {
   }
   process.env.HOST = "127.0.0.1";
   process.env.PORT = String(choice.port);
-  process.env.DAGUAN_DATA_DIR = path.join(root, "data");
+  process.env.DAGUAN_DATA_DIR = dataDir;
+  process.env.DAGUAN_OPEN_BROWSER = "1";
+  process.env.DAGUAN_BROWSER_PACKAGE = "1";
   process.env.DAGUAN_DEFAULT_PAGE = "/index.html";
-  setTimeout(() => openBrowser(url), 900);
   await import(pathToFileURL(path.join(appDir, "local-server", "server.mjs")).href);
 }
 

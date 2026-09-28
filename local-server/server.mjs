@@ -1,6 +1,7 @@
 import http from "node:http";
 import fs from "node:fs/promises";
 import path from "node:path";
+import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { createHmac, randomUUID, timingSafeEqual } from "node:crypto";
 import { createStore } from "./store.mjs";
@@ -8,13 +9,14 @@ import { CxyonlyClient } from "./cxyonly-client.mjs";
 import { refreshCatalog } from "./catalog.mjs";
 import { applyLocalChanges, buildPullMerge, buildReconcilePlan, localToAndroidDocument, normalizeLocalState, nowIso, remoteStatesDocument } from "./sync-format.mjs";
 import { createAiService } from "./ai-service.mjs";
+import { acquireServiceInstance, serviceOwnerUrl, SERVICE_API_PROTOCOL, waitForServiceOwner } from "./instance-lock.mjs";
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const WEB_ROOT = path.join(ROOT, "web");
+const ROOT = path.resolve(process.env.DAGUAN_ROOT_DIR || path.resolve(path.dirname(fileURLToPath(import.meta.url)), ".."));
+const WEB_ROOT = path.resolve(process.env.DAGUAN_WEB_ROOT || path.join(ROOT, "web"));
 const PORT = Number(process.env.PORT || 8080);
-const HOST = process.env.HOST || "127.0.0.1";
+const HOST = "127.0.0.1";
 const DEFAULT_PAGE = process.env.DAGUAN_DEFAULT_PAGE === "/index.html" ? "/index.html" : "/landing.html";
-const BUILD_VERSION = "2026.09.26-dual-ui-r1";
+const BUILD_VERSION = "2026.09.27-shared-service-r1";
 const MAX_BODY = 10 * 1024 * 1024;
 const PREVIEW_KEY = String(process.env.DAGUAN_PREVIEW_KEY || "");
 const PREVIEW_MODE = process.env.DAGUAN_PREVIEW_MODE === "1" || Boolean(PREVIEW_KEY);
@@ -31,6 +33,9 @@ const catalogTasks = new Map();
 let knownIdsPromise;
 let syncLock = Promise.resolve();
 const ai = createAiService({ store });
+let serviceInstance = null;
+const stateEventClients = new Set();
+let requestGracefulShutdown = null;
 
 function json(res, status, value) {
   res.writeHead(status, { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" });
@@ -114,6 +119,21 @@ async function withLock(task) {
   try { return await task(); } finally { release(); }
 }
 
+async function writeState(value, options) {
+  const saved = await store.writeState(value, options);
+  const event = `event: state\ndata: ${JSON.stringify({ revision: saved.revision, updated_at: saved.updated_at })}\n\n`;
+  for (const response of stateEventClients) {
+    try { response.write(event); } catch { stateEventClients.delete(response); }
+  }
+  return saved;
+}
+
+function openBrowser(url) {
+  if (process.platform !== "win32" || process.env.DAGUAN_OPEN_BROWSER !== "1") return;
+  const command = process.env.ComSpec || "cmd.exe";
+  spawn(command, ["/c", "start", "", url], { detached: true, stdio: "ignore", windowsHide: true }).unref();
+}
+
 function localStateShape(value) {
   return normalizeLocalState(value);
 }
@@ -158,7 +178,7 @@ async function applyPull(previewId, auto = false) {
   const preview = previews.get(previewId);
   if (!preview || Date.now() - preview.createdAt > 30 * 60 * 1000) throw new Error("读取预览已过期，请重新读取");
   const result = preview.merged;
-  await store.writeState(localStateShape(result.state));
+  await writeState(localStateShape(result.state));
   await saveRemoteProgress(preview.remote.states, { last_pull_at: nowIso() });
   const integration = await store.readIntegration();
   if (integration) await store.writeIntegration({ ...integration, last_pull_at: nowIso(), updated_at: nowIso() });
@@ -278,7 +298,7 @@ async function applyReconcile(previewId, bodyValue = {}) {
     });
     const failed = [];
     let succeeded = 0;
-    let saved = await store.writeState(next, { expectedRevision: current.revision });
+    let saved = await writeState(next, { expectedRevision: current.revision });
     for (const operation of plan.remoteOperations) {
       try { await client.patchState(operation); succeeded += 1; }
       catch (error) { failed.push({ question_id: operation.questionId, error: error.message, payload: operation.payload }); }
@@ -293,7 +313,7 @@ async function applyReconcile(previewId, bodyValue = {}) {
     if (failed.length || plan.unknownIds.length || saved.pending_remote_operations?.length) {
       if (failed.length) next.pending_remote_operations = failed;
       else delete next.pending_remote_operations;
-      saved = await store.writeState(next, { expectedRevision: saved.revision });
+      saved = await writeState(next, { expectedRevision: saved.revision });
     } else {
       delete next.pending_remote_operations;
     }
@@ -317,7 +337,17 @@ async function route(req, res) {
   const method = req.method || "GET";
   const subpath = "/daguan-math";
   const pathname = url.pathname === subpath ? "/" : url.pathname.startsWith(`${subpath}/`) ? url.pathname.slice(subpath.length) : url.pathname;
-  if (pathname === "/api/health" && method === "GET") return json(res, 200, { ok: true, service: "daguan-local-console", time: nowIso() });
+  if (pathname === "/api/runtime/stop" && method === "POST") {
+    const remote = String(req.socket.remoteAddress || "");
+    if (req.headers.origin !== `http://${HOST}:${PORT}` || !["127.0.0.1", "::1", "::ffff:127.0.0.1"].includes(remote)) {
+      return json(res, 403, { ok: false, error: "停止服务只允许从本机应用页面发起" });
+    }
+    if (typeof requestGracefulShutdown !== "function") return json(res, 503, { ok: false, error: "服务正在关闭" });
+    json(res, 200, { ok: true });
+    setImmediate(() => requestGracefulShutdown());
+    return;
+  }
+  if (pathname === "/api/health" && method === "GET") return json(res, 200, { ok: true, service: "daguan-local-console", apiProtocol: SERVICE_API_PROTOCOL, instanceId: serviceInstance?.instanceId || null, pid: process.pid, port: PORT, time: nowIso() });
   if (pathname === "/api/access/status" && method === "GET") {
     const unlocked = !PREVIEW_MODE || hasPreviewAccess(req);
     if (PREVIEW_MODE && unlocked) setPreviewCookie(res);
@@ -356,12 +386,26 @@ async function route(req, res) {
     return task ? json(res, 200, task) : json(res, 404, { ok: false, error: "题库刷新任务不存在" });
   }
   if (privateApiPath(pathname) && !requirePreviewAccess(req, res)) return;
+  if (pathname === "/api/state/events" && method === "GET") {
+    res.writeHead(200, {
+      "Content-Type": "text/event-stream; charset=utf-8",
+      "Cache-Control": "no-cache, no-store",
+      Connection: "keep-alive",
+      "X-Accel-Buffering": "no",
+    });
+    res.write(`event: state\ndata: ${JSON.stringify({ revision: (await store.readState()).revision, initial: true })}\n\n`);
+    stateEventClients.add(res);
+    const keepAlive = setInterval(() => { try { res.write(": keep-alive\n\n"); } catch {} }, 15_000);
+    const cleanup = () => { clearInterval(keepAlive); stateEventClients.delete(res); };
+    res.on("close", cleanup);
+    return;
+  }
   if (pathname === "/api/state" && method === "GET") return json(res, 200, await store.readState());
   if (pathname === "/api/state" && method === "PUT") {
     const incoming = await body(req);
     const expectedRevision = req.headers["if-match"] != null ? Number(req.headers["if-match"]) : Number(incoming.revision);
     if (!Number.isInteger(expectedRevision) || expectedRevision < 0) return json(res, 409, { ok: false, code: "REVISION_REQUIRED", error: "整份状态写入必须携带 revision；请改用逐题接口" });
-    const saved = await store.writeState(localStateShape(incoming), { expectedRevision });
+    const saved = await withLock(() => writeState(localStateShape(incoming), { expectedRevision }));
     return json(res, 200, { ok: true, state: saved, revision: saved.revision });
   }
   if (pathname.startsWith("/api/state/questions/") && !pathname.endsWith("/annotation") && method === "PATCH") {
@@ -399,7 +443,7 @@ async function route(req, res) {
       progress[questionId] = entry;
       const favorites = new Set(current.favorites || []);
       if (entry.favorite) favorites.add(questionId); else favorites.delete(questionId);
-      return store.writeState({ ...current, progress, favorites: [...favorites].sort((a, b) => Number(a) - Number(b)) }, { expectedRevision: current.revision });
+      return writeState({ ...current, progress, favorites: [...favorites].sort((a, b) => Number(a) - Number(b)) }, { expectedRevision: current.revision });
     });
     return json(res, 200, { ok: true, revision: saved.revision, state: saved });
   }
@@ -421,7 +465,7 @@ async function route(req, res) {
       const history = Array.isArray(previous.history) ? previous.history.slice(-9) : [];
       if (previous.markdown !== markdown) history.push({ markdown: previous.markdown || "", updated_at: previous.updated_at || nowIso() });
       annotations[questionId] = { markdown, updated_at: incoming.updated_at || nowIso(), history };
-      return store.writeState({ ...current, annotations }, { expectedRevision: current.revision });
+      return writeState({ ...current, annotations }, { expectedRevision: current.revision });
     });
     return json(res, 200, { ok: true, revision: saved.revision, state: saved });
   }
@@ -438,15 +482,17 @@ async function route(req, res) {
         error.current = current;
         throw error;
       }
-      return store.writeState({ ...current, last_study: { ...incoming, revision: undefined }, updated_at: nowIso() }, { expectedRevision: current.revision });
+      return writeState({ ...current, last_study: { ...incoming, revision: undefined }, updated_at: nowIso() }, { expectedRevision: current.revision });
     });
     return json(res, 200, { ok: true, revision: saved.revision, state: saved });
   }
   if (pathname === "/api/state/migrate" && method === "POST") {
     const incoming = localStateShape(await body(req));
-    const current = await store.readState();
-    const merged = { ...current, ...incoming, revision: current.revision, progress: { ...(current.progress || {}), ...(incoming.progress || {}) }, favorites: [...new Set([...(current.favorites || []), ...(incoming.favorites || [])])], picked: [...new Set([...(current.picked || []), ...(incoming.picked || [])])], updated_at: nowIso() };
-    const saved = await store.writeState(merged, { expectedRevision: current.revision });
+    const saved = await withLock(async () => {
+      const current = await store.readState();
+      const merged = { ...current, ...incoming, revision: current.revision, progress: { ...(current.progress || {}), ...(incoming.progress || {}) }, favorites: [...new Set([...(current.favorites || []), ...(incoming.favorites || [])])], picked: [...new Set([...(current.picked || []), ...(incoming.picked || [])])], updated_at: nowIso() };
+      return writeState(merged, { expectedRevision: current.revision });
+    });
     return json(res, 200, { ok: true, state: saved });
   }
   if (pathname === "/api/ai/profiles" && method === "GET") return json(res, 200, { ok: true, profiles: await ai.profiles() });
@@ -541,8 +587,62 @@ const server = http.createServer((req, res) => {
   route(req, res).catch((error) => errorJson(res, error));
 });
 
-await store.readState();
-server.listen(PORT, HOST, () => console.log(`大观园本地中控台：http://${HOST}:${PORT}`));
+let lease;
+for (let attempt = 0; attempt < 60; attempt += 1) {
+  lease = await acquireServiceInstance(store.dataDir, { host: HOST, port: PORT });
+  if (lease.acquired || !lease.recovering) break;
+  await new Promise((resolve) => setTimeout(resolve, 250));
+}
+if (!lease?.acquired) {
+  if (lease?.owner && await waitForServiceOwner(lease.owner)) {
+    const url = serviceOwnerUrl(lease.owner);
+    console.log(`SERVICE_INSTANCE_REUSED ${url}`);
+    openBrowser(url);
+    process.exitCode = 0;
+  } else {
+    const error = new Error(lease?.recovering
+      ? "本地服务实例锁仍在恢复，请稍后重试"
+      : `服务实例 PID ${lease?.owner?.pid ?? "未知"}（端口 ${lease?.owner?.port ?? "未知"}，实例 ${lease?.owner?.instanceId ?? "未知"}）持有数据目录 ${store.dataDir}，但健康检查未确认服务。可能是旧服务仍在退出，也可能是 Windows 重用了 PID。请先检查该 PID 的命令行和该端口；仅在确认没有 Daguan 服务进程使用此目录后，删除 ${path.join(store.dataDir, ".service-instance.json")} 并重试。切勿在服务进程仍运行时删除锁，以免两个进程同时写入。`);
+    error.code = "SERVICE_INSTANCE_HELD";
+    throw error;
+  }
+} else {
+  serviceInstance = lease.owner;
+  try {
+    await store.readState();
+    await new Promise((resolve, reject) => {
+      const onError = (error) => { server.off("listening", onListening); reject(error); };
+      const onListening = () => { server.off("error", onError); resolve(); };
+      server.once("error", onError);
+      server.once("listening", onListening);
+      server.listen(PORT, HOST);
+    });
+  } catch (error) {
+    await lease.release();
+    throw error;
+  }
+  console.log(`SERVICE_INSTANCE_READY http://${HOST}:${PORT}/ ${serviceInstance.instanceId}`);
+  openBrowser(`http://${HOST}:${PORT}/index.html${process.env.DAGUAN_BROWSER_PACKAGE === "1" ? "?browserPackage=1" : ""}`);
 
-process.on("SIGINT", () => server.close(() => process.exit(0)));
-process.on("SIGTERM", () => server.close(() => process.exit(0)));
+  let shuttingDown = false;
+  const shutdown = async () => {
+    if (shuttingDown) return;
+    shuttingDown = true;
+    for (const response of stateEventClients) {
+      try { response.write("event: server-stopping\ndata: {}\n\n"); response.end(); } catch {}
+    }
+    stateEventClients.clear();
+    server.close(async () => {
+      await lease.release();
+      process.exit(0);
+    });
+    // Do not force-close active requests here: an in-flight state write must finish
+    // before the data-directory lease is released to another process.
+  };
+  requestGracefulShutdown = shutdown;
+  process.on("SIGINT", shutdown);
+  process.on("SIGTERM", shutdown);
+  process.on("message", (message) => {
+    if (message?.type === "shutdown") void shutdown();
+  });
+}

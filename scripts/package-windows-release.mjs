@@ -19,31 +19,38 @@ function run(command, args) {
 }
 
 if (process.platform !== "win32") throw new Error("Windows 发布包必须在 Windows 上构建");
-run(process.env.ComSpec || "cmd.exe", ["/d", "/s", "/c", "npm run package:windows"]);
+if (process.env.DAGUAN_REUSE_BROWSER_EXE === "1") {
+  await fs.access(EXE);
+} else {
+  run(process.env.ComSpec || "cmd.exe", ["/d", "/s", "/c", "npm run package:windows"]);
+}
 await fs.rm(STAGE, { recursive: true, force: true });
 await fs.rm(VERIFY, { recursive: true, force: true });
 await fs.mkdir(STAGE, { recursive: true });
 await fs.copyFile(EXE, RELEASE_EXE);
-await fs.copyFile(EXE, path.join(STAGE, path.basename(EXE)));
+await fs.copyFile(RELEASE_EXE, path.join(STAGE, path.basename(RELEASE_EXE)));
 await fs.copyFile(path.join(ROOT, "安装大观园数学题库.cmd"), path.join(STAGE, "安装大观园数学题库.cmd"));
 await fs.mkdir(path.join(STAGE, "packaging", "windows"), { recursive: true });
 const installScript = path.join(STAGE, "packaging", "windows", "install.ps1");
-await fs.copyFile(path.join(ROOT, "packaging", "windows", "install.ps1"), installScript);
+async function copyPowerShellScript(name) {
+  const source = await fs.readFile(path.join(ROOT, "packaging", "windows", name));
+  const bom = Buffer.from([0xef, 0xbb, 0xbf]);
+  const contents = source.subarray(0, 3).equals(bom) ? source : Buffer.concat([bom, source]);
+  const destination = path.join(STAGE, "packaging", "windows", name);
+  await fs.writeFile(destination, contents);
+  return destination;
+}
+await copyPowerShellScript("install.ps1");
+for (const scriptName of ["uninstall.ps1", "stop-service.ps1"]) {
+  await copyPowerShellScript(scriptName);
+}
 await fs.copyFile(path.join(ROOT, "packaging", "windows", "安装说明.txt"), path.join(STAGE, "安装说明.txt"));
 await fs.mkdir(DIST, { recursive: true });
 await fs.rm(ZIP, { force: true });
 
-function checkPowerShellSyntax(file) {
-  const literal = file.replaceAll("'", "''");
-  const command = [
-    "$parseErrors = $null",
-    `$null = [System.Management.Automation.Language.Parser]::ParseFile('${literal}', [ref]$null, [ref]$parseErrors)`,
-    "if ($parseErrors.Count -gt 0) { $parseErrors | ForEach-Object { Write-Error $_.Message }; exit 1 }",
-  ].join("; ");
-  run("powershell.exe", ["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", command]);
+for (const scriptName of ["install.ps1", "uninstall.ps1", "stop-service.ps1"]) {
+  await fs.access(path.join(STAGE, "packaging", "windows", scriptName));
 }
-
-checkPowerShellSyntax(installScript);
 run("powershell.exe", ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", installScript, "-PackageRoot", STAGE, "-ValidateOnly"]);
 
 const ps = `$ErrorActionPreference = 'Stop'; Compress-Archive -Path '${STAGE.replaceAll("'", "''")}\\*' -DestinationPath '${ZIP.replaceAll("'", "''")}' -Force`;
@@ -51,10 +58,9 @@ run("powershell.exe", ["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", p
 
 const verifyPs = `$ErrorActionPreference = 'Stop'; Expand-Archive -LiteralPath '${ZIP.replaceAll("'", "''")}' -DestinationPath '${VERIFY.replaceAll("'", "''")}' -Force`;
 run("powershell.exe", ["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", verifyPs]);
-await fs.access(path.join(VERIFY, path.basename(EXE)));
+await fs.access(path.join(VERIFY, path.basename(RELEASE_EXE)));
 const extractedInstallScript = path.join(VERIFY, "packaging", "windows", "install.ps1");
 await fs.access(extractedInstallScript);
-checkPowerShellSyntax(extractedInstallScript);
 run("powershell.exe", ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", extractedInstallScript, "-PackageRoot", VERIFY, "-ValidateOnly"]);
 
 async function writeChecksum(file) {

@@ -1,27 +1,26 @@
-大观园数学题库 Windows 发布版
+大观园数学 Windows 64 位浏览器包
 
 适用范围
-- Windows 10 22H2 或 Windows 11，64 位 x64 处理器。
-- Microsoft Edge 或 Google Chrome 最新稳定版。
-- 建议 8 GB 内存和至少 2 GB 可用磁盘空间。
-- 不需要预装 Node.js；安装包内含本地运行程序。
+- Windows 10 22H2 或 Windows 11，x64。
+- 不需要另外安装 Node.js；程序会在本机启动服务并打开系统默认浏览器。
+- 第一次运行可能显示 Windows SmartScreen 未知发布者提示，因为此首版未签名。请先核对 SHA256 校验值。
 
-安装方法
-1. 推荐直接下载 DaguanMath-windows-x64.exe，双击即可运行。
-2. 如需桌面和开始菜单快捷方式，下载并解压 DaguanMath-windows-x64.zip。
-3. 双击压缩包内的“安装大观园数学题库.cmd”。
-4. 第一次使用点击首页“同步进度”，按页面提示完成首次官网配置。
+安装
+1. 下载并解压 DaguanMath-windows-x64.zip。
+2. 双击“安装大观园数学题库.cmd”。安装完成后可从桌面或开始菜单启动。
+3. 开始菜单还提供“停止大观园本地服务”和“卸载大观园浏览器版”。
+4. 也可直接运行 DaguanMath-windows-x64.exe，无需安装。程序安装在 %LOCALAPPDATA%\DaguanMathBrowser；共享数据仍放在 %LOCALAPPDATA%\DaguanMath\data。
 
-完全新手教程
-- https://github.com/Evan26Ma/daguan-cxy-local/blob/codex/daguan-math-local-sync/docs/Windows新手安装与配置.md
-
-数据位置
-- 进度、登录配置、同步备份保存在当前 Windows 用户的 %LOCALAPPDATA%\DaguanMath\data。
-- 这些数据不会上传到 GitHub，也不会进入安装包。
+共享学习记录
+- 桌面版与浏览器版共用当前 Windows 用户的 %LOCALAPPDATA%\DaguanMath\data。
+- 更换旧浏览器数据时，在新版「工具 → 合并旧浏览器记录」中选择备份，先预览、下载并保存目标端备份，再确认合并。
+- 仅迁移进度、收藏、批注与备份中明确带有的学习位置；外观、快捷键、AI 草稿与题目勾选不会迁移。时间无法比较时保留目标端记录。
 
 卸载
-- 删除桌面/开始菜单快捷方式。
-- 删除 %LOCALAPPDATA%\DaguanMath 前，请先导出本地数据并确认不再需要本地进度和登录配置。
+- 使用开始菜单“卸载大观园浏览器版”。它会移除浏览器包程序和快捷方式，默认保留 %LOCALAPPDATA%\DaguanMath\data 中的学习记录、AI 配置与本机备份。
+- 如桌面版或其他浏览器仍在运行，共享服务继续运行；只删除本浏览器包不会停止其他程序拥有的服务。
+- 卸载后重装时会继续使用原共享数据。旧版曾将浏览器程序装在 %LOCALAPPDATA%\DaguanMath；新安装使用独立的 DaguanMathBrowser 目录，不会删除或迁移旧目录，旧快捷方式可单独清理。
 
-安全提示
-- Windows SmartScreen 第一次运行可能显示未知发布者提示，这是未购买代码签名证书导致的；请核对 GitHub Release 的 SHA256 后再运行。
+隐私
+- 数据与日志仅保存在本机。浏览器服务只监听本机回环地址。
+- 此浏览器包需手动下载新版。桌面版会后台检查更新，下载后等待用户确认重启安装。

@@ -9,27 +9,7 @@
   <link rel="stylesheet" href="./vendor/katex.min.css" />
     <link rel="stylesheet" href="./legacy.css?v=89" />
   <script src="./ui-version.js?v=106"></script>
-  <script>
-    (() => {
-      if (location.search.includes("purge=1")) {
-        navigator.serviceWorker.getRegistrations().then((rs) => rs.forEach((r) => r.unregister()));
-        caches.keys().then((ks) => ks.forEach((k) => caches.delete(k)));
-        if (!localStorage.getItem("daguan_purged")) {
-          localStorage.setItem("daguan_purged", "1");
-          location.replace(location.pathname + "?fresh=1");
-        }
-      }
-      try {
-        const value = JSON.parse(localStorage.getItem(window.DaguanVersions.appearanceKey) || "{}");
-        const themes = ["official-light", "official-dark", "eye-care", "custom"];
-        const theme = themes.includes(value.theme) ? value.theme : "official-light";
-        document.documentElement.dataset.theme = theme;
-        document.documentElement.style.colorScheme = theme === "official-dark" ? "dark" : "light";
-      } catch {
-        document.documentElement.dataset.theme = "official-light";
-      }
-    })();
-  </script>
+  <script src="./ui-bootstrap.js?v=1"></script>
 </head>
 <body>
   <svg class="icon-sprite" aria-hidden="true" focusable="false">
@@ -401,6 +381,7 @@
     </div>
   </dialog>
 
+  <div id="local-service-status" class="local-service-status legacy-service-status" role="status" aria-live="polite" hidden></div>
   <div id="toast" class="toast hidden" role="status"></div>
 
   <dialog id="dlg-welcome" class="sheet sheet-wide">
@@ -813,6 +794,6 @@
 
   <script defer src="./vendor/marked.min.js"></script>
   <script defer src="./vendor/katex.min.js"></script>
-    <script defer src="./app-legacy.js?v=89"></script>
+    <script defer src="./app-legacy.js?v=91"></script>
 </body>
 </html>

@@ -1218,6 +1218,21 @@ summary:focus-visible {
   border: 1px solid #3a342c;
 }
 
+.legacy-service-status {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 90;
+  max-width: min(32rem, calc(100vw - 2rem));
+  padding: .65rem .85rem;
+  border: 1px solid #c9694e;
+  border-radius: 6px;
+  background: #fff8f4;
+  color: #8f2e20;
+  box-shadow: var(--shadow-md);
+  font-size: .82rem;
+}
+
 /* ========== Sheets / dialogs ========== */
 .sheet {
   width: min(32rem, calc(100vw - 1.5rem));

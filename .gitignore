@@ -1,6 +1,7 @@
 _source.tar.gz
 
 # Local/runtime files
+node_modules/
 web/.cache/
 web/data/assets/.download-tmp/
 
@@ -14,6 +15,7 @@ data/.runtime/
 # Generated Windows single-file package
 .build/
 dist/
+out/
 
 # deepseek-idesign（Design Studio 插件）的会话产物目录，非产品代码、不入库
 design/

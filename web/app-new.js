@@ -5,7 +5,7 @@
 
 // ========== 离线缓存注册（与 app2.js 一致） ==========
 if ("serviceWorker" in navigator && location.protocol !== "file:") {
-    navigator.serviceWorker.register("./service-worker.js?v=112").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=116").catch(() => {});
 }
 
 // ========== 全局状态 ==========
@@ -788,6 +788,8 @@ const StateSync = {
     lastStudyPending: null,
     retryTimer: 0,
     retryAttempts: 0,
+    eventSource: null,
+    eventRefreshTimer: 0,
 
     mergeProgress(a, b) {
         const out = { ...(a || {}) };
@@ -1022,6 +1024,60 @@ const StateSync = {
         return this;
     },
 
+    connectEvents() {
+        if (this.eventSource || !window.EventSource || !PreviewAccess.privateAllowed(false)) return;
+        const status = document.getElementById('local-service-status');
+        let disconnected = false;
+        this.eventSource = new EventSource('./api/state/events');
+        this.eventSource.onopen = () => {
+            const wasDisconnected = disconnected;
+            if (disconnected && status) {
+                status.textContent = '本地服务已恢复连接，学习记录已同步';
+                status.hidden = false;
+                setTimeout(() => { if (status.textContent === '本地服务已恢复连接，学习记录已同步') status.hidden = true; }, 3500);
+            } else if (status) {
+                status.hidden = true;
+            }
+            disconnected = false;
+            if (wasDisconnected) this.refreshFromEvent();
+        };
+        this.eventSource.onerror = () => {
+            disconnected = true;
+            if (status) {
+                status.textContent = '本地服务连接中断，正在自动重连；未提交批注仍保留在本机。';
+                status.hidden = false;
+            }
+        };
+        this.eventSource.addEventListener('state', event => {
+            let revision = 0;
+            try { revision = Number(JSON.parse(event.data || '{}').revision) || 0; } catch {}
+            if (revision > this.revision) this.refreshFromEvent();
+        });
+        window.addEventListener('pagehide', () => this.eventSource?.close(), { once: true });
+    },
+
+    async refreshFromEvent() {
+        if (!this.hydrated || document.visibilityState !== 'visible') return;
+        if (this.syncing || this.lastStudyInFlight) {
+            if (!this.eventRefreshTimer) this.eventRefreshTimer = setTimeout(() => {
+                this.eventRefreshTimer = 0;
+                this.refreshFromEvent();
+            }, 600);
+            return;
+        }
+        const previousRevision = this.revision;
+        await this.hydrate();
+        if (!this.available || this.revision <= previousRevision) return;
+        try {
+            if (AppState.currentView === 'question' && !AppState.annotationDirty) await UIRenderer.renderQuestion(AppState.currentQuestionIndex);
+            else if (AppState.currentView === 'home') UIRenderer.renderHome();
+            else if (AppState.currentView === 'records') UIRenderer.renderRecords();
+            else if (AppState.currentView === 'notes' && !AppState.memoDirty) UIRenderer.renderNotes();
+        } catch (error) {
+            console.warn('刷新其他窗口的学习记录失败', error);
+        }
+    },
+
     // 备份恢复对账：以本地当前数据为准整份写入服务端（PUT /api/state，携带 revision；409 重读后重试一次）。
     // last_study 保留服务端现有值，不因恢复而改变“继续学习”位置。
     async reconcileLocalToServer() {
@@ -1200,9 +1256,11 @@ const StateSync = {
             }
             return false;
         })();
-        this.lastStudyInFlight = run.finally(() => { if (this.lastStudyInFlight === run) this.lastStudyInFlight = null; });
+        let trackedRun;
+        trackedRun = run.finally(() => { if (this.lastStudyInFlight === trackedRun) this.lastStudyInFlight = null; });
+        this.lastStudyInFlight = trackedRun;
         let ok = false;
-        try { ok = await run; } catch { ok = false; }
+        try { ok = await trackedRun; } catch { ok = false; }
         if (ok) this.lastStudyPending = null;
         else this.lastStudyPending = payload;
         return ok;
@@ -2873,6 +2931,26 @@ class UIRenderer {
                 <div class="card tool-card">
                     <div class="tool-row">
                         <div class="tool-info">
+                            <h2 class="text-section-title">合并旧浏览器记录</h2>
+                            <p>先预览差异并下载当前记录备份，再按逐题修改时间合并进度、收藏、批注和学习位置。外观、快捷键与 AI 草稿不会迁移。</p>
+                        </div>
+                        <button type="button" class="btn btn-secondary" onclick="document.getElementById('migration-input').click()">选择旧备份</button>
+                    </div>
+                    <input type="file" id="migration-input" accept=".json,application/json" class="hidden" onchange="UIRenderer.previewLegacyBackup(this)">
+                    <div class="tool-result" id="migration-preview" aria-live="polite"></div>
+                    <div class="tool-controls hidden" id="migration-confirmation">
+                        <button type="button" class="btn btn-secondary btn-sm" id="btn-migration-backup">下载当前记录备份</button>
+                        <label class="tool-check"><input type="checkbox" id="migration-backup-saved" disabled /> 我已保存这份当前记录备份</label>
+                        <button type="button" class="btn btn-primary btn-sm" id="btn-migration-apply" disabled>确认合并</button>
+                        <button type="button" class="btn btn-text btn-sm" id="btn-migration-cancel">取消合并</button>
+                    </div>
+                </div>
+
+                ${new URLSearchParams(location.search).get('browserPackage') === '1' ? `<div class="card tool-card"><div class="tool-row"><div class="tool-info"><h2 class="text-section-title">本地服务</h2><p>停止后，其他浏览器标签页将断开；下次启动浏览器包会重新连接或启动服务。</p></div><button type="button" class="btn btn-secondary" id="btn-stop-local-service">停止本地服务</button></div></div>` : ''}
+
+                <div class="card tool-card">
+                    <div class="tool-row">
+                        <div class="tool-info">
                             <h2 class="text-section-title">官网同步</h2>
                             <p>读取官网进度或上传本地进度，全程先预览差异、确认后才写入。</p>
                         </div>
@@ -2931,6 +3009,137 @@ class UIRenderer {
         document.getElementById('sync-login-form')?.addEventListener('submit', (event) => App.syncLogin(event));
         document.getElementById('btn-sync-pull')?.addEventListener('click', () => App.syncPull());
         document.getElementById('btn-sync-push')?.addEventListener('click', () => App.syncPush());
+        document.getElementById('migration-backup-saved')?.addEventListener('change', (event) => {
+            const button = document.getElementById('btn-migration-apply');
+            if (button) button.disabled = !event.target.checked;
+        });
+        document.getElementById('btn-migration-backup')?.addEventListener('click', () => UIRenderer.downloadMigrationBackup());
+        document.getElementById('btn-migration-apply')?.addEventListener('click', () => UIRenderer.applyLegacyMigration());
+        document.getElementById('btn-migration-cancel')?.addEventListener('click', () => UIRenderer.cancelLegacyMigration());
+        document.getElementById('btn-stop-local-service')?.addEventListener('click', () => UIRenderer.stopLocalBrowserService());
+    }
+
+    static async stopLocalBrowserService() {
+        if (!confirm('停止本地服务？其他浏览器窗口将断开，但已保存的学习记录会保留。')) return;
+        const button = document.getElementById('btn-stop-local-service');
+        if (button) button.disabled = true;
+        try {
+            const response = await fetch('./api/runtime/stop', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            App.setToolStatus('本地服务正在完成当前写入并退出。重新启动浏览器包即可恢复。', 'success');
+        } catch (error) {
+            if (button) button.disabled = false;
+            App.setToolStatus(`未能停止本地服务：${error.message || '连接失败'}`, 'error');
+        }
+    }
+
+    static async previewLegacyBackup(input) {
+        const file = input?.files?.[0];
+        if (!file || !PreviewAccess.privateAllowed()) return;
+        const output = document.getElementById('migration-preview');
+        const confirmation = document.getElementById('migration-confirmation');
+        confirmation?.classList.add('hidden');
+        this.pendingLegacyMigration = null;
+        const savedCheckbox = document.getElementById('migration-backup-saved');
+        if (savedCheckbox) { savedCheckbox.checked = false; savedCheckbox.disabled = true; }
+        const applyButton = document.getElementById('btn-migration-apply');
+        if (applyButton) applyButton.disabled = true;
+        if (output) output.textContent = '正在读取旧备份并比较当前记录…';
+        try {
+            if (!window.DaguanBackupMigration) throw new Error('迁移工具尚未加载，请刷新页面后重试');
+            const source = window.DaguanBackupMigration.parseBackup(await file.text());
+            const response = await fetch('./api/state', { cache: 'no-store' });
+            if (!response.ok) throw new Error('无法读取当前本地学习记录');
+            const target = await response.json();
+            const preview = window.DaguanBackupMigration.merge(source, target);
+            this.pendingLegacyMigration = { fileName: file.name, source, target, targetRevision: Number(target.revision) || 0, preview };
+            const c = preview.counts;
+            if (output) output.innerHTML = `<p><strong>${escapeHtml(file.name)}</strong>：将迁入进度 ${c.importedProgress} 项、收藏 ${c.importedFavorites} 项、批注 ${c.importedAnnotations} 项${c.importedPosition ? '，学习位置 1 项' : ''}。</p><p>当前端优先保留：进度 ${c.keptTargetProgress} 项，收藏 ${c.keptTargetFavorites} 项，批注 ${c.keptTargetAnnotations} 项。时间缺失或相同的冲突保留当前端。</p><p class="text-helper">外观、快捷键、AI 草稿及旧版选题不会导入。请先下载并保存当前记录备份。</p>`;
+            confirmation?.classList.remove('hidden');
+        } catch (error) {
+            this.pendingLegacyMigration = null;
+            if (output) output.textContent = `无法预览：${error.message || '备份格式无效'}。当前记录未改动。`;
+        } finally {
+            if (input) input.value = '';
+        }
+    }
+
+    static downloadMigrationBackup() {
+        const pending = this.pendingLegacyMigration;
+        if (!pending) return;
+        const payload = { ...pending.target, format: 'daguan-local-state', version: 3, saved_at: new Date().toISOString() };
+        const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement('a');
+        const date = new Date().toISOString().slice(0, 10);
+        anchor.href = url;
+        anchor.download = `daguan-before-migration-${date}.json`;
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1500);
+        const checkbox = document.getElementById('migration-backup-saved');
+        if (checkbox) { checkbox.disabled = false; checkbox.checked = false; }
+        const applyButton = document.getElementById('btn-migration-apply');
+        if (applyButton) applyButton.disabled = true;
+        App.setToolStatus(`已生成当前记录备份：${anchor.download}。确认文件已保存后再继续。`, 'success');
+    }
+
+    static async applyLegacyMigration() {
+        if (!this.pendingLegacyMigration || !document.getElementById('migration-backup-saved')?.checked) return;
+        if (!PreviewAccess.privateAllowed()) return;
+        const pending = this.pendingLegacyMigration;
+        const output = document.getElementById('migration-preview');
+        const button = document.getElementById('btn-migration-apply');
+        if (button) button.disabled = true;
+        try {
+            const latestResponse = await fetch('./api/state', { cache: 'no-store' });
+            if (!latestResponse.ok) throw new Error('无法重新读取当前记录');
+            const latest = await latestResponse.json();
+            if ((Number(latest.revision) || 0) !== pending.targetRevision) {
+                const preview = window.DaguanBackupMigration.merge(pending.source, latest);
+                this.pendingLegacyMigration = { ...pending, target: latest, targetRevision: Number(latest.revision) || 0, preview };
+                const c = preview.counts;
+                if (output) output.innerHTML = `<p>当前记录在预览后发生了变化，已按最新状态重新计算：将迁入进度 ${c.importedProgress} 项、收藏 ${c.importedFavorites} 项、批注 ${c.importedAnnotations} 项${c.importedPosition ? '，学习位置 1 项' : ''}。</p><p>请再次下载当前记录备份、确认已保存，然后重新确认合并。</p>`;
+                document.getElementById('migration-backup-saved').checked = false;
+                document.getElementById('migration-backup-saved').disabled = true;
+                if (document.getElementById('btn-migration-backup')) document.getElementById('btn-migration-backup').focus();
+                return;
+            }
+            const result = pending.preview.state;
+            const write = await fetch('./api/state', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'If-Match': String(pending.targetRevision) },
+                body: JSON.stringify({ ...result, revision: pending.targetRevision }),
+            });
+            if (write.status === 409) throw new Error('当前记录刚刚被另一个窗口更新，请重新预览并备份');
+            if (!write.ok) throw new Error(`合并写入失败（HTTP ${write.status}）`);
+            const c = pending.preview.counts;
+            this.pendingLegacyMigration = null;
+            document.getElementById('migration-confirmation')?.classList.add('hidden');
+            if (output) output.textContent = `合并完成：进度 ${c.importedProgress} 项、收藏 ${c.importedFavorites} 项、批注 ${c.importedAnnotations} 项${c.importedPosition ? '，学习位置 1 项' : ''}。其他窗口将自动刷新。`;
+            await StateSync.hydrate();
+            App.setToolStatus('旧浏览器学习记录已合并。', 'success');
+        } catch (error) {
+            if (output) output.textContent = `合并失败：${error.message || '未知错误'}。当前数据未被覆盖，请重新预览。`;
+            App.setToolStatus('旧浏览器记录未合并。', 'error');
+        } finally {
+            if (button) button.disabled = !document.getElementById('migration-backup-saved')?.checked;
+        }
+    }
+
+    static cancelLegacyMigration() {
+        this.pendingLegacyMigration = null;
+        document.getElementById('migration-confirmation')?.classList.add('hidden');
+        const checkbox = document.getElementById('migration-backup-saved');
+        if (checkbox) { checkbox.checked = false; checkbox.disabled = true; }
+        const applyButton = document.getElementById('btn-migration-apply');
+        if (applyButton) applyButton.disabled = true;
+        const input = document.getElementById('migration-input');
+        if (input) input.value = '';
+        const output = document.getElementById('migration-preview');
+        if (output) output.textContent = '已取消合并预览。当前记录未改动。';
+        App.setToolStatus('已取消旧浏览器记录合并。', '');
     }
 }
 
@@ -3101,6 +3310,7 @@ class App {
         // 预览权限与共享学习数据（服务端为权威源；预览锁定时保持只读）
         await PreviewAccess.hydrate();
         await StateSync.hydrate();
+        StateSync.connectEvents();
         AIService.loadProfiles();
 
         // 渲染首页
@@ -4219,6 +4429,12 @@ document.getElementById('btn-dl').addEventListener('click', function () {
             favorites: progress.favorites,
             annotations: StorageService.normalizeAnnotationsForStorage(StorageService.readAnnotationsStorage()),
             picked: Array.isArray(picked) ? picked : [],
+            last_study: (() => {
+                const position = StorageService.getLearningPosition();
+                return position?.chapterId != null && position?.questionId != null
+                    ? { category_id: String(position.chapterId), question_id: String(position.questionId), mode: position.mode || 'single', updated_at: position.timestamp || null }
+                    : null;
+            })(),
         };
     }
 
@@ -5286,7 +5502,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('online', () => { StateSync.retryPending(); });
     if (typeof document !== 'undefined' && typeof document.addEventListener === 'function') {
         document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'visible') StateSync.retryPending();
+            if (document.visibilityState === 'visible') StateSync.refreshFromEvent();
         });
     }
 })();
@@ -5300,4 +5516,5 @@ window.UIRenderer = UIRenderer;
 window.App = App;
 window.PreviewAccess = PreviewAccess;
 window.StateSync = StateSync;
+if (typeof window.addEventListener === 'function') window.addEventListener('daguan:state-changed', () => { void StateSync.refreshFromEvent(); });
 window.AI_COMPOSE_PROMPTS = AI_COMPOSE_PROMPTS;

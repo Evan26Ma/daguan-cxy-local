@@ -10,6 +10,7 @@ const html = fs.readFileSync(new URL("../web/legacy.html", import.meta.url), "ut
 const app = fs.readFileSync(new URL("../web/app-legacy.js", import.meta.url), "utf8");
 const css = fs.readFileSync(new URL("../web/legacy.css", import.meta.url), "utf8");
 const newHtml = fs.readFileSync(new URL("../web/index.html", import.meta.url), "utf8");
+const uiBootstrap = fs.readFileSync(new URL("../web/ui-bootstrap.js", import.meta.url), "utf8");
 const newApp = fs.readFileSync(new URL("../web/app-new.js", import.meta.url), "utf8");
 const newCss = fs.readFileSync(new URL("../web/styles-new.css", import.meta.url), "utf8");
 const server = fs.readFileSync(new URL("../local-server/server.mjs", import.meta.url), "utf8");
@@ -103,23 +104,35 @@ test("首屏不阻塞加载题库索引", () => {
 
 test("Service Worker 不预缓存首屏之外的大型索引和字体", () => {
   const sw = fs.readFileSync(new URL("../web/service-worker.js", import.meta.url), "utf8");
-  assert.match(sw, /daguan-shell-v112/);
-  assert.match(app, /service-worker\.js\?v=89/);
-  assert.match(newApp, /service-worker\.js\?v=112/);
+  assert.match(sw, /daguan-shell-v116/);
+  assert.match(app, /service-worker\.js\?v=116/);
+  assert.match(newApp, /service-worker\.js\?v=116/);
   assert.match(sw, /"\.\/legacy\.html"/);
   assert.match(sw, /"\.\/legacy\.css\?v=89"/);
+  assert.match(sw, /"\.\/app-legacy\.js\?v=91"/);
   assert.match(sw, /"\.\/styles-new\.css\?v=110"/);
-  assert.match(sw, /"\.\/app-new\.js\?v=110"/);
+  assert.match(sw, /"\.\/app-new\.js\?v=113"/);
   assert.match(sw, /"\.\/assets\/math-mark\.svg"/);
   assert.doesNotMatch(sw, /data\/(category_questions|id_index|search_index)\.json/);
   assert.doesNotMatch(sw, /vendor\/fonts\//);
 });
 
+test("新版与旧版都监听本地服务状态事件并刷新共享学习记录", () => {
+  assert.match(newApp, /new EventSource\('\.\/api\/state\/events'\)/);
+  assert.match(newApp, /refreshFromEvent\(\)/);
+  assert.match(newApp, /visibilityState === 'visible'\) StateSync\.refreshFromEvent\(\)/);
+  assert.match(app, /new EventSource\("\.\/api\/state\/events"\)/);
+  assert.match(app, /refreshStateFromServerEvent\(\)/);
+  assert.match(app, /visibilitychange[\s\S]{0,240}refreshStateFromServerEvent\(\)/);
+  assert.match(server, /text\/event-stream/);
+});
+
 test("新版入口承载新版前端并与旧版共享版本选择", () => {
   assert.match(newHtml, /styles-new\.css\?v=110/);
   assert.match(newHtml, /ui-version\.js\?v=106/);
-  assert.match(newHtml, /app-new\.js\?v=110/);
-  assert.match(newHtml, /DaguanVersions\.selected\(localStorage\)/);
+  assert.match(newHtml, /ui-bootstrap\.js\?v=1/);
+  assert.match(newHtml, /app-new\.js\?v=113/);
+  assert.match(uiBootstrap, /DaguanVersions\.selected\(localStorage\)/);
   assert.match(newHtml, /dlg-preview-access/);
   assert.match(newHtml, /preview-banner/);
   assert.match(newApp, /DaguanVersions\.draftKey/);
@@ -159,8 +172,8 @@ test("讲解视频映射覆盖两位新老师且只保留前端需要的字段",
 
 test("更新横幅按已读版本提醒，不再常驻", () => {
   const legacyApp = fs.readFileSync(new URL("../web/app-legacy.js", import.meta.url), "utf8");
-  assert.match(server, /BUILD_VERSION = "2026\.09\.26-dual-ui-r1"/);
-  assert.match(app, /APP_VERSION = "2026\.09\.26-dual-ui-r1"/);
+  assert.match(server, /BUILD_VERSION = "2026\.09\.27-shared-service-r1"/);
+  assert.match(app, /APP_VERSION = "2026\.09\.27-shared-service-r1"/);
   assert.match(app, /RUNTIME_SEEN_KEY = "daguan_runtime_version_seen_v1"/);
   assert.match(app, /runtime\.appVersion !== APP_VERSION && runtime\.appVersion !== seen/);
   assert.match(app, /localStorage\.setItem\(RUNTIME_SEEN_KEY, runtime\.appVersion\)/);
@@ -174,7 +187,7 @@ test("界面版本：旧大观承载完整旧版前端", () => {
   const legacyApp = fs.readFileSync(new URL("../web/app-legacy.js", import.meta.url), "utf8");
   assert.match(legacyHtml, /<title>大观园 · 本地刷题<\/title>/);
   assert.match(legacyHtml, /legacy\.css\?v=89/);
-  assert.match(legacyHtml, /app-legacy\.js\?v=89/);
+  assert.match(legacyHtml, /app-legacy\.js\?v=91/);
   assert.match(legacyHtml, /legacy-version-toggle/);
   assert.match(legacyCss, /--color-brand:\s*#1e4a5c|hero-copy/);
   assert.doesNotMatch(legacyHtml, /styles\.css\?v=/);

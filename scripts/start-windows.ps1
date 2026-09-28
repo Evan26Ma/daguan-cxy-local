@@ -6,6 +6,9 @@ $RuntimeDir = Join-Path $Root ".runtime\node-v$NodeVersion-win-x64"
 $NodeExe = Join-Path $RuntimeDir "node.exe"
 $NpmCmd = Join-Path $RuntimeDir "npm.cmd"
 $NodeZip = Join-Path $Root ".runtime\node-v$NodeVersion-win-x64.zip"
+$DataDir = Join-Path $env:LOCALAPPDATA "DaguanMath\data"
+$ServiceApiProtocol = 1
+$InstanceFile = Join-Path $DataDir ".service-instance.json"
 $NodeUrl = "https://nodejs.org/dist/v$NodeVersion/node-v$NodeVersion-win-x64.zip"
 $NodeSha256 = "ee50fe3af2e4b43aef655c5126e0e4d995a391a787a9327596563a722ada2aa9"
 
@@ -43,21 +46,25 @@ function Ensure-Node {
 }
 
 $runtime = Ensure-Node
-New-Item -ItemType Directory -Force -Path (Join-Path $Root "data\cxyonly-backups") | Out-Null
+New-Item -ItemType Directory -Force -Path $DataDir | Out-Null
 Write-Host "Checking Node dependencies..."
 & $runtime.Npm ci --ignore-scripts --no-audit --no-fund
 if ($LASTEXITCODE -ne 0) { throw "npm ci failed with exit code $LASTEXITCODE" }
 
-$port = 8080
-while ($true) {
+if (Test-Path -LiteralPath $InstanceFile) {
   try {
-    $health = Invoke-RestMethod "http://127.0.0.1:$port/api/health" -TimeoutSec 2
-    if ($health.service -eq "daguan-local-console") {
-      Write-Host "The local console is already running on port $port."
-      Start-Process "http://127.0.0.1:$port/"
+    $owner = Get-Content -LiteralPath $InstanceFile -Raw | ConvertFrom-Json
+    $health = Invoke-RestMethod "http://$($owner.host):$($owner.port)/api/health" -TimeoutSec 2
+    if ($health.service -eq "daguan-local-console" -and $health.apiProtocol -eq $ServiceApiProtocol -and $owner.apiProtocol -eq $ServiceApiProtocol -and $health.instanceId -eq $owner.instanceId) {
+      Write-Host "The shared local console is already running on port $($owner.port)."
+      Start-Process "http://$($owner.host):$($owner.port)/index.html"
       exit 0
     }
   } catch {}
+}
+
+$port = 8080
+while ($true) {
   try {
     $busy = @(Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction Stop).Count -gt 0
   } catch {
@@ -68,7 +75,15 @@ while ($true) {
 }
 
 $env:PORT = [string]$port
+$env:DAGUAN_DATA_DIR = $DataDir
+$env:DAGUAN_OPEN_BROWSER = "1"
 Write-Host "Starting the local console at http://127.0.0.1:$port/"
-Start-Process "http://127.0.0.1:$port/"
-Write-Host "The console is running. Close this window to stop the service."
-& $runtime.Node (Join-Path $Root "local-server\server.mjs")
+Write-Host "The shared service stays active in this window. Close it to stop the service."
+try {
+  & $runtime.Node (Join-Path $Root "local-server\server.mjs")
+  if ($LASTEXITCODE -ne 0) { throw "Local console exited with code $LASTEXITCODE" }
+} finally {
+  Remove-Item Env:PORT -ErrorAction SilentlyContinue
+  Remove-Item Env:DAGUAN_DATA_DIR -ErrorAction SilentlyContinue
+  Remove-Item Env:DAGUAN_OPEN_BROWSER -ErrorAction SilentlyContinue
+}

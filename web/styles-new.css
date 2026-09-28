@@ -248,6 +248,8 @@ html[data-theme="eye-care"] {
     flex-shrink: 0;
 }
 
+.local-service-status { color: #a03b25; font-size: .75rem; }
+
 /* === 5. 按钮样式 === */
 .btn {
     display: inline-flex;

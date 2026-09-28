@@ -2,7 +2,7 @@
   "use strict";
 
   if ("serviceWorker" in navigator && location.protocol !== "file:") {
-    navigator.serviceWorker.register("./service-worker.js?v=89").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=116").catch(() => {});
   }
 
   const DATA = "./data";
@@ -16,7 +16,7 @@
   const AI_PREFS_KEY = "daguan_ai_preferences_v1";
   const AI_WIDTH_KEY = "daguan_ai_drawer_width_v1";
   const UI_BACKGROUND_KEY = window.DaguanVersions.current === "old" ? "ui-background" : "ui-background-new";
-  const APP_VERSION = "2026.09.26-dual-ui-r1";
+  const APP_VERSION = "2026.09.27-shared-service-r1";
   const RUNTIME_SEEN_KEY = "daguan_runtime_version_seen_v1";
   const POSITION_KEY = "daguan_learning_position_v2";
   const UI_THEMES = ["official-light", "official-dark", "eye-care", "custom"];
@@ -948,6 +948,87 @@
       if (serverStateAvailable && pendingHasAny()) void replayPendingAnnotations();
       else if (!serverStateAvailable && pendingHasAny()) schedulePendingReplay();
     }
+  }
+
+  let stateEventSource = null;
+  let stateEventRefreshTimer = 0;
+  let stateEventsDisconnected = false;
+  async function refreshStateFromServerEvent() {
+    if (!serverStateHydrated || document.visibilityState !== "visible") return;
+    if (serverStateSyncing) {
+      if (!stateEventRefreshTimer) stateEventRefreshTimer = setTimeout(() => {
+        stateEventRefreshTimer = 0;
+        void refreshStateFromServerEvent();
+      }, 600);
+      return;
+    }
+    try {
+      const response = await fetch("./api/state", { cache: "no-store" });
+      if (!response.ok) return;
+      const remote = await response.json();
+      const remoteRevision = Number(remote.revision) || 0;
+      if (remoteRevision <= serverRevision && serverStateAvailable) return;
+      const previousProgress = state.progress;
+      const previousAnnotations = state.annotations;
+      state.progress = mergeProgress(remote.progress || {}, previousProgress);
+      state.favorites = new Set((remote.favorites || []).map(String));
+      for (const [id, entry] of Object.entries(previousProgress || {})) {
+        const localAt = timestampOf(entry?.favorite_updated_at || entry?.updated_at);
+        const remoteAt = timestampOf(remote.progress?.[id]?.favorite_updated_at || remote.progress?.[id]?.updated_at);
+        if (localAt > remoteAt && typeof entry?.favorite === "boolean") {
+          if (entry.favorite) state.favorites.add(String(id)); else state.favorites.delete(String(id));
+        }
+      }
+      state.annotations = { ...(remote.annotations || {}) };
+      for (const [id, entry] of Object.entries(previousAnnotations || {})) {
+        const localAt = timestampOf(entry?.updated_at);
+        const remoteAt = timestampOf(remote.annotations?.[id]?.updated_at);
+        const isEditing = noteDirty && String(currentAiQuestion()?.id || "") === String(id);
+        if (isEditing || localAt > remoteAt) state.annotations[id] = entry;
+      }
+      state.remote_activity = remote.remote_activity || null;
+      state.last_study = remote.last_study || null;
+      serverRevision = remoteRevision;
+      flushPersist();
+      updateStats();
+      refreshPickUI();
+      renderMasteryChips();
+      renderListStrip();
+      if (state.view === "home") renderHome();
+      if (state.view === "browse") {
+        if (state.mode === "single") renderSingle();
+        else renderFeed(false);
+      }
+      if (!noteDirty && state.aiOpen && state.aiTab === "note") renderQuestionNote();
+      refreshHomeSyncCard();
+    } catch { /* EventSource will reconnect and deliver the current revision again. */ }
+  }
+
+  function connectStateEvents() {
+    if (stateEventSource || !window.EventSource || !previewPrivateAllowed(false)) return;
+    stateEventSource = new EventSource("./api/state/events");
+    stateEventSource.onopen = () => {
+      const status = document.getElementById("local-service-status");
+      if (status) status.hidden = true;
+      if (stateEventsDisconnected) {
+        toast("本地记录同步已恢复");
+        void refreshStateFromServerEvent();
+      }
+      stateEventsDisconnected = false;
+    };
+    stateEventSource.onerror = () => {
+      stateEventsDisconnected = true;
+      const status = document.getElementById("local-service-status");
+      if (status) {
+        status.textContent = "本地服务连接中断，正在自动重连；未提交记录仍保留在本机。";
+        status.hidden = false;
+      }
+    };
+    stateEventSource.addEventListener("state", (event) => {
+      const revision = Number(JSON.parse(event.data || "{}").revision) || 0;
+      if (revision > serverRevision) void refreshStateFromServerEvent();
+    });
+    window.addEventListener("pagehide", () => stateEventSource?.close(), { once: true });
   }
 
   function schedulePendingReplay() {
@@ -3368,6 +3449,7 @@
       progress: state.progress,
       favorites: [...state.favorites],
       annotations: state.annotations,
+      last_study: state.last_study,
     };
   }
 
@@ -4929,7 +5011,7 @@
       if (document.visibilityState === "hidden") flushPersist();
       else {
         refreshAiAfterResume();
-        if (pendingHasAny()) void hydrateServerState();
+        void refreshStateFromServerEvent();
       }
     });
     $("#btn-browse-back")?.addEventListener("click", goHome);
@@ -5586,6 +5668,7 @@
     applyModeUI();
     const hydrated = hydrateStores();
     const serverHydrated = hydrateServerState();
+    if (typeof window.EventSource !== "undefined") serverHydrated.finally(connectStateEvents);
     try {
       const [manifest, categories, videoMapping, paradiyuVideoMapping] = await Promise.all([
         fetchJSON(`${DATA}/manifest.json`),
@@ -5632,5 +5715,8 @@
 
   window.addEventListener("pagehide", () => saveLearningPosition());
   window.addEventListener("pageshow", refreshAiAfterResume);
+  window.addEventListener("daguan:state-changed", () => { void refreshStateFromServerEvent(); });
+  // The Electron tray and title bar use the same save-first path as the browser version switcher.
+  window.DaguanDesktopSwitch = setUiVersion;
   init();
 })();

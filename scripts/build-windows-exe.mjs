@@ -21,7 +21,10 @@ const WINDOWS_EXCLUDED_WEB_FILES = new Set([
 ]);
 
 function shouldBundle(relative) {
-  return !WINDOWS_EXCLUDED_WEB_FILES.has(relative);
+  return !WINDOWS_EXCLUDED_WEB_FILES.has(relative) &&
+    !relative.startsWith("web/ui-preview/") &&
+    !/^web\/index-.*-backup\.html$/i.test(relative) &&
+    !relative.startsWith("web/index-backup/");
 }
 
 function packageServiceWorker(relative, data) {
