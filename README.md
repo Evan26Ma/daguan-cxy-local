@@ -50,8 +50,8 @@
 
 ---
 
-> **Windows 桌面版：**桌面版会在后台检查更新，下载后等你确认重启；这是当前公开提供的 Windows 安装版本。
-> [⬇️ 下载桌面版安装器 `DaguanMathDesktop-Setup.exe`](https://github.com/Evan26Ma/daguan-cxy-local/releases/download/v1.0.0/DaguanMathDesktop-Setup.exe) · [📖 Windows 安装教程](docs/Windows新手安装与配置.md)
+> **Windows 桌面版（推荐）：**普通用户从百度网盘下载，桌面版会在后台检查更新，下载后等你确认重启。
+> [⬇️ 下载桌面版 `DaguanMathDesktop-Setup.exe`（提取码 dgy1）](https://pan.baidu.com/netdisk/share?surl=VrW0Z-ThDSM7f_xx7uCUZw) · [网页版服务包 ZIP（提取码 wweb）](https://pan.baidu.com/netdisk/share?surl=VJwUxgElbURfw7Aj4Gpy4Q) · [📖 Windows 安装教程](docs/Windows新手安装与配置.md)
 
 一个在自己电脑上运行的大观园数学题库增强版：题目更适合连续刷，学习进度保存在本机，可选同步官网进度，也可选连接 AI 助教。普通 Windows 用户安装桌面版即可开始学习，不需要安装 Node.js 或使用命令行。
 
@@ -88,9 +88,9 @@ AI 能力取决于你配置的服务：普通文本模型不能自动获得视�
 
 #### 普通用户（推荐）
 
-下载 [DaguanMathDesktop-Setup.exe](https://github.com/Evan26Ma/daguan-cxy-local/releases/download/v1.0.0/DaguanMathDesktop-Setup.exe) 并运行。桌面版使用系统托盘管理窗口和共享服务，默认不开机启动；关闭窗口会缩到托盘。
+普通用户可从[百度网盘下载桌面安装器 `DaguanMathDesktop-Setup.exe`](https://pan.baidu.com/netdisk/share?surl=VrW0Z-ThDSM7f_xx7uCUZw)（提取码 `dgy1`）并运行。桌面版使用系统托盘管理窗口和共享服务，默认不开机启动；关闭窗口会缩到托盘。另有[网页版本机服务包 ZIP](https://pan.baidu.com/netdisk/share?surl=VJwUxgElbURfw7Aj4Gpy4Q)（提取码 `wweb`）。
 
-首版未签名，Windows 可能显示 SmartScreen 警告。下载后先核对文件来自本项目 Release，并用 Release 提供的 SHA-256 校验文件；签名上线后还可用 `Get-AuthenticodeSignature` 核对文件，签名范围与校验方法见[代码签名政策](#代码签名政策)。不要下载 GitHub 自动生成的 `Source code` 压缩包。首次安装建议阅读 [Windows 新手安装与配置教程](docs/Windows新手安装与配置.md)。
+首版桌面安装器未签名，Windows 可能显示 SmartScreen 警告。当前 `DaguanMathDesktop-Setup.exe` 的 SHA-256：`2139a96a85cf3d5865acb3814ae4241edaa703b0e9ce95f86d327be15816f6ac`。其他发布文件请核对对应 Release 提供的 SHA-256；签名范围与校验方法见[代码签名政策](#代码签名政策)。不要下载 GitHub 自动生成的 `Source code` 压缩包。首次安装建议阅读 [Windows 新手安装与配置教程](docs/Windows新手安装与配置.md)；维护者更换网盘地址请看[百度网盘下载与引导页配置](docs/百度网盘下载与引导页配置.md)。
 
 #### 开发者从源码启动
 
@@ -102,14 +102,14 @@ AI 能力取决于你配置的服务：普通文本模型不能自动获得视�
 4. 启动本地中控台；
 5. 打开 `http://127.0.0.1:8080/`。
 
-维护者可在本机执行下列命令构建独立浏览器容器，用于兼容性测试；该包不是当前公开发布的 Windows 安装版本：
+维护者可在本机执行下列命令构建独立浏览器服务包。普通用户可从上方百度网盘单独下载该 ZIP；它不属于 GitHub 上的桌面版 Release，桌面版仍是推荐安装方式：
 
 ```powershell
 npm run package:windows
 npm run package:windows:release
 ```
 
-生成的 `dist/DaguanMath-windows-x64.exe` 与 `dist/DaguanMath-windows-x64.zip` 仅用于本地测试，不随桌面版 Release 提供。普通 Windows 用户请使用上方的 Electron 桌面版安装器。运行数据统一保存在当前 Windows 用户的 `%LOCALAPPDATA%\DaguanMath\data`，程序升级不会覆盖进度和登录配置。
+生成的 `dist/DaguanMath-windows-x64.exe` 与 `dist/DaguanMath-windows-x64.zip` 不随 Electron 桌面版 GitHub Release 提供。当前网盘 ZIP 使用本地服务包流程构建，不经 SignPath 签名工作流；签名政策仅适用于由 `windows-release.yml` 构建并发布的文件。两种安装方式都将运行数据保存在当前 Windows 用户的 `%LOCALAPPDATA%\DaguanMath\data`。
 
 ### 适用设备
 
@@ -195,6 +195,8 @@ npm run sync:data
 **Free code signing provided by [SignPath.io](https://about.signpath.io), certificate by [SignPath Foundation](https://signpath.org).**
 
 本项目的 Windows 发布包（`DaguanMath-windows-x64.exe` 与内含同一 EXE 的 `DaguanMath-windows-x64.zip`）由 [SignPath Foundation](https://signpath.org) 提供的证书进行免费代码签名。签名只覆盖由本仓库源码、在 GitHub 公开 CI 中构建出来的产物：推送 `v*` tag 后，工作流先构建单文件 EXE，提交给 SignPath 经人工批准签名，再用签名后的 EXE 打包 ZIP、生成 SHA256 并发布。
+
+上述签名仅适用于通过 `windows-release.yml` 工作流构建并发布的文件。通过百度网盘单独提供的浏览器服务 ZIP 是不同的本机打包产物，不在该 SignPath 签名范围内；请按下载指南核对该 ZIP 的 SHA-256。
 
 > 签名范围说明：Electron 桌面版安装器 `DaguanMathDesktop-Setup.exe`（`v1.0.0` 起）由桌面版发布流程单独产出，**目前尚未签名**，仍可能触发 SmartScreen 提示。签名只覆盖上表所述、由 `windows-release.yml` 从本仓库源码构建的产物。
 
