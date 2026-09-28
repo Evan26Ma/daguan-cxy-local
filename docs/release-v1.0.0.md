@@ -1,12 +1,12 @@
 # 大观园数学桌面版 v1.0.0 发布说明
 
-此版本已通过 GitHub Release `v1.0.0` 提供下载。桌面安装器、Squirrel 更新索引 `RELEASES` 和完整 nupkg 已随版本发布，用于桌面版后台更新；浏览器版仍手动更新。
+此版本通过 GitHub Release `v1.0.0` 提供 Windows x64 桌面版。发行资产仅包含桌面安装器及 Squirrel 更新所需的 `RELEASES` 和完整 nupkg，不提供独立浏览器容器。
 
 ## 本地学习
 
-- 默认打开新版学习空间，旧版可切换；桌面版、浏览器版和两套页面共用本机服务及学习记录。
+- 默认打开新版学习空间，旧版可切换；桌面版中的两套学习界面共用本机服务及学习记录。
 - 关闭桌面窗口会缩到系统托盘。完全退出前会提醒连接到共享服务的其他窗口即将断开。
-- 桌面版会在后台检查并下载更新；只有用户确认“重启并安装更新”后才会重启安装。浏览器版保持手动更新。
+- 桌面版会在后台检查并下载更新；只有用户确认“重启并安装更新”后才会重启安装。
 - 学习数据、AI 配置和日志保存在本机；日志不会自动上传。卸载默认保留 `%LOCALAPPDATA%\DaguanMath\data`。
 - 首次迁移旧浏览器备份时，可先预览，再备份和按修改时间合并进度、收藏、批注及学习位置。外观、快捷键和 AI 草稿不会从旧备份自动迁移。
 
@@ -21,8 +21,6 @@
 - `DaguanMathDesktop-Setup.exe` — SHA-256 `2139a96a85cf3d5865acb3814ae4241edaa703b0e9ce95f86d327be15816f6ac`
 - `DaguanMathDesktop-1.0.0-full.nupkg` — SHA-256 `2b76325236409ae28aeaf2bfe4d9704f9797bc3dd1dfcc7e948295fa891ba379`
 - `RELEASES` — Squirrel Windows 更新索引，供桌面版后台更新使用
-- `DaguanMath-windows-x64.zip` — SHA-256 `bd21f9a6f0827cd1679f900cab9ce2efe08b5e77ca5e5b1bbf9a603f42cdc40f`
-- `DaguanMath-windows-x64.exe` — SHA-256 `3ed5c3757037726785d3a3d316fdc53dc85d27b9e952225065342676aeda4003`
 
 每项资产均附有 `.sha256` 校验文件。
 
