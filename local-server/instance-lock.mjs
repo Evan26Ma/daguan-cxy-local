@@ -3,6 +3,7 @@ import path from "node:path";
 import { randomUUID } from "node:crypto";
 
 const LOCK_NAME = ".service-instance.json";
+const RECOVERY_LOCK_NAME = ".service-instance.recovery";
 export const SERVICE_API_PROTOCOL = 1;
 const MALFORMED_LOCK_GRACE_MS = 15_000;
 const OWNER_WAIT_MS = 3_000;
@@ -27,13 +28,45 @@ function sameOwner(left, right) {
 }
 
 async function readOwner(lockPath) {
+  let text;
   try {
-    const text = await fs.readFile(lockPath, "utf8");
-    return { owner: JSON.parse(text), malformed: false };
+    text = await fs.readFile(lockPath, "utf8");
   } catch (error) {
-    if (error?.code === "ENOENT") return { owner: null, malformed: false };
-    return { owner: null, malformed: true };
+    if (error?.code === "ENOENT") return { owner: null, malformed: false, text: null };
+    return { owner: null, malformed: true, text: null };
   }
+  try { return { owner: JSON.parse(text), malformed: false, text }; }
+  catch { return { owner: null, malformed: true, text }; }
+}
+
+async function acquireRecoveryLock(dataDir) {
+  const lockPath = path.join(dataDir, RECOVERY_LOCK_NAME);
+  const token = randomUUID();
+  let handle;
+  try {
+    handle = await fs.open(lockPath, "wx", 0o600);
+    await handle.writeFile(`${JSON.stringify({ pid: process.pid, token })}\n`, "utf8");
+    await handle.sync();
+  } catch (error) {
+    await handle?.close().catch(() => {});
+    if (error?.code === "EEXIST") return null;
+    throw error;
+  }
+
+  let released = false;
+  return {
+    async release() {
+      if (released) return;
+      released = true;
+      await handle.close().catch(() => {});
+      try {
+        const current = JSON.parse(await fs.readFile(lockPath, "utf8"));
+        if (current.token === token && current.pid === process.pid) await fs.rm(lockPath);
+      } catch (error) {
+        if (error?.code !== "ENOENT") throw error;
+      }
+    },
+  };
 }
 
 function validOwner(owner) {
@@ -85,11 +118,12 @@ export async function acquireServiceInstance(dataDir, { host = "127.0.0.1", port
       await handle?.close().catch(() => {});
       if (error?.code !== "EEXIST") throw error;
 
-      const { owner: existing, malformed } = await readOwner(lockPath);
+      const { owner: existing, malformed, text: observedText } = await readOwner(lockPath);
       if (validOwner(existing)) {
         const status = processStatus(existing.pid);
         if (status !== "gone") return { acquired: false, owner: existing };
       }
+      if (observedText === null) continue;
       if (malformed) {
         const stat = await fs.stat(lockPath).catch(() => null);
         if (stat && Date.now() - stat.mtimeMs < MALFORMED_LOCK_GRACE_MS) {
@@ -97,8 +131,33 @@ export async function acquireServiceInstance(dataDir, { host = "127.0.0.1", port
         }
       }
 
-      // Only reclaim an owner whose PID is gone, or a malformed file left behind by a crash.
-      await fs.rm(lockPath, { force: true }).catch(() => {});
+      // Serialize stale-lock removal: another launcher must not remove a newly-created owner.
+      const recoveryLock = await acquireRecoveryLock(resolvedDataDir);
+      if (!recoveryLock) return { acquired: false, owner: null, recovering: true };
+      try {
+        const { owner: current, malformed: currentMalformed, text: currentText } = await readOwner(lockPath);
+        if (currentText === null) continue;
+        if (currentText !== observedText) {
+          if (validOwner(current) && processStatus(current.pid) !== "gone") {
+            return { acquired: false, owner: current };
+          }
+          continue;
+        }
+        if (validOwner(current) && processStatus(current.pid) !== "gone") {
+          return { acquired: false, owner: current };
+        }
+        if (currentMalformed) {
+          const stat = await fs.stat(lockPath).catch(() => null);
+          if (stat && Date.now() - stat.mtimeMs < MALFORMED_LOCK_GRACE_MS) {
+            return { acquired: false, owner: null, recovering: true };
+          }
+        }
+        const { text: finalText } = await readOwner(lockPath);
+        if (finalText !== currentText) continue;
+        await fs.rm(lockPath);
+      } finally {
+        await recoveryLock.release();
+      }
       continue;
     }
 

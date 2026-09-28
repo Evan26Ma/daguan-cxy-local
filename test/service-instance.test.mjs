@@ -261,6 +261,56 @@ test("stale owner is recoverable only for a definitively missing PID and unchang
   assert.equal(await isServiceOwnerProcessGone(dataDir, liveOwner), false);
 });
 
+test("concurrent launchers serialize recovery of one stale owner without deleting the winner", async () => {
+  const dataDir = await tempDataDir();
+  const lockPath = path.join(dataDir, ".service-instance.json");
+  const staleProcess = spawn(process.execPath, ["-e", "setInterval(() => {}, 1000)"]);
+  await once(staleProcess, "spawn");
+  const staleOwner = {
+    version: 1,
+    apiProtocol: 1,
+    pid: staleProcess.pid,
+    host: "127.0.0.1",
+    port: 8188,
+    instanceId: "concurrent-stale-owner-test",
+    startedAt: new Date().toISOString(),
+    dataDir,
+  };
+  await fs.writeFile(lockPath, `${JSON.stringify(staleOwner)}\n`, "utf8");
+  staleProcess.kill();
+  await once(staleProcess, "exit");
+
+  const launchers = await Promise.all(["browser", "desktop", "browser"].map(async (kind) => {
+    const child = startServer(dataDir, await unusedPort(), kind);
+    await once(child, "spawn");
+    return child;
+  }));
+  const launcherPids = new Set(launchers.map((child) => child.pid));
+  const deadline = Date.now() + 10_000;
+  let currentOwner;
+  while (Date.now() < deadline) {
+    currentOwner = JSON.parse(await fs.readFile(lockPath, "utf8"));
+    if (launcherPids.has(currentOwner.pid)) break;
+    await new Promise((resolve) => setTimeout(resolve, 25));
+  }
+  assert.ok(currentOwner && launcherPids.has(currentOwner.pid), "one new launcher must atomically claim the stale lease");
+  const winner = launchers.find((child) => child.pid === currentOwner.pid);
+  const health = await waitReady(winner, currentOwner.port);
+  assert.equal(health.instanceId, currentOwner.instanceId);
+
+  const losers = launchers.filter((child) => child !== winner);
+  const loserResults = await Promise.all(losers.map((child) => waitClosed(child, 8000)));
+  for (const result of loserResults) {
+    assert.equal(result.code, 0, result.output);
+    assert.match(result.output, /SERVICE_INSTANCE_REUSED/);
+  }
+  const finalOwner = JSON.parse(await fs.readFile(lockPath, "utf8"));
+  assert.equal(finalOwner.pid, winner.pid);
+  assert.equal(finalOwner.instanceId, health.instanceId);
+  assert.equal((await fetch(`http://127.0.0.1:${finalOwner.port}/api/health`).then((response) => response.json())).instanceId, health.instanceId);
+  await stop(winner);
+});
+
 test("服务退出释放实例锁；进程崩溃后重启恢复同一份记录", async () => {
   const dataDir = await tempDataDir();
   const lockPath = path.join(dataDir, ".service-instance.json");
