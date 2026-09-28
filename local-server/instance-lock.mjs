@@ -7,14 +7,23 @@ export const SERVICE_API_PROTOCOL = 1;
 const MALFORMED_LOCK_GRACE_MS = 15_000;
 const OWNER_WAIT_MS = 3_000;
 
-function processExists(pid) {
-  if (!Number.isInteger(Number(pid)) || Number(pid) <= 0) return false;
+function processStatus(pid) {
+  if (!Number.isInteger(Number(pid)) || Number(pid) <= 0) return "unknown";
   try {
     process.kill(Number(pid), 0);
-    return true;
+    return "alive";
   } catch (error) {
-    return error?.code === "EPERM";
+    if (error?.code === "ESRCH") return "gone";
+    if (error?.code === "EPERM") return "alive";
+    return "unknown";
   }
+}
+
+function sameOwner(left, right) {
+  return validOwner(left) && validOwner(right) && left.version === right.version &&
+    left.apiProtocol === right.apiProtocol && left.pid === right.pid &&
+    left.instanceId === right.instanceId && left.startedAt === right.startedAt &&
+    left.host === right.host && left.port === right.port && left.dataDir === right.dataDir;
 }
 
 async function readOwner(lockPath) {
@@ -37,6 +46,17 @@ export async function readServiceOwner(dataDir) {
   const lockPath = path.join(path.resolve(dataDir), LOCK_NAME);
   const { owner } = await readOwner(lockPath);
   return validOwner(owner) ? owner : null;
+}
+
+export async function isServiceOwnerProcessGone(dataDir, expectedOwner) {
+  if (!validOwner(expectedOwner)) return false;
+  const lockPath = path.join(path.resolve(dataDir), LOCK_NAME);
+  const { owner: current } = await readOwner(lockPath);
+  if (!sameOwner(current, expectedOwner) || processStatus(current.pid) !== "gone") return false;
+
+  // Do not authorize recovery if another launcher replaced the lease during the PID check.
+  const { owner: confirmed } = await readOwner(lockPath);
+  return sameOwner(confirmed, expectedOwner);
 }
 
 export async function acquireServiceInstance(dataDir, { host = "127.0.0.1", port = 8080 } = {}) {
@@ -66,8 +86,9 @@ export async function acquireServiceInstance(dataDir, { host = "127.0.0.1", port
       if (error?.code !== "EEXIST") throw error;
 
       const { owner: existing, malformed } = await readOwner(lockPath);
-      if (validOwner(existing) && processExists(existing.pid)) {
-        return { acquired: false, owner: existing };
+      if (validOwner(existing)) {
+        const status = processStatus(existing.pid);
+        if (status !== "gone") return { acquired: false, owner: existing };
       }
       if (malformed) {
         const stat = await fs.stat(lockPath).catch(() => null);

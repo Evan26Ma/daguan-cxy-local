@@ -51,6 +51,9 @@ test("Electron entry registers the stable scheme before readiness and keeps brow
   assert.match(source, /windowPreferences\(PRELOAD\)/);
   assert.match(source, /setWindowOpenHandler/);
   assert.match(source, /will-navigate/);
+  assert.match(source, /waitForServiceOwner\(existing\)/);
+  assert.match(source, /isServiceOwnerProcessGone\(dataDir, existing\)/);
+  assert.match(source, /if \(!\(await lock\.isServiceOwnerProcessGone/);
 });
 
 test("Windows app packaging excludes Android sources and archived UI prototypes", () => {

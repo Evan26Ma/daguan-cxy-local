@@ -40,7 +40,9 @@ async function connectOrStartService() {
   const existing = await lock.readServiceOwner(dataDir);
   if (existing) {
     if (await lock.waitForServiceOwner(existing)) { owner = existing; ownsService = false; return; }
-    throw new Error("发现服务实例 PID " + existing.pid + "、端口 " + existing.port + "，但健康检查失败。为保护学习数据，桌面版不会再启动第二个写入进程。请检查该 PID 和端口；确认没有服务后，检查并清理 " + path.join(dataDir, ".service-instance.json") + "。切勿在服务进程仍运行时删除锁。");
+    if (!(await lock.isServiceOwnerProcessGone(dataDir, existing))) {
+      throw new Error("发现服务实例 PID " + existing.pid + "、端口 " + existing.port + "，但健康检查失败，且无法确认该 PID 已退出或锁内容未变化。为保护学习数据，桌面版不会启动第二个写入进程。请检查该 PID 和端口；确认没有 Daguan 服务进程使用此目录后再重试。切勿在服务进程仍运行时删除锁。");
+    }
   }
   const port = await freeLoopbackPort();
   serverChild = spawn(process.execPath, [SERVER_SCRIPT], {
