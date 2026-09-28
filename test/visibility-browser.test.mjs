@@ -216,6 +216,8 @@ test("双浏览器页：后台错过收藏 SSE 后，回到前台读取并显示
   assert.equal(reconnectEvidence.pageAErrorActive, true);
   assert.equal(reconnectEvidence.pageBErrorActive, true);
 
+  await context.close();
+  context = null;
   const closePromise = once(service, "close");
   service.send({ type: "shutdown" });
   await closePromise;

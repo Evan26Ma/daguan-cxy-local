@@ -12,7 +12,7 @@ const files = [
   "web/legacy.html",
 ];
 
-test("普通用户入口指向独立的百度网盘分享，桌面版和网页包保持分开", () => {
+test("普通用户入口只推荐桌面版，浏览器迁移包仅在归档说明中保留", () => {
   for (const file of files) {
     const source = fs.readFileSync(new URL(`../${file}`, import.meta.url), "utf8");
     assert.doesNotMatch(source, /releases\/latest\/download\//, file);
@@ -24,9 +24,11 @@ test("普通用户入口指向独立的百度网盘分享，桌面版和网页�
   }
   for (const file of ["README.md", "docs/Windows新手安装与配置.md", "docs/使用教程.md", "web/landing.html"]) {
     const source = fs.readFileSync(new URL(`../${file}`, import.meta.url), "utf8");
-    assert.match(source, /surl=VJwUxgElbURfw7Aj4Gpy4Q/, `${file}: web package link`);
-    assert.match(source, /wweb/, `${file}: web package code`);
+    assert.doesNotMatch(source, /surl=VJwUxgElbURfw7Aj4Gpy4Q/, `${file}: no web package download`);
   }
+  const archive = fs.readFileSync(new URL("../docs/百度网盘下载与引导页配置.md", import.meta.url), "utf8");
+  assert.match(archive, /surl=VJwUxgElbURfw7Aj4Gpy4Q/);
+  assert.match(archive, /停止维护/);
 });
 
 test("落地页指向 main 上的网盘下载与配置指南", () => {

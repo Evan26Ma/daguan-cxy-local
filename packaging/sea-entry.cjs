@@ -157,6 +157,7 @@ async function main() {
   process.env.DAGUAN_DATA_DIR = dataDir;
   process.env.DAGUAN_OPEN_BROWSER = "1";
   process.env.DAGUAN_BROWSER_PACKAGE = "1";
+  process.env.DAGUAN_LAUNCHER_KIND = "browser";
   process.env.DAGUAN_DEFAULT_PAGE = "/index.html";
   await import(pathToFileURL(path.join(appDir, "local-server", "server.mjs")).href);
 }

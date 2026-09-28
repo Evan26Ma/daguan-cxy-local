@@ -104,9 +104,9 @@ test("首屏不阻塞加载题库索引", () => {
 
 test("Service Worker 不预缓存首屏之外的大型索引和字体", () => {
   const sw = fs.readFileSync(new URL("../web/service-worker.js", import.meta.url), "utf8");
-  assert.match(sw, /daguan-shell-v117/);
-  assert.match(app, /service-worker\.js\?v=117/);
-  assert.match(newApp, /service-worker\.js\?v=117/);
+  assert.match(sw, /daguan-shell-v118/);
+  assert.match(app, /service-worker\.js\?v=118/);
+  assert.match(newApp, /service-worker\.js\?v=118/);
   assert.match(sw, /"\.\/legacy\.html"/);
   assert.match(sw, /"\.\/legacy\.css\?v=89"/);
   assert.match(sw, /"\.\/app-legacy\.js\?v=91"/);

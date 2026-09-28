@@ -347,7 +347,7 @@ async function route(req, res) {
     setImmediate(() => requestGracefulShutdown());
     return;
   }
-  if (pathname === "/api/health" && method === "GET") return json(res, 200, { ok: true, service: "daguan-local-console", apiProtocol: SERVICE_API_PROTOCOL, instanceId: serviceInstance?.instanceId || null, pid: process.pid, port: PORT, time: nowIso() });
+  if (pathname === "/api/health" && method === "GET") return json(res, 200, { ok: true, service: "daguan-local-console", apiProtocol: SERVICE_API_PROTOCOL, instanceId: serviceInstance?.instanceId || null, launcherKind: serviceInstance?.launcherKind || null, pid: process.pid, port: PORT, time: nowIso() });
   if (pathname === "/api/access/status" && method === "GET") {
     const unlocked = !PREVIEW_MODE || hasPreviewAccess(req);
     if (PREVIEW_MODE && unlocked) setPreviewCookie(res);
@@ -642,6 +642,7 @@ if (!lease?.acquired) {
   requestGracefulShutdown = shutdown;
   process.on("SIGINT", shutdown);
   process.on("SIGTERM", shutdown);
+  process.on("disconnect", shutdown);
   process.on("message", (message) => {
     if (message?.type === "shutdown") void shutdown();
   });

@@ -7,6 +7,7 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
+import { classifyServiceOwner, stopBrowserService } from "../desktop/service-handoff.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const running = new Set();
@@ -141,6 +142,95 @@ for (const [first, second] of [["browser", "desktop"], ["desktop", "browser"]]) 
     assert.notEqual(firstPort, secondPort);
   });
 }
+
+test("桌面版优雅接管浏览器服务，原端口和学习记录保持可用", async () => {
+  const dataDir = await tempDataDir();
+  const port = await unusedPort();
+  const browser = startServer(dataDir, port, "browser");
+  const browserHealth = await waitReady(browser, port);
+  const oldOwner = JSON.parse(await fs.readFile(path.join(dataDir, ".service-instance.json"), "utf8"));
+  assert.equal(oldOwner.launcherKind, "browser");
+  assert.equal(browserHealth.launcherKind, "browser");
+  assert.equal(await classifyServiceOwner(oldOwner, browserHealth), "browser");
+  const saved = await jsonRequest(port, "/api/state/questions/31006", {
+    method: "PATCH", revision: 0, body: { mastery: "learning", favorite: true },
+  });
+  assert.equal(saved.status, 200);
+
+  await stopBrowserService(oldOwner, dataDir);
+  assert.equal((await waitClosed(browser)).code, 0);
+  assert.equal(await fs.access(path.join(dataDir, ".service-instance.json")).then(() => true, () => false), false);
+  const desktop = startServer(dataDir, port, "desktop");
+  const desktopHealth = await waitReady(desktop, port);
+  assert.equal(desktopHealth.launcherKind, "desktop");
+  assert.notEqual(desktopHealth.instanceId, browserHealth.instanceId);
+  assert.equal((await jsonRequest(port, "/api/state")).value.progress["31006"].favorite, true);
+});
+
+test("旧浏览器进程只有身份与 Windows 映像都匹配时才可识别", async () => {
+  const owner = { pid: 123, port: 8080, instanceId: "legacy", apiProtocol: 1 };
+  const health = { service: "daguan-local-console", pid: 123, instanceId: "legacy", apiProtocol: 1 };
+  assert.equal(await classifyServiceOwner(owner, health, { processImage: async () => "C:\\Apps\\DaguanMath-windows-x64.exe" }), "browser");
+  assert.equal(await classifyServiceOwner(owner, health, { processImage: async () => "C:\\Apps\\DaguanMath.exe" }), "desktop");
+  assert.equal(await classifyServiceOwner(owner, { ...health, instanceId: "different" }, { processImage: async () => "C:\\Apps\\DaguanMath-windows-x64.exe" }), "unverified");
+  assert.equal(await classifyServiceOwner(owner, health, { processImage: async () => null }), "unknown");
+});
+
+test("交接前实例锁发生变化时不会向旧端口发送停止请求", async () => {
+  const owner = { pid: process.pid, port: 8080, instanceId: "before", apiProtocol: 1 };
+  let requests = 0;
+  await assert.rejects(stopBrowserService(owner, "C:\\unused", {
+    readOwner: async () => ({ ...owner, instanceId: "after" }),
+    fetchImpl: async () => { requests += 1; throw new Error("unexpected request"); },
+  }), /实例锁已变化/);
+  assert.equal(requests, 0);
+});
+
+test("死 PID 旧锁经确认后恢复，桌面服务沿用旧端口", async () => {
+  const dataDir = await tempDataDir();
+  const port = await unusedPort();
+  const deadPid = 2147483647;
+  const oldLock = { version: 1, apiProtocol: 1, pid: deadPid, host: "127.0.0.1", port,
+    instanceId: "dead-owner", startedAt: new Date().toISOString(), dataDir };
+  await fs.writeFile(path.join(dataDir, ".service-instance.json"), `${JSON.stringify(oldLock)}\n`);
+  const desktop = startServer(dataDir, port, "desktop");
+  const health = await waitReady(desktop, port);
+  assert.equal(health.launcherKind, "desktop");
+  const current = JSON.parse(await fs.readFile(path.join(dataDir, ".service-instance.json"), "utf8"));
+  assert.equal(current.pid, desktop.pid);
+  assert.notEqual(current.instanceId, oldLock.instanceId);
+});
+
+test("健康身份不符与停止超时都保留旧锁", async () => {
+  const dataDir = await tempDataDir();
+  const port = await unusedPort();
+  const browser = startServer(dataDir, port, "browser");
+  await waitReady(browser, port);
+  const lockPath = path.join(dataDir, ".service-instance.json");
+  const owner = JSON.parse(await fs.readFile(lockPath, "utf8"));
+  let stopRequests = 0;
+  await assert.rejects(stopBrowserService(owner, dataDir, {
+    fetchImpl: async (url, options) => {
+      if (url.endsWith("/api/runtime/stop")) stopRequests += 1;
+      return { ok: true, json: async () => ({ service: "other", pid: owner.pid, instanceId: owner.instanceId }) };
+    },
+  }), /健康检查未确认身份/);
+  assert.equal(stopRequests, 0);
+  assert.deepEqual(JSON.parse(await fs.readFile(lockPath, "utf8")), owner);
+  await assert.rejects(stopBrowserService(owner, dataDir, {
+    timeoutMs: 150,
+    processStatus: () => "alive",
+    fetchImpl: async (url, options) => {
+      if (url.endsWith("/api/runtime/stop")) {
+        stopRequests += 1;
+        return { ok: true, json: async () => ({ ok: true }) };
+      }
+      return fetch(url, options);
+    },
+  }), /期限内退出/);
+  assert.equal(stopRequests, 1);
+  assert.deepEqual(JSON.parse(await fs.readFile(lockPath, "utf8")), owner);
+});
 
 test("同目录竞争启动只允许一个写入者，其他启动方发现并复用服务", async () => {
   const dataDir = await tempDataDir();
