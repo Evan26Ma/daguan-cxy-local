@@ -104,14 +104,14 @@ test("首屏不阻塞加载题库索引", () => {
 
 test("Service Worker 不预缓存首屏之外的大型索引和字体", () => {
   const sw = fs.readFileSync(new URL("../web/service-worker.js", import.meta.url), "utf8");
-  assert.match(sw, /daguan-shell-v120/);
-  assert.match(app, /service-worker\.js\?v=120/);
-  assert.match(newApp, /service-worker\.js\?v=120/);
+  assert.match(sw, /daguan-shell-v121/);
+  assert.match(app, /service-worker\.js\?v=121/);
+  assert.match(newApp, /service-worker\.js\?v=121/);
   assert.match(sw, /"\.\/legacy\.html"/);
   assert.match(sw, /"\.\/legacy\.css\?v=89"/);
-  assert.match(sw, /"\.\/app-legacy\.js\?v=91"/);
+  assert.match(sw, /"\.\/app-legacy\.js\?v=92"/);
   assert.match(sw, /"\.\/styles-new\.css\?v=110"/);
-  assert.match(sw, /"\.\/app-new\.js\?v=113"/);
+  assert.match(sw, /"\.\/app-new\.js\?v=114"/);
   assert.match(sw, /"\.\/assets\/math-mark\.svg"/);
   assert.match(sw, /"\.\/assets\/landing\/local-mark\.png"/);
   assert.doesNotMatch(sw, /data\/(category_questions|id_index|search_index)\.json/);
@@ -133,7 +133,7 @@ test("新版入口承载新版前端并与旧版共享版本选择", () => {
   assert.match(newHtml, /styles-new\.css\?v=110/);
   assert.match(newHtml, /ui-version\.js\?v=106/);
   assert.match(newHtml, /ui-bootstrap\.js\?v=1/);
-  assert.match(newHtml, /app-new\.js\?v=113/);
+  assert.match(newHtml, /app-new\.js\?v=114/);
   assert.match(uiBootstrap, /DaguanVersions\.selected\(localStorage\)/);
   assert.match(newHtml, /dlg-preview-access/);
   assert.match(newHtml, /preview-banner/);
@@ -148,9 +148,9 @@ test("新版入口承载新版前端并与旧版共享版本选择", () => {
 test("讲解视频映射覆盖两位新老师且只保留前端需要的字段", () => {
   const entries = Object.values(lectureVideos.questions).flat();
   const teachers = new Set(entries.map((entry) => entry.teacher));
-  assert.equal(entries.length, 1026);
+  assert.equal(entries.length, 1373);
   assert.deepEqual([...teachers].sort(), ["李艳芳", "没咋了"].sort());
-  assert.equal(Object.keys(lectureVideos.questions).length, 776);
+  assert.equal(Object.keys(lectureVideos.questions).length, 1083);
   for (const [id, videos] of Object.entries(lectureVideos.questions)) {
     assert.ok(Object.hasOwn(questionIdIndex, id), `unknown question ID ${id}`);
     assert.ok(Array.isArray(videos) && videos.length > 0);
@@ -189,7 +189,7 @@ test("界面版本：旧大观承载完整旧版前端", () => {
   const legacyApp = fs.readFileSync(new URL("../web/app-legacy.js", import.meta.url), "utf8");
   assert.match(legacyHtml, /<title>大观园 · 本地刷题<\/title>/);
   assert.match(legacyHtml, /legacy\.css\?v=89/);
-  assert.match(legacyHtml, /app-legacy\.js\?v=91/);
+  assert.match(legacyHtml, /app-legacy\.js\?v=92/);
   assert.match(legacyHtml, /legacy-version-toggle/);
   assert.match(legacyCss, /--color-brand:\s*#1e4a5c|hero-copy/);
   assert.doesNotMatch(legacyHtml, /styles\.css\?v=/);

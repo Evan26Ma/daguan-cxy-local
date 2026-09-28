@@ -31,9 +31,52 @@
       "teacher": "没咋了",
       "bvid": "BV1kGLG62Eem",
       "title": "没咋了 2027 李林880 数三"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV1vJ411P73N",
+      "title": "李艳芳2009数一真题逐题精讲"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV1BJ411w7d8",
+      "title": "李艳芳2009数二真题逐题精讲"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV1rE411o7xx",
+      "title": "李艳芳2009数三真题逐题精讲"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV1nZ4y157UF",
+      "title": "李艳芳1997数一真题逐题精讲"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV1qz4y1Z7nW",
+      "title": "李艳芳1997数二真题逐题精讲"
+    },
+    {
+      "teacher": "李艳芳",
+      "bvid": "BV1qR4y1M7DN",
+      "title": "李艳芳1987-1996数二真题分类精讲"
     }
   ],
   "questions": {
+    "152": [
+      {
+        "questionId": "152",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1997数一真题逐题精讲",
+        "bvid": "BV1nZ4y157UF",
+        "page": 3,
+        "startSeconds": 1848,
+        "title": "1997数一 解答大题八",
+        "subject": "数学一",
+        "year": 1997
+      }
+    ],
     "157": [
       {
         "questionId": "157",
@@ -104,6 +147,19 @@
         "startSeconds": 440.2,
         "title": "B 相似于指定两个 2×2 秩一块对角矩阵，比较 r(B),r(B−E),r(B−2E)；440.2s 起分析矩阵性质。",
         "subject": "数学三"
+      }
+    ],
+    "206": [
+      {
+        "questionId": "206",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1997数二真题逐题精讲",
+        "bvid": "BV1qz4y1Z7nW",
+        "page": 1,
+        "startSeconds": 1715.8,
+        "title": "1997数二 第5题（填空5）",
+        "subject": "数学二",
+        "year": 1997
       }
     ],
     "219": [
@@ -197,6 +253,30 @@
         "subject": "数学三"
       }
     ],
+    "248": [
+      {
+        "questionId": "248",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数二真题逐题精讲",
+        "bvid": "BV1BJ411w7d8",
+        "page": 1,
+        "startSeconds": 3650,
+        "title": "2009数二三 选择（Q^TAQ）",
+        "subject": "数学二",
+        "year": 2009
+      },
+      {
+        "questionId": "248",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数三真题逐题精讲",
+        "bvid": "BV1rE411o7xx",
+        "page": 1,
+        "startSeconds": 2109,
+        "title": "2009数二三 选择（PᵀAP与QᵀAQ）",
+        "subject": "数学三",
+        "year": 2009
+      }
+    ],
     "249": [
       {
         "questionId": "249",
@@ -269,6 +349,41 @@
         "year": 2021
       }
     ],
+    "262": [
+      {
+        "questionId": "262",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数二真题逐题精讲",
+        "bvid": "BV1BJ411w7d8",
+        "page": 1,
+        "startSeconds": 2995,
+        "title": "2009数一二三 选择（分块矩阵伴随）",
+        "subject": "数学二",
+        "year": 2009
+      },
+      {
+        "questionId": "262",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数三真题逐题精讲",
+        "bvid": "BV1rE411o7xx",
+        "page": 1,
+        "startSeconds": 1590,
+        "title": "2009数一二三 选择（分块矩阵伴随）",
+        "subject": "数学三",
+        "year": 2009
+      },
+      {
+        "questionId": "262",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数一真题逐题精讲",
+        "bvid": "BV1vJ411P73N",
+        "page": 1,
+        "startSeconds": 2938,
+        "title": "2009数一 第6题",
+        "subject": "数学一",
+        "year": 2009
+      }
+    ],
     "263": [
       {
         "questionId": "263",
@@ -337,6 +452,19 @@
         "title": "2021 数一 第7题",
         "subject": "数学一",
         "year": 2021
+      }
+    ],
+    "282": [
+      {
+        "questionId": "282",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1997数一真题逐题精讲",
+        "bvid": "BV1nZ4y157UF",
+        "page": 1,
+        "startSeconds": 1226,
+        "title": "1997数一 填空第4题",
+        "subject": "数学一",
+        "year": 1997
       }
     ],
     "297": [
@@ -671,6 +799,54 @@
         "subject": "数学三"
       }
     ],
+    "499": [
+      {
+        "questionId": "499",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1997数二真题逐题精讲",
+        "bvid": "BV1qz4y1Z7nW",
+        "page": 2,
+        "startSeconds": 2196,
+        "title": "1997数二 第17题（解答7 λ线性方程组）",
+        "subject": "数学二",
+        "year": 1997
+      }
+    ],
+    "504": [
+      {
+        "questionId": "504",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数二真题逐题精讲",
+        "bvid": "BV1BJ411w7d8",
+        "page": 2,
+        "startSeconds": 5972,
+        "title": "2009数一二三 解答（Aξ2=ξ1, A²ξ3=ξ1）",
+        "subject": "数学二",
+        "year": 2009
+      },
+      {
+        "questionId": "504",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数三真题逐题精讲",
+        "bvid": "BV1rE411o7xx",
+        "page": 2,
+        "startSeconds": 3731,
+        "title": "2009数一二三 解答（Aξ2=ξ1，A²ξ3=ξ1）",
+        "subject": "数学三",
+        "year": 2009
+      },
+      {
+        "questionId": "504",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数一真题逐题精讲",
+        "bvid": "BV1vJ411P73N",
+        "page": 2,
+        "startSeconds": 4778,
+        "title": "2009数一 第20题",
+        "subject": "数学一",
+        "year": 2009
+      }
+    ],
     "505": [
       {
         "questionId": "505",
@@ -811,6 +987,19 @@
         "subject": "数学三"
       }
     ],
+    "588": [
+      {
+        "questionId": "588",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1997数二真题逐题精讲",
+        "bvid": "BV1qz4y1Z7nW",
+        "page": 2,
+        "startSeconds": 1817,
+        "title": "1997数二 第16题（解答6 矩阵方程）",
+        "subject": "数学二",
+        "year": 1997
+      }
+    ],
     "596": [
       {
         "questionId": "596",
@@ -881,6 +1070,32 @@
         "title": "2018 数一 第21题",
         "subject": "数学一",
         "year": 2018
+      }
+    ],
+    "672": [
+      {
+        "questionId": "672",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数二真题逐题精讲",
+        "bvid": "BV1BJ411w7d8",
+        "page": 1,
+        "startSeconds": 5202,
+        "title": "2009数二 填空（αβᵀ相似求βᵀα）",
+        "subject": "数学二",
+        "year": 2009
+      }
+    ],
+    "674": [
+      {
+        "questionId": "674",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数三真题逐题精讲",
+        "bvid": "BV1rE411o7xx",
+        "page": 1,
+        "startSeconds": 4377,
+        "title": "2009数三 填空（αβᵀ相似求k）",
+        "subject": "数学三",
+        "year": 2009
       }
     ],
     "678": [
@@ -1150,6 +1365,19 @@
         "title": "2020 数二 第8题",
         "subject": "数学二",
         "year": 2020
+      }
+    ],
+    "719": [
+      {
+        "questionId": "719",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1997数一真题逐题精讲",
+        "bvid": "BV1nZ4y157UF",
+        "page": 3,
+        "startSeconds": 1312,
+        "title": "1997数一 解答大题七 第2小题",
+        "subject": "数学一",
+        "year": 1997
       }
     ],
     "720": [
@@ -1507,6 +1735,41 @@
         "subject": "数学一"
       }
     ],
+    "825": [
+      {
+        "questionId": "825",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数二真题逐题精讲",
+        "bvid": "BV1BJ411w7d8",
+        "page": 2,
+        "startSeconds": 6547,
+        "title": "2009数一二三 解答（二次型特征值与规范形）",
+        "subject": "数学二",
+        "year": 2009
+      },
+      {
+        "questionId": "825",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数三真题逐题精讲",
+        "bvid": "BV1rE411o7xx",
+        "page": 2,
+        "startSeconds": 4307,
+        "title": "2009数一二三 解答（二次型特征值与规范形）",
+        "subject": "数学三",
+        "year": 2009
+      },
+      {
+        "questionId": "825",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数一真题逐题精讲",
+        "bvid": "BV1vJ411P73N",
+        "page": 2,
+        "startSeconds": 5571,
+        "title": "2009数一 第21题",
+        "subject": "数学一",
+        "year": 2009
+      }
+    ],
     "830": [
       {
         "questionId": "830",
@@ -1699,6 +1962,32 @@
         "subject": "数学一"
       }
     ],
+    "933": [
+      {
+        "questionId": "933",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1997数一真题逐题精讲",
+        "bvid": "BV1nZ4y157UF",
+        "page": 3,
+        "startSeconds": 733,
+        "title": "1997数一 解答大题七 第1小题",
+        "subject": "数学一",
+        "year": 1997
+      }
+    ],
+    "934": [
+      {
+        "questionId": "934",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1997数一真题逐题精讲",
+        "bvid": "BV1nZ4y157UF",
+        "page": 2,
+        "startSeconds": 79,
+        "title": "1997数一 选择第4题",
+        "subject": "数学一",
+        "year": 1997
+      }
+    ],
     "938": [
       {
         "questionId": "938",
@@ -1710,6 +1999,19 @@
         "title": "2020 数一 第6题",
         "subject": "数学一",
         "year": 2020
+      }
+    ],
+    "944": [
+      {
+        "questionId": "944",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数一真题逐题精讲",
+        "bvid": "BV1vJ411P73N",
+        "page": 1,
+        "startSeconds": 2578,
+        "title": "2009数一 第5题",
+        "subject": "数学一",
+        "year": 2009
       }
     ],
     "945": [
@@ -1736,6 +2038,43 @@
         "title": "2011 数一 第13题",
         "subject": "数学一",
         "year": 2011
+      }
+    ],
+    "982": [
+      {
+        "questionId": "982",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1997数二真题逐题精讲",
+        "bvid": "BV1qz4y1Z7nW",
+        "page": 1,
+        "startSeconds": 735.6,
+        "title": "1997数二 第3题（填空3）",
+        "subject": "数学二",
+        "year": 1997
+      }
+    ],
+    "983": [
+      {
+        "questionId": "983",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数二真题逐题精讲",
+        "bvid": "BV1BJ411w7d8",
+        "page": 2,
+        "startSeconds": 459,
+        "title": "2009数二三 解答（不定积分）",
+        "subject": "数学二",
+        "year": 2009
+      },
+      {
+        "questionId": "983",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数三真题逐题精讲",
+        "bvid": "BV1rE411o7xx",
+        "page": 2,
+        "startSeconds": 286,
+        "title": "2009数二三 解答（根式不定积分）",
+        "subject": "数学三",
+        "year": 2009
       }
     ],
     "984": [
@@ -1775,6 +2114,32 @@
         "year": 2018
       }
     ],
+    "1000": [
+      {
+        "questionId": "1000",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 22,
+        "startSeconds": 489,
+        "title": "1987数二 第1题",
+        "subject": "数学二",
+        "year": 1987
+      }
+    ],
+    "1003": [
+      {
+        "questionId": "1003",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 23,
+        "startSeconds": 1820,
+        "title": "1994数一二 第2题",
+        "subject": "数学二",
+        "year": 1994
+      }
+    ],
     "1020": [
       {
         "questionId": "1020",
@@ -1786,6 +2151,32 @@
         "title": "2019 数二 第16题",
         "subject": "数学二",
         "year": 2019
+      }
+    ],
+    "1034": [
+      {
+        "questionId": "1034",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 23,
+        "startSeconds": 1146,
+        "title": "1996数二 第1题",
+        "subject": "数学二",
+        "year": 1996
+      }
+    ],
+    "1053": [
+      {
+        "questionId": "1053",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 22,
+        "startSeconds": 1053,
+        "title": "1992数二 第4题",
+        "subject": "数学二",
+        "year": 1992
       }
     ],
     "1059": [
@@ -1810,6 +2201,84 @@
         "title": "2016 数二 第2题",
         "subject": "数学二",
         "year": 2016
+      }
+    ],
+    "1153": [
+      {
+        "questionId": "1153",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 25,
+        "startSeconds": 999,
+        "title": "1993数二 定积分计算题",
+        "subject": "数学二",
+        "year": 1993
+      }
+    ],
+    "1157": [
+      {
+        "questionId": "1157",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 24,
+        "startSeconds": 666,
+        "title": "1987数二 第3题",
+        "subject": "数学二",
+        "year": 1987
+      }
+    ],
+    "1159": [
+      {
+        "questionId": "1159",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 24,
+        "startSeconds": 2188,
+        "title": "1994数二 第10题",
+        "subject": "数学二",
+        "year": 1994
+      }
+    ],
+    "1283": [
+      {
+        "questionId": "1283",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 26,
+        "startSeconds": 1918,
+        "title": "1992数二 反常积分填空题",
+        "subject": "数学二",
+        "year": 1992
+      }
+    ],
+    "1284": [
+      {
+        "questionId": "1284",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 26,
+        "startSeconds": 2418,
+        "title": "1993数二 第4题",
+        "subject": "数学二",
+        "year": 1993
+      }
+    ],
+    "1285": [
+      {
+        "questionId": "1285",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1997数二真题逐题精讲",
+        "bvid": "BV1qz4y1Z7nW",
+        "page": 1,
+        "startSeconds": 1442.3,
+        "title": "1997数二 第4题（填空4）",
+        "subject": "数学二",
+        "year": 1997
       }
     ],
     "1290": [
@@ -1849,6 +2318,32 @@
         "year": 2014
       }
     ],
+    "1306": [
+      {
+        "questionId": "1306",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 8,
+        "startSeconds": 3612,
+        "title": "1993数二 第1题",
+        "subject": "数学二",
+        "year": 1993
+      }
+    ],
+    "1309": [
+      {
+        "questionId": "1309",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 20,
+        "startSeconds": 1703,
+        "title": "1988数二 第4题",
+        "subject": "数学二",
+        "year": 1988
+      }
+    ],
     "1311": [
       {
         "questionId": "1311",
@@ -1873,6 +2368,19 @@
         "year": 2015
       }
     ],
+    "1312": [
+      {
+        "questionId": "1312",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 7,
+        "startSeconds": 1687,
+        "title": "1988数一二 第1题",
+        "subject": "数学二",
+        "year": 1988
+      }
+    ],
     "1340": [
       {
         "questionId": "1340",
@@ -1885,6 +2393,19 @@
         "subject": "数学三"
       }
     ],
+    "1355": [
+      {
+        "questionId": "1355",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 7,
+        "startSeconds": 1841,
+        "title": "1989数二 第3题",
+        "subject": "数学二",
+        "year": 1989
+      }
+    ],
     "1357": [
       {
         "questionId": "1357",
@@ -1895,6 +2416,45 @@
         "startSeconds": 0,
         "title": "—",
         "subject": "数学一"
+      }
+    ],
+    "1359": [
+      {
+        "questionId": "1359",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 19,
+        "startSeconds": 1108,
+        "title": "1996数二 第1题",
+        "subject": "数学二",
+        "year": 1996
+      }
+    ],
+    "1360": [
+      {
+        "questionId": "1360",
+        "teacher": "李艳芳",
+        "seriesTitle": "拉格朗日中值定理的应用-2002年数一数二选择题",
+        "bvid": "BV16t4y1q7Xi",
+        "page": 1,
+        "startSeconds": 18,
+        "title": "2002数一二 选择题（有界可导函数的导数极限）",
+        "subject": "数学一",
+        "year": 2002
+      }
+    ],
+    "1386": [
+      {
+        "questionId": "1386",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 8,
+        "startSeconds": 684,
+        "title": "1995数一二 第2题",
+        "subject": "数学二",
+        "year": 1995
       }
     ],
     "1395": [
@@ -1940,6 +2500,32 @@
         "startSeconds": 614.65,
         "title": "—",
         "subject": "数学一"
+      }
+    ],
+    "1399": [
+      {
+        "questionId": "1399",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 8,
+        "startSeconds": 32,
+        "title": "1993数二 第1题",
+        "subject": "数学二",
+        "year": 1993
+      }
+    ],
+    "1402": [
+      {
+        "questionId": "1402",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 8,
+        "startSeconds": 339,
+        "title": "1994数二 第4题",
+        "subject": "数学二",
+        "year": 1994
       }
     ],
     "1405": [
@@ -2012,6 +2598,30 @@
         "year": 2021
       }
     ],
+    "1423": [
+      {
+        "questionId": "1423",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1997数一真题逐题精讲",
+        "bvid": "BV1nZ4y157UF",
+        "page": 2,
+        "startSeconds": 4978,
+        "title": "1997数一 解答大题五",
+        "subject": "数学一",
+        "year": 1997
+      },
+      {
+        "questionId": "1423",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1997数二真题逐题精讲",
+        "bvid": "BV1qz4y1Z7nW",
+        "page": 3,
+        "startSeconds": 733.9,
+        "title": "1997数二 第20题（第七大题 含参变量积分）",
+        "subject": "数学二",
+        "year": 1997
+      }
+    ],
     "1424": [
       {
         "questionId": "1424",
@@ -2047,6 +2657,32 @@
         "startSeconds": 32.5,
         "title": "P29 880题目精讲",
         "subject": "数学二"
+      }
+    ],
+    "1445": [
+      {
+        "questionId": "1445",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 8,
+        "startSeconds": 1310,
+        "title": "1996数二 第2题",
+        "subject": "数学二",
+        "year": 1996
+      }
+    ],
+    "1448": [
+      {
+        "questionId": "1448",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 9,
+        "startSeconds": 616,
+        "title": "1989数二 第1题",
+        "subject": "数学二",
+        "year": 1989
       }
     ],
     "1451": [
@@ -2104,6 +2740,110 @@
         "startSeconds": 29.9,
         "title": "P27 880题目精讲",
         "subject": "数学二"
+      }
+    ],
+    "1458": [
+      {
+        "questionId": "1458",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 9,
+        "startSeconds": 1065,
+        "title": "1987数二 第1题",
+        "subject": "数学二",
+        "year": 1987
+      }
+    ],
+    "1460": [
+      {
+        "questionId": "1460",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 9,
+        "startSeconds": 1820,
+        "title": "1989数二 第3题",
+        "subject": "数学二",
+        "year": 1989
+      }
+    ],
+    "1461": [
+      {
+        "questionId": "1461",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 9,
+        "startSeconds": 1180,
+        "title": "1990数二 第4题",
+        "subject": "数学二",
+        "year": 1990
+      }
+    ],
+    "1462": [
+      {
+        "questionId": "1462",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 9,
+        "startSeconds": 1361,
+        "title": "1991数二 第5题",
+        "subject": "数学二",
+        "year": 1991
+      }
+    ],
+    "1463": [
+      {
+        "questionId": "1463",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 9,
+        "startSeconds": 1978,
+        "title": "1993数二 第6题",
+        "subject": "数学二",
+        "year": 1993
+      }
+    ],
+    "1465": [
+      {
+        "questionId": "1465",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 9,
+        "startSeconds": 1503,
+        "title": "1995数二 第8题",
+        "subject": "数学二",
+        "year": 1995
+      }
+    ],
+    "1466": [
+      {
+        "questionId": "1466",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 9,
+        "startSeconds": 1701,
+        "title": "1996数二 第9题",
+        "subject": "数学二",
+        "year": 1996
+      }
+    ],
+    "1467": [
+      {
+        "questionId": "1467",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1997数二真题逐题精讲",
+        "bvid": "BV1qz4y1Z7nW",
+        "page": 1,
+        "startSeconds": 438.4,
+        "title": "1997数二 第2题（填空2）",
+        "subject": "数学二",
+        "year": 1997
       }
     ],
     "1475": [
@@ -2167,6 +2907,45 @@
         "subject": "数学二"
       }
     ],
+    "1489": [
+      {
+        "questionId": "1489",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 10,
+        "startSeconds": 1617,
+        "title": "1988数二 第1题",
+        "subject": "数学二",
+        "year": 1988
+      }
+    ],
+    "1490": [
+      {
+        "questionId": "1490",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 10,
+        "startSeconds": 720,
+        "title": "1989数二 第2题",
+        "subject": "数学二",
+        "year": 1989
+      }
+    ],
+    "1491": [
+      {
+        "questionId": "1491",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 10,
+        "startSeconds": 1088,
+        "title": "1990数二 第3题",
+        "subject": "数学二",
+        "year": 1990
+      }
+    ],
     "1493": [
       {
         "questionId": "1493",
@@ -2177,6 +2956,71 @@
         "startSeconds": 1410.8,
         "title": "P20 880题目精讲",
         "subject": "数学二"
+      }
+    ],
+    "1495": [
+      {
+        "questionId": "1495",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 10,
+        "startSeconds": 2072,
+        "title": "1992数二 第7题",
+        "subject": "数学二",
+        "year": 1992
+      }
+    ],
+    "1496": [
+      {
+        "questionId": "1496",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 10,
+        "startSeconds": 872,
+        "title": "1993数二 第8题",
+        "subject": "数学二",
+        "year": 1993
+      }
+    ],
+    "1497": [
+      {
+        "questionId": "1497",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 10,
+        "startSeconds": 2374,
+        "title": "1994数二 第9题",
+        "subject": "数学二",
+        "year": 1994
+      }
+    ],
+    "1499": [
+      {
+        "questionId": "1499",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 10,
+        "startSeconds": 2834,
+        "title": "1995数二 第11题",
+        "subject": "数学二",
+        "year": 1995
+      }
+    ],
+    "1506": [
+      {
+        "questionId": "1506",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数二真题逐题精讲",
+        "bvid": "BV1BJ411w7d8",
+        "page": 1,
+        "startSeconds": 4733,
+        "title": "2009数二 填空（隐函数二阶导）",
+        "subject": "数学二",
+        "year": 2009
       }
     ],
     "1507": [
@@ -2218,6 +3062,97 @@
         "year": 2013
       }
     ],
+    "1524": [
+      {
+        "questionId": "1524",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 11,
+        "startSeconds": 708,
+        "title": "1987数二 第1题",
+        "subject": "数学二",
+        "year": 1987
+      }
+    ],
+    "1525": [
+      {
+        "questionId": "1525",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 11,
+        "startSeconds": 1035,
+        "title": "1989数二 第2题",
+        "subject": "数学二",
+        "year": 1989
+      }
+    ],
+    "1527": [
+      {
+        "questionId": "1527",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 11,
+        "startSeconds": 1141,
+        "title": "1991数二 第4题",
+        "subject": "数学二",
+        "year": 1991
+      }
+    ],
+    "1528": [
+      {
+        "questionId": "1528",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 11,
+        "startSeconds": 432,
+        "title": "1992数二 第5题",
+        "subject": "数学二",
+        "year": 1992
+      }
+    ],
+    "1530": [
+      {
+        "questionId": "1530",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 11,
+        "startSeconds": 567,
+        "title": "1994数二 第7题",
+        "subject": "数学二",
+        "year": 1994
+      }
+    ],
+    "1531": [
+      {
+        "questionId": "1531",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 11,
+        "startSeconds": 1461,
+        "title": "1996数二 第8题",
+        "subject": "数学二",
+        "year": 1996
+      }
+    ],
+    "1532": [
+      {
+        "questionId": "1532",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1997数二真题逐题精讲",
+        "bvid": "BV1qz4y1Z7nW",
+        "page": 2,
+        "startSeconds": 377,
+        "title": "1997数二 第12题（解答2 参数方程求导）",
+        "subject": "数学二",
+        "year": 1997
+      }
+    ],
     "1534": [
       {
         "questionId": "1534",
@@ -2257,6 +3192,71 @@
         "year": 2020
       }
     ],
+    "1599": [
+      {
+        "questionId": "1599",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 11,
+        "startSeconds": 2160,
+        "title": "1990数一二 第1题",
+        "subject": "数学二",
+        "year": 1990
+      }
+    ],
+    "1601": [
+      {
+        "questionId": "1601",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 12,
+        "startSeconds": 1080,
+        "title": "1987数二 第1题",
+        "subject": "数学二",
+        "year": 1987
+      }
+    ],
+    "1602": [
+      {
+        "questionId": "1602",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 12,
+        "startSeconds": 495,
+        "title": "1988数二 第2题",
+        "subject": "数学二",
+        "year": 1988
+      }
+    ],
+    "1603": [
+      {
+        "questionId": "1603",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 12,
+        "startSeconds": 1182,
+        "title": "1989数二 第3题",
+        "subject": "数学二",
+        "year": 1989
+      }
+    ],
+    "1605": [
+      {
+        "questionId": "1605",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 12,
+        "startSeconds": 693,
+        "title": "1991数二 第5题",
+        "subject": "数学二",
+        "year": 1991
+      }
+    ],
     "1611": [
       {
         "questionId": "1611",
@@ -2283,6 +3283,45 @@
         "year": 2011
       }
     ],
+    "1623": [
+      {
+        "questionId": "1623",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 12,
+        "startSeconds": 1380,
+        "title": "1990数二 第1题",
+        "subject": "数学二",
+        "year": 1990
+      }
+    ],
+    "1624": [
+      {
+        "questionId": "1624",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 12,
+        "startSeconds": 1622,
+        "title": "1995数二 第2题",
+        "subject": "数学二",
+        "year": 1995
+      }
+    ],
+    "1628": [
+      {
+        "questionId": "1628",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数二真题逐题精讲",
+        "bvid": "BV1BJ411w7d8",
+        "page": 1,
+        "startSeconds": 3973,
+        "title": "2009数二 填空（参数方程切线）",
+        "subject": "数学二",
+        "year": 2009
+      }
+    ],
     "1629": [
       {
         "questionId": "1629",
@@ -2294,6 +3333,19 @@
         "title": "2013 数二 第12题",
         "subject": "数学二",
         "year": 2013
+      }
+    ],
+    "1634": [
+      {
+        "questionId": "1634",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1997数一真题逐题精讲",
+        "bvid": "BV1nZ4y157UF",
+        "page": 1,
+        "startSeconds": 826,
+        "title": "1997数一 填空第3题",
+        "subject": "数学一",
+        "year": 1997
       }
     ],
     "1638": [
@@ -2316,6 +3368,19 @@
         "startSeconds": 265.1,
         "title": "P29 880题目精讲",
         "subject": "数学二"
+      }
+    ],
+    "1643": [
+      {
+        "questionId": "1643",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 12,
+        "startSeconds": 1706,
+        "title": "1995数二 第1题",
+        "subject": "数学二",
+        "year": 1995
       }
     ],
     "1644": [
@@ -2344,6 +3409,45 @@
         "year": 2010
       }
     ],
+    "1670": [
+      {
+        "questionId": "1670",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 15,
+        "startSeconds": 2700,
+        "title": "1991数一 第1题",
+        "subject": "数学二",
+        "year": 1991
+      }
+    ],
+    "1672": [
+      {
+        "questionId": "1672",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 15,
+        "startSeconds": 2871,
+        "title": "1994数二三 第3题",
+        "subject": "数学二",
+        "year": 1994
+      }
+    ],
+    "1675": [
+      {
+        "questionId": "1675",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 15,
+        "startSeconds": 3262,
+        "title": "1995数二 第6题",
+        "subject": "数学二",
+        "year": 1995
+      }
+    ],
     "1676": [
       {
         "questionId": "1676",
@@ -2367,6 +3471,19 @@
         "title": "2020 数二 第15题",
         "subject": "数学二",
         "year": 2020
+      }
+    ],
+    "1687": [
+      {
+        "questionId": "1687",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 15,
+        "startSeconds": 2495,
+        "title": "1989数一二 第53题",
+        "subject": "数学二",
+        "year": 1989
       }
     ],
     "1690": [
@@ -2432,6 +3549,19 @@
         "subject": "数学二"
       }
     ],
+    "1700": [
+      {
+        "questionId": "1700",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数二真题逐题精讲",
+        "bvid": "BV1BJ411w7d8",
+        "page": 1,
+        "startSeconds": 1556,
+        "title": "2009数二 选择（曲率圆与极值零点）",
+        "subject": "数学二",
+        "year": 2009
+      }
+    ],
     "1711": [
       {
         "questionId": "1711",
@@ -2456,6 +3586,71 @@
         "title": "2012 数二 第13题",
         "subject": "数学二",
         "year": 2012
+      }
+    ],
+    "1719": [
+      {
+        "questionId": "1719",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 26,
+        "startSeconds": 652,
+        "title": "1993数一二 单调减少区间填空题",
+        "subject": "数学二",
+        "year": 1993
+      }
+    ],
+    "1723": [
+      {
+        "questionId": "1723",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 12,
+        "startSeconds": 2805,
+        "title": "1995数二 第8题",
+        "subject": "数学二",
+        "year": 1995
+      }
+    ],
+    "1737": [
+      {
+        "questionId": "1737",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 12,
+        "startSeconds": 4375,
+        "title": "1987数二 第3题",
+        "subject": "数学二",
+        "year": 1987
+      }
+    ],
+    "1738": [
+      {
+        "questionId": "1738",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 12,
+        "startSeconds": 3720,
+        "title": "1989数二 第4题",
+        "subject": "数学二",
+        "year": 1989
+      }
+    ],
+    "1739": [
+      {
+        "questionId": "1739",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 12,
+        "startSeconds": 4146,
+        "title": "1991数二 第5题",
+        "subject": "数学二",
+        "year": 1991
       }
     ],
     "1743": [
@@ -2484,6 +3679,45 @@
         "year": 2019
       }
     ],
+    "1762": [
+      {
+        "questionId": "1762",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 13,
+        "startSeconds": 576,
+        "title": "1988数一 第1题",
+        "subject": "数学二",
+        "year": 1988
+      }
+    ],
+    "1763": [
+      {
+        "questionId": "1763",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 13,
+        "startSeconds": 820,
+        "title": "1994数二 第2题",
+        "subject": "数学二",
+        "year": 1994
+      }
+    ],
+    "1764": [
+      {
+        "questionId": "1764",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1997数二真题逐题精讲",
+        "bvid": "BV1qz4y1Z7nW",
+        "page": 1,
+        "startSeconds": 2737.2,
+        "title": "1997数二 第8题（选择3）",
+        "subject": "数学二",
+        "year": 1997
+      }
+    ],
     "1768": [
       {
         "questionId": "1768",
@@ -2495,6 +3729,19 @@
         "title": "2014 数二 第16题",
         "subject": "数学二",
         "year": 2014
+      }
+    ],
+    "1769": [
+      {
+        "questionId": "1769",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 13,
+        "startSeconds": 1936,
+        "title": "1996数二 第1题",
+        "subject": "数学二",
+        "year": 1996
       }
     ],
     "1770": [
@@ -2558,6 +3805,32 @@
         "year": 2010
       }
     ],
+    "1779": [
+      {
+        "questionId": "1779",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 13,
+        "startSeconds": 913,
+        "title": "1992数二 第1题",
+        "subject": "数学二",
+        "year": 1992
+      }
+    ],
+    "1780": [
+      {
+        "questionId": "1780",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数二真题逐题精讲",
+        "bvid": "BV1BJ411w7d8",
+        "page": 1,
+        "startSeconds": 4948,
+        "title": "2009数二 填空（幂指函数最小值）",
+        "subject": "数学二",
+        "year": 2009
+      }
+    ],
     "1784": [
       {
         "questionId": "1784",
@@ -2592,6 +3865,19 @@
         "subject": "数学一"
       }
     ],
+    "1791": [
+      {
+        "questionId": "1791",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 13,
+        "startSeconds": 1136,
+        "title": "1995数二 第3题",
+        "subject": "数学二",
+        "year": 1995
+      }
+    ],
     "1796": [
       {
         "questionId": "1796",
@@ -2616,6 +3902,45 @@
         "year": 2016
       }
     ],
+    "1798": [
+      {
+        "questionId": "1798",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 21,
+        "startSeconds": 1327,
+        "title": "1987数二 第1题",
+        "subject": "数学二",
+        "year": 1987
+      }
+    ],
+    "1800": [
+      {
+        "questionId": "1800",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 14,
+        "startSeconds": 1889,
+        "title": "1993数二 第3题",
+        "subject": "数学二",
+        "year": 1993
+      }
+    ],
+    "1812": [
+      {
+        "questionId": "1812",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 15,
+        "startSeconds": 630,
+        "title": "1991数二 第3题",
+        "subject": "数学二",
+        "year": 1991
+      }
+    ],
     "1814": [
       {
         "questionId": "1814",
@@ -2627,6 +3952,19 @@
         "title": "2021 数二 第18题",
         "subject": "数学二",
         "year": 2021
+      }
+    ],
+    "1823": [
+      {
+        "questionId": "1823",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 15,
+        "startSeconds": 1730,
+        "title": "1990数二 第1题",
+        "subject": "数学二",
+        "year": 1990
       }
     ],
     "1838": [
@@ -2655,6 +3993,45 @@
         "year": 2010
       }
     ],
+    "1850": [
+      {
+        "questionId": "1850",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 16,
+        "startSeconds": 227,
+        "title": "1988数二 第1题",
+        "subject": "数学二",
+        "year": 1988
+      }
+    ],
+    "1852": [
+      {
+        "questionId": "1852",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 16,
+        "startSeconds": 885,
+        "title": "1989数二 第3题",
+        "subject": "数学二",
+        "year": 1989
+      }
+    ],
+    "1853": [
+      {
+        "questionId": "1853",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 16,
+        "startSeconds": 1555,
+        "title": "1994数二 第4题",
+        "subject": "数学二",
+        "year": 1994
+      }
+    ],
     "1856": [
       {
         "questionId": "1856",
@@ -2666,6 +4043,58 @@
         "title": "2011 数三 第18题",
         "subject": "数学三",
         "year": 2011
+      }
+    ],
+    "1857": [
+      {
+        "questionId": "1857",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 17,
+        "startSeconds": 1648,
+        "title": "1989数一二 第1题",
+        "subject": "数学二",
+        "year": 1989
+      }
+    ],
+    "1858": [
+      {
+        "questionId": "1858",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 17,
+        "startSeconds": 568,
+        "title": "1989数二 第2题",
+        "subject": "数学二",
+        "year": 1989
+      }
+    ],
+    "1861": [
+      {
+        "questionId": "1861",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 17,
+        "startSeconds": 912,
+        "title": "1993数二 第5题",
+        "subject": "数学二",
+        "year": 1993
+      }
+    ],
+    "1862": [
+      {
+        "questionId": "1862",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 17,
+        "startSeconds": 1252,
+        "title": "1996数二 第6题",
+        "subject": "数学二",
+        "year": 1996
       }
     ],
     "1866": [
@@ -2692,6 +4121,19 @@
         "title": "2017 数二 第19题",
         "subject": "数学二",
         "year": 2017
+      }
+    ],
+    "1881": [
+      {
+        "questionId": "1881",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 17,
+        "startSeconds": 2032,
+        "title": "1994数二 第2题",
+        "subject": "数学二",
+        "year": 1994
       }
     ],
     "1887": [
@@ -2731,6 +4173,19 @@
         "year": 2021
       }
     ],
+    "1896": [
+      {
+        "questionId": "1896",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1997数二真题逐题精讲",
+        "bvid": "BV1qz4y1Z7nW",
+        "page": 3,
+        "startSeconds": 1323,
+        "title": "1997数二 第21题（第八大题 方程根的个数）",
+        "subject": "数学二",
+        "year": 1997
+      }
+    ],
     "1898": [
       {
         "questionId": "1898",
@@ -2755,6 +4210,32 @@
         "title": "2012 数二 第21题",
         "subject": "数学二",
         "year": 2012
+      }
+    ],
+    "1910": [
+      {
+        "questionId": "1910",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 19,
+        "startSeconds": 953,
+        "title": "1995数一二 第1题",
+        "subject": "数学二",
+        "year": 1995
+      }
+    ],
+    "1912": [
+      {
+        "questionId": "1912",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 18,
+        "startSeconds": 3398,
+        "title": "1995数二 第3题",
+        "subject": "数学二",
+        "year": 1995
       }
     ],
     "1915": [
@@ -2855,6 +4336,45 @@
         "year": 2020
       }
     ],
+    "1940": [
+      {
+        "questionId": "1940",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 18,
+        "startSeconds": 448,
+        "title": "1990数二 第1题",
+        "subject": "数学二",
+        "year": 1990
+      }
+    ],
+    "1941": [
+      {
+        "questionId": "1941",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 18,
+        "startSeconds": 812,
+        "title": "1991数二 第2题",
+        "subject": "数学二",
+        "year": 1991
+      }
+    ],
+    "1943": [
+      {
+        "questionId": "1943",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 18,
+        "startSeconds": 2028,
+        "title": "1993数二 第4题",
+        "subject": "数学二",
+        "year": 1993
+      }
+    ],
     "1949": [
       {
         "questionId": "1949",
@@ -2918,6 +4438,19 @@
         "subject": "数学一"
       }
     ],
+    "1982": [
+      {
+        "questionId": "1982",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 19,
+        "startSeconds": 2315,
+        "title": "1996数二 泰勒展开题",
+        "subject": "数学二",
+        "year": 1996
+      }
+    ],
     "1983": [
       {
         "questionId": "1983",
@@ -2968,6 +4501,19 @@
         "title": "2020 数二 第3题",
         "subject": "数学二",
         "year": 2020
+      }
+    ],
+    "2033": [
+      {
+        "questionId": "2033",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 24,
+        "startSeconds": 512,
+        "title": "1990数二 第4题",
+        "subject": "数学二",
+        "year": 1990
       }
     ],
     "2134": [
@@ -3097,6 +4643,19 @@
         "year": 2020
       }
     ],
+    "2187": [
+      {
+        "questionId": "2187",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1997数一真题逐题精讲",
+        "bvid": "BV1nZ4y157UF",
+        "page": 1,
+        "startSeconds": 2112,
+        "title": "1997数一 选择第1题",
+        "subject": "数学一",
+        "year": 1997
+      }
+    ],
     "2208": [
       {
         "questionId": "2208",
@@ -3222,6 +4781,19 @@
         "year": 2016
       }
     ],
+    "2447": [
+      {
+        "questionId": "2447",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数三真题逐题精讲",
+        "bvid": "BV1rE411o7xx",
+        "page": 1,
+        "startSeconds": 3515,
+        "title": "2009数三 填空（z=(x+e^y)^x偏导）",
+        "subject": "数学三",
+        "year": 2009
+      }
+    ],
     "2450": [
       {
         "questionId": "2450",
@@ -3270,6 +4842,32 @@
         "title": "2013 数二 第5题",
         "subject": "数学二",
         "year": 2013
+      }
+    ],
+    "2504": [
+      {
+        "questionId": "2504",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数一真题逐题精讲",
+        "bvid": "BV1vJ411P73N",
+        "page": 1,
+        "startSeconds": 4852,
+        "title": "2009数一 第9题",
+        "subject": "数学一",
+        "year": 2009
+      }
+    ],
+    "2505": [
+      {
+        "questionId": "2505",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数二真题逐题精讲",
+        "bvid": "BV1BJ411w7d8",
+        "page": 2,
+        "startSeconds": 1704,
+        "title": "2009数二 解答（多元复合函数偏导）",
+        "subject": "数学二",
+        "year": 2009
       }
     ],
     "2506": [
@@ -3422,6 +5020,30 @@
         "year": 2011
       }
     ],
+    "2678": [
+      {
+        "questionId": "2678",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数三真题逐题精讲",
+        "bvid": "BV1rE411o7xx",
+        "page": 2,
+        "startSeconds": 8,
+        "title": "2009数一三 解答（二元函数极值）",
+        "subject": "数学三",
+        "year": 2009
+      },
+      {
+        "questionId": "2678",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数一真题逐题精讲",
+        "bvid": "BV1vJ411P73N",
+        "page": 2,
+        "startSeconds": 42,
+        "title": "2009数一 第15题",
+        "subject": "数学一",
+        "year": 2009
+      }
+    ],
     "2682": [
       {
         "questionId": "2682",
@@ -3470,6 +5092,19 @@
         "year": 2020
       }
     ],
+    "2712": [
+      {
+        "questionId": "2712",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数二真题逐题精讲",
+        "bvid": "BV1BJ411w7d8",
+        "page": 1,
+        "startSeconds": 814,
+        "title": "2009数二 选择（全微分与极值点）",
+        "subject": "数学二",
+        "year": 2009
+      }
+    ],
     "2719": [
       {
         "questionId": "2719",
@@ -3507,6 +5142,19 @@
         "title": "2013 数二 第19题",
         "subject": "数学二",
         "year": 2013
+      }
+    ],
+    "2748": [
+      {
+        "questionId": "2748",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 14,
+        "startSeconds": 3,
+        "title": "1988数二 第1题",
+        "subject": "数学二",
+        "year": 1988
       }
     ],
     "2753": [
@@ -3609,6 +5257,30 @@
         "year": 2011
       }
     ],
+    "2842": [
+      {
+        "questionId": "2842",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数二真题逐题精讲",
+        "bvid": "BV1BJ411w7d8",
+        "page": 2,
+        "startSeconds": 3595,
+        "title": "2009数二三 解答（二重积分）",
+        "subject": "数学二",
+        "year": 2009
+      },
+      {
+        "questionId": "2842",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数三真题逐题精讲",
+        "bvid": "BV1rE411o7xx",
+        "page": 2,
+        "startSeconds": 1273,
+        "title": "2009数二三 解答（半圆盘二重积分）",
+        "subject": "数学三",
+        "year": 2009
+      }
+    ],
     "2858": [
       {
         "questionId": "2858",
@@ -3699,6 +5371,19 @@
         "subject": "数学一"
       }
     ],
+    "2939": [
+      {
+        "questionId": "2939",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数二真题逐题精讲",
+        "bvid": "BV1BJ411w7d8",
+        "page": 1,
+        "startSeconds": 1084,
+        "title": "2009数二 选择（交换积分次序）",
+        "subject": "数学二",
+        "year": 2009
+      }
+    ],
     "2946": [
       {
         "questionId": "2946",
@@ -3735,6 +5420,19 @@
         "startSeconds": 0.4,
         "title": "—",
         "subject": "数学一"
+      }
+    ],
+    "2954": [
+      {
+        "questionId": "2954",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数一真题逐题精讲",
+        "bvid": "BV1vJ411P73N",
+        "page": 1,
+        "startSeconds": 376,
+        "title": "2009数一 第2题",
+        "subject": "数学一",
+        "year": 2009
       }
     ],
     "2955": [
@@ -3786,6 +5484,32 @@
         "year": 2011
       }
     ],
+    "3356": [
+      {
+        "questionId": "3356",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 1,
+        "startSeconds": 3355,
+        "title": "1988数一二 第1题",
+        "subject": "数学二",
+        "year": 1988
+      }
+    ],
+    "3357": [
+      {
+        "questionId": "3357",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 1,
+        "startSeconds": 3240,
+        "title": "1990数一二 第2题",
+        "subject": "数学二",
+        "year": 1990
+      }
+    ],
     "3358": [
       {
         "questionId": "3358",
@@ -3796,6 +5520,32 @@
         "startSeconds": 69.7,
         "title": "P4 880题目精讲",
         "subject": "数学二"
+      }
+    ],
+    "3359": [
+      {
+        "questionId": "3359",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 1,
+        "startSeconds": 2952,
+        "title": "1992数二 第4题",
+        "subject": "数学二",
+        "year": 1992
+      }
+    ],
+    "3360": [
+      {
+        "questionId": "3360",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1997数二真题逐题精讲",
+        "bvid": "BV1qz4y1Z7nW",
+        "page": 1,
+        "startSeconds": 3948.1,
+        "title": "1997数二 第10题（选择5）",
+        "subject": "数学二",
+        "year": 1997
       }
     ],
     "3367": [
@@ -3850,6 +5600,17 @@
         "startSeconds": 16.4,
         "title": "P2题目讲解",
         "subject": "数学三"
+      },
+      {
+        "questionId": "3403",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 1,
+        "startSeconds": 627,
+        "title": "1987数二 第3题",
+        "subject": "数学二",
+        "year": 1987
       }
     ],
     "3404": [
@@ -3874,6 +5635,58 @@
         "subject": "数学二"
       }
     ],
+    "3480": [
+      {
+        "questionId": "3480",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 2,
+        "startSeconds": 2150,
+        "title": "1991数二 第2题",
+        "subject": "数学二",
+        "year": 1991
+      }
+    ],
+    "3484": [
+      {
+        "questionId": "3484",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 2,
+        "startSeconds": 1669,
+        "title": "1992数二 第6题",
+        "subject": "数学二",
+        "year": 1992
+      }
+    ],
+    "3485": [
+      {
+        "questionId": "3485",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 2,
+        "startSeconds": 2250,
+        "title": "1995数二 第7题",
+        "subject": "数学二",
+        "year": 1995
+      }
+    ],
+    "3486": [
+      {
+        "questionId": "3486",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1997数一真题逐题精讲",
+        "bvid": "BV1nZ4y157UF",
+        "page": 1,
+        "startSeconds": 198,
+        "title": "1997数一 填空第1题",
+        "subject": "数学一",
+        "year": 1997
+      }
+    ],
     "3497": [
       {
         "questionId": "3497",
@@ -3884,6 +5697,32 @@
         "startSeconds": 1078.6,
         "title": "P7 880题目精讲",
         "subject": "数学二"
+      }
+    ],
+    "3503": [
+      {
+        "questionId": "3503",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数二真题逐题精讲",
+        "bvid": "BV1BJ411w7d8",
+        "page": 2,
+        "startSeconds": 23,
+        "title": "2009数二 解答（含tanx的极限）",
+        "subject": "数学二",
+        "year": 2009
+      }
+    ],
+    "3505": [
+      {
+        "questionId": "3505",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数三真题逐题精讲",
+        "bvid": "BV1rE411o7xx",
+        "page": 1,
+        "startSeconds": 3233,
+        "title": "2009数三 填空（e-e^{cosx}型极限）",
+        "subject": "数学三",
+        "year": 2009
       }
     ],
     "3507": [
@@ -3948,6 +5787,32 @@
         "subject": "数学二"
       }
     ],
+    "3543": [
+      {
+        "questionId": "3543",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 2,
+        "startSeconds": 1410,
+        "title": "1991数二 第1题",
+        "subject": "数学二",
+        "year": 1991
+      }
+    ],
+    "3544": [
+      {
+        "questionId": "3544",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1997数二真题逐题精讲",
+        "bvid": "BV1qz4y1Z7nW",
+        "page": 2,
+        "startSeconds": 11.2,
+        "title": "1997数二 第11题（解答1 极限）",
+        "subject": "数学二",
+        "year": 1997
+      }
+    ],
     "3547": [
       {
         "questionId": "3547",
@@ -3958,6 +5823,58 @@
         "startSeconds": 955,
         "title": "P4 880题目精讲",
         "subject": "数学二"
+      }
+    ],
+    "3556": [
+      {
+        "questionId": "3556",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 3,
+        "startSeconds": 607,
+        "title": "1993数二 第1题",
+        "subject": "数学二",
+        "year": 1993
+      }
+    ],
+    "3557": [
+      {
+        "questionId": "3557",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 3,
+        "startSeconds": 504,
+        "title": "1989数二 第2题",
+        "subject": "数学二",
+        "year": 1989
+      }
+    ],
+    "3561": [
+      {
+        "questionId": "3561",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 4,
+        "startSeconds": 661,
+        "title": "1993数二 第5题",
+        "subject": "数学二",
+        "year": 1993
+      }
+    ],
+    "3563": [
+      {
+        "questionId": "3563",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 3,
+        "startSeconds": 921,
+        "title": "1996数二 第7题",
+        "subject": "数学二",
+        "year": 1996
       }
     ],
     "3565": [
@@ -3973,6 +5890,32 @@
         "year": 2018
       }
     ],
+    "3587": [
+      {
+        "questionId": "3587",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 4,
+        "startSeconds": 537,
+        "title": "1987数二 第9题",
+        "subject": "数学二",
+        "year": 1987
+      }
+    ],
+    "3602": [
+      {
+        "questionId": "3602",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 4,
+        "startSeconds": 27,
+        "title": "1988数二 第1题",
+        "subject": "数学二",
+        "year": 1988
+      }
+    ],
     "3605": [
       {
         "questionId": "3605",
@@ -3986,6 +5929,32 @@
         "year": 2010
       }
     ],
+    "3610": [
+      {
+        "questionId": "3610",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 3,
+        "startSeconds": 1702,
+        "title": "1987数二 第1题",
+        "subject": "数学二",
+        "year": 1987
+      }
+    ],
+    "3611": [
+      {
+        "questionId": "3611",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 3,
+        "startSeconds": 2072,
+        "title": "1990数一二 第2题",
+        "subject": "数学二",
+        "year": 1990
+      }
+    ],
     "3615": [
       {
         "questionId": "3615",
@@ -3996,6 +5965,32 @@
         "startSeconds": 346.6,
         "title": "P5 880题目精讲",
         "subject": "数学二"
+      }
+    ],
+    "3618": [
+      {
+        "questionId": "3618",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 5,
+        "startSeconds": 1603,
+        "title": "1994数二 第8题",
+        "subject": "数学二",
+        "year": 1994
+      }
+    ],
+    "3619": [
+      {
+        "questionId": "3619",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 3,
+        "startSeconds": 1872,
+        "title": "1989数二 第9题",
+        "subject": "数学二",
+        "year": 1989
       }
     ],
     "3621": [
@@ -4033,6 +6028,19 @@
         "title": "2017 数二 第15题",
         "subject": "数学二",
         "year": 2017
+      }
+    ],
+    "3624": [
+      {
+        "questionId": "3624",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 3,
+        "startSeconds": 2403,
+        "title": "1992数二 第14题",
+        "subject": "数学二",
+        "year": 1992
       }
     ],
     "3632": [
@@ -4083,6 +6091,32 @@
         "title": "2016 数二 第15题",
         "subject": "数学二",
         "year": 2016
+      }
+    ],
+    "3661": [
+      {
+        "questionId": "3661",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 3,
+        "startSeconds": 245,
+        "title": "1992数一二 第1题",
+        "subject": "数学二",
+        "year": 1992
+      }
+    ],
+    "3669": [
+      {
+        "questionId": "3669",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 7,
+        "startSeconds": 1322,
+        "title": "1987数二 第1题",
+        "subject": "数学二",
+        "year": 1987
       }
     ],
     "3670": [
@@ -4284,6 +6318,17 @@
         "startSeconds": 0.8,
         "title": "P6 880题目精讲",
         "subject": "数学二"
+      },
+      {
+        "questionId": "3830",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 5,
+        "startSeconds": 1948,
+        "title": "1995数二 第1题",
+        "subject": "数学二",
+        "year": 1995
       }
     ],
     "3836": [
@@ -4517,6 +6562,30 @@
         "startSeconds": 2501.7,
         "title": "P2 880题目精讲",
         "subject": "数学二"
+      },
+      {
+        "questionId": "3994",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 4,
+        "startSeconds": 989,
+        "title": "1990数二 第4题",
+        "subject": "数学二",
+        "year": 1990
+      }
+    ],
+    "3996": [
+      {
+        "questionId": "3996",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 4,
+        "startSeconds": 1576,
+        "title": "1994数二 第6题",
+        "subject": "数学二",
+        "year": 1994
       }
     ],
     "3998": [
@@ -4691,6 +6760,19 @@
         "subject": "数学三"
       }
     ],
+    "4143": [
+      {
+        "questionId": "4143",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 11,
+        "startSeconds": 2541,
+        "title": "1988数一二 第1题",
+        "subject": "数学二",
+        "year": 1988
+      }
+    ],
     "4152": [
       {
         "questionId": "4152",
@@ -4859,6 +6941,19 @@
         "year": 2014
       }
     ],
+    "4220": [
+      {
+        "questionId": "4220",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 5,
+        "startSeconds": 771,
+        "title": "1996数二 第5题",
+        "subject": "数学二",
+        "year": 1996
+      }
+    ],
     "4221": [
       {
         "questionId": "4221",
@@ -4882,6 +6977,19 @@
         "startSeconds": 2759.3,
         "title": "P2 880题目精讲",
         "subject": "数学二"
+      }
+    ],
+    "4227": [
+      {
+        "questionId": "4227",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1997数二真题逐题精讲",
+        "bvid": "BV1qz4y1Z7nW",
+        "page": 1,
+        "startSeconds": 1899.5,
+        "title": "1997数二 第6题（选择1）",
+        "subject": "数学二",
+        "year": 1997
       }
     ],
     "4228": [
@@ -4921,6 +7029,54 @@
         "subject": "数学二"
       }
     ],
+    "4246": [
+      {
+        "questionId": "4246",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数二真题逐题精讲",
+        "bvid": "BV1BJ411w7d8",
+        "page": 1,
+        "startSeconds": 416,
+        "title": "2009数一二三 选择（等价无穷小求参数）",
+        "subject": "数学二",
+        "year": 2009
+      },
+      {
+        "questionId": "4246",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数三真题逐题精讲",
+        "bvid": "BV1rE411o7xx",
+        "page": 1,
+        "startSeconds": 425,
+        "title": "2009数一二三 选择（等价无穷小求a、b）",
+        "subject": "数学三",
+        "year": 2009
+      },
+      {
+        "questionId": "4246",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数一真题逐题精讲",
+        "bvid": "BV1vJ411P73N",
+        "page": 1,
+        "startSeconds": 56,
+        "title": "2009数一 第1题",
+        "subject": "数学一",
+        "year": 2009
+      }
+    ],
+    "4272": [
+      {
+        "questionId": "4272",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 1,
+        "startSeconds": 1584,
+        "title": "1987数二 第1题",
+        "subject": "数学二",
+        "year": 1987
+      }
+    ],
     "4273": [
       {
         "questionId": "4273",
@@ -4931,6 +7087,17 @@
         "startSeconds": 2144.1,
         "title": "P2 880题目精讲",
         "subject": "数学二"
+      },
+      {
+        "questionId": "4273",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 1,
+        "startSeconds": 2543,
+        "title": "1993数二 第2题",
+        "subject": "数学二",
+        "year": 1993
       }
     ],
     "4274": [
@@ -4958,6 +7125,32 @@
         "subject": "数学二"
       }
     ],
+    "4279": [
+      {
+        "questionId": "4279",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 15,
+        "startSeconds": 2700,
+        "title": "1991数一 第1题",
+        "subject": "数学二",
+        "year": 1991
+      }
+    ],
+    "4346": [
+      {
+        "questionId": "4346",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 8,
+        "startSeconds": 1902,
+        "title": "1995数二 第3题",
+        "subject": "数学二",
+        "year": 1995
+      }
+    ],
     "4349": [
       {
         "questionId": "4349",
@@ -4968,6 +7161,19 @@
         "startSeconds": 1389.5,
         "title": "P7 880题目精讲",
         "subject": "数学二"
+      }
+    ],
+    "4352": [
+      {
+        "questionId": "4352",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 6,
+        "startSeconds": 1886,
+        "title": "1988数二 第1题",
+        "subject": "数学二",
+        "year": 1988
       }
     ],
     "4354": [
@@ -4990,6 +7196,43 @@
         "startSeconds": 157.7,
         "title": "分段函数连续性，含 sin 2x、e^(2ax) 项；从连续定义展开。",
         "subject": "数学三"
+      },
+      {
+        "questionId": "4354",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 6,
+        "startSeconds": 2168,
+        "title": "1994数二 第3题",
+        "subject": "数学二",
+        "year": 1994
+      }
+    ],
+    "4355": [
+      {
+        "questionId": "4355",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 6,
+        "startSeconds": 2020,
+        "title": "1989数二 第4题",
+        "subject": "数学二",
+        "year": 1989
+      }
+    ],
+    "4356": [
+      {
+        "questionId": "4356",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1997数二真题逐题精讲",
+        "bvid": "BV1qz4y1Z7nW",
+        "page": 1,
+        "startSeconds": 199.5,
+        "title": "1997数二 第1题（填空1）",
+        "subject": "数学二",
+        "year": 1997
       }
     ],
     "4363": [
@@ -5003,6 +7246,69 @@
         "title": "2018 数二 第3题",
         "subject": "数学二",
         "year": 2018
+      }
+    ],
+    "4374": [
+      {
+        "questionId": "4374",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 6,
+        "startSeconds": 723,
+        "title": "1990数二 第1题",
+        "subject": "数学二",
+        "year": 1990
+      }
+    ],
+    "4375": [
+      {
+        "questionId": "4375",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 6,
+        "startSeconds": 964,
+        "title": "1995数二 第2题",
+        "subject": "数学二",
+        "year": 1995
+      }
+    ],
+    "4376": [
+      {
+        "questionId": "4376",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 8,
+        "startSeconds": 2450,
+        "title": "1996数二 第3题",
+        "subject": "数学二",
+        "year": 1996
+      }
+    ],
+    "4389": [
+      {
+        "questionId": "4389",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数二真题逐题精讲",
+        "bvid": "BV1BJ411w7d8",
+        "page": 1,
+        "startSeconds": 56,
+        "title": "2009数二三 选择（可去间断点个数）",
+        "subject": "数学二",
+        "year": 2009
+      },
+      {
+        "questionId": "4389",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数三真题逐题精讲",
+        "bvid": "BV1rE411o7xx",
+        "page": 1,
+        "startSeconds": 48,
+        "title": "2009数二三 选择（可去间断点个数）",
+        "subject": "数学三",
+        "year": 2009
       }
     ],
     "4391": [
@@ -5150,6 +7456,110 @@
         "year": 2014
       }
     ],
+    "4471": [
+      {
+        "questionId": "4471",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 29,
+        "startSeconds": 385,
+        "title": "1987数二 第2题",
+        "subject": "数学二",
+        "year": 1987
+      }
+    ],
+    "4472": [
+      {
+        "questionId": "4472",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 29,
+        "startSeconds": 967,
+        "title": "1989数二 第3题",
+        "subject": "数学二",
+        "year": 1989
+      }
+    ],
+    "4473": [
+      {
+        "questionId": "4473",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 29,
+        "startSeconds": 1560,
+        "title": "1991数二 特解题",
+        "subject": "数学二",
+        "year": 1991
+      }
+    ],
+    "4488": [
+      {
+        "questionId": "4488",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 29,
+        "startSeconds": 30,
+        "title": "1994数二 通解填空题",
+        "subject": "数学二",
+        "year": 1994
+      }
+    ],
+    "4491": [
+      {
+        "questionId": "4491",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1997数二真题逐题精讲",
+        "bvid": "BV1qz4y1Z7nW",
+        "page": 2,
+        "startSeconds": 722,
+        "title": "1997数二 第14题（解答4 齐次方程）",
+        "subject": "数学二",
+        "year": 1997
+      }
+    ],
+    "4496": [
+      {
+        "questionId": "4496",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 29,
+        "startSeconds": 2087,
+        "title": "1993数二 特解题",
+        "subject": "数学二",
+        "year": 1993
+      }
+    ],
+    "4497": [
+      {
+        "questionId": "4497",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 29,
+        "startSeconds": 1192,
+        "title": "1990数二 第2题",
+        "subject": "数学二",
+        "year": 1990
+      }
+    ],
+    "4498": [
+      {
+        "questionId": "4498",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 29,
+        "startSeconds": 1748,
+        "title": "1992数二 第3题",
+        "subject": "数学二",
+        "year": 1992
+      }
+    ],
     "4506": [
       {
         "questionId": "4506",
@@ -5175,6 +7585,19 @@
         "subject": "数学一"
       }
     ],
+    "4524": [
+      {
+        "questionId": "4524",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 29,
+        "startSeconds": 2411,
+        "title": "1995数二 先求p(x)再求特解题",
+        "subject": "数学二",
+        "year": 1995
+      }
+    ],
     "4527": [
       {
         "questionId": "4527",
@@ -5188,6 +7611,19 @@
         "year": 2016
       }
     ],
+    "4535": [
+      {
+        "questionId": "4535",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 31,
+        "startSeconds": 1672,
+        "title": "1993数二 先定系数再求通解题",
+        "subject": "数学二",
+        "year": 1993
+      }
+    ],
     "4536": [
       {
         "questionId": "4536",
@@ -5199,6 +7635,32 @@
         "title": "2015 数一 第2题",
         "subject": "数学一",
         "year": 2015
+      }
+    ],
+    "4545": [
+      {
+        "questionId": "4545",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数一真题逐题精讲",
+        "bvid": "BV1vJ411P73N",
+        "page": 1,
+        "startSeconds": 5219,
+        "title": "2009数一 第10题",
+        "subject": "数学一",
+        "year": 2009
+      }
+    ],
+    "4546": [
+      {
+        "questionId": "4546",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1997数二真题逐题精讲",
+        "bvid": "BV1qz4y1Z7nW",
+        "page": 2,
+        "startSeconds": 1178,
+        "title": "1997数二 第15题（解答5 解的结构）",
+        "subject": "数学二",
+        "year": 1997
       }
     ],
     "4552": [
@@ -5359,6 +7821,32 @@
         "year": 2010
       }
     ],
+    "4646": [
+      {
+        "questionId": "4646",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 23,
+        "startSeconds": 2737,
+        "title": "1993数二 第1题",
+        "subject": "数学二",
+        "year": 1993
+      }
+    ],
+    "4656": [
+      {
+        "questionId": "4656",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数二真题逐题精讲",
+        "bvid": "BV1BJ411w7d8",
+        "page": 2,
+        "startSeconds": 4152,
+        "title": "2009数二 解答（分段曲线求表达式）",
+        "subject": "数学二",
+        "year": 2009
+      }
+    ],
     "4658": [
       {
         "questionId": "4658",
@@ -5396,6 +7884,32 @@
         "year": 2015
       }
     ],
+    "4687": [
+      {
+        "questionId": "4687",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数三真题逐题精讲",
+        "bvid": "BV1rE411o7xx",
+        "page": 2,
+        "startSeconds": 3030,
+        "title": "2009数三 解答（曲边梯形旋转体πt倍）",
+        "subject": "数学三",
+        "year": 2009
+      }
+    ],
+    "4694": [
+      {
+        "questionId": "4694",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1997数一真题逐题精讲",
+        "bvid": "BV1nZ4y157UF",
+        "page": 2,
+        "startSeconds": 4632,
+        "title": "1997数一 解答大题四 第2小题",
+        "subject": "数学一",
+        "year": 1997
+      }
+    ],
     "4714": [
       {
         "questionId": "4714",
@@ -5406,6 +7920,45 @@
         "startSeconds": 0.37,
         "title": "—",
         "subject": "数学一"
+      }
+    ],
+    "4722": [
+      {
+        "questionId": "4722",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 31,
+        "startSeconds": 2824,
+        "title": "1995数二 微分方程物理应用题",
+        "subject": "数学二",
+        "year": 1995
+      }
+    ],
+    "4723": [
+      {
+        "questionId": "4723",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1997数一真题逐题精讲",
+        "bvid": "BV1nZ4y157UF",
+        "page": 2,
+        "startSeconds": 3141,
+        "title": "1997数一 解答大题三 第3小题",
+        "subject": "数学一",
+        "year": 1997
+      }
+    ],
+    "4728": [
+      {
+        "questionId": "4728",
+        "teacher": "李艳芳",
+        "seriesTitle": "微分方程的物理应用-容器注水(2003数二)",
+        "bvid": "BV1Zv411k7Sz",
+        "page": 1,
+        "startSeconds": 0,
+        "title": "2003数二 解答题（平底容器注水）",
+        "subject": "数学二",
+        "year": 2003
       }
     ],
     "5169": [
@@ -5649,6 +8202,30 @@
         "year": 2013
       }
     ],
+    "5298": [
+      {
+        "questionId": "5298",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数三真题逐题精讲",
+        "bvid": "BV1rE411o7xx",
+        "page": 2,
+        "startSeconds": 5410,
+        "title": "2009数一三 解答（放回取球联合分布）",
+        "subject": "数学三",
+        "year": 2009
+      },
+      {
+        "questionId": "5298",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数一真题逐题精讲",
+        "bvid": "BV1vJ411P73N",
+        "page": 2,
+        "startSeconds": 6099,
+        "title": "2009数一 第22题",
+        "subject": "数学一",
+        "year": 2009
+      }
+    ],
     "5307": [
       {
         "questionId": "5307",
@@ -5660,6 +8237,30 @@
         "title": "2012 数三 第23题",
         "subject": "数学三",
         "year": 2012
+      }
+    ],
+    "5310": [
+      {
+        "questionId": "5310",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数三真题逐题精讲",
+        "bvid": "BV1rE411o7xx",
+        "page": 1,
+        "startSeconds": 2755,
+        "title": "2009数一三 选择（Z=XY分布函数间断点）",
+        "subject": "数学三",
+        "year": 2009
+      },
+      {
+        "questionId": "5310",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数一真题逐题精讲",
+        "bvid": "BV1vJ411P73N",
+        "page": 1,
+        "startSeconds": 4168,
+        "title": "2009数一 第8题",
+        "subject": "数学一",
+        "year": 2009
       }
     ],
     "5311": [
@@ -5808,6 +8409,19 @@
         "year": 2013
       }
     ],
+    "5335": [
+      {
+        "questionId": "5335",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数三真题逐题精讲",
+        "bvid": "BV1rE411o7xx",
+        "page": 2,
+        "startSeconds": 4618,
+        "title": "2009数三 解答（条件概率密度）",
+        "subject": "数学三",
+        "year": 2009
+      }
+    ],
     "5336": [
       {
         "questionId": "5336",
@@ -5842,6 +8456,19 @@
         "startSeconds": 504.2,
         "title": "二维正态 (X,Y) 下，ξ=X+Y、η=X−Y 不相关的充分必要条件；504.2s 起计算协方差。",
         "subject": "数学三"
+      }
+    ],
+    "5348": [
+      {
+        "questionId": "5348",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1997数一真题逐题精讲",
+        "bvid": "BV1nZ4y157UF",
+        "page": 2,
+        "startSeconds": 989,
+        "title": "1997数一 选择第5题",
+        "subject": "数学一",
+        "year": 1997
       }
     ],
     "5351": [
@@ -5955,6 +8582,19 @@
         "title": "2011 数一 第8题",
         "subject": "数学一",
         "year": 2011
+      }
+    ],
+    "5378": [
+      {
+        "questionId": "5378",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数一真题逐题精讲",
+        "bvid": "BV1vJ411P73N",
+        "page": 1,
+        "startSeconds": 3723,
+        "title": "2009数一 第7题",
+        "subject": "数学一",
+        "year": 2009
       }
     ],
     "5385": [
@@ -6081,6 +8721,19 @@
         "year": 2014
       }
     ],
+    "5431": [
+      {
+        "questionId": "5431",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数三真题逐题精讲",
+        "bvid": "BV1rE411o7xx",
+        "page": 1,
+        "startSeconds": 4507,
+        "title": "2009数三 填空（T=X̄-S²求E(T)）",
+        "subject": "数学三",
+        "year": 2009
+      }
+    ],
     "5432": [
       {
         "questionId": "5432",
@@ -6181,6 +8834,19 @@
         "year": 2016
       }
     ],
+    "5460": [
+      {
+        "questionId": "5460",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数一真题逐题精讲",
+        "bvid": "BV1vJ411P73N",
+        "page": 1,
+        "startSeconds": 7277,
+        "title": "2009数一 第14题",
+        "subject": "数学一",
+        "year": 2009
+      }
+    ],
     "5465": [
       {
         "questionId": "5465",
@@ -6229,6 +8895,32 @@
         "title": "2012 数一 第23题",
         "subject": "数学一",
         "year": 2012
+      }
+    ],
+    "5470": [
+      {
+        "questionId": "5470",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1997数一真题逐题精讲",
+        "bvid": "BV1nZ4y157UF",
+        "page": 3,
+        "startSeconds": 2698,
+        "title": "1997数一 解答大题十",
+        "subject": "数学一",
+        "year": 1997
+      }
+    ],
+    "5473": [
+      {
+        "questionId": "5473",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数一真题逐题精讲",
+        "bvid": "BV1vJ411P73N",
+        "page": 2,
+        "startSeconds": 6725,
+        "title": "2009数一 第23题",
+        "subject": "数学一",
+        "year": 2009
       }
     ],
     "5476": [
@@ -6280,6 +8972,19 @@
         "subject": "数学三"
       }
     ],
+    "5495": [
+      {
+        "questionId": "5495",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1997数一真题逐题精讲",
+        "bvid": "BV1nZ4y157UF",
+        "page": 1,
+        "startSeconds": 1661,
+        "title": "1997数一 填空第5题",
+        "subject": "数学一",
+        "year": 1997
+      }
+    ],
     "5513": [
       {
         "questionId": "5513",
@@ -6327,6 +9032,19 @@
         "startSeconds": 926.8,
         "title": "B⊆A、P(B)>0 比较条件概率；926.8s 起以 P(A∩B)=P(A) 分析。",
         "subject": "数学三"
+      }
+    ],
+    "5549": [
+      {
+        "questionId": "5549",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数三真题逐题精讲",
+        "bvid": "BV1rE411o7xx",
+        "page": 1,
+        "startSeconds": 2394,
+        "title": "2009数三 第7题（选择）",
+        "subject": "数学三",
+        "year": 2009
       }
     ],
     "5550": [
@@ -6809,6 +9527,404 @@
         "year": 2012
       }
     ],
+    "6090": [
+      {
+        "questionId": "6090",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数三真题逐题精讲",
+        "bvid": "BV1rE411o7xx",
+        "page": 1,
+        "startSeconds": 425,
+        "title": "2009数一 第1题（同题异源）",
+        "subject": "数学三",
+        "year": 2009
+      },
+      {
+        "questionId": "6090",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数一真题逐题精讲",
+        "bvid": "BV1vJ411P73N",
+        "page": 1,
+        "startSeconds": 56,
+        "title": "2009数一 第1题",
+        "subject": "数学一",
+        "year": 2009
+      }
+    ],
+    "6091": [
+      {
+        "questionId": "6091",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数一真题逐题精讲",
+        "bvid": "BV1vJ411P73N",
+        "page": 1,
+        "startSeconds": 376,
+        "title": "2009数一 第2题",
+        "subject": "数学一",
+        "year": 2009
+      }
+    ],
+    "6092": [
+      {
+        "questionId": "6092",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数三真题逐题精讲",
+        "bvid": "BV1rE411o7xx",
+        "page": 1,
+        "startSeconds": 1055,
+        "title": "2009数一 第3题（同题异源）",
+        "subject": "数学三",
+        "year": 2009
+      },
+      {
+        "questionId": "6092",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数一真题逐题精讲",
+        "bvid": "BV1vJ411P73N",
+        "page": 1,
+        "startSeconds": 892,
+        "title": "2009数一 第3题",
+        "subject": "数学一",
+        "year": 2009
+      }
+    ],
+    "6093": [
+      {
+        "questionId": "6093",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数一真题逐题精讲",
+        "bvid": "BV1vJ411P73N",
+        "page": 1,
+        "startSeconds": 1554,
+        "title": "2009数一 第4题",
+        "subject": "数学一",
+        "year": 2009
+      }
+    ],
+    "6094": [
+      {
+        "questionId": "6094",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数一真题逐题精讲",
+        "bvid": "BV1vJ411P73N",
+        "page": 1,
+        "startSeconds": 2578,
+        "title": "2009数一 第5题",
+        "subject": "数学一",
+        "year": 2009
+      }
+    ],
+    "6095": [
+      {
+        "questionId": "6095",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数三真题逐题精讲",
+        "bvid": "BV1rE411o7xx",
+        "page": 1,
+        "startSeconds": 1590,
+        "title": "2009数一 第6题（同题异源）",
+        "subject": "数学三",
+        "year": 2009
+      },
+      {
+        "questionId": "6095",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数一真题逐题精讲",
+        "bvid": "BV1vJ411P73N",
+        "page": 1,
+        "startSeconds": 2938,
+        "title": "2009数一 第6题",
+        "subject": "数学一",
+        "year": 2009
+      }
+    ],
+    "6096": [
+      {
+        "questionId": "6096",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数一真题逐题精讲",
+        "bvid": "BV1vJ411P73N",
+        "page": 1,
+        "startSeconds": 3723,
+        "title": "2009数一 第7题",
+        "subject": "数学一",
+        "year": 2009
+      }
+    ],
+    "6097": [
+      {
+        "questionId": "6097",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数三真题逐题精讲",
+        "bvid": "BV1rE411o7xx",
+        "page": 1,
+        "startSeconds": 2755,
+        "title": "2009数一 第8题（同题异源）",
+        "subject": "数学三",
+        "year": 2009
+      },
+      {
+        "questionId": "6097",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数一真题逐题精讲",
+        "bvid": "BV1vJ411P73N",
+        "page": 1,
+        "startSeconds": 4168,
+        "title": "2009数一 第8题",
+        "subject": "数学一",
+        "year": 2009
+      }
+    ],
+    "6098": [
+      {
+        "questionId": "6098",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数一真题逐题精讲",
+        "bvid": "BV1vJ411P73N",
+        "page": 1,
+        "startSeconds": 4852,
+        "title": "2009数一 第9题",
+        "subject": "数学一",
+        "year": 2009
+      }
+    ],
+    "6099": [
+      {
+        "questionId": "6099",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数一真题逐题精讲",
+        "bvid": "BV1vJ411P73N",
+        "page": 1,
+        "startSeconds": 5219,
+        "title": "2009数一 第10题",
+        "subject": "数学一",
+        "year": 2009
+      }
+    ],
+    "6100": [
+      {
+        "questionId": "6100",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数一真题逐题精讲",
+        "bvid": "BV1vJ411P73N",
+        "page": 1,
+        "startSeconds": 5664,
+        "title": "2009数一 第11题",
+        "subject": "数学一",
+        "year": 2009
+      }
+    ],
+    "6101": [
+      {
+        "questionId": "6101",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数一真题逐题精讲",
+        "bvid": "BV1vJ411P73N",
+        "page": 1,
+        "startSeconds": 5875,
+        "title": "2009数一 第12题",
+        "subject": "数学一",
+        "year": 2009
+      }
+    ],
+    "6102": [
+      {
+        "questionId": "6102",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数一真题逐题精讲",
+        "bvid": "BV1vJ411P73N",
+        "page": 1,
+        "startSeconds": 6608,
+        "title": "2009数一 第13题",
+        "subject": "数学一",
+        "year": 2009
+      }
+    ],
+    "6103": [
+      {
+        "questionId": "6103",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数一真题逐题精讲",
+        "bvid": "BV1vJ411P73N",
+        "page": 1,
+        "startSeconds": 7277,
+        "title": "2009数一 第14题",
+        "subject": "数学一",
+        "year": 2009
+      }
+    ],
+    "6104": [
+      {
+        "questionId": "6104",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数三真题逐题精讲",
+        "bvid": "BV1rE411o7xx",
+        "page": 2,
+        "startSeconds": 8,
+        "title": "2009数一 第15题（同题异源）",
+        "subject": "数学三",
+        "year": 2009
+      },
+      {
+        "questionId": "6104",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数一真题逐题精讲",
+        "bvid": "BV1vJ411P73N",
+        "page": 2,
+        "startSeconds": 42,
+        "title": "2009数一 第15题",
+        "subject": "数学一",
+        "year": 2009
+      }
+    ],
+    "6105": [
+      {
+        "questionId": "6105",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数一真题逐题精讲",
+        "bvid": "BV1vJ411P73N",
+        "page": 2,
+        "startSeconds": 320,
+        "title": "2009数一 第16题",
+        "subject": "数学一",
+        "year": 2009
+      }
+    ],
+    "6106": [
+      {
+        "questionId": "6106",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数一真题逐题精讲",
+        "bvid": "BV1vJ411P73N",
+        "page": 2,
+        "startSeconds": 1117,
+        "title": "2009数一 第17题",
+        "subject": "数学一",
+        "year": 2009
+      }
+    ],
+    "6107": [
+      {
+        "questionId": "6107",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数三真题逐题精讲",
+        "bvid": "BV1rE411o7xx",
+        "page": 2,
+        "startSeconds": 1950,
+        "title": "2009数一 第18题（同题异源）",
+        "subject": "数学三",
+        "year": 2009
+      },
+      {
+        "questionId": "6107",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数一真题逐题精讲",
+        "bvid": "BV1vJ411P73N",
+        "page": 2,
+        "startSeconds": 2568,
+        "title": "2009数一 第18题",
+        "subject": "数学一",
+        "year": 2009
+      }
+    ],
+    "6108": [
+      {
+        "questionId": "6108",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数一真题逐题精讲",
+        "bvid": "BV1vJ411P73N",
+        "page": 2,
+        "startSeconds": 3441,
+        "title": "2009数一 第19题",
+        "subject": "数学一",
+        "year": 2009
+      }
+    ],
+    "6109": [
+      {
+        "questionId": "6109",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数三真题逐题精讲",
+        "bvid": "BV1rE411o7xx",
+        "page": 2,
+        "startSeconds": 3731,
+        "title": "2009数一 第20题（同题异源）",
+        "subject": "数学三",
+        "year": 2009
+      },
+      {
+        "questionId": "6109",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数一真题逐题精讲",
+        "bvid": "BV1vJ411P73N",
+        "page": 2,
+        "startSeconds": 4778,
+        "title": "2009数一 第20题",
+        "subject": "数学一",
+        "year": 2009
+      }
+    ],
+    "6110": [
+      {
+        "questionId": "6110",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数三真题逐题精讲",
+        "bvid": "BV1rE411o7xx",
+        "page": 2,
+        "startSeconds": 4307,
+        "title": "2009数一 第21题（同题异源）",
+        "subject": "数学三",
+        "year": 2009
+      },
+      {
+        "questionId": "6110",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数一真题逐题精讲",
+        "bvid": "BV1vJ411P73N",
+        "page": 2,
+        "startSeconds": 5571,
+        "title": "2009数一 第21题",
+        "subject": "数学一",
+        "year": 2009
+      }
+    ],
+    "6111": [
+      {
+        "questionId": "6111",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数三真题逐题精讲",
+        "bvid": "BV1rE411o7xx",
+        "page": 2,
+        "startSeconds": 5410,
+        "title": "2009数一 第22题（同题异源）",
+        "subject": "数学三",
+        "year": 2009
+      },
+      {
+        "questionId": "6111",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数一真题逐题精讲",
+        "bvid": "BV1vJ411P73N",
+        "page": 2,
+        "startSeconds": 6099,
+        "title": "2009数一 第22题",
+        "subject": "数学一",
+        "year": 2009
+      }
+    ],
+    "6112": [
+      {
+        "questionId": "6112",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数一真题逐题精讲",
+        "bvid": "BV1vJ411P73N",
+        "page": 2,
+        "startSeconds": 6725,
+        "title": "2009数一 第23题",
+        "subject": "数学一",
+        "year": 2009
+      }
+    ],
     "6339": [
       {
         "questionId": "6339",
@@ -6939,6 +10055,415 @@
         "year": 2014
       }
     ],
+    "6476": [
+      {
+        "questionId": "6476",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数二真题逐题精讲",
+        "bvid": "BV1BJ411w7d8",
+        "page": 1,
+        "startSeconds": 56,
+        "title": "2009数二 第1题（选择）",
+        "subject": "数学二",
+        "year": 2009
+      },
+      {
+        "questionId": "6476",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数三真题逐题精讲",
+        "bvid": "BV1rE411o7xx",
+        "page": 1,
+        "startSeconds": 48,
+        "title": "2009数二 第1题（同题异源）",
+        "subject": "数学三",
+        "year": 2009
+      }
+    ],
+    "6477": [
+      {
+        "questionId": "6477",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数二真题逐题精讲",
+        "bvid": "BV1BJ411w7d8",
+        "page": 1,
+        "startSeconds": 416,
+        "title": "2009数二 第2题（选择）",
+        "subject": "数学二",
+        "year": 2009
+      },
+      {
+        "questionId": "6477",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数三真题逐题精讲",
+        "bvid": "BV1rE411o7xx",
+        "page": 1,
+        "startSeconds": 425,
+        "title": "2009数二 第2题（同题异源）",
+        "subject": "数学三",
+        "year": 2009
+      }
+    ],
+    "6478": [
+      {
+        "questionId": "6478",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数二真题逐题精讲",
+        "bvid": "BV1BJ411w7d8",
+        "page": 1,
+        "startSeconds": 814,
+        "title": "2009数二 第3题（选择）",
+        "subject": "数学二",
+        "year": 2009
+      }
+    ],
+    "6479": [
+      {
+        "questionId": "6479",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数二真题逐题精讲",
+        "bvid": "BV1BJ411w7d8",
+        "page": 1,
+        "startSeconds": 1084,
+        "title": "2009数二 第4题（选择）",
+        "subject": "数学二",
+        "year": 2009
+      }
+    ],
+    "6480": [
+      {
+        "questionId": "6480",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数二真题逐题精讲",
+        "bvid": "BV1BJ411w7d8",
+        "page": 1,
+        "startSeconds": 1556,
+        "title": "2009数二 第5题（选择）",
+        "subject": "数学二",
+        "year": 2009
+      }
+    ],
+    "6481": [
+      {
+        "questionId": "6481",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数二真题逐题精讲",
+        "bvid": "BV1BJ411w7d8",
+        "page": 1,
+        "startSeconds": 2382,
+        "title": "2009数二 第6题（选择）",
+        "subject": "数学二",
+        "year": 2009
+      },
+      {
+        "questionId": "6481",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数三真题逐题精讲",
+        "bvid": "BV1rE411o7xx",
+        "page": 1,
+        "startSeconds": 1055,
+        "title": "2009数二 第6题（同题异源）",
+        "subject": "数学三",
+        "year": 2009
+      }
+    ],
+    "6482": [
+      {
+        "questionId": "6482",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数二真题逐题精讲",
+        "bvid": "BV1BJ411w7d8",
+        "page": 1,
+        "startSeconds": 2995,
+        "title": "2009数二 第7题（选择）",
+        "subject": "数学二",
+        "year": 2009
+      },
+      {
+        "questionId": "6482",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数三真题逐题精讲",
+        "bvid": "BV1rE411o7xx",
+        "page": 1,
+        "startSeconds": 1590,
+        "title": "2009数二 第7题（同题异源）",
+        "subject": "数学三",
+        "year": 2009
+      }
+    ],
+    "6483": [
+      {
+        "questionId": "6483",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数二真题逐题精讲",
+        "bvid": "BV1BJ411w7d8",
+        "page": 1,
+        "startSeconds": 3650,
+        "title": "2009数二 第8题（选择）",
+        "subject": "数学二",
+        "year": 2009
+      },
+      {
+        "questionId": "6483",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数三真题逐题精讲",
+        "bvid": "BV1rE411o7xx",
+        "page": 1,
+        "startSeconds": 2109,
+        "title": "2009数二 第8题（同题异源）",
+        "subject": "数学三",
+        "year": 2009
+      }
+    ],
+    "6484": [
+      {
+        "questionId": "6484",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数二真题逐题精讲",
+        "bvid": "BV1BJ411w7d8",
+        "page": 1,
+        "startSeconds": 3973,
+        "title": "2009数二 第9题（填空）",
+        "subject": "数学二",
+        "year": 2009
+      }
+    ],
+    "6485": [
+      {
+        "questionId": "6485",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数二真题逐题精讲",
+        "bvid": "BV1BJ411w7d8",
+        "page": 1,
+        "startSeconds": 4213,
+        "title": "2009数二 第10题（填空）",
+        "subject": "数学二",
+        "year": 2009
+      }
+    ],
+    "6486": [
+      {
+        "questionId": "6486",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数二真题逐题精讲",
+        "bvid": "BV1BJ411w7d8",
+        "page": 1,
+        "startSeconds": 4447,
+        "title": "2009数二 第11题（填空）",
+        "subject": "数学二",
+        "year": 2009
+      }
+    ],
+    "6487": [
+      {
+        "questionId": "6487",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数二真题逐题精讲",
+        "bvid": "BV1BJ411w7d8",
+        "page": 1,
+        "startSeconds": 4733,
+        "title": "2009数二 第12题（填空）",
+        "subject": "数学二",
+        "year": 2009
+      }
+    ],
+    "6488": [
+      {
+        "questionId": "6488",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数二真题逐题精讲",
+        "bvid": "BV1BJ411w7d8",
+        "page": 1,
+        "startSeconds": 4948,
+        "title": "2009数二 第13题（填空）",
+        "subject": "数学二",
+        "year": 2009
+      }
+    ],
+    "6489": [
+      {
+        "questionId": "6489",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数二真题逐题精讲",
+        "bvid": "BV1BJ411w7d8",
+        "page": 1,
+        "startSeconds": 5202,
+        "title": "2009数二 第14题（填空）",
+        "subject": "数学二",
+        "year": 2009
+      }
+    ],
+    "6490": [
+      {
+        "questionId": "6490",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数二真题逐题精讲",
+        "bvid": "BV1BJ411w7d8",
+        "page": 2,
+        "startSeconds": 23,
+        "title": "2009数二 第15题（解答）",
+        "subject": "数学二",
+        "year": 2009
+      }
+    ],
+    "6491": [
+      {
+        "questionId": "6491",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数二真题逐题精讲",
+        "bvid": "BV1BJ411w7d8",
+        "page": 2,
+        "startSeconds": 459,
+        "title": "2009数二 第16题（解答）",
+        "subject": "数学二",
+        "year": 2009
+      },
+      {
+        "questionId": "6491",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数三真题逐题精讲",
+        "bvid": "BV1rE411o7xx",
+        "page": 2,
+        "startSeconds": 286,
+        "title": "2009数二 第16题（同题异源）",
+        "subject": "数学三",
+        "year": 2009
+      }
+    ],
+    "6492": [
+      {
+        "questionId": "6492",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数二真题逐题精讲",
+        "bvid": "BV1BJ411w7d8",
+        "page": 2,
+        "startSeconds": 1704,
+        "title": "2009数二 第17题（解答）",
+        "subject": "数学二",
+        "year": 2009
+      }
+    ],
+    "6493": [
+      {
+        "questionId": "6493",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数二真题逐题精讲",
+        "bvid": "BV1BJ411w7d8",
+        "page": 2,
+        "startSeconds": 2499,
+        "title": "2009数二 第18题（解答）",
+        "subject": "数学二",
+        "year": 2009
+      }
+    ],
+    "6494": [
+      {
+        "questionId": "6494",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数二真题逐题精讲",
+        "bvid": "BV1BJ411w7d8",
+        "page": 2,
+        "startSeconds": 3595,
+        "title": "2009数二 第19题（解答）",
+        "subject": "数学二",
+        "year": 2009
+      },
+      {
+        "questionId": "6494",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数三真题逐题精讲",
+        "bvid": "BV1rE411o7xx",
+        "page": 2,
+        "startSeconds": 1273,
+        "title": "2009数二 第19题（同题异源）",
+        "subject": "数学三",
+        "year": 2009
+      }
+    ],
+    "6495": [
+      {
+        "questionId": "6495",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数二真题逐题精讲",
+        "bvid": "BV1BJ411w7d8",
+        "page": 2,
+        "startSeconds": 4152,
+        "title": "2009数二 第20题（解答）",
+        "subject": "数学二",
+        "year": 2009
+      }
+    ],
+    "6496": [
+      {
+        "questionId": "6496",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数二真题逐题精讲",
+        "bvid": "BV1BJ411w7d8",
+        "page": 2,
+        "startSeconds": 4853,
+        "title": "2009数二 第21题（解答）",
+        "subject": "数学二",
+        "year": 2009
+      },
+      {
+        "questionId": "6496",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数三真题逐题精讲",
+        "bvid": "BV1rE411o7xx",
+        "page": 2,
+        "startSeconds": 1950,
+        "title": "2009数二 第21题（同题异源）",
+        "subject": "数学三",
+        "year": 2009
+      }
+    ],
+    "6497": [
+      {
+        "questionId": "6497",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数二真题逐题精讲",
+        "bvid": "BV1BJ411w7d8",
+        "page": 2,
+        "startSeconds": 5972,
+        "title": "2009数二 第22题（解答）",
+        "subject": "数学二",
+        "year": 2009
+      },
+      {
+        "questionId": "6497",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数三真题逐题精讲",
+        "bvid": "BV1rE411o7xx",
+        "page": 2,
+        "startSeconds": 3731,
+        "title": "2009数二 第22题（同题异源）",
+        "subject": "数学三",
+        "year": 2009
+      }
+    ],
+    "6498": [
+      {
+        "questionId": "6498",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数二真题逐题精讲",
+        "bvid": "BV1BJ411w7d8",
+        "page": 2,
+        "startSeconds": 6547,
+        "title": "2009数二 第23题（解答）",
+        "subject": "数学二",
+        "year": 2009
+      },
+      {
+        "questionId": "6498",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数三真题逐题精讲",
+        "bvid": "BV1rE411o7xx",
+        "page": 2,
+        "startSeconds": 4307,
+        "title": "2009数二 第23题（同题异源）",
+        "subject": "数学三",
+        "year": 2009
+      }
+    ],
     "6725": [
       {
         "questionId": "6725",
@@ -7030,6 +10555,266 @@
         "year": 2014
       }
     ],
+    "6862": [
+      {
+        "questionId": "6862",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数三真题逐题精讲",
+        "bvid": "BV1rE411o7xx",
+        "page": 1,
+        "startSeconds": 48,
+        "title": "2009数三 第1题（选择）",
+        "subject": "数学三",
+        "year": 2009
+      }
+    ],
+    "6863": [
+      {
+        "questionId": "6863",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数三真题逐题精讲",
+        "bvid": "BV1rE411o7xx",
+        "page": 1,
+        "startSeconds": 425,
+        "title": "2009数三 第2题（选择）",
+        "subject": "数学三",
+        "year": 2009
+      }
+    ],
+    "6864": [
+      {
+        "questionId": "6864",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数三真题逐题精讲",
+        "bvid": "BV1rE411o7xx",
+        "page": 1,
+        "startSeconds": 787,
+        "title": "2009数三 第3题（选择）",
+        "subject": "数学三",
+        "year": 2009
+      }
+    ],
+    "6865": [
+      {
+        "questionId": "6865",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数三真题逐题精讲",
+        "bvid": "BV1rE411o7xx",
+        "page": 1,
+        "startSeconds": 1055,
+        "title": "2009数三 第4题（选择）",
+        "subject": "数学三",
+        "year": 2009
+      }
+    ],
+    "6866": [
+      {
+        "questionId": "6866",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数三真题逐题精讲",
+        "bvid": "BV1rE411o7xx",
+        "page": 1,
+        "startSeconds": 1590,
+        "title": "2009数三 第5题（选择）",
+        "subject": "数学三",
+        "year": 2009
+      }
+    ],
+    "6867": [
+      {
+        "questionId": "6867",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数三真题逐题精讲",
+        "bvid": "BV1rE411o7xx",
+        "page": 1,
+        "startSeconds": 2109,
+        "title": "2009数三 第6题（选择）",
+        "subject": "数学三",
+        "year": 2009
+      }
+    ],
+    "6870": [
+      {
+        "questionId": "6870",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数三真题逐题精讲",
+        "bvid": "BV1rE411o7xx",
+        "page": 1,
+        "startSeconds": 3233,
+        "title": "2009数三 第9题（填空）",
+        "subject": "数学三",
+        "year": 2009
+      }
+    ],
+    "6871": [
+      {
+        "questionId": "6871",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数三真题逐题精讲",
+        "bvid": "BV1rE411o7xx",
+        "page": 1,
+        "startSeconds": 3515,
+        "title": "2009数三 第10题（填空）",
+        "subject": "数学三",
+        "year": 2009
+      }
+    ],
+    "6872": [
+      {
+        "questionId": "6872",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数三真题逐题精讲",
+        "bvid": "BV1rE411o7xx",
+        "page": 1,
+        "startSeconds": 3631,
+        "title": "2009数三 第11题（填空）",
+        "subject": "数学三",
+        "year": 2009
+      }
+    ],
+    "6873": [
+      {
+        "questionId": "6873",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数三真题逐题精讲",
+        "bvid": "BV1rE411o7xx",
+        "page": 1,
+        "startSeconds": 3985,
+        "title": "2009数三 第12题（填空）",
+        "subject": "数学三",
+        "year": 2009
+      }
+    ],
+    "6874": [
+      {
+        "questionId": "6874",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数三真题逐题精讲",
+        "bvid": "BV1rE411o7xx",
+        "page": 1,
+        "startSeconds": 4377,
+        "title": "2009数三 第13题（填空）",
+        "subject": "数学三",
+        "year": 2009
+      }
+    ],
+    "6875": [
+      {
+        "questionId": "6875",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数三真题逐题精讲",
+        "bvid": "BV1rE411o7xx",
+        "page": 1,
+        "startSeconds": 4507,
+        "title": "2009数三 第14题（填空）",
+        "subject": "数学三",
+        "year": 2009
+      }
+    ],
+    "6876": [
+      {
+        "questionId": "6876",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数三真题逐题精讲",
+        "bvid": "BV1rE411o7xx",
+        "page": 2,
+        "startSeconds": 8,
+        "title": "2009数三 第15题（解答）",
+        "subject": "数学三",
+        "year": 2009
+      }
+    ],
+    "6878": [
+      {
+        "questionId": "6878",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数三真题逐题精讲",
+        "bvid": "BV1rE411o7xx",
+        "page": 2,
+        "startSeconds": 1273,
+        "title": "2009数三 第17题（解答）",
+        "subject": "数学三",
+        "year": 2009
+      }
+    ],
+    "6879": [
+      {
+        "questionId": "6879",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数三真题逐题精讲",
+        "bvid": "BV1rE411o7xx",
+        "page": 2,
+        "startSeconds": 1950,
+        "title": "2009数三 第18题（解答）",
+        "subject": "数学三",
+        "year": 2009
+      }
+    ],
+    "6880": [
+      {
+        "questionId": "6880",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数三真题逐题精讲",
+        "bvid": "BV1rE411o7xx",
+        "page": 2,
+        "startSeconds": 3030,
+        "title": "2009数三 第19题（解答）",
+        "subject": "数学三",
+        "year": 2009
+      }
+    ],
+    "6881": [
+      {
+        "questionId": "6881",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数三真题逐题精讲",
+        "bvid": "BV1rE411o7xx",
+        "page": 2,
+        "startSeconds": 3731,
+        "title": "2009数三 第20题（解答）",
+        "subject": "数学三",
+        "year": 2009
+      }
+    ],
+    "6883": [
+      {
+        "questionId": "6883",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数三真题逐题精讲",
+        "bvid": "BV1rE411o7xx",
+        "page": 2,
+        "startSeconds": 4618,
+        "title": "2009数三 第22题（解答）",
+        "subject": "数学三",
+        "year": 2009
+      }
+    ],
+    "6884": [
+      {
+        "questionId": "6884",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数三真题逐题精讲",
+        "bvid": "BV1rE411o7xx",
+        "page": 2,
+        "startSeconds": 5410,
+        "title": "2009数三 第23题（解答）",
+        "subject": "数学三",
+        "year": 2009
+      }
+    ],
+    "7100": [
+      {
+        "questionId": "7100",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 24,
+        "startSeconds": 2375,
+        "title": "1996数二 第23题",
+        "subject": "数学二",
+        "year": 1996
+      }
+    ],
     "7109": [
       {
         "questionId": "7109",
@@ -7041,6 +10826,32 @@
         "title": "2010 数一 第10题",
         "subject": "数学一",
         "year": 2010
+      }
+    ],
+    "7110": [
+      {
+        "questionId": "7110",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 23,
+        "startSeconds": 917,
+        "title": "1991数二 第1题",
+        "subject": "数学二",
+        "year": 1991
+      }
+    ],
+    "7129": [
+      {
+        "questionId": "7129",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1997数二真题逐题精讲",
+        "bvid": "BV1qz4y1Z7nW",
+        "page": 2,
+        "startSeconds": 576,
+        "title": "1997数二 第13题（解答3 不定积分）",
+        "subject": "数学二",
+        "year": 1997
       }
     ],
     "7171": [
@@ -7067,6 +10878,19 @@
         "year": 2023
       }
     ],
+    "7180": [
+      {
+        "questionId": "7180",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数二真题逐题精讲",
+        "bvid": "BV1BJ411w7d8",
+        "page": 1,
+        "startSeconds": 4213,
+        "title": "2009数二 填空（反常积分定参数）",
+        "subject": "数学二",
+        "year": 2009
+      }
+    ],
     "7181": [
       {
         "questionId": "7181",
@@ -7078,6 +10902,19 @@
         "title": "2011 数二 第12题",
         "subject": "数学二",
         "year": 2011
+      }
+    ],
+    "7184": [
+      {
+        "questionId": "7184",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 25,
+        "startSeconds": 258,
+        "title": "1996数二 第9题",
+        "subject": "数学二",
+        "year": 1996
       }
     ],
     "7187": [
@@ -7093,6 +10930,45 @@
         "year": 2015
       }
     ],
+    "7219": [
+      {
+        "questionId": "7219",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 25,
+        "startSeconds": 1274,
+        "title": "1995数二 第11题",
+        "subject": "数学二",
+        "year": 1995
+      }
+    ],
+    "7238": [
+      {
+        "questionId": "7238",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 21,
+        "startSeconds": 782,
+        "title": "1992数二 第6题",
+        "subject": "数学二",
+        "year": 1992
+      }
+    ],
+    "7239": [
+      {
+        "questionId": "7239",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 21,
+        "startSeconds": 1058,
+        "title": "1996数二 第7题",
+        "subject": "数学二",
+        "year": 1996
+      }
+    ],
     "7240": [
       {
         "questionId": "7240",
@@ -7106,6 +10982,32 @@
         "year": 2012
       }
     ],
+    "7262": [
+      {
+        "questionId": "7262",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 14,
+        "startSeconds": 386,
+        "title": "1990数二 第5题",
+        "subject": "数学二",
+        "year": 1990
+      }
+    ],
+    "7264": [
+      {
+        "questionId": "7264",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 14,
+        "startSeconds": 1041,
+        "title": "1992数二 第6题",
+        "subject": "数学二",
+        "year": 1992
+      }
+    ],
     "7268": [
       {
         "questionId": "7268",
@@ -7117,6 +11019,45 @@
         "title": "2014 数二 第20题",
         "subject": "数学二",
         "year": 2014
+      }
+    ],
+    "7283": [
+      {
+        "questionId": "7283",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 27,
+        "startSeconds": 1013,
+        "title": "1987数二 第7题",
+        "subject": "数学二",
+        "year": 1987
+      }
+    ],
+    "7284": [
+      {
+        "questionId": "7284",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 27,
+        "startSeconds": 111,
+        "title": "1988数二 旋转体体积选择题",
+        "subject": "数学二",
+        "year": 1988
+      }
+    ],
+    "7286": [
+      {
+        "questionId": "7286",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 27,
+        "startSeconds": 307,
+        "title": "1989数二 旋转体体积选择题",
+        "subject": "数学二",
+        "year": 1989
       }
     ],
     "7287": [
@@ -7143,6 +11084,32 @@
         "title": "2011 数三 第12题",
         "subject": "数学三",
         "year": 2011
+      }
+    ],
+    "7294": [
+      {
+        "questionId": "7294",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数二真题逐题精讲",
+        "bvid": "BV1BJ411w7d8",
+        "page": 2,
+        "startSeconds": 2499,
+        "title": "2009数二 解答（微分方程+旋转体体积）",
+        "subject": "数学二",
+        "year": 2009
+      }
+    ],
+    "7299": [
+      {
+        "questionId": "7299",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 27,
+        "startSeconds": 1692,
+        "title": "1990数二 第4题",
+        "subject": "数学二",
+        "year": 1990
       }
     ],
     "7301": [
@@ -7182,6 +11149,58 @@
         "year": 2013
       }
     ],
+    "7318": [
+      {
+        "questionId": "7318",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 27,
+        "startSeconds": 1172,
+        "title": "1989数二 第4题",
+        "subject": "数学二",
+        "year": 1989
+      }
+    ],
+    "7319": [
+      {
+        "questionId": "7319",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1997数二真题逐题精讲",
+        "bvid": "BV1qz4y1Z7nW",
+        "page": 3,
+        "startSeconds": 16.8,
+        "title": "1997数二 第19题（第六大题 旋转体体积最小）",
+        "subject": "数学二",
+        "year": 1997
+      }
+    ],
+    "7327": [
+      {
+        "questionId": "7327",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 27,
+        "startSeconds": 393,
+        "title": "1996数二 绕直线y=m旋转选择题",
+        "subject": "数学二",
+        "year": 1996
+      }
+    ],
+    "7330": [
+      {
+        "questionId": "7330",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 27,
+        "startSeconds": 2604,
+        "title": "1993数二 绕直线x=2旋转题",
+        "subject": "数学二",
+        "year": 1993
+      }
+    ],
     "7361": [
       {
         "questionId": "7361",
@@ -7192,6 +11211,19 @@
         "startSeconds": 0,
         "title": "基础填空 3",
         "subject": "数学一"
+      }
+    ],
+    "7364": [
+      {
+        "questionId": "7364",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数一真题逐题精讲",
+        "bvid": "BV1vJ411P73N",
+        "page": 1,
+        "startSeconds": 6608,
+        "title": "2009数一 第13题",
+        "subject": "数学一",
+        "year": 2009
       }
     ],
     "7366": [
@@ -7232,6 +11264,19 @@
         "year": 2010
       }
     ],
+    "7593": [
+      {
+        "questionId": "7593",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 30,
+        "startSeconds": 1779,
+        "title": "1996数二 通解填空题",
+        "subject": "数学二",
+        "year": 1996
+      }
+    ],
     "7594": [
       {
         "questionId": "7594",
@@ -7243,6 +11288,19 @@
         "title": "2013 数三 第12题",
         "subject": "数学三",
         "year": 2013
+      }
+    ],
+    "7603": [
+      {
+        "questionId": "7603",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 30,
+        "startSeconds": 853,
+        "title": "1989数二 特解形式选择题",
+        "subject": "数学二",
+        "year": 1989
       }
     ],
     "7605": [
@@ -7258,6 +11316,71 @@
         "year": 2011
       }
     ],
+    "7614": [
+      {
+        "questionId": "7614",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 30,
+        "startSeconds": 1617,
+        "title": "1995数二 通解填空题",
+        "subject": "数学二",
+        "year": 1995
+      }
+    ],
+    "7617": [
+      {
+        "questionId": "7617",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 31,
+        "startSeconds": 2535,
+        "title": "1996数二 第4题",
+        "subject": "数学二",
+        "year": 1996
+      }
+    ],
+    "7622": [
+      {
+        "questionId": "7622",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 30,
+        "startSeconds": 2080,
+        "title": "1988数一二 第9题",
+        "subject": "数学二",
+        "year": 1988
+      }
+    ],
+    "7626": [
+      {
+        "questionId": "7626",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 30,
+        "startSeconds": 1836,
+        "title": "1987数二 第13题",
+        "subject": "数学二",
+        "year": 1987
+      }
+    ],
+    "7628": [
+      {
+        "questionId": "7628",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 31,
+        "startSeconds": 1273,
+        "title": "1992数二 第15题",
+        "subject": "数学二",
+        "year": 1992
+      }
+    ],
     "7629": [
       {
         "questionId": "7629",
@@ -7269,6 +11392,45 @@
         "title": "2010 数一 第15题",
         "subject": "数学一",
         "year": 2010
+      }
+    ],
+    "7641": [
+      {
+        "questionId": "7641",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 31,
+        "startSeconds": 31,
+        "title": "1990数二 含参数a通解题",
+        "subject": "数学二",
+        "year": 1990
+      }
+    ],
+    "7643": [
+      {
+        "questionId": "7643",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 31,
+        "startSeconds": 2086,
+        "title": "1994数二 第3题",
+        "subject": "数学二",
+        "year": 1994
+      }
+    ],
+    "7645": [
+      {
+        "questionId": "7645",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 31,
+        "startSeconds": 746,
+        "title": "1991数二 叠加原理通解题",
+        "subject": "数学二",
+        "year": 1991
       }
     ],
     "7652": [
@@ -7346,6 +11508,32 @@
         "year": 2017
       }
     ],
+    "7705": [
+      {
+        "questionId": "7705",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 28,
+        "startSeconds": 666,
+        "title": "1996数二 楔形体体积题",
+        "subject": "数学二",
+        "year": 1996
+      }
+    ],
+    "7711": [
+      {
+        "questionId": "7711",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 28,
+        "startSeconds": 155,
+        "title": "1992数二 第4题",
+        "subject": "数学二",
+        "year": 1992
+      }
+    ],
     "7712": [
       {
         "questionId": "7712",
@@ -7383,6 +11571,19 @@
         "year": 2010
       }
     ],
+    "7725": [
+      {
+        "questionId": "7725",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 28,
+        "startSeconds": 425,
+        "title": "1995数二 摆线一拱弧长题",
+        "subject": "数学二",
+        "year": 1995
+      }
+    ],
     "7738": [
       {
         "questionId": "7738",
@@ -7393,6 +11594,19 @@
         "startSeconds": 0,
         "title": "—",
         "subject": "数学一"
+      }
+    ],
+    "7739": [
+      {
+        "questionId": "7739",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 28,
+        "startSeconds": 1913,
+        "title": "1991数二 第2题",
+        "subject": "数学二",
+        "year": 1991
       }
     ],
     "7743": [
@@ -7406,6 +11620,19 @@
         "title": "2010 数二 第18题",
         "subject": "数学二",
         "year": 2010
+      }
+    ],
+    "7744": [
+      {
+        "questionId": "7744",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 28,
+        "startSeconds": 1456,
+        "title": "1991数二 引力选择题",
+        "subject": "数学二",
+        "year": 1991
       }
     ],
     "7760": [
@@ -11759,6 +15986,45 @@
         "year": 2013
       }
     ],
+    "8738": [
+      {
+        "questionId": "8738",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数一真题逐题精讲",
+        "bvid": "BV1vJ411P73N",
+        "page": 1,
+        "startSeconds": 1554,
+        "title": "2009数一 第4题",
+        "subject": "数学一",
+        "year": 2009
+      }
+    ],
+    "8773": [
+      {
+        "questionId": "8773",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1997数一真题逐题精讲",
+        "bvid": "BV1nZ4y157UF",
+        "page": 3,
+        "startSeconds": 10,
+        "title": "1997数一 解答大题六",
+        "subject": "数学一",
+        "year": 1997
+      }
+    ],
+    "8794": [
+      {
+        "questionId": "8794",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数三真题逐题精讲",
+        "bvid": "BV1rE411o7xx",
+        "page": 1,
+        "startSeconds": 3631,
+        "title": "2009数三 填空（幂级数收敛半径）",
+        "subject": "数学三",
+        "year": 2009
+      }
+    ],
     "8824": [
       {
         "questionId": "8824",
@@ -11770,6 +16036,19 @@
         "title": "2011 数一 第2题",
         "subject": "数学一",
         "year": 2011
+      }
+    ],
+    "8827": [
+      {
+        "questionId": "8827",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1997数一真题逐题精讲",
+        "bvid": "BV1nZ4y157UF",
+        "page": 1,
+        "startSeconds": 358,
+        "title": "1997数一 填空第2题",
+        "subject": "数学一",
+        "year": 1997
       }
     ],
     "8828": [
@@ -11836,6 +16115,32 @@
         "year": 2012
       }
     ],
+    "8930": [
+      {
+        "questionId": "8930",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳2009数一真题逐题精讲",
+        "bvid": "BV1vJ411P73N",
+        "page": 2,
+        "startSeconds": 320,
+        "title": "2009数一 第16题",
+        "subject": "数学一",
+        "year": 2009
+      }
+    ],
+    "10519": [
+      {
+        "questionId": "10519",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 5,
+        "startSeconds": 662,
+        "title": "1992数二 第8题",
+        "subject": "数学二",
+        "year": 1992
+      }
+    ],
     "10520": [
       {
         "questionId": "10520",
@@ -11847,6 +16152,162 @@
         "title": "2013 数二 第1题",
         "subject": "数学二",
         "year": 2013
+      }
+    ],
+    "10549": [
+      {
+        "questionId": "10549",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 26,
+        "startSeconds": 1802,
+        "title": "1991数二 反常积分填空题",
+        "subject": "数学二",
+        "year": 1991
+      }
+    ],
+    "10550": [
+      {
+        "questionId": "10550",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 22,
+        "startSeconds": 964,
+        "title": "1989数二 第13题",
+        "subject": "数学二",
+        "year": 1989
+      }
+    ],
+    "10551": [
+      {
+        "questionId": "10551",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 22,
+        "startSeconds": 306,
+        "title": "1994数二 第14题",
+        "subject": "数学二",
+        "year": 1994
+      }
+    ],
+    "10557": [
+      {
+        "questionId": "10557",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 24,
+        "startSeconds": 2058,
+        "title": "1992数一二 第6题",
+        "subject": "数学二",
+        "year": 1992
+      }
+    ],
+    "10576": [
+      {
+        "questionId": "10576",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 24,
+        "startSeconds": 1425,
+        "title": "1991数二 第9题",
+        "subject": "数学二",
+        "year": 1991
+      }
+    ],
+    "10582": [
+      {
+        "questionId": "10582",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 24,
+        "startSeconds": 373,
+        "title": "1988数二 第10题",
+        "subject": "数学二",
+        "year": 1988
+      }
+    ],
+    "10644": [
+      {
+        "questionId": "10644",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 27,
+        "startSeconds": 2205,
+        "title": "1991数二 第19题",
+        "subject": "数学二",
+        "year": 1991
+      }
+    ],
+    "10656": [
+      {
+        "questionId": "10656",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 21,
+        "startSeconds": 443,
+        "title": "1995数二 第11题",
+        "subject": "数学二",
+        "year": 1995
+      }
+    ],
+    "10662": [
+      {
+        "questionId": "10662",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 21,
+        "startSeconds": 2348,
+        "title": "1994数二 第5题",
+        "subject": "数学二",
+        "year": 1994
+      }
+    ],
+    "10664": [
+      {
+        "questionId": "10664",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 14,
+        "startSeconds": 1595,
+        "title": "1991数二 第9题",
+        "subject": "数学二",
+        "year": 1991
+      }
+    ],
+    "10670": [
+      {
+        "questionId": "10670",
+        "teacher": "李艳芳",
+        "seriesTitle": "定积分的物理应用之液体压力(2002数二)",
+        "bvid": "BV1P5411L7zF",
+        "page": 1,
+        "startSeconds": 240,
+        "title": "2002数二 解答题（闸门液体压力）",
+        "subject": "数学二",
+        "year": 2002
+      }
+    ],
+    "10673": [
+      {
+        "questionId": "10673",
+        "teacher": "李艳芳",
+        "seriesTitle": "李艳芳1987-1996数二真题分类精讲",
+        "bvid": "BV1qR4y1M7DN",
+        "page": 30,
+        "startSeconds": 2591,
+        "title": "1989数一二 变限积分方程求解题",
+        "subject": "数学二",
+        "year": 1989
       }
     ],
     "10701": [
