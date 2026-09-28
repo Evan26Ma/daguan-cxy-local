@@ -236,6 +236,13 @@ test("公开预览版只读，个人功能需要预览密钥", () => {
   assert.match(app, /banner\.hidden = !visible/);
 });
 
+test("普通本地模式隐藏访问 Token 和预览锁定按钮", () => {
+  const newUi = fs.readFileSync(new URL("../web/app-new.js", import.meta.url), "utf8");
+  assert.match(newUi, /unlock\.hidden = !this\.mode \|\| this\.unlocked/);
+  assert.match(newUi, /lock\.hidden = !this\.mode \|\| !this\.unlocked/);
+  assert.match(app, /unlock\.hidden = !previewMode \|\| previewUnlocked/);
+});
+
 test("应用更新提醒使用本地运行版本", () => {
   assert.match(app, /fetch\("\.\/api\/runtime"/);
   assert.match(app, /checkRuntimeVersion\(\)/);
