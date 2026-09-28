@@ -12,18 +12,26 @@ const files = [
   "web/legacy.html",
 ];
 
-test("Windows 下载入口只指向固定版本的桌面安装器", () => {
+test("普通用户入口指向独立的百度网盘分享，桌面版和网页包保持分开", () => {
   for (const file of files) {
     const source = fs.readFileSync(new URL(`../${file}`, import.meta.url), "utf8");
     assert.doesNotMatch(source, /releases\/latest\/download\//, file);
-    assert.match(source, new RegExp(`releases/download/${RELEASE}/DaguanMathDesktop-Setup\\.exe`), file);
-    assert.doesNotMatch(source, /releases\/download\/v\d+\.\d+\.\d+\/DaguanMath-windows-x64\.(?:exe|zip)/, file);
+  }
+  for (const file of ["README.md", "docs/Windows新手安装与配置.md", "docs/使用教程.md", "web/index.html", "web/landing.html", "web/legacy.html"]) {
+    const source = fs.readFileSync(new URL(`../${file}`, import.meta.url), "utf8");
+    assert.match(source, /surl=VrW0Z-ThDSM7f_xx7uCUZw/, `${file}: desktop link`);
+    assert.match(source, /dgy1/, `${file}: desktop code`);
+  }
+  for (const file of ["README.md", "docs/Windows新手安装与配置.md", "docs/使用教程.md", "web/landing.html"]) {
+    const source = fs.readFileSync(new URL(`../${file}`, import.meta.url), "utf8");
+    assert.match(source, /surl=VJwUxgElbURfw7Aj4Gpy4Q/, `${file}: web package link`);
+    assert.match(source, /wweb/, `${file}: web package code`);
   }
 });
 
-test("落地页的 Windows 安装指南指向 main 上的桌面教程", () => {
+test("落地页指向 main 上的网盘下载与配置指南", () => {
   const landing = fs.readFileSync(new URL("../web/landing.html", import.meta.url), "utf8");
-  assert.match(landing, /github\.com\/Evan26Ma\/daguan-cxy-local\/blob\/main\/docs\/Windows新手安装与配置\.md/);
+  assert.match(landing, /github\.com\/Evan26Ma\/daguan-cxy-local\/blob\/main\/docs\/百度网盘下载与引导页配置\.md/);
 });
 
 test("v1.0.0 发布说明只列出桌面安装及其更新资产", () => {
