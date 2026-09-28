@@ -2,6 +2,15 @@
 
 本项目采用日期加修订号标识本地构建版本。尚未完成浏览器验收的内容放在“待发布”版本中。
 
+## 待发布
+
+### 代码签名
+
+- 接入 SignPath Foundation 免费开源代码签名：`v*` tag 触发的构建会先产出未签名 EXE，提交 SignPath 人工批准后取回已签名 EXE，再打包 ZIP 与 SHA256；
+- 构建阶段写入正确的 PE 元数据（`ProductName` 大观园数学题库、`CompanyName` Evan26Ma、`ProductVersion` 取自 tag），不再残留 `Node.js` 的产品信息，这既是签名工具的前置要求，也让文件属性显示正常；
+- 根目录补上 `LICENSE`（GPL-3.0，与 upstream 一致），新增[代码签名政策](docs/CODE_SIGNING_POLICY.md)与 [SignPath 申请指南](docs/SignPath免费代码签名申请指南.md)；
+- 未配置 SignPath 变量时工作流自动跳过签名，发布流程不受影响。
+
 ## 2026.09.27-r27
 
 ### 发布与下载

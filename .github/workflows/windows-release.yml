@@ -8,10 +8,20 @@ on:
 
 permissions:
   contents: write
+  # SignPath 需要通过 Actions API 取回上传的未签名产物。
+  actions: read
 
 jobs:
   windows-package:
     runs-on: windows-latest
+    env:
+      # 以下 SignPath 配置留空时，签名相关步骤会被整体跳过，
+      # 发布包照常产出（未签名），本地开发与未申请到证书时都不受影响。
+      SIGNPATH_ORGANIZATION_ID: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+      SIGNPATH_PROJECT_SLUG: ${{ vars.SIGNPATH_PROJECT_SLUG }}
+      SIGNPATH_SIGNING_POLICY_SLUG: ${{ vars.SIGNPATH_SIGNING_POLICY_SLUG }}
+      SIGNPATH_ARTIFACT_CONFIGURATION_SLUG: ${{ vars.SIGNPATH_ARTIFACT_CONFIGURATION_SLUG }}
+      RELEASE_TAG: ${{ github.ref_type == 'tag' && github.ref_name || '' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -25,11 +35,67 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build Windows release package
-        run: npm run package:windows:release
+      # 先只产出未签名的单文件 EXE，并写入 PE 元数据（产品名/版本），
+      # 这两项都是 SignPath 元数据校验的硬要求。
+      - name: Build unsigned Windows executable
+        id: build
+        shell: pwsh
+        run: |
+          if ($env:RELEASE_TAG) { $env:DAGUAN_VERSION = $env:RELEASE_TAG }
+          npm run package:windows
+          Copy-Item 'dist/大观园数学题库.exe' 'dist/DaguanMath-windows-x64.exe' -Force
+          $version = (Get-Content 'dist/DaguanMath-version.txt' -Raw).Trim()
+          Write-Host "PE 元数据版本：$version"
+          "metadata_version=$version" >> $env:GITHUB_OUTPUT
 
       - name: Run tests
         run: npm test
+
+      - name: Upload unsigned executable
+        id: upload-unsigned
+        if: ${{ env.SIGNPATH_ORGANIZATION_ID != '' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: DaguanMath-unsigned-exe
+          path: dist/DaguanMath-windows-x64.exe
+          archive: false
+          if-no-files-found: error
+
+      - name: Submit SignPath signing request
+        id: signpath
+        if: ${{ env.SIGNPATH_ORGANIZATION_ID != '' }}
+        uses: signpath/github-action-submit-signing-request@v3
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ env.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: ${{ env.SIGNPATH_PROJECT_SLUG }}
+          signing-policy-slug: ${{ env.SIGNPATH_SIGNING_POLICY_SLUG }}
+          artifact-configuration-slug: ${{ env.SIGNPATH_ARTIFACT_CONFIGURATION_SLUG }}
+          github-artifact-id: ${{ steps.upload-unsigned.outputs.artifact-id }}
+          wait-for-completion: true
+          output-artifact-directory: dist-signed
+          skip-decompress: true
+          parameters: |
+            version: "${{ steps.build.outputs.metadata_version }}"
+
+      # 签名后的 EXE 覆盖回 dist，后续打包步骤据此生成 ZIP 与校验和。
+      - name: Verify and adopt signed executable
+        if: ${{ env.SIGNPATH_ORGANIZATION_ID != '' }}
+        shell: pwsh
+        run: |
+          $signed = Get-ChildItem -Path 'dist-signed' -Recurse -Filter 'DaguanMath-windows-x64.exe' | Select-Object -First 1
+          if (-not $signed) { throw '未找到签名后的可执行文件，请检查 SignPath 产物目录结构。' }
+          $info = Get-AuthenticodeSignature $signed.FullName
+          Write-Host "签名状态：$($info.Status)"
+          Write-Host "签名主体：$($info.SignerCertificate.Subject)"
+          if ($info.Status -ne 'Valid') { throw "签名校验未通过：$($info.Status)" }
+          Copy-Item $signed.FullName 'dist/大观园数学题库.exe' -Force
+
+      - name: Assemble Windows release package
+        shell: pwsh
+        env:
+          DAGUAN_SKIP_BUILD: "1"
+        run: npm run package:windows:release
 
       - name: Publish GitHub release assets
         uses: softprops/action-gh-release@v2

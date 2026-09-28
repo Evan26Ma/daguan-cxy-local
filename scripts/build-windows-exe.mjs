@@ -11,6 +11,17 @@ const BUILD = path.join(ARTIFACT_ROOT, ".build", "sea");
 const DIST = path.join(ARTIFACT_ROOT, "dist");
 const OUT = path.join(DIST, "大观园数学题库.exe");
 const NODE_SEA_FUSE = "NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2";
+// 注意：本节必须放在 WINDOWS_EXCLUDED_WEB_FILES 之前。
+// test/dual-ui.test.mjs 会把从 WINDOWS_EXCLUDED_WEB_FILES 到 writeField 之间的源码
+// 切片后在 vm 里执行（上下文只注入 Buffer），因此该区间内不能有顶层 await 或
+// 依赖 path/DIST/process 的顶层求值语句。
+const PACKAGE_JSON = JSON.parse(fs.readFileSync(path.join(ROOT, "package.json"), "utf8"));
+const RELEASE_EXE_NAME = "DaguanMath-windows-x64.exe";
+const METADATA_VERSION_FILE = path.join(DIST, "DaguanMath-version.txt");
+const PRODUCT_NAME = process.env.DAGUAN_PRODUCT_NAME || "大观园数学题库";
+const COMPANY_NAME = process.env.DAGUAN_COMPANY_NAME || "Evan26Ma";
+const FILE_DESCRIPTION = process.env.DAGUAN_FILE_DESCRIPTION || "大观园数学题库本地版";
+
 const WINDOWS_EXCLUDED_WEB_FILES = new Set([
   "web/landing.html",
   "web/landing.css",
@@ -25,6 +36,48 @@ function shouldBundle(relative) {
     !relative.startsWith("web/ui-preview/") &&
     !/^web\/index-.*-backup\.html$/i.test(relative) &&
     !relative.startsWith("web/index-backup/");
+}
+
+function normalizeVersion(value) {
+  const numbers = String(value).replace(/^v/i, "").match(/\d+/g) || [];
+  const parts = numbers.slice(0, 4).map((number) => Math.min(Number(number), 65535));
+  while (parts.length < 4) parts.push(0);
+  return parts.join(".");
+}
+
+async function applyWindowsMetadata(target) {
+  if (process.env.DAGUAN_SKIP_EXE_METADATA === "1") {
+    console.log("已按 DAGUAN_SKIP_EXE_METADATA=1 跳过 EXE 元数据写入。");
+    return;
+  }
+  const version = normalizeVersion(process.env.DAGUAN_VERSION || PACKAGE_JSON.version || "0.0.0");
+  const staged = `${target}.metadata`;
+  // run() 对 .cmd 命令会把参数拼成一条命令行，含空格的取值必须显式加引号。
+  const cmdArg = (value) => {
+    const text = String(value);
+    return process.platform === "win32" && /[\s"]/.test(text) ? `"${text}"` : text;
+  };
+  run(process.platform === "win32" ? "npx.cmd" : "npx", [
+    "--yes", "resedit-cli",
+    "--in", cmdArg(target),
+    "--out", cmdArg(staged),
+    // node.exe 自带的旧签名在注入 SEA blob 后已失效，必须显式忽略才能读取资源。
+    "--ignore-signed",
+    "--allow-shrink",
+    "--company-name", cmdArg(COMPANY_NAME),
+    "--product-name", cmdArg(PRODUCT_NAME),
+    "--file-description", cmdArg(FILE_DESCRIPTION),
+    "--internal-name", "DaguanMath",
+    "--original-filename", cmdArg(RELEASE_EXE_NAME),
+    "--file-version", version,
+    "--product-version", version,
+  ]);
+  // resedit 不支持 --in 与 --out 同路径（会静默不写入），必须先写临时文件再替换。
+  await fsp.rm(target, { force: true });
+  await fsp.rename(staged, target);
+  await fsp.mkdir(DIST, { recursive: true });
+  await fsp.writeFile(METADATA_VERSION_FILE, `${version}\n`, "utf8");
+  console.log(`EXE 元数据已写入：${PRODUCT_NAME} ${version}（用于 SignPath 元数据校验）`);
 }
 
 function packageServiceWorker(relative, data) {
@@ -135,6 +188,7 @@ await fsp.writeFile(configPath, JSON.stringify({
 run(process.execPath, ["--experimental-sea-config", configPath]);
 await fsp.copyFile(process.execPath, OUT);
 run(process.platform === "win32" ? "npx.cmd" : "npx", ["--yes", "postject", OUT, "NODE_SEA_BLOB", blobPath, "--sentinel-fuse", NODE_SEA_FUSE]);
+await applyWindowsMetadata(OUT);
 const checkRoot = path.join(BUILD, "runtime-check");
 const previousCheckRoot = process.env.DAGUAN_RUNTIME_ROOT;
 process.env.DAGUAN_RUNTIME_ROOT = checkRoot;

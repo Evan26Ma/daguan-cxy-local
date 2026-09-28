@@ -19,8 +19,16 @@ function run(command, args) {
 }
 
 if (process.platform !== "win32") throw new Error("Windows 发布包必须在 Windows 上构建");
-if (process.env.DAGUAN_REUSE_BROWSER_EXE === "1") {
-  await fs.access(EXE);
+// 代码签名流程需要「先构建 exe → 送签名 → 用签名后的 exe 打包」，
+// 所以允许调用方复用已存在的 dist/大观园数学题库.exe，不重新构建。
+// DAGUAN_REUSE_BROWSER_EXE 是既有名称，DAGUAN_SKIP_BUILD 是签名工作流使用的名称。
+if (process.env.DAGUAN_REUSE_BROWSER_EXE === "1" || process.env.DAGUAN_SKIP_BUILD === "1") {
+  try {
+    await fs.access(EXE);
+  } catch {
+    throw new Error("复用现有 EXE 需要 dist/大观园数学题库.exe 已存在，请先执行 npm run package:windows");
+  }
+  console.log("已复用现有 dist/大观园数学题库.exe，跳过重新构建。");
 } else {
   run(process.env.ComSpec || "cmd.exe", ["/d", "/s", "/c", "npm run package:windows"]);
 }

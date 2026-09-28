@@ -90,7 +90,7 @@ AI 能力取决于你配置的服务：普通文本模型不能自动获得视�
 
 下载 [DaguanMathDesktop-Setup.exe](https://github.com/Evan26Ma/daguan-cxy-local/releases/download/v1.0.0/DaguanMathDesktop-Setup.exe) 并运行。桌面版使用系统托盘管理窗口和共享服务，默认不开机启动；关闭窗口会缩到托盘。
 
-首版未签名，Windows 可能显示 SmartScreen 警告。下载后可按 Release 提供的 SHA-256 校验文件，再确认文件来自本项目 Release。不要下载 GitHub 自动生成的 `Source code` 压缩包。首次安装建议阅读 [Windows 新手安装与配置教程](docs/Windows新手安装与配置.md)。
+首版未签名，Windows 可能显示 SmartScreen 警告。下载后先核对文件来自本项目 Release，并用 Release 提供的 SHA-256 校验文件；签名上线后还可用 `Get-AuthenticodeSignature` 核对文件，签名范围与校验方法见[代码签名政策](#代码签名政策)。不要下载 GitHub 自动生成的 `Source code` 压缩包。首次安装建议阅读 [Windows 新手安装与配置教程](docs/Windows新手安装与配置.md)。
 
 #### 开发者从源码启动
 
@@ -189,3 +189,23 @@ npm run sync:data
 - 官网 API 发生变化时，只需调整 `local-server/cxyonly-client.mjs`；
 - `sync-extension/` 不参与默认同步流程；
 - 本项目不是大观园官方客户端，题库内容及相关权利归原权利人所有。
+
+## 代码签名政策
+
+**Free code signing provided by [SignPath.io](https://about.signpath.io), certificate by [SignPath Foundation](https://signpath.org).**
+
+本项目的 Windows 发布包（`DaguanMath-windows-x64.exe` 与内含同一 EXE 的 `DaguanMath-windows-x64.zip`）由 [SignPath Foundation](https://signpath.org) 提供的证书进行免费代码签名。签名只覆盖由本仓库源码、在 GitHub 公开 CI 中构建出来的产物：推送 `v*` tag 后，工作流先构建单文件 EXE，提交给 SignPath 经人工批准签名，再用签名后的 EXE 打包 ZIP、生成 SHA256 并发布。
+
+> 签名范围说明：Electron 桌面版安装器 `DaguanMathDesktop-Setup.exe`（`v1.0.0` 起）由桌面版发布流程单独产出，**目前尚未签名**，仍可能触发 SmartScreen 提示。签名只覆盖上表所述、由 `windows-release.yml` 从本仓库源码构建的产物。
+
+下载后可以核对签名，确认文件确实来自本项目、且未被篡改：
+
+```powershell
+Get-AuthenticodeSignature .\DaguanMath-windows-x64.exe | Format-List Status, SignerCertificate
+```
+
+`Status` 为 `Valid` 且签名主体为 `SignPath Foundation` 即为正常。`Status` 显示 `NotSigned` 说明该版本早于签名上线，可继续用 Release 里的 `.sha256` 校验完整性。
+
+角色分工（提交者、审阅者、签名批准者均需开启 MFA）、隐私政策原文与完整校验步骤见 [代码签名政策与校验方法](docs/CODE_SIGNING_POLICY.md)；申请与配置流程见 [SignPath 免费代码签名申请指南](docs/SignPath免费代码签名申请指南.md)。
+
+本项目不会向其他网络系统传输信息，除非用户或安装、操作它的人明确要求：AI 助教只在你配置并主动发起时访问你填写的 API 地址，官网进度同步只在你点击确认后访问官网，刷题进度、易错、批注、AI Key、服务档案与聊天记录都保存在本机。

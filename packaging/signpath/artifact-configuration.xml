@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  SignPath 产物配置（Artifact Configuration）
+  在 SignPath 控制台 → 项目 → Artifact configurations 中新建后粘贴本文件内容。
+
+  与 .github/workflows/windows-release.yml 的对应关系：
+    * 工作流用 actions/upload-artifact 的 archive: false 上传原始 EXE，
+      因此根元素是 <pe-file>（若上传时保留了默认 ZIP 打包，根元素需改为 <zip-file>）。
+    * product-name / product-version 是 SignPath 的元数据限制：
+      送签文件里这两项必须与下面完全一致，否则签名请求会被拒绝。
+      版本号由工作流通过 parameters 传入，来源是 dist/DaguanMath-version.txt。
+-->
+<artifact-configuration
+  xmlns="http://signpath.io/artifact-configuration/v1"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://signpath.io/artifact-configuration/v1 https://app.signpath.io/Web/artifact-configuration/v1.xsd">
+  <parameters>
+    <parameter name="version" default-value="1.0.0.0" />
+  </parameters>
+  <pe-file
+    path="DaguanMath-windows-x64.exe"
+    product-name="大观园数学题库"
+    product-version="${version}">
+    <authenticode-sign />
+  </pe-file>
+</artifact-configuration>
