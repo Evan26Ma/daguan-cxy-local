@@ -19,12 +19,15 @@ class FakeElement {
     this.style = { setProperty: () => {} };
     this.hidden = false;
     this._innerHTML = "";
+    this._textContent = "";
   }
   set innerHTML(value) {
     this._innerHTML = value;
     if (value === "") this.children = [];
   }
   get innerHTML() { return this._innerHTML; }
+  set textContent(value) { this._textContent = String(value ?? ""); this._innerHTML = this._textContent; }
+  get textContent() { return this._textContent; }
   setAttribute(name, value) { this.attributes[name] = String(value); }
   getAttribute(name) { return this.attributes[name] ?? null; }
   addEventListener(name, handler) { this.handlers[name] = handler; }
@@ -116,61 +119,77 @@ test("混合节点练习只取直属映射，题目顺序按目录映射保持",
   assert.deepEqual(Array.from(mixed.children, child => child.id), [1147]);
 });
 
-test("新版目录树把章节选择和展开分开，并保留完整的选中路径", () => {
+test("新版目录按深度生成级联列，选中路径用节点 id 保持且改选兄弟会截断后续列", () => {
   const ui = loadNewUI();
   const subject = {
     id: "subject", name: "高等数学", question_count: 150,
-    children: [{ id: "branch", name: "函数", question_count: 60, children: [{ id: "leaf", name: "函数表达式", question_count: 11 }] }],
+    children: [{ id: "branch", name: "极限", question_count: 60, children: [{ id: "leaf", name: "极限", question_count: 11 }] }, { id: "sibling", name: "极限", question_count: 8, children: [{ id: "sibling-leaf", name: "另一条路径", question_count: 3 }] }],
   };
-  ui.AppState.categories = { categories: [subject] };
+  const other = { id: "other", name: "线性代数", question_count: 20, children: [] };
+  ui.AppState.categories = { categories: [subject, other] };
   ui.AppState.currentCategory = subject;
   ui.AppState.directoryNodeId = "leaf";
-  ui.AppState.catalogExpandedIds = ["subject", "branch"];
-  const tree = new FakeElement("nav");
-  ui.__elements.set("library-tree", tree);
-  ui.UIRenderer.saveDirectoryState = () => {};
+  const deep = ui.UIRenderer.catalogColumns(subject, subject.children[0].children[0]);
+  assert.deepEqual(Array.from(deep, column => column.selectedId), ["subject", "branch", "leaf"]);
+  assert.equal(deep[0].items.find(item => item.node.id === "subject").selected, true);
+  assert.equal(deep[1].items.find(item => item.node.id === "branch").selected, true);
+  assert.equal(deep[1].items.find(item => item.node.id === "sibling").selected, false);
+
+  const siblingPath = ui.UIRenderer.pathToNode(subject, "sibling-leaf");
+  assert.deepEqual(Array.from(siblingPath, node => node.id), ["subject", "sibling", "sibling-leaf"]);
+  const siblingColumns = ui.UIRenderer.catalogColumns(subject, subject.children[1]);
+  assert.deepEqual(Array.from(siblingColumns, column => column.selectedId), ["subject", "sibling", null]);
+  assert.equal(siblingColumns.length, 3, "选择兄弟后只保留新路径下的列");
+
+  const columnsHost = new FakeElement("div");
+  const otherRootButton = new FakeElement("button");
+  otherRootButton.dataset.catalogNode = "other";
+  otherRootButton.dataset.catalogCategory = "other";
+  columnsHost.querySelectorAll = selector => selector === "[data-catalog-node]" ? [otherRootButton] : [];
+  ui.__elements.set("directory-columns", columnsHost);
+  let clicked = null;
   let rendered = null;
-  ui.UIRenderer.renderLibrary = (categoryId, options) => { rendered = [categoryId, options]; };
-
-  ui.UIRenderer.renderLibraryTree(subject);
-  const labels = findElements(tree, "catalog-node-label");
-  const toggles = findElements(tree, "catalog-toggle");
-  const sidebar = new FakeElement();
-  const overlay = new FakeElement();
-  sidebar.classList.add("open");
-  overlay.classList.add("open");
-  ui.__elements.set("library-sidebar", sidebar);
-  ui.__elements.set("library-toc-overlay", overlay);
-  const selectedLeaf = labels.find(button => button.getAttribute("aria-current") === "page");
-  assert.equal(selectedLeaf.getAttribute("aria-label"), "函数表达式，全范围总题数 11");
-  assert.deepEqual(Array.from(toggles, button => button.getAttribute("aria-expanded")), ["true", "true"]);
-
-  toggles[1].click();
-  assert.equal(ui.AppState.currentCategory.id, "subject", "折叠章节不切换科目");
-  assert.equal(ui.AppState.directoryNodeId, "leaf", "折叠章节不改选中节点");
-  assert.equal(sidebar.classList.contains("open"), true, "折叠箭头不关闭手机目录抽屉");
-  assert.equal(findElements(tree, "catalog-toggle")[1].getAttribute("aria-expanded"), "false");
-  findElements(tree, "catalog-toggle")[1].click();
-  findElements(tree, "catalog-node-label").find(button => button.getAttribute("aria-current") === "page").click();
-  assert.deepEqual(Array.from(ui.AppState.catalogExpandedIds), ["subject", "branch"]);
-  assert.equal(rendered[0], "subject");
-  assert.equal(rendered[1].selectedNodeId, "leaf");
-  assert.equal(rendered[1].resetScroll, true);
-  assert.equal(sidebar.classList.contains("open"), false, "选中节点后关闭手机目录抽屉");
-  assert.equal(overlay.classList.contains("open"), false);
-
-  sidebar.classList.add("open");
-  overlay.classList.add("open");
-  ui.App.openDirectoryNode("branch");
-  assert.equal(ui.AppState.directoryNodeId, "branch");
-  assert.deepEqual(Array.from(ui.AppState.catalogExpandedIds), ["subject"]);
-  assert.equal(rendered[1].selectedNodeId, "branch");
-  assert.equal(rendered[1].resetScroll, true);
-  assert.equal(sidebar.classList.contains("open"), false);
-  assert.equal(overlay.classList.contains("open"), false);
+  const selectDirectoryItem = ui.App.selectDirectoryItem;
+  const renderLibrary = ui.UIRenderer.renderLibrary;
+  ui.App.selectDirectoryItem = (...args) => { clicked = args; return selectDirectoryItem.apply(ui.App, args); };
+  ui.UIRenderer.renderLibrary = (...args) => { rendered = args; };
+  ui.UIRenderer.renderCatalogColumns(subject, subject);
+  otherRootButton.click();
+  ui.App.selectDirectoryItem = selectDirectoryItem;
+  ui.UIRenderer.renderLibrary = renderLibrary;
+  assert.match(columnsHost.innerHTML, /data-catalog-node="other" data-catalog-category="other"/);
+  assert.deepEqual(Array.from(clicked), ["other", "other"], "点击其他科目根节点时使用该根节点作为目标科目");
+  assert.equal(ui.AppState.currentCategory.id, "other");
+  assert.equal(ui.AppState.directoryNodeId, "other");
+  assert.equal(rendered[0], "other");
 });
 
-test("目录概览列出直属子章，混合节点直属题单独练习且数量口径明确", () => {
+test("九层目录路径渲染后自动显示末级，完整面包屑仍可向左回看", () => {
+  const ui = loadNewUI();
+  let leaf = { id: "n9", name: "第九级", question_count: 1, direct_questions: [{ id: "q9" }], children: [] };
+  for (let depth = 8; depth >= 1; depth -= 1) {
+    leaf = { id: `n${depth}`, name: `第${depth}级`, question_count: 1, children: [leaf] };
+  }
+  const subject = { id: "subject", name: "高等数学", question_count: 1, children: [leaf] };
+  const content = new FakeElement("main");
+  const breadcrumb = new FakeElement("nav");
+  breadcrumb.clientWidth = 120;
+  breadcrumb.scrollWidth = 1000;
+  for (const id of ["library-content", "library-breadcrumb", "library-node-title", "directory-columns", "directory-selection-state"]) {
+    ui.__elements.set(id, id === "library-content" ? content : id === "library-breadcrumb" ? breadcrumb : new FakeElement());
+  }
+  ui.AppState.categories = { categories: [subject] };
+  ui.AppState.currentCategory = subject;
+  ui.AppState.directoryNodeId = "n9";
+  ui.StorageService.getLearningPosition = () => null;
+
+  ui.UIRenderer.renderDirectoryNode({ id: "n9", name: "第九级", question_count: 1, direct_questions: [{ id: "q9" }], children: [] });
+  assert.equal(breadcrumb.scrollLeft, 880);
+  assert.match(breadcrumb.innerHTML, /第九级/);
+  assert.doesNotMatch(breadcrumb.innerHTML, /breadcrumb-more|…/);
+});
+
+test("级联目录保留混合节点直属题入口，并为零题叶子显示不可开始状态", () => {
   const ui = loadNewUI();
   const categories = JSON.parse(fs.readFileSync(new URL("../web/data/categories.json", import.meta.url), "utf8"));
   const roots = Array.isArray(categories) ? categories : categories.categories;
@@ -186,37 +205,39 @@ test("目录概览列出直属子章，混合节点直属题单独练习且数�
 
   const subject = { id: "subject", name: "高等数学", children: [mixed] };
   const content = new FakeElement("main");
-  const tree = new FakeElement("nav");
-  for (const id of ["library-content", "library-breadcrumb", "library-node-title", "library-up", "library-tree"]) {
-    ui.__elements.set(id, id === "library-content" ? content : id === "library-tree" ? tree : new FakeElement());
+  for (const id of ["library-content", "library-breadcrumb", "library-node-title", "directory-columns", "directory-selection-state"]) {
+    ui.__elements.set(id, id === "library-content" ? content : new FakeElement());
   }
   ui.AppState.categories = { categories: [subject] };
   ui.AppState.currentCategory = subject;
   ui.AppState.directoryNodeId = String(mixed.id);
-  ui.AppState.catalogExpandedIds = ["subject"];
   ui.AppState.chapterScope = "core";
   ui.StorageService.getLearningPosition = () => null;
+  const columns = ui.UIRenderer.catalogColumns(subject, mixed);
+  assert.equal(columns.at(-1).directNode.id, mixed.id);
+  assert.equal(columns.at(-1).items.filter(item => item.selected).length, 0, "混合节点本身位于上一列，右侧列保留直属入口");
   ui.UIRenderer.renderDirectoryNode(mixed);
-  assert.match(content.innerHTML, /class="directory-children"/);
-  assert.match(content.innerHTML, /data-directory-child=/);
-  assert.match(content.innerHTML, /本级直属题/);
-  assert.match(content.innerHTML, /全范围总题数/);
-  assert.match(content.innerHTML, /当前练习按“严选”/);
-  assert.doesNotMatch(content.innerHTML, /选择小节/);
+  assert.match(content.innerHTML, /class="directory-cascade"/);
+  assert.match(content.innerHTML, /id="directory-columns"/);
+  assert.doesNotMatch(content.innerHTML, /directory-cascade-intro/);
+
+  const emptyNode = { id: "empty", name: "空小节", question_count: 0, children: [], direct_questions: [] };
+  subject.children = [emptyNode];
+  ui.AppState.directoryNodeId = "empty";
+  ui.UIRenderer.renderDirectoryNode(emptyNode);
+  assert.match(ui.__elements.get("directory-selection-state").innerHTML, /此章节暂无题目/);
 
   const source = fs.readFileSync(new URL("../web/app-new.js", import.meta.url), "utf8");
   const styles = fs.readFileSync(new URL("../web/styles-new.css", import.meta.url), "utf8");
-  assert.match(source, /roots\.forEach\(subject => renderNode\(subject, list, 0, subject\.id\)\)/);
-  assert.match(source, /start-direct-directory/);
-  assert.match(source, /data-open-chapter-picker/);
-  assert.match(source, /ArrowDown.*ArrowUp.*Home.*End/s);
-  assert.doesNotMatch(source, /id="choose-directory"/);
+  assert.match(source, /static catalogColumns\(category, activeNode = null\)/);
+  assert.match(source, /data-cascade-direct=/);
+  assert.match(source, /static selectDirectoryItem\(categoryId, nodeId\)/);
+  assert.match(source, /static startDirectDirectory\(categoryId, nodeId\)/);
+  assert.doesNotMatch(source, /id="library-tree"/);
   assert.match(source, /static selectCatalogNode\(categoryId, nodeId\)/);
-  assert.match(source, /static toggleCatalogNode\(nodeId\)/);
-  assert.match(styles, /width: 280px/);
-  assert.match(styles, /\.catalog-node-label\.selected/);
-  assert.match(styles, /\.catalog-toggle\[aria-expanded="true"\]/);
-  assert.match(styles, /chapter-picker-column:last-child \{ display: flex; \}/);
+  assert.match(styles, /\.directory-columns[^}]*overflow-x:\s*auto/s);
+  assert.match(styles, /\.directory-column[^}]*overflow-y:\s*auto/s);
+  assert.match(styles, /\.directory-column-item\.selected/);
 });
 
 test("目录恢复本地节点路径，主动选新节点时滚动位置归零", () => {
@@ -229,17 +250,18 @@ test("目录恢复本地节点路径，主动选新节点时滚动位置归零",
   ui.AppState.currentCategory = subject;
   ui.UIRenderer.readDirectoryState = () => ({
     version: 1,
-    subjects: { subject: { nodeId: "leaf", scrollTop: 240, query: "", filters: { sources: [], years: [], types: [], lecturers: [] }, resultLimit: 40 } },
+    subjects: { subject: { nodeId: "leaf", pathIds: ["subject", "branch", "leaf"], scrollTop: 240, query: "", filters: { sources: [], years: [], types: [], lecturers: [] }, resultLimit: 40 } },
   });
   ui.UIRenderer.applySavedAppearance = () => {};
   ui.StorageService.getLearningPosition = () => null;
-  for (const id of ["app-main", "search-input", "filter-content", "library-content", "library-breadcrumb", "library-node-title", "library-up", "library-tree"]) {
+  for (const id of ["app-main", "search-input", "filter-content", "library-content", "library-breadcrumb", "library-node-title", "directory-columns", "directory-selection-state"]) {
     ui.__elements.set(id, new FakeElement(id));
   }
   const content = ui.__elements.get("library-content");
 
   ui.UIRenderer.renderLibrary("subject");
   assert.equal(ui.AppState.directoryNodeId, "leaf", "重新进入时恢复本地保存的章节路径");
+  assert.deepEqual(Array.from(ui.AppState.directoryPathIds), ["subject", "branch", "leaf"]);
   assert.equal(ui.AppState.libraryScrollTop, 240);
   assert.equal(content.scrollTop, 240);
 

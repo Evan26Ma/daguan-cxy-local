@@ -57,6 +57,7 @@ const AppState = {
     libraryQuery: '',
     libraryResultLimit: 40,
     directoryNodeId: null,
+    directoryPathIds: [],
     catalogExpandedIds: null,
     chapterScope: 'all',
     chapterPickerPath: [],
@@ -1621,42 +1622,25 @@ class UIRenderer {
         const category = this.findCategoryById(categoryId);
         if (!category) return;
         const saved = this.readDirectoryState().subjects[String(category.id)] || {};
+        const savedNodeId = saved.nodeId ?? (Array.isArray(saved.pathIds) ? saved.pathIds.at(-1) : null);
         if (selectedNodeId != null && this.findNodeById(category, selectedNodeId)) AppState.directoryNodeId = String(selectedNodeId);
-        else if (this.findNodeById(category, saved.nodeId)) AppState.directoryNodeId = String(saved.nodeId);
+        else if (this.findNodeById(category, savedNodeId)) AppState.directoryNodeId = String(savedNodeId);
         else if (!AppState.directoryNodeId || !this.findNodeById(category, AppState.directoryNodeId)) AppState.directoryNodeId = String(category.id);
         AppState.libraryScrollTop = resetScroll ? 0 : Number(saved.scrollTop) || 0;
         AppState.libraryQuery = String(saved.query || '');
         AppState.libraryResultLimit = Number(saved.resultLimit) || 40;
         AppState.filters = saved.filters && typeof saved.filters === 'object' ? saved.filters : { sources: [], years: [], types: [], lecturers: [] };
         const active = this.findNodeById(category, AppState.directoryNodeId) || category;
-        if (!Array.isArray(AppState.catalogExpandedIds)) {
-            const activePath = this.pathToNode(category, active.id) || [category];
-            AppState.catalogExpandedIds = activePath.slice(0, -1).map(part => String(part.id));
-            if (activePath.length === 1 && (category.children || []).length) AppState.catalogExpandedIds.push(String(category.id));
-        }
+        AppState.directoryPathIds = (this.pathToNode(category, active.id) || [category]).map(part => String(part.id));
 
         const main = document.getElementById('app-main');
         main.innerHTML = `
-            <div class="library-layout">
-                <div class="library-sidebar" id="library-sidebar">
-                    <div class="library-sidebar-header">
-                        <div class="library-sidebar-titles"><h2>章节目录</h2><p>数字为全范围总题数</p></div>
-                        <button type="button" class="btn btn-icon btn-text library-toc-close" onclick="App.toggleLibraryToc()" aria-label="关闭目录">
-                            <svg class="icon" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
-                        </button>
-                    </div>
-                    <div class="catalog-scopes" role="group" aria-label="题库范围">${this.scopeButtons()}</div>
-                    <nav class="library-tree" id="library-tree" aria-label="题库目录"></nav>
-                </div>
+            <div class="library-layout catalog-page">
                 <div class="library-main">
                     <div class="library-header">
-                        <nav class="library-breadcrumb" id="library-breadcrumb" aria-label="当前位置"></nav>
-                        <div class="library-title-row"><button type="button" class="btn btn-text library-up" id="library-up" onclick="App.directoryUp()">← 返回上级</button><h1 id="library-node-title">${escapeHtml(active.name || active.title || category.name)}</h1></div>
+                        <nav class="library-breadcrumb" id="library-breadcrumb" aria-label="当前目录路径"></nav>
+                        <div class="library-title-row"><h1 id="library-node-title">${escapeHtml(active.name || active.title || category.name)}</h1></div>
                         <div class="library-toolbar">
-                            <button type="button" class="btn btn-secondary library-toc-trigger" onclick="App.toggleLibraryToc()">
-                                <svg class="icon nav-icon" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
-                                目录
-                            </button>
                             <div class="search-box">
                                 <input type="search" class="search-input"
                                     placeholder="搜索题目..."
@@ -1670,13 +1654,13 @@ class UIRenderer {
                                 筛选
                             </button>
                         </div>
+                        <div class="catalog-scopes" role="group" aria-label="题库范围">${this.scopeButtons()}</div>
                     </div>
                     <div class="library-content" id="library-content"></div>
                 </div>
             </div>
 
             <div class="filter-overlay" id="filter-overlay" onclick="App.toggleFilterDrawer()"></div>
-            <div class="nav-overlay" id="library-toc-overlay" onclick="App.toggleLibraryToc()"></div>
             <div class="filter-drawer" id="filter-drawer">
                 <div class="filter-header">
                     <h2>筛选条件</h2>
@@ -1692,7 +1676,6 @@ class UIRenderer {
             </div>
         `;
 
-        this.renderLibraryTree(category);
         this.bindScopeButtons();
         this.renderFilterOptions();
         document.getElementById('search-input').value = AppState.libraryQuery;
@@ -1727,8 +1710,11 @@ class UIRenderer {
         try {
             const saved = this.readDirectoryState();
             saved.lastCategory = String(categoryId);
+            const category = this.findCategoryById(categoryId);
+            const path = category ? (this.pathToNode(category, AppState.directoryNodeId) || [category]) : [];
             saved.subjects[String(categoryId)] = {
                 nodeId: String(AppState.directoryNodeId || categoryId),
+                pathIds: path.map(node => String(node.id)),
                 scrollTop: Number(AppState.libraryScrollTop) || 0,
                 query: String(AppState.libraryQuery || ''),
                 filters: JSON.parse(JSON.stringify(AppState.filters || { sources: [], years: [], types: [], lecturers: [] })),
@@ -1790,70 +1776,56 @@ class UIRenderer {
         });
     }
 
-    static renderLibraryTree(category, parentEl = null) {
-        const treeEl = parentEl || document.getElementById('library-tree');
-        if (!treeEl) return;
-        treeEl.innerHTML = '';
+    // 级联目录模型：每一列只保留当前路径下的一层，节点 id 而非名称决定路径，
+    // 因此同名章节也能各自保持选中态和恢复位置。
+    static catalogColumns(category, activeNode = null) {
         const roots = AppState.categories?.categories || [];
-        const expandedIds = new Set((AppState.catalogExpandedIds || []).map(String));
-        const selectedId = String(AppState.directoryNodeId ?? category?.id ?? '');
-        const list = document.createElement('ul');
-        list.className = 'catalog-tree-list';
-        treeEl.appendChild(list);
+        const activePath = activeNode ? (this.pathToNode(category, activeNode.id) || [category]) : [category];
+        const columns = [];
+        let nodes = roots;
+        let parent = null;
+        for (let depth = 0; ; depth += 1) {
+            const selected = activePath[depth] || null;
+            columns.push({
+                depth,
+                parent,
+                nodes,
+                selectedId: selected ? String(selected.id) : null,
+                items: nodes.map(node => ({
+                    node,
+                    selected: !!selected && String(node.id) === String(selected.id),
+                    hasChildren: !!(node.children || []).length,
+                    questionCount: Number(node.question_count || 0),
+                    directCount: Number(node.direct_count ?? (node.direct_questions || []).length),
+                })),
+                directNode: parent && (parent.children || []).length && (parent.direct_questions || parent.questions || []).length ? parent : null,
+            });
+            if (!selected || !(selected.children || []).length) break;
+            parent = selected;
+            nodes = selected.children || [];
+        }
+        return columns;
+    }
 
-        const renderNode = (node, parentList, depth, rootCategoryId) => {
-            const children = node.children || [];
-            const hasChildren = children.length > 0;
-            const expanded = hasChildren && expandedIds.has(String(node.id));
-            const selected = String(node.id) === selectedId;
-            const name = node.name || node.title || '';
-            const total = Number(node.question_count || 0);
-            const childListId = `catalog-children-${encodeURIComponent(String(node.id))}`;
-            const item = document.createElement('li');
-            item.className = 'catalog-node';
-            item.style?.setProperty('--catalog-depth', String(depth));
-
-            const row = document.createElement('div');
-            row.className = 'catalog-node-row';
-            if (hasChildren) {
-                const toggle = document.createElement('button');
-                toggle.type = 'button';
-                toggle.className = 'catalog-toggle';
-                toggle.setAttribute('aria-label', `${expanded ? '收起' : '展开'} ${name}`);
-                toggle.setAttribute('aria-controls', childListId);
-                toggle.setAttribute('aria-expanded', String(expanded));
-                toggle.innerHTML = '<span class="catalog-chevron" aria-hidden="true">›</span>';
-                toggle.addEventListener('click', () => App.toggleCatalogNode(node.id));
-                row.appendChild(toggle);
-            } else {
-                const spacer = document.createElement('span');
-                spacer.className = 'catalog-toggle-spacer';
-                spacer.setAttribute('aria-hidden', 'true');
-                row.appendChild(spacer);
-            }
-
-            const select = document.createElement('button');
-            select.type = 'button';
-            select.className = `catalog-node-label${selected ? ' selected' : ''}`;
-            select.setAttribute('aria-current', selected ? 'page' : 'false');
-            select.setAttribute('aria-label', `${name}，全范围总题数 ${total}`);
-            select.innerHTML = `<span class="catalog-subject-name">${escapeHtml(name)}</span><span class="tree-count" title="全范围总题数">${total}</span>`;
-            row.appendChild(select);
-            item.appendChild(row);
-
-            if (hasChildren) {
-                const childList = document.createElement('ul');
-                childList.className = 'catalog-tree-list catalog-children';
-                childList.id = childListId;
-                childList.hidden = !expanded;
-                children.forEach(child => renderNode(child, childList, depth + 1, rootCategoryId));
-                item.appendChild(childList);
-            }
-            select.addEventListener('click', () => App.selectCatalogNode(rootCategoryId, node.id));
-            parentList.appendChild(item);
-        };
-
-        roots.forEach(subject => renderNode(subject, list, 0, subject.id));
+    static renderCatalogColumns(category, activeNode = null) {
+        const host = document.getElementById('directory-columns');
+        if (!host) return;
+        const columns = this.catalogColumns(category, activeNode);
+        host.innerHTML = columns.map(column => {
+            const parentName = column.parent ? (column.parent.name || column.parent.title || '章节') : '科目';
+            const items = column.items.map(({ node, selected, hasChildren, questionCount }) => {
+                const name = node.name || node.title || '';
+                const rootCategoryId = column.depth === 0 ? node.id : category.id;
+                return `<button type="button" class="directory-column-item${selected ? ' selected' : ''}${hasChildren ? ' has-children' : ''}" role="option" aria-selected="${selected}" aria-current="${selected ? 'page' : 'false'}" data-catalog-node="${escapeHtml(String(node.id))}" data-catalog-category="${escapeHtml(String(rootCategoryId))}" data-catalog-depth="${column.depth}" aria-label="${escapeHtml(name)}，全范围总题数 ${questionCount}"><span class="directory-column-name">${escapeHtml(name)}</span><small>${questionCount} 题</small>${hasChildren ? '<span class="directory-column-chevron" aria-hidden="true">›</span>' : '<span aria-hidden="true"></span>'}</button>`;
+            }).join('');
+            const direct = column.directNode;
+            const directHtml = direct ? `<button type="button" class="directory-column-item directory-direct-item" data-cascade-direct="${escapeHtml(String(direct.id))}" data-catalog-category="${escapeHtml(String(category.id))}" aria-label="练习 ${escapeHtml(direct.name || direct.title || '')} 的本级直属题"><span class="directory-column-name"><strong>本级直属题</strong><small>只练习${escapeHtml(direct.name || direct.title || '')}</small></span><small>${Number(direct.direct_count ?? (direct.direct_questions || []).length)} 题</small><span aria-hidden="true">↗</span></button>` : '';
+            return `<section class="directory-column" role="listbox" aria-label="${escapeHtml(parentName)}下级"><h2 class="directory-column-heading">${escapeHtml(parentName)}${column.depth ? ' · 下级' : ''}</h2><div class="directory-column-list">${items || '<p class="directory-column-empty">暂无下级章节</p>'}${directHtml}</div></section>`;
+        }).join('');
+        host.querySelectorAll('[data-catalog-node]').forEach(button => button.addEventListener('click', () => App.selectDirectoryItem(button.dataset.catalogCategory, button.dataset.catalogNode)));
+        host.querySelectorAll('[data-cascade-direct]').forEach(button => button.addEventListener('click', () => App.startDirectDirectory(button.dataset.catalogCategory, button.dataset.cascadeDirect)));
+        const reveal = () => { host.scrollLeft = Math.max(0, host.scrollWidth - host.clientWidth); };
+        if (typeof requestAnimationFrame === 'function') requestAnimationFrame(reveal); else setTimeout(reveal, 0);
     }
 
     static renderDirectoryNode(node) {
@@ -1862,34 +1834,28 @@ class UIRenderer {
         if (!contentEl) return;
         const category = AppState.currentCategory;
         const path = this.pathToNode(category, node.id) || [category, node];
+        AppState.directoryPathIds = path.map(part => String(part.id));
         const crumbs = path.map((part, index) => `<button type="button" class="breadcrumb-part" data-node-id="${escapeHtml(String(part.id))}" aria-current="${index === path.length - 1 ? 'page' : 'false'}">${escapeHtml(part.name || part.title || '')}</button>`);
-        const compact = crumbs.length > 5 ? [crumbs[0], `<details class="breadcrumb-more"><summary>…</summary><div>${crumbs.slice(1, -2).join('')}</div></details>`, ...crumbs.slice(-2)] : crumbs;
-        document.getElementById('library-breadcrumb').innerHTML = compact.join('<span aria-hidden="true">›</span>');
+        const breadcrumbEl = document.getElementById('library-breadcrumb');
+        breadcrumbEl.innerHTML = crumbs.join('<span aria-hidden="true">›</span>');
         document.querySelectorAll('.breadcrumb-part').forEach(button => button.addEventListener('click', () => App.openDirectoryNode(button.dataset.nodeId)));
+        // 深层目录保持完整路径，只把当前末级滚入视野；用户仍可向左横向回看上级。
+        breadcrumbEl.scrollLeft = Math.max(0, Number(breadcrumbEl.scrollWidth || 0) - Number(breadcrumbEl.clientWidth || 0));
         document.getElementById('library-node-title').textContent = node.name || node.title || '';
-        const up = document.getElementById('library-up');
-        up.hidden = path.length < 2;
-        this.renderLibraryTree(category);
-        const children = node.children || [];
         const direct = node.direct_questions || node.questions || [];
         const position = StorageService.getLearningPosition();
         const positionIndex = position && String(position.categoryId) === String(category.id) && String(position.chapterId) === String(node.id)
             ? Math.max(0, Number(position.questionIndex) || 0) : -1;
-        const isLeaf = children.length === 0;
-        const total = Number(node.question_count ?? direct.length);
+        const isLeaf = !(node.children || []).length;
         const directTotal = Number(node.direct_count ?? direct.length);
-        const scopeLabel = AppState.chapterScope === 'core' ? '严选' : AppState.chapterScope === 'real' ? '真题' : '完整';
         const locationText = positionIndex >= 0 ? `已到第 ${positionIndex + 1} 题 · 题号 ${escapeHtml(String(position.questionId || direct[positionIndex]?.id || ''))}` : '本机还没有此章节的学习位置';
-        const totalLabel = `全范围总题数 ${total} 道 · 当前练习按“${scopeLabel}”及搜索、筛选条件取题 · ${locationText}`;
-        const childRows = children.map(child => `<button type="button" class="chapter-item directory-child-item" data-directory-child="${escapeHtml(String(child.id))}"><span class="chapter-info"><strong>${escapeHtml(child.name || child.title || '')}</strong><small>全范围总题数 ${Number(child.question_count || 0)} 道</small></span><span class="chapter-item-chevron" aria-hidden="true">›</span></button>`).join('');
-        contentEl.innerHTML = `<section class="directory-overview"><div><p class="eyebrow">章节概览</p><h2>${escapeHtml(node.name || node.title || '')}</h2><p>${totalLabel}</p></div><div class="directory-actions">${isLeaf && direct.length ? '<button type="button" class="btn btn-primary" id="start-directory">按当前范围开始练习</button>' : ''}${positionIndex >= 0 && isLeaf ? '<button type="button" class="btn btn-secondary" id="continue-directory">继续</button>' : ''}</div></section>
-            ${children.length ? `<section class="directory-children" aria-labelledby="directory-children-title"><h3 id="directory-children-title">下级章节 <span>${children.length}</span></h3><div class="directory-child-list">${childRows}</div></section>` : ''}
-            ${direct.length && children.length ? `<section class="direct-question-group" aria-labelledby="direct-question-title"><h3 id="direct-question-title">本级直属题 <span>全范围总数 ${directTotal} 题</span></h3><p class="directory-help">只练习当前章节直属题；开始后按当前范围、搜索和筛选条件取题。</p><button type="button" class="btn btn-secondary" id="start-direct-directory">练习本级直属题</button></section>` : ''}
-            ${isLeaf && direct.length ? `<p class="directory-help directory-practice-help">开始后按当前范围、搜索和筛选条件取题；上方题数是全范围总数。</p>` : ''}
-            ${isLeaf && direct.length === 0 ? `<div class="empty-state"><h3>此章节暂无题目</h3><p>该空节点可从目录定位，但没有可开始的题目。</p></div>` : ''}`;
-        contentEl.querySelectorAll('[data-directory-child]').forEach(button => button.addEventListener('click', () => App.openDirectoryNode(button.dataset.directoryChild)));
+        contentEl.innerHTML = `<section class="directory-cascade" aria-label="题库级联目录"><div class="directory-columns" id="directory-columns" tabindex="0" aria-label="横向章节目录"></div><div class="directory-selection-state" id="directory-selection-state" role="status"></div></section>`;
+        this.renderCatalogColumns(category, node);
+        const state = document.getElementById('directory-selection-state');
+        if (state && isLeaf && direct.length === 0) state.innerHTML = `<div class="empty-state"><h3>此章节暂无题目</h3><p>该空节点可从目录定位，但没有可开始的题目。</p></div>`;
+        else if (state && isLeaf && direct.length) state.innerHTML = `<div class="directory-leaf-actions"><p>${locationText}；点击当前小节可按当前范围开始练习。</p><button type="button" class="btn btn-primary" id="start-directory">按当前范围开始练习</button>${positionIndex >= 0 ? '<button type="button" class="btn btn-secondary" id="continue-directory">继续上次练习</button>' : ''}</div>`;
+        else if (state && direct.length && (node.children || []).length) state.innerHTML = `<p class="directory-help">${escapeHtml(node.name || node.title || '')} 含 ${directTotal} 道直属题；可在最右列单独练习。</p>`;
         document.getElementById('start-directory')?.addEventListener('click', () => App.showChapter(node));
-        document.getElementById('start-direct-directory')?.addEventListener('click', () => App.showChapter(node, { directOnly: true }));
         document.getElementById('continue-directory')?.addEventListener('click', () => App.continueDirectoryNode(node));
         contentEl.onscroll = () => this.saveDirectoryState();
     }
@@ -2154,7 +2120,6 @@ class UIRenderer {
                             ${this.renderQuestionStatusBadges(mastery, isMistake)}
                         </div>
                         ${AppState.globalSearchReturn ? '<button type="button" class="btn btn-secondary" onclick="App.returnToGlobalSearch()">返回搜索</button>' : ''}
-                        ${AppState.currentCategory && AppState.currentChapter ? '<button type="button" class="btn btn-secondary chapter-picker-trigger" data-open-chapter-picker>选择小节</button>' : ''}
                     </div>
 
                     ${AppState.currentCategory && AppState.currentChapter ? `<div class="mode-toolbar"><span>单题阅读</span><div class="mode-toolbar-actions"><button type="button" class="mode-jump-button" data-shortcut-hint="jump" onclick="App.promptJumpToQuestion()">跳题</button><div class="mode-switch"><button type="button" class="active" aria-pressed="true">单题</button><button type="button" data-shortcut-hint="mode" onclick="App.changeQuestionMode('multi')">多题</button></div></div></div>` : ''}
@@ -2288,7 +2253,7 @@ class UIRenderer {
         const pageStart = Math.floor(start / 20) * 20;
         const railTools = `<div class="question-rail-tools"><label class="sr-only">按题号定位</label><input type="search" inputmode="numeric" aria-label="按题号定位" placeholder="题号" value="${escapeHtml(AppState.questionRailQuery)}" oninput="App.filterQuestionIndex(this)" onkeydown="if(event.key==='Enter'){event.preventDefault();App.jumpByQuestionNumber(this.value)}"><div class="question-rail-filters"><button type="button" data-rail-filter="favorite" aria-pressed="${AppState.questionRailFilter === 'favorite'}" class="${AppState.questionRailFilter === 'favorite' ? 'active' : ''}" onclick="App.toggleQuestionRailFilter('favorite')">收藏</button><button type="button" data-rail-filter="error-prone" aria-pressed="${AppState.questionRailFilter === 'error-prone'}" class="${AppState.questionRailFilter === 'error-prone' ? 'active' : ''}" onclick="App.toggleQuestionRailFilter('error-prone')">易错</button><button type="button" data-rail-filter="learning" aria-pressed="${AppState.questionRailFilter === 'learning'}" class="${AppState.questionRailFilter === 'learning' ? 'active' : ''}" onclick="App.toggleQuestionRailFilter('learning')">学习中</button><button type="button" data-rail-filter="mastered" aria-pressed="${AppState.questionRailFilter === 'mastered'}" class="${AppState.questionRailFilter === 'mastered' ? 'active' : ''}" onclick="App.toggleQuestionRailFilter('mastered')">已掌握</button><button type="button" data-rail-filter="not_started" aria-pressed="${AppState.questionRailFilter === 'not_started'}" class="${AppState.questionRailFilter === 'not_started' ? 'active' : ''}" onclick="App.toggleQuestionRailFilter('not_started')">未开始</button></div></div>`;
         main.innerHTML = `<div class="multi-question-view">
-            <div class="question-header"><div class="breadcrumb-nav"><a href="#" onclick="App.showHome(); return false;">首页</a><span class="breadcrumb-sep">/</span><a href="#" onclick="App.showLibrary('${escapeHtml(AppState.currentCategory?.id || '')}'); return false;">${escapeHtml(AppState.currentCategory?.name || '题库')}</a><span class="breadcrumb-sep">/</span><span>${escapeHtml(AppState.currentChapter?.name || AppState.currentChapter?.title || '章节')}</span></div><div class="question-sequence">${total} 题 · 每段 20 题</div>${AppState.globalSearchReturn ? '<button type="button" class="btn btn-secondary" onclick="App.returnToGlobalSearch()">返回搜索</button>' : ''}${AppState.currentCategory && AppState.currentChapter ? '<button type="button" class="btn btn-secondary chapter-picker-trigger" data-open-chapter-picker>选择小节</button>' : ''}</div>
+            <div class="question-header"><div class="breadcrumb-nav"><a href="#" onclick="App.showHome(); return false;">首页</a><span class="breadcrumb-sep">/</span><a href="#" onclick="App.showLibrary('${escapeHtml(AppState.currentCategory?.id || '')}'); return false;">${escapeHtml(AppState.currentCategory?.name || '题库')}</a><span class="breadcrumb-sep">/</span><span>${escapeHtml(AppState.currentChapter?.name || AppState.currentChapter?.title || '章节')}</span></div><div class="question-sequence">${total} 题 · 每段 20 题</div>${AppState.globalSearchReturn ? '<button type="button" class="btn btn-secondary" onclick="App.returnToGlobalSearch()">返回搜索</button>' : ''}</div>
             <div class="mode-toolbar"><span>多题阅读 · 第 ${pageStart + 1}–${Math.min(pageStart + AppState.questions.length, total)} 题</span><div class="mode-toolbar-actions"><button type="button" class="mode-step-button" data-shortcut-hint="multiPrev" onclick="App.goToChapterQuestion(AppState.questionOffset + AppState.currentQuestionIndex - 1)">上一题</button><button type="button" class="mode-step-button" data-shortcut-hint="multiNext" onclick="App.goToChapterQuestion(AppState.questionOffset + AppState.currentQuestionIndex + 1)">下一题</button><button type="button" class="mode-jump-button" data-shortcut-hint="jump" onclick="App.promptJumpToQuestion()">跳题</button><div class="mode-switch"><button type="button" data-shortcut-hint="mode" onclick="App.changeQuestionMode('single')">单题</button><button type="button" class="active" aria-pressed="true">多题</button></div><button type="button" class="mobile-question-index-btn" onclick="App.toggleQuestionDrawer()">题号目录</button></div></div>
             <div class="multi-reading-layout"><aside class="question-rail" aria-label="题号目录">${railTools}${rangeButtons}</aside><div class="multi-question-list">${cards}<div class="multi-page-nav"><button type="button" class="btn btn-secondary" ${start === 0 ? 'disabled' : ''} onclick="App.goToChapterQuestion(${Math.max(0, start - 1)})">上一段</button><button type="button" class="btn btn-secondary" ${start + AppState.questions.length >= total ? 'disabled' : ''} onclick="App.goToChapterQuestion(${Math.min(total - 1, start + AppState.questions.length)})">下一段</button></div></div></div>
             <div class="question-drawer-backdrop" onclick="App.toggleQuestionDrawer()"></div><aside class="question-drawer" aria-label="题号目录">${railTools}${rangeButtons}</aside>
@@ -3903,21 +3868,9 @@ class App {
         if (!categoryId) categoryId = AppState.currentCategory?.id || saved.lastCategory || AppState.categories?.categories?.[0]?.id;
         if (categoryId == null) return;
         AppState.currentCategory = UIRenderer.findCategoryById(categoryId);
-        AppState.catalogExpandedIds = null;
+        AppState.directoryPathIds = [];
         AppState.currentView = 'library';
         UIRenderer.renderLibrary(categoryId);
-    }
-
-    static toggleCatalogNode(nodeId) {
-        if (!Array.isArray(AppState.catalogExpandedIds)) {
-            const path = UIRenderer.pathToNode(AppState.currentCategory, AppState.directoryNodeId) || [AppState.currentCategory].filter(Boolean);
-            AppState.catalogExpandedIds = path.slice(0, -1).map(part => String(part.id));
-        }
-        const expanded = new Set(AppState.catalogExpandedIds.map(String));
-        if (expanded.has(String(nodeId))) expanded.delete(String(nodeId));
-        else expanded.add(String(nodeId));
-        AppState.catalogExpandedIds = [...expanded];
-        UIRenderer.renderLibraryTree(AppState.currentCategory);
     }
 
     static selectCatalogNode(categoryId, nodeId) {
@@ -3928,17 +3881,35 @@ class App {
         const path = UIRenderer.pathToNode(category, node.id) || [category];
         AppState.currentCategory = category;
         AppState.directoryNodeId = String(node.id);
+        AppState.directoryPathIds = path.map(part => String(part.id));
         AppState.libraryScrollTop = 0;
         AppState.currentView = 'library';
-        AppState.catalogExpandedIds = path.slice(0, -1).map(part => String(part.id));
-        if (path.length === 1 && (node.children || []).length) AppState.catalogExpandedIds.push(String(node.id));
-        this.closeDirectoryDrawer();
         UIRenderer.renderLibrary(category.id, { selectedNodeId: node.id, resetScroll: true });
     }
 
-    static closeDirectoryDrawer() {
-        document.getElementById('library-sidebar')?.classList.remove('open');
-        document.getElementById('library-toc-overlay')?.classList.remove('open');
+    // 级联列中的节点动作：有下级时只推进路径；叶子有题直接进入练习，空叶子停留并显示空状态。
+    static selectDirectoryItem(categoryId, nodeId) {
+        const category = UIRenderer.findCategoryById(categoryId);
+        const node = category && UIRenderer.findNodeById(category, nodeId);
+        if (!category || !node) return;
+        if ((node.children || []).length) {
+            this.selectCatalogNode(category.id, node.id);
+            return;
+        }
+        if ((node.direct_questions || node.questions || []).length) {
+            AppState.currentCategory = category;
+            void this.showChapter(node);
+            return;
+        }
+        this.selectCatalogNode(category.id, node.id);
+    }
+
+    static startDirectDirectory(categoryId, nodeId) {
+        const category = UIRenderer.findCategoryById(categoryId);
+        const node = category && UIRenderer.findNodeById(category, nodeId);
+        if (!category || !node) return;
+        AppState.currentCategory = category;
+        void this.showChapter(node, { directOnly: true });
     }
 
     static openChapterPicker(categoryId = null, nodeId = null) {
@@ -4038,10 +4009,8 @@ class App {
         UIRenderer.saveDirectoryState();
         const path = UIRenderer.pathToNode(category, node.id) || [category];
         AppState.directoryNodeId = String(node.id);
+        AppState.directoryPathIds = path.map(part => String(part.id));
         AppState.libraryScrollTop = 0;
-        AppState.catalogExpandedIds = path.slice(0, -1).map(part => String(part.id));
-        if (path.length === 1 && (node.children || []).length) AppState.catalogExpandedIds.push(String(node.id));
-        this.closeDirectoryDrawer();
         UIRenderer.renderLibrary(category.id, { selectedNodeId: node.id, resetScroll: true });
     }
 
@@ -4264,15 +4233,6 @@ class App {
         }
     }
 
-    static toggleLibraryToc() {
-        const sidebar = document.getElementById('library-sidebar');
-        const overlay = document.getElementById('library-toc-overlay');
-        if (!sidebar) return;
-        const open = !sidebar.classList.contains('open');
-        sidebar.classList.toggle('open', open);
-        if (overlay) overlay.classList.toggle('open', open);
-    }
-
     static async showChapter(chapter, { directOnly = false } = {}) {
         if (AppState.currentView === 'question' && !await this.ensureSavedBeforeLeavingQuestion()) return false;
         if (AppState.currentCategory) {
@@ -4294,13 +4254,6 @@ class App {
             const content = document.getElementById('library-content');
             if (content && DataService.chapterEntries(chapter).length > 0) content.insertAdjacentHTML('beforeend', `<div class="empty-state filtered-empty" role="status"><h3>此章节当前范围没有题目</h3><p>目录题数是总数；本次练习按“${escapeHtml(AppState.chapterScope === 'all' ? '完整' : AppState.chapterScope === 'core' ? '严选' : '真题')}”和已有详细筛选显示。</p></div>`);
             return false;
-        }
-
-        // 从目录抽屉进入后自动收起（手机端）
-        const sidebar = document.getElementById('library-sidebar');
-        if (sidebar && sidebar.classList.contains('open')) {
-            sidebar.classList.remove('open');
-            document.getElementById('library-toc-overlay')?.classList.remove('open');
         }
 
         await this.enterChapterQuestions(queueChapter, 0, null, this.preferredQuestionMode());
