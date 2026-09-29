@@ -5,7 +5,7 @@
 
 // ========== 离线缓存注册（与 app2.js 一致） ==========
 if ("serviceWorker" in navigator && location.protocol !== "file:") {
-    navigator.serviceWorker.register("./service-worker.js?v=122").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=123").catch(() => {});
 }
 
 // ========== 全局状态 ==========
@@ -110,6 +110,11 @@ const UI_THEMES = [
     { id: 'orange-night', name: '橙黑夜间', brand: '#FF8A3D', app: '#191B1C', reading: '#242729', accent: '#E6B36B' },
     { id: 'mint', name: '薄荷实验', brand: '#31785E', app: '#EAF3ED', reading: '#FBFEFC', accent: '#AD7444' },
 ];
+const UI_FONT_SCALES = [1, 1.15, 1.3, 1.5];
+function normalizeFontScale(value) {
+    const scale = Number(value);
+    return UI_FONT_SCALES.includes(scale) ? scale : 1;
+}
 function relativeLuminance(hex) {
     const rgb = String(hex || '').replace('#', '').match(/.{2}/g);
     if (!rgb || rgb.length !== 3) return .5;
@@ -154,6 +159,7 @@ function applyAppearanceValues(appearance) {
     root.style.setProperty('--color-on-brand', contrastForeground(brand));
     root.style.setProperty('--color-brand-text', dark ? '#FFD0B5' : brand);
     root.style.setProperty('--color-brand-soft', `${brand}24`);
+    root.style.setProperty('--ui-font-scale', String(normalizeFontScale(data.fontScale)));
 }
 
 // ========== 数据层 ==========
@@ -684,14 +690,16 @@ class StorageService {
         try {
             data = JSON.parse(localStorage.getItem(key) || '{}');
         } catch { data = {}; }
-        return data && typeof data === 'object' && !Array.isArray(data)
-            ? { theme: 'path-red', brand: '#C83F32', app: '#F7F3EA', reading: '#FFFEFA', accent: '#9A7746', reduceMotion: false, ...data }
-            : { theme: 'path-red', brand: '#C83F32', app: '#F7F3EA', reading: '#FFFEFA', accent: '#9A7746', reduceMotion: false };
+        const defaults = { theme: 'path-red', brand: '#C83F32', app: '#F7F3EA', reading: '#FFFEFA', accent: '#9A7746', reduceMotion: false, fontScale: 1 };
+        const appearance = data && typeof data === 'object' && !Array.isArray(data) ? { ...defaults, ...data } : defaults;
+        appearance.fontScale = normalizeFontScale(appearance.fontScale);
+        return appearance;
     }
 
     static saveUIAppearance(appearance) {
         const key = (window.DaguanVersions && DaguanVersions.appearanceKey) || 'daguan_ui_appearance_new_v1';
-        localStorage.setItem(key, JSON.stringify(appearance && typeof appearance === 'object' ? appearance : {}));
+        const data = appearance && typeof appearance === 'object' ? appearance : {};
+        localStorage.setItem(key, JSON.stringify({ ...data, fontScale: normalizeFontScale(data.fontScale) }));
     }
 
     static getVersionPreference() {
@@ -1736,6 +1744,7 @@ class UIRenderer {
         return `<section class="card appearance-settings" aria-labelledby="appearance-title"><h2 id="appearance-title" class="text-section-title">新版外观</h2><p class="text-helper">只影响新版页面，旧版外观设置保持独立。</p>
             <div class="theme-presets">${UI_THEMES.map(theme => `<button type="button" class="theme-preset" data-theme-preset="${theme.id}" aria-pressed="${saved.theme === theme.id}"><span class="theme-swatch" style="--swatch-brand:${theme.brand};--swatch-app:${theme.app};--swatch-reading:${theme.reading}"></span><span>${theme.name}</span></button>`).join('')}</div>
             <div class="custom-colors"><h3>自定义品牌色</h3>${[['brand','品牌色'],['app','应用底色'],['reading','阅读面'],['accent','次强调色']].map(([key,label]) => `<label>${label}<input type="color" data-appearance-color="${key}" value="${saved[key] || UI_THEMES[0][key]}"></label>`).join('')}</div>
+            <fieldset class="font-scale-settings"><legend>界面字号</legend><p class="text-helper">放大题目、答案和界面文字；只保存在这台设备的新版界面。</p><div class="font-scale-choices">${UI_FONT_SCALES.map(scale => `<button type="button" class="font-scale-choice" data-font-scale="${scale}" aria-pressed="${saved.fontScale === scale}">${Math.round(scale * 100)}%</button>`).join('')}</div></fieldset>
             <div class="appearance-preview" id="appearance-preview"><strong>实时预览</strong><p>正文与按钮文字会按背景自动选择对比色。</p><button type="button" class="btn btn-primary">品牌按钮预览</button></div>
             <div class="appearance-actions"><button type="button" class="btn btn-primary" id="appearance-apply">应用</button><button type="button" class="btn btn-secondary" id="appearance-cancel">取消</button><button type="button" class="btn btn-text" id="appearance-reset">恢复预设</button></div>
         </section>`;
@@ -1757,6 +1766,11 @@ class UIRenderer {
             document.querySelectorAll('[data-theme-preset]').forEach(item => item.setAttribute('aria-pressed', 'false'));
             preview();
         }));
+        document.querySelectorAll('[data-font-scale]').forEach(button => button.addEventListener('click', () => {
+            AppState.appearanceDraft.fontScale = normalizeFontScale(button.dataset.fontScale);
+            document.querySelectorAll('[data-font-scale]').forEach(item => item.setAttribute('aria-pressed', String(item === button)));
+            preview();
+        }));
         document.getElementById('appearance-apply')?.addEventListener('click', () => {
             StorageService.saveUIAppearance(AppState.appearanceDraft);
             toast('新版外观已应用');
@@ -1768,9 +1782,10 @@ class UIRenderer {
         });
         document.getElementById('appearance-reset')?.addEventListener('click', () => {
             const base = UI_THEMES.find(item => item.id === AppState.appearanceDraft.theme) || UI_THEMES[0];
-            AppState.appearanceDraft = { ...base, theme: base.id };
+            AppState.appearanceDraft = { ...base, theme: base.id, fontScale: 1 };
             document.querySelectorAll('[data-appearance-color]').forEach(input => { input.value = base[input.dataset.appearanceColor]; });
             document.querySelectorAll('[data-theme-preset]').forEach(item => item.setAttribute('aria-pressed', String(item.dataset.themePreset === base.id)));
+            document.querySelectorAll('[data-font-scale]').forEach(item => item.setAttribute('aria-pressed', String(item.dataset.fontScale === '1')));
             preview();
         });
     }
@@ -2118,7 +2133,7 @@ class UIRenderer {
         const progress = StorageService.getProgress();
         const isFav = StorageService.isFavorite(question.id);
         const isMistake = StorageService.isMistake(question.id);
-        const isMastered = StorageService.isMastered(question.id);
+        const mastery = progress.progress[String(question.id)]?.mastery || 'not_started';
         const annotation = StorageService.getAnnotation(question.id);
 
         main.innerHTML = `
@@ -2134,8 +2149,9 @@ class UIRenderer {
                             <span class="breadcrumb-sep">/</span>
                             <span>${AppState.currentChapter?.name || AppState.currentChapter?.title || '章节'}</span>
                         </div>
-                        <div class="question-sequence">
-                            第 ${questionIndex + 1} 题 / 共 ${AppState.chapterQuestionCount || AppState.questions.length} 题
+                        <div class="question-sequence" data-question-id="${escapeHtml(String(question.id))}">
+                            <span>第 ${questionIndex + 1} 题 / 共 ${AppState.chapterQuestionCount || AppState.questions.length} 题</span>
+                            ${this.renderQuestionStatusBadges(mastery, isMistake)}
                         </div>
                         ${AppState.globalSearchReturn ? '<button type="button" class="btn btn-secondary" onclick="App.returnToGlobalSearch()">返回搜索</button>' : ''}
                         ${AppState.currentCategory && AppState.currentChapter ? '<button type="button" class="btn btn-secondary chapter-picker-trigger" data-open-chapter-picker>选择小节</button>' : ''}
@@ -2144,7 +2160,7 @@ class UIRenderer {
                     ${AppState.currentCategory && AppState.currentChapter ? `<div class="mode-toolbar"><span>单题阅读</span><div class="mode-toolbar-actions"><button type="button" class="mode-jump-button" data-shortcut-hint="jump" onclick="App.promptJumpToQuestion()">跳题</button><div class="mode-switch"><button type="button" class="active" aria-pressed="true">单题</button><button type="button" data-shortcut-hint="mode" onclick="App.changeQuestionMode('multi')">多题</button></div></div></div>` : ''}
 
                     <div class="question-content" id="question-content">
-                        <div class="question-wrapper">
+                        <div class="question-wrapper" data-question-id="${escapeHtml(String(question.id))}">
                             <div class="question-meta-row">
                                 <div class="question-source">
                                     ${question.source || ''} ${question.year ? question.year + '年' : ''}
@@ -2174,7 +2190,9 @@ class UIRenderer {
                                 </div>
                             </div>
 
-                            ${this.renderQuestionContent(question)}
+                            ${this.renderQuestionContent(question, {
+                                statusControls: this.renderQuestionStatusControls(question.id, mastery, isMistake)
+                            })}
                         </div>
                     </div>
 
@@ -2193,16 +2211,6 @@ class UIRenderer {
                                 onclick="App.nextQuestion()"
                                 ${questionIndex === AppState.questions.length - 1 ? 'disabled' : ''}>
                                 下一题
-                            </button>
-                        </div>
-                        <div class="footer-status">
-                            <button class="mastery-btn mastery-status-button mastery-${progress.progress[String(question.id)]?.mastery || 'not_started'}" data-shortcut-hint="mastery"
-                                onclick="App.cycleMastery('${question.id}')" aria-label="掌握状态：${masteryLabel(progress.progress[String(question.id)]?.mastery)}，点击切换">
-                                ${masteryLabel(progress.progress[String(question.id)]?.mastery)}
-                            </button>
-                            <button class="mastery-btn ${isMistake ? 'active' : ''}" data-shortcut-hint="error"
-                                onclick="App.toggleMistake('${question.id}')">
-                                ${isMistake ? '✓ ' : ''}易错
                             </button>
                         </div>
                     </div>
@@ -2261,18 +2269,20 @@ class UIRenderer {
             const active = localIndex === activeIndex;
             const favorite = StorageService.isFavorite(id);
             const mistake = StorageService.isMistake(id);
-            const stem = this.renderQuestionContent(question, { multi: true })
+            const stem = this.renderQuestionContent(question, {
+                multi: true,
+                statusControls: this.renderQuestionStatusControls(id, mastery, mistake)
+            })
                 .replace(/ id="(?:question-options|answer-section)"/g, '');
             return `<article class="multi-question-card${active ? ' active-question' : ''}" id="multi-question-${globalIndex}" data-question-id="${escapeHtml(id)}">
-                <header class="multi-question-head"><div><span class="multi-question-number">第 ${globalIndex + 1} 题</span><span class="multi-question-id">题号 ${escapeHtml(id)}</span><span class="multi-question-source">${escapeHtml(question.source || '')}${question.year ? ` · ${escapeHtml(question.year)}年` : ''}</span></div>
+                <header class="multi-question-head"><div><span class="multi-question-number">第 ${globalIndex + 1} 题</span>${this.renderQuestionStatusBadges(mastery, mistake)}<span class="multi-question-id">题号 ${escapeHtml(id)}</span><span class="multi-question-source">${escapeHtml(question.source || '')}${question.year ? ` · ${escapeHtml(question.year)}年` : ''}</span></div>
                 <div class="multi-card-actions">
                   <button type="button" class="action-btn${favorite ? ' active' : ''}" onclick="App.toggleQuestionFavorite('${escapeHtml(id)}')">收藏</button>
-                  <button type="button" class="action-btn${mistake ? ' active' : ''}" onclick="App.toggleQuestionMistake('${escapeHtml(id)}')">易错</button>
                   <button type="button" class="action-btn" onclick="App.openQuestionAnnotation('${escapeHtml(id)}')">批注</button>
                   <button type="button" class="action-btn" onclick="App.openQuestionAI('${escapeHtml(id)}')">AI 辅助</button>
                 </div></header>
                 <div class="multi-question-reading">${stem}</div>
-                <div class="multi-question-status"><button type="button" class="mastery-btn mastery-${mastery}" onclick="App.cycleMastery('${escapeHtml(id)}')">${masteryLabel(mastery)}</button><button type="button" class="expand-answer-btn" aria-expanded="false" onclick="App.toggleCardAnswer(${globalIndex}, this)">显示答案</button></div>
+                <div class="multi-question-status"><button type="button" class="expand-answer-btn" aria-expanded="false" onclick="App.toggleCardAnswer(${globalIndex}, this)">显示答案</button></div>
             </article>`;
         }).join('');
         const pageStart = Math.floor(start / 20) * 20;
@@ -2311,7 +2321,35 @@ class UIRenderer {
         }
     }
 
-    static renderQuestionContent(question, { multi = false } = {}) {
+    static renderQuestionStatusBadges(mastery, mistake) {
+        const normalizedMastery = ['not_started', 'learning', 'mastered'].includes(mastery) ? mastery : 'not_started';
+        return `<span class="question-status-badges" aria-label="题目状态">
+            <span class="question-mastery-badge mastery-${normalizedMastery}">${masteryLabel(normalizedMastery)}</span>
+            <span class="question-mistake-badge"${mistake ? '' : ' hidden'}>易错</span>
+        </span>`;
+    }
+
+    static renderQuestionStatusControls(questionId, mastery, mistake) {
+        const id = escapeHtml(String(questionId));
+        const normalizedMastery = ['not_started', 'learning', 'mastered'].includes(mastery) ? mastery : 'not_started';
+        const choices = [
+            ['not_started', '未开始', 'mastery1'],
+            ['learning', '学习中', 'mastery2'],
+            ['mastered', '已掌握', 'mastery3']
+        ];
+        return `<div class="question-mastery-controls" role="group" aria-label="掌握程度">
+            <span class="question-mastery-label">掌握程度</span>
+            <div class="question-mastery-choices">${choices.map(([value, label, shortcut]) => `
+                <button type="button" class="mastery-btn question-mastery-choice mastery-${value}${normalizedMastery === value ? ' active' : ''}"
+                    data-mastery-choice="${value}" data-shortcut-hint="${shortcut}" aria-label="掌握程度：${label}"
+                    aria-pressed="${normalizedMastery === value}" onclick="App.setQuestionMastery('${id}', '${value}')">${label}</button>
+            `).join('')}</div>
+            <button type="button" class="mastery-btn question-mistake-toggle${mistake ? ' active' : ''}"
+                data-shortcut-hint="error" aria-pressed="${mistake}" onclick="App.toggleQuestionMistake('${id}')">${mistake ? '✓ ' : ''}易错</button>
+        </div>`;
+    }
+
+    static renderQuestionContent(question, { multi = false, statusControls = '' } = {}) {
         let html = `<div class="question-stem">${renderMarkdown(question.stem || question.question || '')}</div>`;
 
         if (question.image) {
@@ -2338,6 +2376,9 @@ class UIRenderer {
             });
             html += `</div>`;
         }
+
+        // 状态快捷操作放在题干与选项之后、答案解析之前，单题与多题共用同一位置。
+        html += statusControls;
 
         html += `
             <div class="answer-section" id="answer-section" style="display: none;">
@@ -4188,9 +4229,7 @@ class App {
     static async toggleQuestionMistake(id) {
         if (!PreviewAccess.privateAllowed()) return;
         const active = StorageService.toggleMistake(id); StateSync.queueQuestion(id, { error_prone: active });
-        document.querySelectorAll(`[data-question-id="${CSS.escape(String(id))}"] .multi-card-actions .action-btn:nth-child(2)`).forEach(btn => btn.classList.toggle('active', active));
-        document.querySelectorAll(`.question-rail-item[data-question-id="${CSS.escape(String(id))}"]`).forEach(btn => btn.classList.toggle('error-prone', active));
-        this.filterQuestionRailItems();
+        this.updateQuestionStateUI(id);
     }
 
     static async openQuestionAI(id) {
@@ -5250,13 +5289,7 @@ document.getElementById('btn-dl').addEventListener('click', function () {
     }
 
     static toggleMistake(questionId) {
-        if (!PreviewAccess.privateAllowed()) return;
-        const isMistake = StorageService.toggleMistake(questionId);
-        const btn = event.currentTarget;
-        btn.classList.toggle('active', isMistake);
-        btn.textContent = isMistake ? '✓ 易错' : '易错';
-        StateSync.queueQuestion(questionId, { error_prone: isMistake });
-        this.refreshShortcutHints(document.querySelector('.question-main') || document);
+        return this.toggleQuestionMistake(questionId);
     }
 
     static toggleMastered(questionId) {
@@ -5267,34 +5300,55 @@ document.getElementById('btn-dl').addEventListener('click', function () {
         if (!PreviewAccess.privateAllowed()) return;
         const value = StorageService.cycleMastery(questionId);
         StateSync.queueQuestion(questionId, { mastery: value });
-        document.querySelectorAll(`[data-question-id="${CSS.escape(String(questionId))}"] .mastery-btn, .question-main .mastery-status-button`).forEach(btn => {
-            btn.classList.remove('mastery-not_started', 'mastery-learning', 'mastery-mastered', 'active');
-            btn.classList.add(`mastery-${value}`); btn.textContent = masteryLabel(value);
-        });
-        const entries = DataService.chapterEntries(AppState.currentChapter);
-        const globalIndex = entries.findIndex(entry => String(entry.id) === String(questionId));
-        document.querySelectorAll(`.question-rail-item[data-question-id="${CSS.escape(String(questionId))}"]`).forEach(rail => {
-            rail.classList.remove('mastery-not_started', 'mastery-learning', 'mastery-mastered');
-            rail.dataset.mastery = value;
-            if (value !== 'not_started') rail.classList.add(`mastery-${value}`);
-            const favorite = StorageService.isFavorite(questionId), mistake = StorageService.isMistake(questionId);
-            rail.setAttribute('aria-label', `第 ${globalIndex + 1} 题，题号 ${questionId}，${masteryLabel(value)}${favorite ? '，已收藏' : ''}${mistake ? '，易错' : ''}`);
-        });
-        this.filterQuestionRailItems();
-        this.refreshShortcutHints(document.querySelector('.question-main') || document);
+        this.updateQuestionStateUI(questionId);
     }
 
     static setQuestionMastery(questionId, mastery) {
         if (!questionId || !PreviewAccess.privateAllowed()) return;
         const value = StorageService.setMastery(questionId, mastery);
         StateSync.queueQuestion(questionId, { mastery: value });
-        document.querySelectorAll(`[data-question-id="${CSS.escape(String(questionId))}"] .mastery-btn, .question-main .mastery-status-button`).forEach(btn => {
-            btn.classList.remove('mastery-not_started', 'mastery-learning', 'mastery-mastered', 'active');
-            btn.classList.add(`mastery-${value}`); btn.textContent = masteryLabel(value);
+        this.updateQuestionStateUI(questionId);
+    }
+
+    static updateQuestionStateUI(questionId) {
+        const id = String(questionId);
+        const safeId = CSS.escape(id);
+        const progress = StorageService.getProgress().progress[id] || {};
+        const mastery = ['not_started', 'learning', 'mastered'].includes(progress.mastery) ? progress.mastery : 'not_started';
+        const mistake = progress.error_prone === true;
+
+        document.querySelectorAll(`[data-question-id="${safeId}"]`).forEach(questionRoot => {
+            questionRoot.querySelectorAll('.question-mastery-choice').forEach(button => {
+                const selected = button.dataset.masteryChoice === mastery;
+                button.classList.remove('mastery-not_started', 'mastery-learning', 'mastery-mastered');
+                button.classList.add(`mastery-${button.dataset.masteryChoice}`);
+                button.classList.toggle('active', selected);
+                button.setAttribute('aria-pressed', String(selected));
+            });
+            questionRoot.querySelectorAll('.question-mastery-badge').forEach(badge => {
+                badge.classList.remove('mastery-not_started', 'mastery-learning', 'mastery-mastered');
+                badge.classList.add(`mastery-${mastery}`);
+                badge.textContent = masteryLabel(mastery);
+            });
+            questionRoot.querySelectorAll('.question-mistake-badge').forEach(badge => { badge.hidden = !mistake; });
+            questionRoot.querySelectorAll('.question-mistake-toggle').forEach(button => {
+                button.classList.toggle('active', mistake);
+                button.setAttribute('aria-pressed', String(mistake));
+                button.textContent = `${mistake ? '✓ ' : ''}易错`;
+            });
         });
-        document.querySelectorAll(`.question-rail-item[data-question-id="${CSS.escape(String(questionId))}"]`).forEach(rail => { rail.dataset.mastery = value; });
+
+        const favorite = StorageService.isFavorite(id);
+        document.querySelectorAll(`.question-rail-item[data-question-id="${safeId}"]`).forEach(rail => {
+            rail.dataset.mastery = mastery;
+            rail.classList.remove('not_started', 'learning', 'mastered', 'mastery-not_started', 'mastery-learning', 'mastery-mastered');
+            if (mastery !== 'not_started') rail.classList.add(mastery);
+            rail.classList.toggle('error-prone', mistake);
+            const questionNumber = Number(rail.dataset.questionNumber) || 0;
+            rail.setAttribute('aria-label', `第 ${questionNumber} 题，题号 ${id}，${masteryLabel(mastery)}${favorite ? '，已收藏' : ''}${mistake ? '，易错' : ''}`);
+        });
         this.filterQuestionRailItems();
-        this.refreshShortcutHints(document.querySelector('.question-main') || document);
+        this.refreshShortcutHints(document.querySelector('.question-main') || document.querySelector('.multi-question-view') || document);
     }
 
     static toggleAI() {

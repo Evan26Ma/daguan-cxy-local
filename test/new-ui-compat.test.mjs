@@ -8,6 +8,7 @@ function createContext(initialStorage = {}) {
   const storage = new Map(Object.entries(initialStorage).map(([key, value]) => [key, String(value)]));
   const session = new Map();
   const documentListeners = new Map();
+  const appearanceVariables = new Map();
   const document = {
     visibilityState: "visible",
     addEventListener: (type, listener) => {
@@ -15,7 +16,8 @@ function createContext(initialStorage = {}) {
       listeners.push(listener);
       documentListeners.set(type, listeners);
     },
-    documentElement: { dataset: {} },
+    documentElement: { dataset: {}, style: { setProperty: (name, value) => appearanceVariables.set(name, value) } },
+    querySelector: () => null,
     createElement: () => ({ set innerHTML(v) {}, get innerHTML() { return ""; }, set textContent(v) {} }),
   };
   const localStorage = {
@@ -51,7 +53,7 @@ function createContext(initialStorage = {}) {
   const root = new URL("../web/", import.meta.url);
   vm.runInContext(fs.readFileSync(new URL("ui-version.js", root), "utf8"), sandbox, { filename: "ui-version.js" });
   vm.runInContext(fs.readFileSync(new URL("app-new.js", root), "utf8"), sandbox, { filename: "app-new.js" });
-  return { sandbox, storage, session, localStorage, sessionStorage, document, documentListeners };
+  return { sandbox, storage, session, localStorage, sessionStorage, document, documentListeners, appearanceVariables };
 }
 
 function syncElements(document) {
@@ -390,6 +392,130 @@ test("旧版只在独立收藏键记录的收藏：新版识别且掌握/易错�
   StorageService.toggleFavorite(3356);
   assert.deepEqual(Array.from(JSON.parse(storage.get("daguan_local_favorites_v1"))), ["3356"]);
   assert.equal(StorageService.getProgress().progress["3356"].favorite, true);
+});
+
+test("新版按指定状态直接保存三种掌握程度，易错标记独立保存并同步", async () => {
+  const { sandbox, storage, document } = createContext();
+  const { App, StorageService, StateSync, PreviewAccess } = sandbox.window;
+  PreviewAccess.privateAllowed = () => true;
+  sandbox.CSS = { escape: value => String(value) };
+  document.querySelectorAll = () => [];
+  App.refreshShortcutHints = () => {};
+  const queued = [];
+  StateSync.queueQuestion = (qid, patch) => queued.push({ qid: String(qid), patch: { ...patch } });
+
+  for (const mastery of ["not_started", "learning", "mastered"]) {
+    App.setQuestionMastery("734", mastery);
+    assert.equal(StorageService.getProgress().progress["734"].mastery, mastery, `直接选择 ${mastery} 应落盘`);
+    assert.deepEqual(queued.at(-1), { qid: "734", patch: { mastery } });
+  }
+
+  await App.toggleQuestionMistake("734");
+  assert.equal(StorageService.isMistake("734"), true);
+  assert.equal(StorageService.getProgress().progress["734"].mastery, "mastered", "切换易错不应改动掌握状态");
+  assert.deepEqual(queued.at(-1), { qid: "734", patch: { error_prone: true } });
+
+  App.setQuestionMastery("734", "learning");
+  assert.equal(StorageService.isMistake("734"), true, "设置掌握状态不应清除易错标记");
+  assert.equal(StorageService.getProgress().progress["734"].mastery, "learning");
+  const persisted = JSON.parse(storage.get("daguan_local_progress_v1"))["734"];
+  assert.equal(persisted.mastery, "learning");
+  assert.equal(persisted.error_prone, true);
+});
+
+test("单题和多题渲染都提供三态直选、独立易错按钮和当前状态", async () => {
+  const { sandbox, document } = createContext();
+  const { App, AppState, PreviewAccess, StateSync, StorageService, UIRenderer } = sandbox.window;
+  const main = { innerHTML: "" };
+  document.getElementById = id => id === "app-main" ? main : null;
+  document.querySelectorAll = () => [];
+  document.createElement = () => {
+    let innerHTML = "";
+    return {
+      set innerHTML(value) { innerHTML = String(value); },
+      get innerHTML() { return innerHTML; },
+      set textContent(value) { innerHTML = String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\"/g, "&quot;").replace(/'/g, "&#39;"); },
+      querySelectorAll: () => [],
+    };
+  };
+  sandbox.CSS = { escape: value => String(value) };
+  PreviewAccess.privateAllowed = () => false;
+  App.refreshShortcutHints = () => {};
+  UIRenderer.bindChapterPickerTriggers = () => {};
+  UIRenderer.renderKaTeX = () => {};
+
+  const question = { id: 734, stem: "题干", options: [{ label: "A", content_md: "选项" }], answer: "A", explanation: "解析" };
+  AppState.questions = [question];
+  AppState.currentQuestionIndex = 0;
+  AppState.currentCategory = null;
+  AppState.currentChapter = null;
+  AppState.questionMode = "single";
+  StorageService.setMastery(question.id, "learning");
+  StorageService.toggleMistake(question.id);
+
+  await UIRenderer.renderQuestion(0);
+  const singleMarkup = main.innerHTML;
+  const controlsIndex = singleMarkup.indexOf("question-mastery-controls");
+  assert.ok(controlsIndex > singleMarkup.indexOf("question-options"), "单题状态操作应位于题干和选项之后");
+  assert.ok(controlsIndex < singleMarkup.indexOf("answer-section"), "单题状态操作应位于答案解析之前");
+  assert.match(singleMarkup, /question-mastery-badge mastery-learning">学习中/);
+  assert.match(singleMarkup, /question-mistake-badge[^>]*>易错/);
+
+  const getStatusButtons = markup => (markup.match(/<button\b[^>]*>/g) || []);
+  const masteryButtons = getStatusButtons(singleMarkup).filter(tag => /\bdata-mastery-choice=/.test(tag));
+  assert.deepEqual(masteryButtons.map(tag => tag.match(/\bdata-mastery-choice="([^"]+)"/)?.[1]), ["not_started", "learning", "mastered"]);
+  assert.match(masteryButtons[1], /aria-pressed="true"/);
+  assert.match(singleMarkup, /class="mastery-btn question-mistake-toggle active"[^>]*aria-pressed="true"/);
+
+  const queued = [];
+  PreviewAccess.privateAllowed = () => true;
+  StateSync.queueQuestion = (qid, patch) => queued.push({ qid: String(qid), patch: { ...patch } });
+  const masteredHandler = masteryButtons[2].match(/\bonclick="([^"]+)"/)?.[1];
+  assert.ok(masteredHandler, "掌握按钮应直接绑定到指定状态写入");
+  assert.match(masteredHandler, /App\.setQuestionMastery\('734', 'mastered'\)/);
+  App.setQuestionMastery("734", "mastered");
+  assert.equal(StorageService.getProgress().progress["734"].mastery, "mastered");
+  assert.equal(StorageService.isMistake("734"), true, "直选状态不应改动易错标记");
+  assert.deepEqual(queued.at(-1), { qid: "734", patch: { mastery: "mastered" } });
+
+  AppState.currentChapter = { name: "测试章节", questions: [question] };
+  AppState.chapterQuestionCount = 1;
+  AppState.questionOffset = 0;
+  AppState.questionRailQuery = "";
+  AppState.questionRailFilter = "";
+  UIRenderer.renderMultiQuestions(0);
+  const multiMarkup = main.innerHTML;
+  assert.match(multiMarkup, /question-mastery-badge mastery-mastered">已掌握/);
+  assert.match(multiMarkup, /question-mistake-badge[^>]*>易错/);
+  const multiButtons = getStatusButtons(multiMarkup).filter(tag => /\bdata-mastery-choice=/.test(tag));
+  assert.deepEqual(multiButtons.map(tag => tag.match(/\bdata-mastery-choice="([^"]+)"/)?.[1]), ["not_started", "learning", "mastered"]);
+  assert.match(multiButtons[2], /aria-pressed="true"/);
+  const mistakeHandler = getStatusButtons(multiMarkup).find(tag => /\bclass="[^"]*question-mistake-toggle/.test(tag))?.match(/\bonclick="([^"]+)"/)?.[1];
+  assert.ok(mistakeHandler, "多题卡易错按钮应独立绑定易错切换");
+  assert.match(mistakeHandler, /App\.toggleQuestionMistake\('734'\)/);
+  await App.toggleQuestionMistake("734");
+  assert.equal(StorageService.isMistake("734"), false);
+  assert.equal(StorageService.getProgress().progress["734"].mastery, "mastered", "多题卡易错切换不应改动掌握状态");
+  assert.deepEqual(queued.at(-1), { qid: "734", patch: { error_prone: false } });
+});
+
+test("新版字号档位持久化在新版外观键，并规范化非法值", () => {
+  const { sandbox, storage, appearanceVariables } = createContext();
+  const { StorageService, UIRenderer } = sandbox.window;
+  const defaults = StorageService.getUIAppearance();
+  assert.equal(defaults.fontScale, 1);
+
+  for (const scale of [1, 1.15, 1.3, 1.5]) {
+    StorageService.saveUIAppearance({ ...defaults, fontScale: scale });
+    assert.equal(StorageService.getUIAppearance().fontScale, scale);
+    assert.equal(JSON.parse(storage.get("daguan_ui_appearance_new_v1")).fontScale, scale);
+    UIRenderer.applySavedAppearance();
+    assert.equal(appearanceVariables.get("--ui-font-scale"), String(scale));
+  }
+
+  StorageService.saveUIAppearance({ ...defaults, fontScale: 1.2 });
+  assert.equal(StorageService.getUIAppearance().fontScale, 1, "不支持的字号值回到默认档位");
+  assert.equal(JSON.parse(storage.get("daguan_ui_appearance_new_v1")).fontScale, 1);
 });
 
 test("进度条目内的 favorite=false 优先于数组残留，读取即为未收藏", () => {
