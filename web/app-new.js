@@ -1609,14 +1609,14 @@ class UIRenderer {
         return visit(category, []);
     }
 
-    static renderLibrary(categoryId, { selectedNodeId = null } = {}) {
+    static renderLibrary(categoryId, { selectedNodeId = null, resetScroll = false } = {}) {
         const category = this.findCategoryById(categoryId);
         if (!category) return;
         const saved = this.readDirectoryState().subjects[String(category.id)] || {};
         if (selectedNodeId != null && this.findNodeById(category, selectedNodeId)) AppState.directoryNodeId = String(selectedNodeId);
         else if (this.findNodeById(category, saved.nodeId)) AppState.directoryNodeId = String(saved.nodeId);
         else if (!AppState.directoryNodeId || !this.findNodeById(category, AppState.directoryNodeId)) AppState.directoryNodeId = String(category.id);
-        AppState.libraryScrollTop = Number(saved.scrollTop) || 0;
+        AppState.libraryScrollTop = resetScroll ? 0 : Number(saved.scrollTop) || 0;
         AppState.libraryQuery = String(saved.query || '');
         AppState.libraryResultLimit = Number(saved.resultLimit) || 40;
         AppState.filters = saved.filters && typeof saved.filters === 'object' ? saved.filters : { sources: [], years: [], types: [], lecturers: [] };
@@ -1691,7 +1691,8 @@ class UIRenderer {
         this.renderDirectoryNode(active);
         const filtering = AppState.libraryQuery.trim() || Object.values(AppState.filters || {}).some(values => Array.isArray(values) && values.length);
         if (filtering) this.renderLibraryResults();
-        if (AppState.libraryScrollTop) document.getElementById('library-content').scrollTop = AppState.libraryScrollTop;
+        const content = document.getElementById('library-content');
+        if (content) content.scrollTop = AppState.libraryScrollTop;
         this.saveDirectoryState();
         this.applySavedAppearance();
     }
@@ -3890,7 +3891,13 @@ class App {
         AppState.currentView = 'library';
         AppState.catalogExpandedIds = path.slice(0, -1).map(part => String(part.id));
         if (path.length === 1 && (node.children || []).length) AppState.catalogExpandedIds.push(String(node.id));
-        UIRenderer.renderLibrary(category.id, { selectedNodeId: node.id });
+        this.closeDirectoryDrawer();
+        UIRenderer.renderLibrary(category.id, { selectedNodeId: node.id, resetScroll: true });
+    }
+
+    static closeDirectoryDrawer() {
+        document.getElementById('library-sidebar')?.classList.remove('open');
+        document.getElementById('library-toc-overlay')?.classList.remove('open');
     }
 
     static openChapterPicker(categoryId = null, nodeId = null) {
@@ -3971,6 +3978,14 @@ class App {
             const target = index >= 0 ? index : Math.min(AppState.questionOffset + AppState.currentQuestionIndex, entries.length - 1);
             await this.enterChapterQuestions(queueChapter, target, index >= 0 ? current?.id : null, AppState.questionMode);
         }
+        if (AppState.currentView === 'library') {
+            const filtering = String(AppState.libraryQuery || '').trim()
+                || Object.values(AppState.filters || {}).some(values => Array.isArray(values) && values.length > 0);
+            if (!filtering) {
+                const node = UIRenderer.findNodeById(AppState.currentCategory, AppState.directoryNodeId) || AppState.currentCategory;
+                UIRenderer.renderDirectoryNode(node);
+            }
+        }
         const picker = document.getElementById('chapter-picker');
         if (picker?.classList.contains('open')) UIRenderer.renderChapterPicker();
     }
@@ -3985,7 +4000,8 @@ class App {
         AppState.libraryScrollTop = 0;
         AppState.catalogExpandedIds = path.slice(0, -1).map(part => String(part.id));
         if (path.length === 1 && (node.children || []).length) AppState.catalogExpandedIds.push(String(node.id));
-        UIRenderer.renderLibrary(category.id, { selectedNodeId: node.id });
+        this.closeDirectoryDrawer();
+        UIRenderer.renderLibrary(category.id, { selectedNodeId: node.id, resetScroll: true });
     }
 
     static directoryUp() {
