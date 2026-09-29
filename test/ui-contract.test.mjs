@@ -104,14 +104,14 @@ test("首屏不阻塞加载题库索引", () => {
 
 test("Service Worker 不预缓存首屏之外的大型索引和字体", () => {
   const sw = fs.readFileSync(new URL("../web/service-worker.js", import.meta.url), "utf8");
-  assert.match(sw, /daguan-shell-v123/);
+  assert.match(sw, /daguan-shell-v124/);
   assert.match(app, /service-worker\.js\?v=121/);
-  assert.match(newApp, /service-worker\.js\?v=123/);
+  assert.match(newApp, /service-worker\.js\?v=124/);
   assert.match(sw, /"\.\/legacy\.html"/);
-  assert.match(sw, /"\.\/legacy\.css\?v=89"/);
-  assert.match(sw, /"\.\/app-legacy\.js\?v=92"/);
-  assert.match(sw, /"\.\/styles-new\.css\?v=112"/);
-  assert.match(sw, /"\.\/app-new\.js\?v=116"/);
+  assert.match(sw, /"\.\/legacy\.css\?v=90"/);
+  assert.match(sw, /"\.\/app-legacy\.js\?v=93"/);
+  assert.match(sw, /"\.\/styles-new\.css\?v=113"/);
+  assert.match(sw, /"\.\/app-new\.js\?v=117"/);
   assert.match(sw, /"\.\/assets\/math-mark\.svg"/);
   assert.match(sw, /"\.\/assets\/landing\/local-mark\.png"/);
   assert.doesNotMatch(sw, /data\/(category_questions|id_index|search_index)\.json/);
@@ -130,10 +130,10 @@ test("新版与旧版都监听本地服务状态事件并刷新共享学习记�
 });
 
 test("新版入口承载新版前端并与旧版共享版本选择", () => {
-  assert.match(newHtml, /styles-new\.css\?v=112/);
+  assert.match(newHtml, /styles-new\.css\?v=113/);
   assert.match(newHtml, /ui-version\.js\?v=106/);
   assert.match(newHtml, /ui-bootstrap\.js\?v=1/);
-  assert.match(newHtml, /app-new\.js\?v=116/);
+  assert.match(newHtml, /app-new\.js\?v=117/);
   assert.match(uiBootstrap, /DaguanVersions\.selected\(localStorage\)/);
   assert.match(newHtml, /dlg-preview-access/);
   assert.match(newHtml, /preview-banner/);
@@ -197,15 +197,27 @@ test("界面版本：旧大观承载完整旧版前端", () => {
   const legacyCss = fs.readFileSync(new URL("../web/legacy.css", import.meta.url), "utf8");
   const legacyApp = fs.readFileSync(new URL("../web/app-legacy.js", import.meta.url), "utf8");
   assert.match(legacyHtml, /<title>大观园 · 本地刷题<\/title>/);
-  assert.match(legacyHtml, /legacy\.css\?v=89/);
-  assert.match(legacyHtml, /app-legacy\.js\?v=92/);
-  assert.match(legacyHtml, /legacy-version-toggle/);
+  assert.match(legacyHtml, /legacy\.css\?v=90/);
+  assert.match(legacyHtml, /app-legacy\.js\?v=93/);
+  assert.match(legacyHtml, /<header class="topbar learning-shell__topbar">[\s\S]*id="btn-switch-new"/);
+  assert.doesNotMatch(legacyHtml, /legacy-version-toggle|practice-version-toggle|data-version-choice/);
+  assert.match(legacyApp, /\$\("#btn-switch-new"\)\?\.addEventListener\("click", \(\) => setUiVersion\("new"\)\)/);
   assert.match(legacyCss, /--color-brand:\s*#1e4a5c|hero-copy/);
   assert.doesNotMatch(legacyHtml, /styles\.css\?v=/);
   assert.doesNotMatch(legacyHtml, /app2\.js/);
   assert.match(legacyApp, /PROGRESS_KEY = "daguan_local_progress_v1"/);
   assert.match(app, /versions.targetUrl\(location.href, version, true\)/);
   assert.match(legacyApp, /versions.targetUrl\(location.href, version, true\)/);
+});
+
+test("新版固定滚动容器、居中全库搜索和顶栏版本入口", () => {
+  assert.match(newHtml, /class="topbar-leading"[\s\S]*id="btn-global-search"[\s\S]*id="btn-switch-legacy"/);
+  assert.match(newCss, /html, body\s*\{[^}]*height:\s*100%[^}]*overflow:\s*hidden/s);
+  assert.match(newCss, /\.app-body\s*\{[^}]*min-height:\s*0[^}]*overflow:\s*hidden/s);
+  assert.match(newCss, /\.app-main\s*\{[^}]*min-height:\s*0[^}]*overflow-y:\s*auto/s);
+  assert.match(newCss, /grid-template-columns:\s*minmax\(0, 1fr\) auto minmax\(0, 1fr\)/);
+  assert.match(newCss, /\.app-topbar > \.topbar-search-trigger\s*\{[^}]*grid-column:\s*2[^}]*justify-self:\s*center/s);
+  assert.match(newApp, /querySelectorAll\('\.topbar-version-switch'\)/);
 });
 
 test("品牌橙双方案：活力橙默认，朱砂橙可在设置切换", () => {

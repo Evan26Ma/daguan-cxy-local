@@ -2543,6 +2543,7 @@ body[data-view="browse"] .top-actions .mode-toggle, body[data-view="browse"] .to
   .theme-toggle { width: 2.15rem; padding: 0; }
   .theme-toggle span { display: none; }
   .topbar-appearance, .topbar-sync { display: none; }
+  .topbar-version-switch { min-height: 2rem; padding: .3rem .5rem; font-size: .72rem; }
   .main { height: calc(100dvh - var(--shell-topbar-height)); padding: .75rem .75rem 1.5rem; }
   .hero { grid-template-columns: 1fr; gap: .8rem; padding: .9rem; }
   .hero-actions { min-width: 0; }
@@ -3173,4 +3174,4 @@ body.focus-mode[data-view="browse"] #app.learning-shell .learning-shell__sidebar
 
 .practice-version-toggle { display: flex; justify-content: flex-end; gap: .4rem; margin-bottom: .6rem; }
 .practice-version-toggle [aria-pressed="true"], .legacy-version-toggle [aria-pressed="true"] { border-color: var(--color-brand); color: var(--color-brand); }
-.legacy-version-toggle { display: flex; flex-wrap: wrap; gap: .4rem; padding: .5rem; }
+.topbar-version-switch { flex: 0 0 auto; white-space: nowrap; }

@@ -661,7 +661,7 @@
     if (!["new", "old"].includes(version) || version === versions.current || switchingVersion) return;
     if ((aiStreamStates.size || state.aiRuns.size) && !confirm("切换界面会结束当前 AI 生成。是否保存进度并切换？")) return;
     switchingVersion = true;
-    const controls = [...document.querySelectorAll("[data-version-choice]")];
+    const controls = [...document.querySelectorAll(".topbar-version-switch")];
     controls.forEach(button => { button.disabled = true; });
     try {
       saveAiDraft();
@@ -4946,7 +4946,7 @@
   }
 
   function bindUI() {
-    document.querySelectorAll("[data-version-choice]").forEach(button => button.addEventListener("click", () => setUiVersion(button.dataset.versionChoice)));
+    $("#btn-switch-new")?.addEventListener("click", () => setUiVersion("new"));
     $("#preview-access-form")?.addEventListener("submit", unlockPreview);
     $("#btn-preview-lock")?.addEventListener("click", lockPreview);
     $("#btn-preview-open")?.addEventListener("click", openPreviewAccess);

@@ -7,7 +7,7 @@
   <meta name="description" content="大观园数学题库本地静态刷题站" />
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="stylesheet" href="./vendor/katex.min.css" />
-    <link rel="stylesheet" href="./legacy.css?v=89" />
+    <link rel="stylesheet" href="./legacy.css?v=90" />
   <link rel="stylesheet" href="./browser-retirement.css?v=1" />
   <script src="./ui-version.js?v=106"></script>
   <script src="./ui-bootstrap.js?v=1"></script>
@@ -66,7 +66,6 @@
         <button type="button" class="side-link utility-link" id="nav-settings" data-nav="settings"><svg class="ui-icon"><use href="#icon-palette"></use></svg><span>外观</span></button>
       </div>
 
-      <div class="legacy-version-toggle" role="group" aria-label="界面版本"><button type="button" class="btn" data-version-choice="new" aria-pressed="false">新版</button><button type="button" class="btn" data-version-choice="old" aria-pressed="true">旧版</button></div>
       <div class="sidebar-tools">
         <input id="search" type="search" placeholder="搜索题号 / 来源 / 题干…" autocomplete="off" />
         <div class="tool-row">
@@ -150,6 +149,7 @@
           <button type="button" class="btn ghost topbar-filter-trigger" id="btn-adv-filter-top" title="按题源、章节、知识点、题型等条件筛选">
             <svg class="ui-icon"><use href="#icon-grid"></use></svg><span>详细筛选</span>
           </button>
+          <button type="button" class="btn ghost topbar-version-switch" id="btn-switch-new" aria-label="切换到新版">切新版</button>
           <div class="topbar-more-wrap">
             <button type="button" class="icon-btn topbar-more-trigger" id="btn-more" aria-label="更多操作" aria-haspopup="menu" aria-expanded="false"><svg class="ui-icon"><use href="#icon-more"></use></svg><span>更多</span></button>
             <div class="topbar-more-menu hidden" id="topbar-more-menu" role="menu" aria-label="更多操作">
@@ -287,7 +287,6 @@
 
           <!-- single mode -->
           <div id="single-mode" class="hidden">
-<div class="practice-version-toggle" role="group" aria-label="界面版本"><button type="button" class="btn ghost" data-version-choice="new" aria-pressed="false">新版</button><button type="button" class="btn ghost" data-version-choice="old" aria-pressed="true">旧版</button></div>
             <div class="practice-meta"><div id="q-pos">—</div><div class="meta-line"><span id="q-source"></span><span id="q-type"></span><span id="q-id"></span></div></div>
             <article class="q-card" id="single-card">
               <div class="q-card-head">
@@ -725,7 +724,6 @@
       <button type="button" class="icon-btn" data-close="dlg-appearance" aria-label="关闭界面设置"><svg class="ui-icon"><use href="#icon-close"></use></svg></button>
     </div>
     <p class="sheet-lead">外观设置只保存在当前设备，不会进入官网同步包，也不会上传背景图片。</p>
-    <div class="legacy-version-toggle" role="group" aria-label="界面版本"><button type="button" class="btn" data-version-choice="new" aria-pressed="false">新版</button><button type="button" class="btn" data-version-choice="old" aria-pressed="true">旧版</button></div>
     <fieldset class="appearance-group">
       <legend>主题</legend>
       <div class="theme-choice-grid" role="listbox" aria-label="选择主题">
@@ -796,7 +794,7 @@
   <script defer src="./vendor/marked.min.js"></script>
   <script defer src="./vendor/katex.min.js"></script>
   <script defer src="./data-bank-client.js?v=1"></script>
-    <script defer src="./app-legacy.js?v=92"></script>
+    <script defer src="./app-legacy.js?v=93"></script>
   <script defer src="./browser-retirement.js?v=1"></script>
 </body>
 </html>

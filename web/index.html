@@ -9,7 +9,7 @@
   <link rel="icon" type="image/png" href="./assets/landing/local-mark.png" />
   <link rel="stylesheet" href="./design-tokens.css?v=3" />
   <link rel="stylesheet" href="./vendor/katex.min.css" />
-  <link rel="stylesheet" href="./styles-new.css?v=112" />
+  <link rel="stylesheet" href="./styles-new.css?v=113" />
   <link rel="stylesheet" href="./browser-retirement.css?v=1" />
   <link rel="manifest" href="./manifest.webmanifest" />
   <script src="./ui-version.js?v=106"></script>
@@ -19,21 +19,17 @@
   <div class="app-container" id="app">
     <!-- 顶栏 -->
     <header class="app-topbar">
-      <button type="button" class="btn btn-icon" id="btn-toggle-nav" data-app-action="toggle-nav" aria-label="打开导航" aria-controls="app-nav" aria-expanded="false">
-        <svg class="icon nav-icon" viewBox="0 0 24 24">
-          <path d="M3 6h18M3 12h18M3 18h18"/>
-        </svg>
-      </button>
-
-      <a href="#" class="brand" data-app-action="show-home">
-        <img class="brand-mark" src="./assets/landing/local-mark.png" alt="大观园数学标记" width="34" height="34" />
-        <span class="brand-copy">
-          <strong>大观园</strong>
-          <small>数学学习空间</small>
-        </span>
-      </a>
-
+      <div class="topbar-leading">
+        <button type="button" class="btn btn-icon" id="btn-toggle-nav" data-app-action="toggle-nav" aria-label="打开导航" aria-controls="app-nav" aria-expanded="false">
+          <svg class="icon nav-icon" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+        </button>
+        <a href="#" class="brand" data-app-action="show-home">
+          <img class="brand-mark" src="./assets/landing/local-mark.png" alt="大观园数学标记" width="34" height="34" />
+          <span class="brand-copy"><strong>大观园</strong><small>数学学习空间</small></span>
+        </a>
+      </div>
       <button type="button" class="btn btn-secondary topbar-search-trigger" id="btn-global-search" data-app-action="open-search" aria-label="全库搜索">⌕ <span>搜索题目</span><kbd>/</kbd></button>
+      <button type="button" class="btn btn-secondary topbar-version-switch" id="btn-switch-legacy" onclick="App.switchToLegacy()">切换旧版</button>
 
     </header>
 
@@ -161,7 +157,7 @@
   <script defer src="./vendor/katex.min.js"></script>
   <script defer src="./backup-migration.js?v=1"></script>
   <script defer src="./data-bank-client.js?v=1"></script>
-  <script defer src="./app-new.js?v=116"></script>
+  <script defer src="./app-new.js?v=117"></script>
   <script defer src="./browser-retirement.js?v=1"></script>
 </body>
 </html>

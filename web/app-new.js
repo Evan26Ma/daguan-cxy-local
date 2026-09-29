@@ -5,7 +5,7 @@
 
 // ========== 离线缓存注册（与 app2.js 一致） ==========
 if ("serviceWorker" in navigator && location.protocol !== "file:") {
-    navigator.serviceWorker.register("./service-worker.js?v=123").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=124").catch(() => {});
 }
 
 // ========== 全局状态 ==========
@@ -5033,15 +5033,6 @@ document.getElementById('btn-dl').addEventListener('click', function () {
                     </div>
                 </div>
 
-                <div class="card">
-                    <h2 class="text-section-title" style="margin-bottom: var(--spacing-l);">版本切换</h2>
-                    <p style="margin-bottom: var(--spacing-l); color: var(--text-secondary);">
-                        当前使用新版 UI。切换前会自动保存进度、批注与草稿；旧版入口同样可达。
-                    </p>
-                    <button class="btn btn-secondary" id="btn-switch-legacy" onclick="App.switchToLegacy()">
-                        切换到旧版
-                    </button>
-                </div>
             </div>
         `;
         PreviewAccess.applyUi();
@@ -5131,6 +5122,7 @@ document.getElementById('btn-dl').addEventListener('click', function () {
         if (version === versions.current) return;
         if (AppState.aiBusy && !confirm('切换界面会结束当前 AI 生成。是否保存进度并切换？')) return;
         AppState.switchingVersion = true;
+        document.querySelectorAll('.topbar-version-switch').forEach(button => { button.disabled = true; });
         try {
             const question = AppState.questions[AppState.currentQuestionIndex];
             const input = document.getElementById('ai-input');
@@ -5151,6 +5143,7 @@ document.getElementById('btn-dl').addEventListener('click', function () {
             toast(`未切换界面：${error.message || '保存失败，请重试'}`);
         } finally {
             AppState.switchingVersion = false;
+            document.querySelectorAll('.topbar-version-switch').forEach(button => { button.disabled = false; });
         }
     }
 
