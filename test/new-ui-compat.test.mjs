@@ -54,6 +54,60 @@ function createContext(initialStorage = {}) {
   return { sandbox, storage, session, localStorage, sessionStorage, document, documentListeners };
 }
 
+function syncElements(document) {
+  const ids = ["btn-sync-preview", "btn-sync-apply", "sync-summary", "sync-summary-note", "sync-flow-card", "sync-conflict-wrap", "sync-conflict-winner", "sync-detail", "sync-detail-content", "sync-result"];
+  const elements = new Map(ids.map(id => [id, { id, hidden: false, disabled: false, dataset: {}, value: "latest", textContent: "", innerHTML: "" }]));
+  document.getElementById = id => elements.get(id) || null;
+  return elements;
+}
+
+test("新版官网同步先双向预览，确认后应用服务端结果", async () => {
+  const { sandbox, document, localStorage } = createContext();
+  const elements = syncElements(document);
+  const { App, AppState, StateSync, PreviewAccess } = sandbox.window;
+  PreviewAccess.privateAllowed = () => true;
+  StateSync.available = true;
+  StateSync.ensureFlushed = async () => {};
+  StateSync.absorbLastStudy = () => {};
+  const calls = [];
+  sandbox.fetch = async (url, options) => {
+    calls.push({ url, body: JSON.parse(options.body) });
+    const result = url.endsWith("/preview")
+      ? { previewId: "p1", winner: "latest", summary: { remoteQuestionCount: 2, localQuestionCount: 1, conflictQuestionCount: 1 }, localChanges: [{ questionId: 1 }], remoteOperations: [{ questionId: 2 }], unknownIds: [] }
+      : { state: { progress: { 1: { mastery: "mastered" } }, favorites: ["1"], picked: [], revision: 8 }, appliedLocal: 1, succeeded: 1, failed: 0, unknownIds: [], verified: true };
+    return { ok: true, text: async () => JSON.stringify(result) };
+  };
+  sandbox.confirm = () => true;
+
+  await App.syncReconcilePreview();
+  assert.match(calls[0].url, /reconcile\/preview$/);
+  assert.equal(calls[0].body.winner, "latest");
+  assert.equal(elements.get("btn-sync-apply").hidden, false);
+  assert.equal(elements.get("sync-conflict-wrap").hidden, false);
+  assert.match(elements.get("sync-summary").textContent, /官网将更新本地 2 道题/);
+
+  await App.syncReconcileApply();
+  assert.match(calls[1].url, /reconcile\/apply$/);
+  assert.equal(calls[1].body.previewId, "p1");
+  assert.equal(AppState.syncReconcilePreview, null);
+  assert.equal(elements.get("sync-flow-card").dataset.state, "success");
+  assert.equal(StateSync.revision, 8);
+  assert.match(localStorage.getItem("daguan_local_progress_v1") || "", /mastered/);
+});
+
+test("新版同步预览后状态冲突要求重新检查", async () => {
+  const { sandbox, document } = createContext();
+  const elements = syncElements(document);
+  const { App, AppState, PreviewAccess } = sandbox.window;
+  PreviewAccess.privateAllowed = () => true;
+  AppState.syncReconcilePreview = { previewId: "stale", winner: "latest", summary: { localQuestionCount: 0 } };
+  sandbox.fetch = async () => ({ ok: false, status: 409, text: async () => JSON.stringify({ code: "STATE_CONFLICT", error: "状态已变化" }) });
+  await App.syncReconcileApply();
+  assert.equal(AppState.syncReconcilePreview, null);
+  assert.equal(elements.get("btn-sync-apply").hidden, true);
+  assert.match(elements.get("sync-summary-note").textContent, /重新检查并确认/);
+});
+
 test("新版在后台错过 SSE 后于重新可见时补读状态，且保留未保存批注", async () => {
   const { sandbox, document, documentListeners } = createContext();
   const { StateSync, AppState, UIRenderer } = sandbox.window;
@@ -185,7 +239,7 @@ test("真实目录的混合节点区分 6 道直属题和 4 个子章，空节�
   assert.equal(mixed.questions.length, 14);
   assert.equal(mixed.direct_questions.length, 6);
   assert.equal(mixed.children.length, 4);
-  assert.deepEqual(Array.from(mixed.direct_questions, item => String(item.id)), ["8902", "8904", "8903", "8906", "8905", "8907"]);
+  assert.deepEqual(Array.from(mixed.direct_questions, item => String(item.id)), ["8902", "8903", "8904", "8905", "8906", "8907"]);
   const empty = find(categories, 389);
   assert.equal(empty.direct_questions.length, 0);
   assert.equal(empty.question_count, 0);

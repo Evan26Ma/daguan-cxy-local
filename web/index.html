@@ -9,7 +9,7 @@
   <link rel="icon" type="image/png" href="./assets/landing/local-mark.png" />
   <link rel="stylesheet" href="./design-tokens.css?v=3" />
   <link rel="stylesheet" href="./vendor/katex.min.css" />
-  <link rel="stylesheet" href="./styles-new.css?v=110" />
+  <link rel="stylesheet" href="./styles-new.css?v=111" />
   <link rel="stylesheet" href="./browser-retirement.css?v=1" />
   <link rel="manifest" href="./manifest.webmanifest" />
   <script src="./ui-version.js?v=106"></script>
@@ -34,7 +34,6 @@
       </a>
 
       <button type="button" class="btn btn-secondary topbar-search-trigger" id="btn-global-search" data-app-action="open-search" aria-label="全库搜索">⌕ <span>搜索题目</span><kbd>/</kbd></button>
-      <button type="button" class="btn btn-text topbar-help-trigger" data-app-action="show-shortcuts" aria-label="快捷键帮助">快捷键 <kbd>?</kbd></button>
 
     </header>
 
@@ -124,6 +123,18 @@
     </footer>
   </div>
 
+  <dialog id="new-user-guide" class="new-user-guide" aria-labelledby="new-user-guide-title">
+    <div class="guide-head"><div><p class="guide-kicker">使用教程</p><h2 id="new-user-guide-title">从本地学习到官网同步</h2></div><button type="button" class="btn btn-text" data-guide-close>关闭</button></div>
+    <ol class="guide-steps">
+      <li><strong>开始学习</strong><p>在题库选择科目和小节。作答后查看答案、解析和视频；收藏、易错及批注可在复习和笔记中回看。学习记录自动保存在本机。</p></li>
+      <li><strong>留下备份</strong><p>在工具页下载进度备份。更换设备前保留备份文件，需要时可从工具页恢复。</p></li>
+      <li><strong>首次连接官网</strong><p>打开“同步进度”，使用登录码或官网账号完成配置。首次同步先检查官网进度，再确认导入本地。</p></li>
+      <li><strong>日常同步</strong><p>点击“检查同步内容”，核对本地与官网各自的变化后再确认。同步不会在启动时自动运行。</p></li>
+    </ol>
+    <p class="guide-boundary">双向同步掌握状态、收藏与最近学习位置。易错标记、批注、AI 密钥及聊天记录不会上传官网。</p>
+    <div class="guide-actions"><button type="button" class="btn btn-secondary" data-guide-close>稍后再说</button><button type="button" class="btn btn-primary" id="guide-open-sync">打开同步进度</button></div>
+  </dialog>
+
   <!-- 导航遮罩 -->
   <div class="nav-overlay" id="nav-overlay" data-app-action="toggle-nav"></div>
 
@@ -150,7 +161,7 @@
   <script defer src="./vendor/katex.min.js"></script>
   <script defer src="./backup-migration.js?v=1"></script>
   <script defer src="./data-bank-client.js?v=1"></script>
-  <script defer src="./app-new.js?v=114"></script>
+  <script defer src="./app-new.js?v=115"></script>
   <script defer src="./browser-retirement.js?v=1"></script>
 </body>
 </html>

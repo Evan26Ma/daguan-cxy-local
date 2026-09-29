@@ -5,7 +5,7 @@
 
 // ========== 离线缓存注册（与 app2.js 一致） ==========
 if ("serviceWorker" in navigator && location.protocol !== "file:") {
-    navigator.serviceWorker.register("./service-worker.js?v=121").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=122").catch(() => {});
 }
 
 // ========== 全局状态 ==========
@@ -57,7 +57,7 @@ const AppState = {
     libraryQuery: '',
     libraryResultLimit: 40,
     directoryNodeId: null,
-    catalogExpandedId: null,
+    catalogExpandedIds: null,
     chapterScope: 'all',
     chapterPickerPath: [],
     libraryScrollTop: 0,
@@ -1531,12 +1531,18 @@ class UIRenderer {
                     </div>
                 </div>
 
+                <section class="home-sync-card" aria-labelledby="home-sync-title">
+                    <div><p class="guide-kicker">官网同步</p><h2 id="home-sync-title">本地刷题，按需同步进度</h2><p id="home-sync-status" role="status">学习记录自动保存在本机。正在检查官网连接…</p></div>
+                    <div class="home-sync-actions"><button type="button" class="btn btn-primary" onclick="App.openSyncCenter()">同步进度</button><button type="button" class="btn btn-secondary" onclick="App.showUserGuide()">使用教程</button></div>
+                </section>
+
                 <h2 class="text-section-title" style="margin-bottom: var(--spacing-l);">科目浏览</h2>
                 <div class="subject-grid">
                     ${this.renderSubjectCards()}
                 </div>
             </div>
         `;
+        App.refreshHomeSyncStatus();
     }
 
     static renderBrandGeometry() {
@@ -1603,20 +1609,22 @@ class UIRenderer {
         return visit(category, []);
     }
 
-    static renderLibrary(categoryId) {
+    static renderLibrary(categoryId, { selectedNodeId = null } = {}) {
         const category = this.findCategoryById(categoryId);
         if (!category) return;
         const saved = this.readDirectoryState().subjects[String(category.id)] || {};
-        if (this.findNodeById(category, saved.nodeId)) AppState.directoryNodeId = String(saved.nodeId);
+        if (selectedNodeId != null && this.findNodeById(category, selectedNodeId)) AppState.directoryNodeId = String(selectedNodeId);
+        else if (this.findNodeById(category, saved.nodeId)) AppState.directoryNodeId = String(saved.nodeId);
         else if (!AppState.directoryNodeId || !this.findNodeById(category, AppState.directoryNodeId)) AppState.directoryNodeId = String(category.id);
         AppState.libraryScrollTop = Number(saved.scrollTop) || 0;
         AppState.libraryQuery = String(saved.query || '');
         AppState.libraryResultLimit = Number(saved.resultLimit) || 40;
         AppState.filters = saved.filters && typeof saved.filters === 'object' ? saved.filters : { sources: [], years: [], types: [], lecturers: [] };
         const active = this.findNodeById(category, AppState.directoryNodeId) || category;
-        if (AppState.catalogExpandedId == null) {
+        if (!Array.isArray(AppState.catalogExpandedIds)) {
             const activePath = this.pathToNode(category, active.id) || [category];
-            AppState.catalogExpandedId = String(activePath[0].id);
+            AppState.catalogExpandedIds = activePath.slice(0, -1).map(part => String(part.id));
+            if (activePath.length === 1 && (category.children || []).length) AppState.catalogExpandedIds.push(String(category.id));
         }
 
         const main = document.getElementById('app-main');
@@ -1624,13 +1632,13 @@ class UIRenderer {
             <div class="library-layout">
                 <div class="library-sidebar" id="library-sidebar">
                     <div class="library-sidebar-header">
-                        <div class="library-sidebar-titles"><h2>章节目录</h2><p>选择科目和一级章节</p></div>
+                        <div class="library-sidebar-titles"><h2>章节目录</h2><p>数字为全范围总题数</p></div>
                         <button type="button" class="btn btn-icon btn-text library-toc-close" onclick="App.toggleLibraryToc()" aria-label="关闭目录">
                             <svg class="icon" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
                         </button>
                     </div>
                     <div class="catalog-scopes" role="group" aria-label="题库范围">${this.scopeButtons()}</div>
-                    <div class="library-tree" id="library-tree"></div>
+                    <nav class="library-tree" id="library-tree" aria-label="题库目录"></nav>
                 </div>
                 <div class="library-main">
                     <div class="library-header">
@@ -1641,7 +1649,6 @@ class UIRenderer {
                                 <svg class="icon nav-icon" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
                                 目录
                             </button>
-                            <button type="button" class="btn btn-secondary chapter-picker-trigger" data-open-chapter-picker>选择小节</button>
                             <div class="search-box">
                                 <input type="search" class="search-input"
                                     placeholder="搜索题目..."
@@ -1678,7 +1685,6 @@ class UIRenderer {
         `;
 
         this.renderLibraryTree(category);
-        this.bindChapterPickerTriggers();
         this.bindScopeButtons();
         this.renderFilterOptions();
         document.getElementById('search-input').value = AppState.libraryQuery;
@@ -1772,38 +1778,66 @@ class UIRenderer {
         const treeEl = parentEl || document.getElementById('library-tree');
         if (!treeEl) return;
         treeEl.innerHTML = '';
-        const selectedPath = this.pathToNode(category, AppState.directoryNodeId) || [category];
-        const expandedId = AppState.catalogExpandedId == null ? String(selectedPath[0]?.id ?? category?.id) : String(AppState.catalogExpandedId);
-        (AppState.categories?.categories || []).forEach(subject => {
-            const wrap = document.createElement('div');
-            wrap.className = 'catalog-subject';
-            const expanded = String(subject.id) === expandedId;
-            const root = document.createElement('button');
-            root.type = 'button';
-            root.className = `tree-item catalog-subject-row${expanded ? ' active' : ''}`;
-            root.setAttribute('aria-expanded', String(expanded));
-            root.innerHTML = `<span class="catalog-chevron" aria-hidden="true">${expanded ? '⌄' : '›'}</span><span class="catalog-subject-name">${escapeHtml(subject.name || subject.title || '')}</span><span class="tree-count">${Number(subject.question_count || 0)}</span>`;
-            root.addEventListener('click', () => expanded ? App.toggleCatalogSubject(subject.id) : App.showLibrary(subject.id));
-            wrap.appendChild(root);
-            if (expanded) {
-                const children = document.createElement('div');
-                children.className = 'catalog-first-level';
-                (subject.children || []).forEach(child => {
-                    const branch = (child.children || []).length > 0;
-                    const row = document.createElement('button');
-                    row.type = 'button';
-                    const selectedFirstLevel = String(child.id) === String(selectedPath[1]?.id);
-                    row.className = `tree-item catalog-first-row${selectedFirstLevel ? ' active' : ''}`;
-                    row.setAttribute('aria-current', selectedFirstLevel ? 'page' : 'false');
-                    row.setAttribute('aria-expanded', String(branch && selectedFirstLevel));
-                    row.innerHTML = `<span class="catalog-chevron" aria-hidden="true">${branch ? (selectedFirstLevel ? '⌄' : '›') : ''}</span><span class="catalog-subject-name">${escapeHtml(child.name || child.title || '')}</span><span class="tree-count">${Number(child.question_count || 0)}</span>`;
-                    row.addEventListener('click', () => App.selectFirstLevel(subject, child));
-                    children.appendChild(row);
-                });
-                wrap.appendChild(children);
+        const roots = AppState.categories?.categories || [];
+        const expandedIds = new Set((AppState.catalogExpandedIds || []).map(String));
+        const selectedId = String(AppState.directoryNodeId ?? category?.id ?? '');
+        const list = document.createElement('ul');
+        list.className = 'catalog-tree-list';
+        treeEl.appendChild(list);
+
+        const renderNode = (node, parentList, depth, rootCategoryId) => {
+            const children = node.children || [];
+            const hasChildren = children.length > 0;
+            const expanded = hasChildren && expandedIds.has(String(node.id));
+            const selected = String(node.id) === selectedId;
+            const name = node.name || node.title || '';
+            const total = Number(node.question_count || 0);
+            const childListId = `catalog-children-${encodeURIComponent(String(node.id))}`;
+            const item = document.createElement('li');
+            item.className = 'catalog-node';
+            item.style?.setProperty('--catalog-depth', String(depth));
+
+            const row = document.createElement('div');
+            row.className = 'catalog-node-row';
+            if (hasChildren) {
+                const toggle = document.createElement('button');
+                toggle.type = 'button';
+                toggle.className = 'catalog-toggle';
+                toggle.setAttribute('aria-label', `${expanded ? '收起' : '展开'} ${name}`);
+                toggle.setAttribute('aria-controls', childListId);
+                toggle.setAttribute('aria-expanded', String(expanded));
+                toggle.innerHTML = '<span class="catalog-chevron" aria-hidden="true">›</span>';
+                toggle.addEventListener('click', () => App.toggleCatalogNode(node.id));
+                row.appendChild(toggle);
+            } else {
+                const spacer = document.createElement('span');
+                spacer.className = 'catalog-toggle-spacer';
+                spacer.setAttribute('aria-hidden', 'true');
+                row.appendChild(spacer);
             }
-            treeEl.appendChild(wrap);
-        });
+
+            const select = document.createElement('button');
+            select.type = 'button';
+            select.className = `catalog-node-label${selected ? ' selected' : ''}`;
+            select.setAttribute('aria-current', selected ? 'page' : 'false');
+            select.setAttribute('aria-label', `${name}，全范围总题数 ${total}`);
+            select.innerHTML = `<span class="catalog-subject-name">${escapeHtml(name)}</span><span class="tree-count" title="全范围总题数">${total}</span>`;
+            row.appendChild(select);
+            item.appendChild(row);
+
+            if (hasChildren) {
+                const childList = document.createElement('ul');
+                childList.className = 'catalog-tree-list catalog-children';
+                childList.id = childListId;
+                childList.hidden = !expanded;
+                children.forEach(child => renderNode(child, childList, depth + 1, rootCategoryId));
+                item.appendChild(childList);
+            }
+            select.addEventListener('click', () => App.selectCatalogNode(rootCategoryId, node.id));
+            parentList.appendChild(item);
+        };
+
+        roots.forEach(subject => renderNode(subject, list, 0, subject.id));
     }
 
     static renderDirectoryNode(node) {
@@ -1827,11 +1861,17 @@ class UIRenderer {
             ? Math.max(0, Number(position.questionIndex) || 0) : -1;
         const isLeaf = children.length === 0;
         const total = Number(node.question_count ?? direct.length);
+        const directTotal = Number(node.direct_count ?? direct.length);
+        const scopeLabel = AppState.chapterScope === 'core' ? '严选' : AppState.chapterScope === 'real' ? '真题' : '完整';
         const locationText = positionIndex >= 0 ? `已到第 ${positionIndex + 1} 题 · 题号 ${escapeHtml(String(position.questionId || direct[positionIndex]?.id || ''))}` : '本机还没有此章节的学习位置';
-        const totalLabel = `${total} 道题 · 题数为全范围总数${direct.length && children.length ? ` · 本级直属 ${direct.length} 道` : ''} · ${locationText}`;
-        contentEl.innerHTML = `<section class="directory-overview"><div><p class="eyebrow">章节概览</p><h2>${escapeHtml(node.name || node.title || '')}</h2><p>${totalLabel}</p></div><div class="directory-actions">${children.length ? '<button type="button" class="btn btn-primary" id="choose-directory">选择小节</button>' : direct.length ? `<button type="button" class="btn btn-primary" id="start-directory">开始练习（${direct.length} 题）</button>` : ''}${positionIndex >= 0 && !children.length ? '<button type="button" class="btn btn-secondary" id="continue-directory">继续</button>' : ''}${direct.length && children.length ? `<button type="button" class="btn btn-secondary" id="start-direct-directory">本级直属题 ${direct.length} 题</button>` : ''}</div></section>
-            ${isLeaf && total === 0 ? `<div class="empty-state"><h3>此章节暂无题目</h3><p>该空节点可从目录定位，但没有可开始的题目。</p></div>` : ''}`;
-        document.getElementById('choose-directory')?.addEventListener('click', () => App.openChapterPicker(category.id, node.id));
+        const totalLabel = `全范围总题数 ${total} 道 · 当前练习按“${scopeLabel}”及搜索、筛选条件取题 · ${locationText}`;
+        const childRows = children.map(child => `<button type="button" class="chapter-item directory-child-item" data-directory-child="${escapeHtml(String(child.id))}"><span class="chapter-info"><strong>${escapeHtml(child.name || child.title || '')}</strong><small>全范围总题数 ${Number(child.question_count || 0)} 道</small></span><span class="chapter-item-chevron" aria-hidden="true">›</span></button>`).join('');
+        contentEl.innerHTML = `<section class="directory-overview"><div><p class="eyebrow">章节概览</p><h2>${escapeHtml(node.name || node.title || '')}</h2><p>${totalLabel}</p></div><div class="directory-actions">${isLeaf && direct.length ? '<button type="button" class="btn btn-primary" id="start-directory">按当前范围开始练习</button>' : ''}${positionIndex >= 0 && isLeaf ? '<button type="button" class="btn btn-secondary" id="continue-directory">继续</button>' : ''}</div></section>
+            ${children.length ? `<section class="directory-children" aria-labelledby="directory-children-title"><h3 id="directory-children-title">下级章节 <span>${children.length}</span></h3><div class="directory-child-list">${childRows}</div></section>` : ''}
+            ${direct.length && children.length ? `<section class="direct-question-group" aria-labelledby="direct-question-title"><h3 id="direct-question-title">本级直属题 <span>全范围总数 ${directTotal} 题</span></h3><p class="directory-help">只练习当前章节直属题；开始后按当前范围、搜索和筛选条件取题。</p><button type="button" class="btn btn-secondary" id="start-direct-directory">练习本级直属题</button></section>` : ''}
+            ${isLeaf && direct.length ? `<p class="directory-help directory-practice-help">开始后按当前范围、搜索和筛选条件取题；上方题数是全范围总数。</p>` : ''}
+            ${isLeaf && direct.length === 0 ? `<div class="empty-state"><h3>此章节暂无题目</h3><p>该空节点可从目录定位，但没有可开始的题目。</p></div>` : ''}`;
+        contentEl.querySelectorAll('[data-directory-child]').forEach(button => button.addEventListener('click', () => App.openDirectoryNode(button.dataset.directoryChild)));
         document.getElementById('start-directory')?.addEventListener('click', () => App.showChapter(node));
         document.getElementById('start-direct-directory')?.addEventListener('click', () => App.showChapter(node, { directOnly: true }));
         document.getElementById('continue-directory')?.addEventListener('click', () => App.continueDirectoryNode(node));
@@ -2956,17 +2996,16 @@ class UIRenderer {
                     <div class="tool-row">
                         <div class="tool-info">
                             <h2 class="text-section-title">官网同步</h2>
-                            <p>读取官网进度或上传本地进度，全程先预览差异、确认后才写入。</p>
+                            <p>先检查本地和官网两边变化，确认后再同步。</p>
                         </div>
                         <button type="button" class="btn btn-secondary" id="sync-toggle-btn" onclick="App.toggleToolPanel('sync-panel')">进入</button>
                     </div>
                     <div class="tool-panel hidden" id="sync-panel">
-                        <div class="sync-status" id="sync-status">点击“检查状态”连接本地中控台。</div>
+                        <div class="sync-status" id="sync-status">正在检查官网连接…</div>
                         <div class="tool-controls">
                             <button type="button" class="btn btn-secondary btn-sm" id="btn-sync-status">检查状态</button>
                             <button type="button" class="btn btn-secondary btn-sm" id="btn-sync-login">配置登录</button>
-                            <button type="button" class="btn btn-secondary btn-sm" id="btn-sync-pull">读取官网进度</button>
-                            <button type="button" class="btn btn-secondary btn-sm" id="btn-sync-push">上传本地进度</button>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="App.showUserGuide()">同步教程</button>
                         </div>
                         <form class="tool-controls hidden" id="sync-login-form">
                             <label>登录码 / 账号
@@ -2977,7 +3016,11 @@ class UIRenderer {
                             </label>
                             <button type="submit" class="btn btn-primary btn-sm">保存登录配置</button>
                         </form>
-                        <div class="tool-result" id="sync-result"></div>
+                        <div class="sync-flow-card" id="sync-flow-card" data-state="idle" aria-live="polite"><strong id="sync-summary">还没有检查同步内容</strong><p id="sync-summary-note">检查会读取官网和本地进度，确认前不会修改学习进度。</p></div>
+                        <div class="tool-controls"><button type="button" class="btn btn-primary btn-sm" id="btn-sync-preview" disabled>检查同步内容</button><button type="button" class="btn btn-primary btn-sm" id="btn-sync-apply" hidden disabled>确认同步</button></div>
+                        <div id="sync-conflict-wrap" hidden><label for="sync-conflict-winner">冲突处理</label><select id="sync-conflict-winner"><option value="latest">保留更新时间较新的状态</option><option value="remote">以官网为准</option><option value="local">以本地为准</option></select></div>
+                        <details id="sync-detail" hidden><summary>查看变化题号</summary><div id="sync-detail-content"></div></details>
+                        <div class="tool-result" id="sync-result" role="status"></div>
                     </div>
                 </div>
 
@@ -2985,7 +3028,7 @@ class UIRenderer {
                     <div class="tool-row">
                         <div class="tool-info">
                             <h2 class="text-section-title">使用教程</h2>
-                            <p>三步上手本地大观园。</p>
+                            <p>了解本地学习、备份与官网同步。</p>
                         </div>
                         <button type="button" class="btn btn-secondary" id="tutorial-toggle-btn" onclick="App.toggleTutorial()">展开</button>
                     </div>
@@ -2993,8 +3036,9 @@ class UIRenderer {
                         <ol>
                             <li>在「题库」选择科目与章节开始做题，答完可展开答案与解析，观看老师视频讲解。</li>
                             <li>用「收藏 / 易错 / 已掌握 / 批注」标记题目，在「复习」和「笔记」页集中回看。</li>
-                            <li>在「工具」页定期下载备份；更换设备或清空浏览器前，先用「恢复备份」还原数据。</li>
+                            <li>在「工具」页定期下载备份；更换设备前保留备份文件。官网同步先检查两边变化，再确认应用。</li>
                         </ol>
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="App.showUserGuide()">查看完整教程</button>
                     </div>
                 </div>
 
@@ -3011,8 +3055,9 @@ class UIRenderer {
         document.getElementById('btn-sync-status')?.addEventListener('click', () => App.syncStatus());
         document.getElementById('btn-sync-login')?.addEventListener('click', () => App.syncOpenLogin());
         document.getElementById('sync-login-form')?.addEventListener('submit', (event) => App.syncLogin(event));
-        document.getElementById('btn-sync-pull')?.addEventListener('click', () => App.syncPull());
-        document.getElementById('btn-sync-push')?.addEventListener('click', () => App.syncPush());
+        document.getElementById('btn-sync-preview')?.addEventListener('click', () => App.syncReconcilePreview());
+        document.getElementById('btn-sync-apply')?.addEventListener('click', () => App.syncReconcileApply());
+        document.getElementById('sync-conflict-winner')?.addEventListener('change', () => App.syncReconcilePreview());
         document.getElementById('migration-backup-saved')?.addEventListener('change', (event) => {
             const button = document.getElementById('btn-migration-apply');
             if (button) button.disabled = !event.target.checked;
@@ -3295,6 +3340,11 @@ class App {
         // 绑定导航
         this.bindNavigation();
         this.bindKeyboardShortcuts();
+        document.querySelectorAll('[data-guide-close]').forEach(button => button.addEventListener('click', () => document.getElementById('new-user-guide')?.close()));
+        document.getElementById('guide-open-sync')?.addEventListener('click', () => {
+            document.getElementById('new-user-guide')?.close();
+            this.openSyncCenter();
+        });
 
         // 检查版本偏好
         const urlParams = new URLSearchParams(window.location.search);
@@ -3643,6 +3693,39 @@ class App {
         UIRenderer.renderHome();
     }
 
+    static showUserGuide() {
+        const dialog = document.getElementById('new-user-guide');
+        if (dialog && !dialog.open) dialog.showModal();
+    }
+
+    static async refreshHomeSyncStatus() {
+        const label = document.getElementById('home-sync-status');
+        if (!label) return;
+        if (!PreviewAccess.privateAllowed(false)) {
+            label.textContent = '只读预览模式下，登录和同步需要先解锁。';
+            return;
+        }
+        try {
+            const status = await this.syncRequest('status');
+            if (!label.isConnected) return;
+            label.textContent = !status.authenticated
+                ? (status.configured ? '官网登录已失效，请重新配置。' : '首次使用需配置官网登录，之后每次先检查再确认。')
+                : status.needsFirstSync ? '官网进度尚未导入本地，点击“同步进度”开始。'
+                    : status.lastPullAt ? `已连接官网 · 上次同步 ${String(status.lastPullAt).slice(0, 16).replace('T', ' ')}` : '官网已连接，点击“同步进度”检查两边变化。';
+        } catch {
+            if (label.isConnected) label.textContent = '暂时无法检查官网连接；本地学习记录仍可使用。';
+        }
+    }
+
+    static async openSyncCenter() {
+        if (!PreviewAccess.privateAllowed()) return;
+        await this.navigate('tools');
+        const panel = document.getElementById('sync-panel');
+        if (!panel) return;
+        if (panel.classList.contains('hidden')) this.toggleToolPanel('sync-panel');
+        document.getElementById('sync-toggle-btn')?.scrollIntoView({ block: 'center' });
+    }
+
     static normalizeSearchText(value) {
         return String(value || '').normalize('NFKC').toLocaleLowerCase()
             .replace(/\\(?:left|right)\b/g, '').replace(/\\(?:dfrac|tfrac)\b/g, '\\frac')
@@ -3778,27 +3861,36 @@ class App {
         if (!categoryId) categoryId = AppState.currentCategory?.id || saved.lastCategory || AppState.categories?.categories?.[0]?.id;
         if (categoryId == null) return;
         AppState.currentCategory = UIRenderer.findCategoryById(categoryId);
-        AppState.catalogExpandedId = String(AppState.currentCategory?.id ?? categoryId);
+        AppState.catalogExpandedIds = null;
         AppState.currentView = 'library';
         UIRenderer.renderLibrary(categoryId);
     }
 
-    static toggleCatalogSubject(subjectId) {
-        if (String(AppState.catalogExpandedId) === String(subjectId)) AppState.catalogExpandedId = null;
-        else AppState.catalogExpandedId = String(subjectId);
+    static toggleCatalogNode(nodeId) {
+        if (!Array.isArray(AppState.catalogExpandedIds)) {
+            const path = UIRenderer.pathToNode(AppState.currentCategory, AppState.directoryNodeId) || [AppState.currentCategory].filter(Boolean);
+            AppState.catalogExpandedIds = path.slice(0, -1).map(part => String(part.id));
+        }
+        const expanded = new Set(AppState.catalogExpandedIds.map(String));
+        if (expanded.has(String(nodeId))) expanded.delete(String(nodeId));
+        else expanded.add(String(nodeId));
+        AppState.catalogExpandedIds = [...expanded];
         UIRenderer.renderLibraryTree(AppState.currentCategory);
     }
 
-    static async selectFirstLevel(subject, chapter) {
-        AppState.currentCategory = subject;
-        AppState.directoryNodeId = String(chapter.id);
+    static selectCatalogNode(categoryId, nodeId) {
+        const category = UIRenderer.findCategoryById(categoryId);
+        const node = category && UIRenderer.findNodeById(category, nodeId);
+        if (!category || !node) return;
+        if (AppState.currentView === 'library') UIRenderer.saveDirectoryState();
+        const path = UIRenderer.pathToNode(category, node.id) || [category];
+        AppState.currentCategory = category;
+        AppState.directoryNodeId = String(node.id);
         AppState.libraryScrollTop = 0;
         AppState.currentView = 'library';
-        UIRenderer.saveDirectoryState();
-        if (chapter.children?.length) {
-            UIRenderer.renderLibrary(subject.id);
-            this.openChapterPicker(subject.id, chapter.id);
-        } else await this.showChapter(chapter);
+        AppState.catalogExpandedIds = path.slice(0, -1).map(part => String(part.id));
+        if (path.length === 1 && (node.children || []).length) AppState.catalogExpandedIds.push(String(node.id));
+        UIRenderer.renderLibrary(category.id, { selectedNodeId: node.id });
     }
 
     static openChapterPicker(categoryId = null, nodeId = null) {
@@ -3887,10 +3979,13 @@ class App {
         const category = AppState.currentCategory;
         const node = category && UIRenderer.findNodeById(category, nodeId);
         if (!node) return;
+        UIRenderer.saveDirectoryState();
+        const path = UIRenderer.pathToNode(category, node.id) || [category];
         AppState.directoryNodeId = String(node.id);
         AppState.libraryScrollTop = 0;
-        UIRenderer.saveDirectoryState();
-        UIRenderer.renderLibrary(category.id);
+        AppState.catalogExpandedIds = path.slice(0, -1).map(part => String(part.id));
+        if (path.length === 1 && (node.children || []).length) AppState.catalogExpandedIds.push(String(node.id));
+        UIRenderer.renderLibrary(category.id, { selectedNodeId: node.id });
     }
 
     static directoryUp() {
@@ -4595,6 +4690,8 @@ document.getElementById('btn-dl').addEventListener('click', function () {
             pullApply: ['/integrations/cxyonly/pull/apply', 'POST'],
             pushPreview: ['/integrations/cxyonly/push/preview', 'POST'],
             pushApply: ['/integrations/cxyonly/push/apply', 'POST'],
+            reconcilePreview: ['/integrations/cxyonly/reconcile/preview', 'POST'],
+            reconcileApply: ['/integrations/cxyonly/reconcile/apply', 'POST'],
         };
         const route = routes[action];
         if (!route) throw new Error(`未知同步操作：${action}`);
@@ -4611,6 +4708,7 @@ document.getElementById('btn-dl').addEventListener('click', function () {
         if (!response.ok) {
             const error = new Error(data?.error || `同步请求失败（HTTP ${response.status}）`);
             error.code = data?.code || '';
+            error.status = response.status;
             throw error;
         }
         return data;
@@ -4632,10 +4730,18 @@ document.getElementById('btn-dl').addEventListener('click', function () {
                 ? (status.needsFirstSync ? '官网已配置，但还没导入过进度。可先「读取官网进度」。' : `官网已连接。${status.lastPullAt ? `上次同步：${String(status.lastPullAt).slice(0, 16).replace('T', ' ')}` : ''}`)
                 : (status.configured ? '登录已失效，请重新配置。' : '尚未配置官网登录。点击「配置登录」填入登录码或账号。');
             if (statusEl) statusEl.textContent = line;
-            document.getElementById('btn-sync-pull').disabled = !status.authenticated;
-            document.getElementById('btn-sync-push').disabled = !status.authenticated;
+            document.getElementById('btn-sync-preview').disabled = !status.authenticated;
+            if (!status.authenticated) {
+                document.getElementById('sync-login-form')?.classList.remove('hidden');
+                this.syncResetPreview();
+            } else {
+                document.getElementById('sync-login-form')?.classList.add('hidden');
+            }
         } catch (error) {
             if (statusEl) statusEl.textContent = `本地中控台未连接：${error.message}`;
+            const preview = document.getElementById('btn-sync-preview');
+            if (preview) preview.disabled = true;
+            this.syncResetPreview();
         }
     }
 
@@ -4659,6 +4765,99 @@ document.getElementById('btn-dl').addEventListener('click', function () {
             await this.syncStatus();
         } catch (error) {
             this.syncResultHtml(`<p class="text-helper">登录失败：${escapeHtml(error.message || String(error))}</p>`);
+        }
+    }
+
+    static syncResetPreview() {
+        AppState.syncReconcilePreview = null;
+        const apply = document.getElementById('btn-sync-apply');
+        if (apply) { apply.hidden = true; apply.disabled = true; }
+        const detail = document.getElementById('sync-detail');
+        if (detail) detail.hidden = true;
+        const conflict = document.getElementById('sync-conflict-wrap');
+        if (conflict) conflict.hidden = true;
+    }
+
+    static async syncReconcilePreview() {
+        if (!PreviewAccess.privateAllowed()) return;
+        const check = document.getElementById('btn-sync-preview');
+        const summary = document.getElementById('sync-summary');
+        const note = document.getElementById('sync-summary-note');
+        const card = document.getElementById('sync-flow-card');
+        this.syncResetPreview();
+        if (check) { check.disabled = true; check.textContent = '正在检查…'; }
+        if (card) card.dataset.state = 'checking';
+        if (summary) summary.textContent = '正在检查本地和官网进度…';
+        if (note) note.textContent = '确认之前不会修改学习进度。';
+        try {
+            if (!StateSync.available) await StateSync.hydrate();
+            if (!StateSync.available) throw new Error('本地服务尚未连接，请稍后重试。');
+            await StateSync.ensureFlushed();
+            if (hasPendingSync() && !await StateSync.retryPending()) throw new Error('本地编辑尚未保存，请稍后重试。');
+            const winner = document.getElementById('sync-conflict-winner')?.value || 'latest';
+            const preview = await this.syncRequest('reconcilePreview', { winner });
+            AppState.syncReconcilePreview = preview;
+            const s = preview.summary || {};
+            const toLocal = Number(s.remoteQuestionCount) || 0;
+            const toOfficial = Number(s.localQuestionCount) || 0;
+            const conflicts = Number(s.conflictQuestionCount) || 0;
+            if (card) card.dataset.state = toLocal || toOfficial ? 'ready' : 'no_changes';
+            if (summary) summary.textContent = `官网将更新本地 ${toLocal} 道题；本地将上传官网 ${toOfficial} 道题。`;
+            if (note) note.textContent = preview.firstRepair ? '首次同步以官网进度为准；请核对变化后确认。' : toOfficial ? `官网写入可能计入今日刷题数 ${preview.activityImpact?.possibleTodayWrites || 0} 项。` : '这次不会修改官网。';
+            const apply = document.getElementById('btn-sync-apply');
+            if (apply) { apply.hidden = !(toLocal || toOfficial || preview.firstRepair); apply.disabled = apply.hidden; apply.textContent = toLocal && toOfficial ? '确认同步两边进度' : toOfficial ? '确认上传官网' : '确认更新本地'; }
+            const conflict = document.getElementById('sync-conflict-wrap');
+            if (conflict) conflict.hidden = preview.firstRepair || !conflicts;
+            const changes = [...(preview.localChanges || []).map(item => ({ ...item, direction: '官网 → 本地' })), ...(preview.remoteOperations || []).map(item => ({ ...item, direction: '本地 → 官网' }))];
+            const detail = document.getElementById('sync-detail');
+            const content = document.getElementById('sync-detail-content');
+            if (content) content.innerHTML = changes.slice(0, 100).map(item => `<div>${escapeHtml(item.direction)} · #${escapeHtml(String(item.questionId ?? item.question_id ?? ''))}</div>`).join('') + (changes.length > 100 ? `<p>另有 ${changes.length - 100} 项变化。</p>` : '');
+            if (detail) detail.hidden = !changes.length;
+            this.syncResultHtml(`<p>冲突 ${conflicts} 道题；未知题号 ${(preview.unknownIds || []).length} 项。同步前会保留本地及官网快照。</p>`);
+        } catch (error) {
+            if (card) card.dataset.state = 'error';
+            if (summary) summary.textContent = '检查失败';
+            if (note) note.textContent = error.message || String(error);
+            this.syncResultHtml('');
+        } finally {
+            if (check) { check.disabled = false; check.textContent = '重新检查同步内容'; }
+        }
+    }
+
+    static async syncReconcileApply() {
+        if (!PreviewAccess.privateAllowed()) return;
+        const preview = AppState.syncReconcilePreview;
+        if (!preview?.previewId) { this.syncReconcilePreview(); return; }
+        const count = Number(preview.summary?.localQuestionCount) || 0;
+        if (count && !confirm(`本地有 ${count} 道题将上传到官网。确认同步吗？`)) return;
+        const apply = document.getElementById('btn-sync-apply');
+        const check = document.getElementById('btn-sync-preview');
+        const card = document.getElementById('sync-flow-card');
+        if (apply) apply.disabled = true;
+        if (check) check.disabled = true;
+        if (card) card.dataset.state = 'syncing';
+        document.getElementById('sync-summary').textContent = '正在同步进度…';
+        try {
+            const result = await this.syncRequest('reconcileApply', { previewId: preview.previewId, winner: preview.winner || 'latest' });
+            this.syncResetPreview();
+            if (result.state) {
+                StorageService.saveProgress({ progress: result.state.progress || {}, favorites: (result.state.favorites || []).map(String) });
+                if (Array.isArray(result.state.picked)) localStorage.setItem('daguan_local_picked_v1', JSON.stringify(result.state.picked.map(String)));
+                StateSync.revision = Number(result.state.revision) || StateSync.revision;
+                StateSync.absorbLastStudy(result.state.last_study || null);
+            }
+            const partial = result.failed || result.unknownIds?.length || !result.verified;
+            if (card) card.dataset.state = partial ? 'partial' : 'success';
+            document.getElementById('sync-summary').textContent = partial ? '同步未完全完成' : '两边进度已同步';
+            document.getElementById('sync-summary-note').textContent = partial ? '失败项已保留，请重新检查后继续。' : `本地更新 ${result.appliedLocal || 0} 项，官网更新 ${result.succeeded || 0} 项。`;
+            this.syncResultHtml(`<p>官网成功 ${result.succeeded || 0} 项；失败 ${result.failed || 0} 项；未知题号 ${(result.unknownIds || []).length} 项；官网校验${result.verified ? '成功' : '未完成'}。</p>`);
+        } catch (error) {
+            this.syncResetPreview();
+            if (card) card.dataset.state = 'error';
+            document.getElementById('sync-summary').textContent = '同步未完成';
+            document.getElementById('sync-summary-note').textContent = error.status === 409 || error.code === 'STATE_CONFLICT' || error.code === 'PREVIEW_STRATEGY_CHANGED' ? '预览后进度发生变化，请重新检查并确认。' : `请重新检查同步内容：${error.message || String(error)}`;
+        } finally {
+            if (check) check.disabled = false;
         }
     }
 
