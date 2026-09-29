@@ -90,7 +90,7 @@ AI 能力取决于你配置的服务：普通文本模型不能自动获得视�
 
 普通用户可从[百度网盘下载桌面安装器 `DaguanMathDesktop-Setup.exe`](https://pan.baidu.com/netdisk/share?surl=VrW0Z-ThDSM7f_xx7uCUZw)（提取码 `dgy1`）并运行。桌面版使用系统托盘管理窗口和共享服务，默认不开机启动；关闭窗口会缩到托盘。浏览器安装包已停止维护；现有用户可参阅[迁移说明](docs/百度网盘下载与引导页配置.md)。
 
-首版桌面安装器未签名，Windows 可能显示 SmartScreen 警告。当前 `DaguanMathDesktop-Setup.exe` 的 SHA-256：`2139a96a85cf3d5865acb3814ae4241edaa703b0e9ce95f86d327be15816f6ac`。其他发布文件请核对对应 Release 提供的 SHA-256；签名范围与校验方法见[代码签名政策](#代码签名政策)。不要下载 GitHub 自动生成的 `Source code` 压缩包。首次安装建议阅读 [Windows 新手安装与配置教程](docs/Windows新手安装与配置.md)；维护者更换网盘地址请看[百度网盘下载与引导页配置](docs/百度网盘下载与引导页配置.md)。
+当前公开桌面版 v1.0.3 尚未签名，Windows 可能显示 SmartScreen 警告。[v1.0.3 Release](https://github.com/Evan26Ma/daguan-cxy-local/releases/tag/v1.0.3) 中 `DaguanMathDesktop-Setup.exe` 的 SHA-256 为 `5bd38b60cc08aac401cb337cd9198b7e8d4ae797cc142a997e06e2a99f7cd412`；百度网盘分享中的文件可能仍是旧版，是否已替换为 v1.0.3 须按实际下载文件校验。其他版本以各自 Release 的校验值为准。不要下载 GitHub 自动生成的 `Source code` 压缩包。首次安装建议阅读 [Windows 新手安装与配置教程](docs/Windows新手安装与配置.md)；维护者更换网盘地址请看[百度网盘下载与引导页配置](docs/百度网盘下载与引导页配置.md)。
 
 #### 开发者从源码启动
 
@@ -102,14 +102,14 @@ AI 能力取决于你配置的服务：普通文本模型不能自动获得视�
 4. 启动本地中控台；
 5. 打开 `http://127.0.0.1:8080/`。
 
-维护者可在本机执行下列命令构建独立浏览器服务包。普通用户可从上方百度网盘单独下载该 ZIP；它不属于 GitHub 上的桌面版 Release，桌面版仍是推荐安装方式：
+维护者可在本机执行下列命令构建独立浏览器服务包。浏览器版已停止维护，旧网盘浏览器包链接已不推荐使用；最后一批浏览器迁移归档（`DaguanMath-windows-x64.zip` 与单文件 EXE）随 [v1.0.2 Release](https://github.com/Evan26Ma/daguan-cxy-local/releases/tag/v1.0.2) 提供，归档链接与校验值见[下载与迁移配置](docs/百度网盘下载与引导页配置.md)。桌面版仍是推荐安装方式：
 
 ```powershell
 npm run package:windows
 npm run package:windows:release
 ```
 
-生成的 `dist/DaguanMath-windows-x64.exe` 与 `dist/DaguanMath-windows-x64.zip` 不随 Electron 桌面版 GitHub Release 提供。当前网盘 ZIP 使用本地服务包流程构建，不经 SignPath 签名工作流；签名政策仅适用于由 `windows-release.yml` 构建并发布的文件。两种安装方式都将运行数据保存在当前 Windows 用户的 `%LOCALAPPDATA%\DaguanMath\data`。
+生成的 `dist/DaguanMath-windows-x64.exe` 与 `dist/DaguanMath-windows-x64.zip` 是已停止维护的浏览器版产物。当前推荐的 Electron 桌面版使用独立的 Squirrel 安装器；两种安装方式都将运行数据保存在当前 Windows 用户的 `%LOCALAPPDATA%\DaguanMath\data`。
 
 ### 适用设备
 
@@ -194,20 +194,18 @@ npm run sync:data
 
 **Free code signing provided by [SignPath.io](https://about.signpath.io), certificate by [SignPath Foundation](https://signpath.org).**
 
-本项目的 Windows 发布包（`DaguanMath-windows-x64.exe` 与内含同一 EXE 的 `DaguanMath-windows-x64.zip`）由 [SignPath Foundation](https://signpath.org) 提供的证书进行免费代码签名。签名只覆盖由本仓库源码、在 GitHub 公开 CI 中构建出来的产物：推送 `v*` tag 后，工作流先构建单文件 EXE，提交给 SignPath 经人工批准签名，再用签名后的 EXE 打包 ZIP、生成 SHA256 并发布。
-
-上述签名仅适用于通过 `windows-release.yml` 工作流构建并发布的文件。通过百度网盘单独提供的浏览器服务 ZIP 是不同的本机打包产物，不在该 SignPath 签名范围内；请按下载指南核对该 ZIP 的 SHA-256。
-
-> 签名范围说明：Electron 桌面版安装器 `DaguanMathDesktop-Setup.exe`（`v1.0.0` 起）由桌面版发布流程单独产出，**目前尚未签名**，仍可能触发 SmartScreen 提示。签名只覆盖上表所述、由 `windows-release.yml` 从本仓库源码构建的产物。
+项目拟申请 [SignPath Foundation](https://signpath.org) 的免费开源代码签名，用于今后的 Electron 桌面版。**截至 v1.0.3，桌面安装器及应用仍未签名；申请尚未获批，也没有已签名的桌面 Release。** 旧版 `windows-release.yml` 工作流仅面向已停止维护的浏览器单文件版，不会为桌面安装器签名。计划中的签名范围、构建条件及申请状态见[代码签名政策与申请指南](docs/CODE_SIGNING_POLICY.md)。
 
 下载后可以核对签名，确认文件确实来自本项目、且未被篡改：
 
 ```powershell
-Get-AuthenticodeSignature .\DaguanMath-windows-x64.exe | Format-List Status, SignerCertificate
+Get-AuthenticodeSignature .\DaguanMathDesktop-Setup.exe | Format-List Status, SignerCertificate
 ```
 
-`Status` 为 `Valid` 且签名主体为 `SignPath Foundation` 即为正常。`Status` 显示 `NotSigned` 说明该版本早于签名上线，可继续用 Release 里的 `.sha256` 校验完整性。
+v1.0.3 的预期结果为 `NotSigned`。将来只有签名申请获批、桌面版签名流程上线，并发布新版本后，才应出现 `Valid` 和对应的签名主体。现在请用 Release 的 `.sha256` 校验完整性。
 
 角色分工（提交者、审阅者、签名批准者均需开启 MFA）、隐私政策原文与完整校验步骤见 [代码签名政策与校验方法](docs/CODE_SIGNING_POLICY.md)；申请与配置流程见 [SignPath 免费代码签名申请指南](docs/SignPath免费代码签名申请指南.md)。
 
-本项目不会向其他网络系统传输信息，除非用户或安装、操作它的人明确要求：AI 助教只在你配置并主动发起时访问你填写的 API 地址，官网进度同步只在你点击确认后访问官网，刷题进度、易错、批注、AI Key、服务档案与聊天记录都保存在本机。
+桌面版会在后台检查 GitHub Release 软件更新，并自动检查官网题库；发现软件更新后可先下载，但安装需要用户确认。AI 助教仅在配置并主动发起对话时访问所填的 API 地址；官网进度同步需要用户点击确认。刷题进度、易错、批注、AI Key、服务档案与聊天记录保存在本机。详见[代码签名政策中的联网说明](docs/CODE_SIGNING_POLICY.md#联网与隐私说明)。
+
+如果杀毒软件提示、拦截或隔离了安装器，请先核对 SHA-256 再判断是否为误报；向火绒、Microsoft Defender 等厂商提交误报的入口与所需材料见[代码签名政策中的误报提交说明](docs/CODE_SIGNING_POLICY.md#向杀毒软件厂商提交误报)。
