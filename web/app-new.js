@@ -5,7 +5,7 @@
 
 // ========== 离线缓存注册（与 app2.js 一致） ==========
 if ("serviceWorker" in navigator && location.protocol !== "file:" && location.protocol !== "https:") {
-    navigator.serviceWorker.register("./service-worker.js?v=126").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=127").catch(() => {});
 }
 
 // ========== 全局状态 ==========
@@ -1199,7 +1199,7 @@ const StateSync = {
         this.syncing = true;
         const entries = [...this.queue.entries()];
         this.queue.clear();
-        const requeue = () => { for (const [id, patch] of entries) this.queue.set(id, patch); };
+        const requeue = () => { for (const [id, patch] of entries) this.queue.set(id, { ...patch, ...(this.queue.get(id) || {}) }); };
         try {
             for (const [id, patch] of entries) {
                 const response = await fetch(`./api/state/questions/${encodeURIComponent(id)}`, {
@@ -1216,7 +1216,7 @@ const StateSync = {
                         const local = StorageService.getProgress();
                         StorageService.saveProgress({
                             progress: this.mergeProgress(conflict.current.progress || {}, local.progress),
-                            favorites: Array.isArray(conflict.current.favorites) ? conflict.current.favorites.map(String) : local.favorites,
+                            favorites: this.mergeFavorites(conflict.current.favorites, local, local.progress),
                         });
                     }
                     requeue();
@@ -1227,9 +1227,14 @@ const StateSync = {
                 this.revision = Number(result.revision) || this.revision;
                 this.confirmQuestion(id, patch);
             }
+            this.choiceSyncWarning = false;
             return true;
         } catch {
             requeue();
+            if (!this.choiceSyncWarning && entries.some(([, patch]) => 'last_ok' in patch)) {
+                this.choiceSyncWarning = true;
+                toast('作答状态尚未同步，已保留在本机，将自动重试');
+            }
             return false;
         } finally {
             this.syncing = false;
@@ -2426,7 +2431,7 @@ class UIRenderer {
                 const content = isObj ? (opt.content_md || opt.content || opt.text || '') : opt;
                 const correct = Array.isArray(question.correct_labels) && question.correct_labels.includes(label);
                 html += `
-                        <div class="option-item" data-correct="${correct ? '1' : '0'}" onclick="${multi ? `App.selectQuestionOption('${escapeHtml(question.id)}', ${idx}, this)` : `App.selectOption(${idx})`}">
+                        <div class="option-item" role="button" tabindex="0" aria-pressed="false" data-correct="${correct ? '1' : '0'}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}" onclick="${multi ? `App.selectQuestionOption('${escapeHtml(question.id)}', ${idx}, this)` : `App.selectOption(${idx})`}">
                         <div class="option-label">${escapeHtml(label)}</div>
                         <div class="option-content">${renderMarkdown(content)}</div>
                     </div>
@@ -5599,27 +5604,62 @@ document.getElementById('btn-dl').addEventListener('click', function () {
 
     static selectOption(index) {
         const question = AppState.questions[AppState.currentQuestionIndex];
-        const options = document.querySelectorAll('.option-item');
-        options.forEach((opt, idx) => {
-            if (idx === index) {
-                opt.classList.toggle('selected');
-                if (question) {
-                    const label = (typeof question.options?.[idx] === 'object' && question.options?.[idx]?.label) || String.fromCharCode(65 + idx);
-                    if (!AppState.answers[String(question.id)]) AppState.answers[String(question.id)] = new Set();
-                    if (opt.classList.contains('selected')) AppState.answers[String(question.id)].add(label);
-                    else AppState.answers[String(question.id)].delete(label);
-                }
-            }
-        });
+        const root = document.querySelector('.question-wrapper');
+        if (question && root) this.selectQuestionOption(question.id, index, root.querySelectorAll('.option-item')[index]);
     }
 
     static selectQuestionOption(questionId, index, optionEl) {
         const question = AppState.questions.find(item => String(item.id) === String(questionId));
         if (!question || !optionEl) return;
-        const option = question.options?.[index];
-        const label = (typeof option === 'object' && option?.label) || String.fromCharCode(65 + index);
+        if (!question.options?.[index]) return;
+        const label = ChoiceGrading.label(question, index);
         const key = String(question.id);
         if (!AppState.answers[key]) AppState.answers[key] = new Set();
+        const root = optionEl.closest('[data-question-id]');
+        if (ChoiceGrading.answer(question)) {
+            const previous = AppState.answers[key];
+            const unchanged = previous.size === 1 && previous.has(label);
+            AppState.answers[key] = new Set([label]);
+            const ok = ChoiceGrading.grade(question, AppState.answers[key]);
+            root.querySelectorAll('.option-item').forEach((item, i) => {
+                const optionLabel = ChoiceGrading.label(question, i);
+                const selected = optionLabel === label;
+                const correct = optionLabel === ChoiceGrading.answer(question);
+                item.classList.toggle('selected', selected);
+                item.classList.toggle('correct', correct);
+                item.classList.toggle('incorrect', selected && !correct);
+                item.setAttribute('aria-pressed', String(selected));
+                item.querySelector('.choice-option-tag')?.remove();
+                if (correct || selected) {
+                    const tag = document.createElement('span'); tag.className = 'choice-option-tag';
+                    tag.textContent = correct ? '正确答案' : '你的选择'; item.appendChild(tag);
+                }
+            });
+            ChoiceGrading.feedback(root.querySelector('.question-options'), ok);
+            const answer = root.querySelector('.answer-section');
+            if (answer) answer.style.display = 'block';
+            const button = root.querySelector('.expand-answer-btn') || document.getElementById('show-answer-btn');
+            if (button) { button.textContent = '隐藏答案'; button.setAttribute('aria-expanded', 'true'); }
+            if (!unchanged && PreviewAccess.privateAllowed(false)) {
+                const { data, entry } = StorageService._entry(key);
+                const patch = ChoiceGrading.patch(ok, entry, StorageService.isFavorite(key));
+                try {
+                    StorageService._write(data, key, { ...entry, ...patch });
+                    StateSync.queueQuestion(key, patch);
+                    if (!StateSync.available) toast('作答状态尚未同步，已保留在本机，将自动重试');
+                    this.updateQuestionStateUI(key);
+                } catch { toast('作答状态保存失败，请重试；判题结果仍可查看'); }
+            }
+            return;
+        }
+        if (question.type !== 'multiple_choice') {
+            AppState.answers[key] = new Set([label]);
+            root.querySelectorAll('.option-item').forEach((item, i) => {
+                const selected = i === index; item.classList.toggle('selected', selected);
+                item.setAttribute('aria-pressed', String(selected));
+            });
+            return;
+        }
         const selected = optionEl.classList.toggle('selected');
         if (selected) AppState.answers[key].add(label); else AppState.answers[key].delete(label);
     }
@@ -5705,7 +5745,12 @@ document.getElementById('btn-dl').addEventListener('click', function () {
         });
 
         const favorite = StorageService.isFavorite(id);
+        document.querySelectorAll(`[data-question-id="${safeId}"] .action-btn[data-shortcut-hint="favorite"], [data-question-id="${safeId}"] .multi-card-actions .action-btn:first-child`).forEach(button => {
+            button.classList.toggle('active', favorite);
+            button.setAttribute('aria-pressed', String(favorite));
+        });
         document.querySelectorAll(`.question-rail-item[data-question-id="${safeId}"]`).forEach(rail => {
+            rail.classList.toggle('favorite', favorite);
             rail.dataset.mastery = mastery;
             rail.classList.remove('not_started', 'learning', 'mastered', 'mastery-not_started', 'mastery-learning', 'mastery-mastered');
             if (mastery !== 'not_started') rail.classList.add(mastery);

@@ -1001,6 +1001,10 @@ summary:focus-visible {
   border-color: var(--brand);
   background: var(--brand-soft);
 }
+.choice-option-tag { flex-shrink: 0; font-size: 12px; font-weight: 600; margin-left: auto; padding: 2px 8px; border-radius: 4px; background: rgba(255,255,255,.65); }
+.choice-feedback { margin: 8px 0; font-size: 14px; font-weight: 600; }
+.choice-feedback[data-result="correct"] { color: #187347; }
+.choice-feedback[data-result="incorrect"] { color: #b42318; }
 .opt.correct {
   border-color: var(--ok);
   background: var(--ok-soft);

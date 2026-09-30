@@ -2,7 +2,7 @@
   "use strict";
 
   if ("serviceWorker" in navigator && location.protocol !== "file:" && location.protocol !== "https:") {
-    navigator.serviceWorker.register("./service-worker.js?v=122").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=123").catch(() => {});
   }
 
   const DATA = "./data";
@@ -537,6 +537,7 @@
   let serverStateHydrated = false;
   let serverStateAvailable = false;
   let serverStateSyncing = false;
+  let choiceSyncWarning = false;
   let serverRevision = 0;
   const serverQuestionQueue = new Map();
   let serverQuestionTimer = 0;
@@ -1123,6 +1124,7 @@
     serverStateSyncing = true;
     const entries = [...serverQuestionQueue.entries()];
     serverQuestionQueue.clear();
+    const requeue = () => entries.forEach(([id, patch]) => serverQuestionQueue.set(id, { ...patch, ...(serverQuestionQueue.get(id) || {}) }));
     try {
       for (const [id, patch] of entries) {
         const response = await fetch(`./api/state/questions/${encodeURIComponent(id)}`, {
@@ -1137,7 +1139,7 @@
             state.progress = mergeProgress(conflict.current.progress || {}, state.progress);
             // Keep pending local edits intact; retry patches against the new revision.
           }
-          entries.forEach(([queuedId, queuedPatch]) => serverQuestionQueue.set(queuedId, queuedPatch));
+          requeue();
           break;
         }
         if (!response.ok) throw new Error(`状态写入失败（HTTP ${response.status}）`);
@@ -1145,8 +1147,13 @@
         serverRevision = Number(result.revision) || serverRevision;
         if (PendingSync) { try { PendingSync.clearQuestion(id, patch); } catch {} }
       }
+      if (!serverQuestionQueue.size) choiceSyncWarning = false;
     } catch {
-      entries.forEach(([queuedId, queuedPatch]) => serverQuestionQueue.set(queuedId, queuedPatch));
+      requeue();
+      if (!choiceSyncWarning && entries.some(([, patch]) => 'last_ok' in patch)) {
+        choiceSyncWarning = true;
+        toast('作答状态尚未同步，已保留在本机，将自动重试');
+      }
     } finally {
       serverStateSyncing = false;
       if (serverQuestionQueue.size && !serverQuestionTimer) serverQuestionTimer = setTimeout(flushQuestionSync, 900);
@@ -1860,12 +1867,14 @@
     }
   }
 
-  function markAnswered(id, ok) {
+  function markAnswered(id, ok, automaticSingle = false) {
     // 预览模式下作答仍可进行，只是不保存私人刷题记录。
     if (!previewPrivateAllowed(false)) return;
     const key = String(id);
     const cur = state.progress[key] || {};
     const at = Date.now();
+    const autoPatch = automaticSingle ? ChoiceGrading.patch(ok, cur, isFavorite(key), at) : {};
+    if (automaticSingle && autoPatch.favorite) state.favorites.add(key);
     state.progress[key] = {
       ...cur,
       seen: true,
@@ -1875,8 +1884,13 @@
       updated_at: at,
       mastery: cur.mastery || "learning",
       error_prone: ok ? cur.error_prone === true : true,
+      ...autoPatch,
     };
-    queueQuestionSync(key, { mastery: state.progress[key].mastery, error_prone: state.progress[key].error_prone === true, seen: true, answered: true, last_ok: !!ok, last_practiced_at: at });
+    queueQuestionSync(key, { mastery: state.progress[key].mastery, error_prone: state.progress[key].error_prone === true, seen: true, answered: true, last_ok: !!ok, last_practiced_at: at, ...autoPatch });
+    if (automaticSingle) {
+      saveFavorites();
+      if (!serverStateAvailable) toast('作答状态尚未同步，已保留在本机，将自动重试');
+    }
     saveProgress();
     refreshCardChrome(id);
     updateChapterHeader();
@@ -2960,6 +2974,17 @@
         else if (ui.selected.has(L)) b.classList.add("wrong");
       }
       b.addEventListener("click", () => {
+        if (ChoiceGrading.answer(q)) {
+          const unchanged = ui.selected.size === 1 && ui.selected.has(L);
+          if (unchanged && ui.showAnswer) return;
+          ui.selected = new Set([L]);
+          ui.showAnswer = true;
+          if (!unchanged) markAnswered(q.id, ChoiceGrading.grade(q, ui.selected), true);
+          const card = container.closest('.q-card');
+          const idx = state.queue.findIndex(x => String(x.id) === String(q.id));
+          if (card) rebuildCardBody(card, q, idx >= 0 ? idx : 0);
+          return;
+        }
         if (multi) {
           if (ui.selected.has(L)) ui.selected.delete(L);
           else ui.selected.add(L);
@@ -2974,8 +2999,6 @@
             renderOptionsInto(container, q, ui);
           } else {
             b.classList.add("selected");
-            const ok = gradeChoice(q, ui.selected);
-            if (ok != null) markAnswered(q.id, ok);
           }
         } else {
           const card = container.closest(".q-card");
@@ -2984,7 +3007,9 @@
         }
       });
       container.appendChild(b);
+      decorateSingleChoiceOption(b, q, L, ui.selected, ui.showAnswer);
     });
+    ChoiceGrading.feedback(container, ui.showAnswer ? ChoiceGrading.grade(q, ui.selected) : null);
   }
 
   /* ---------- SINGLE MODE ---------- */
@@ -3021,6 +3046,15 @@
       if (state.selected.has(lab.toUpperCase())) b.classList.add("selected");
       b.addEventListener("click", () => {
         const L = lab.toUpperCase();
+        if (ChoiceGrading.answer(q)) {
+          const unchanged = state.selected.size === 1 && state.selected.has(L);
+          if (unchanged && state.showAnswer) return;
+          state.selected = new Set([L]);
+          state.showAnswer = true;
+          if (!unchanged) markAnswered(q.id, ChoiceGrading.grade(q, state.selected), true);
+          renderSingle();
+          return;
+        }
         if (multi) {
           if (state.selected.has(L)) state.selected.delete(L);
           else state.selected.add(L);
@@ -3028,10 +3062,6 @@
           state.selected = new Set([L]);
         }
         renderSingle();
-        if (!multi && state.selected.size) {
-          const ok = gradeChoice(q, state.selected);
-          if (ok != null) markAnswered(q.id, ok);
-        }
       });
       if (state.showAnswer && q.correct_labels && q.correct_labels.length) {
         const L = lab.toUpperCase();
@@ -3039,7 +3069,9 @@
         else if (state.selected.has(L)) b.classList.add("wrong");
       }
       els.qOptions.appendChild(b);
+      decorateSingleChoiceOption(b, q, lab.toUpperCase(), state.selected, state.showAnswer);
     });
+    ChoiceGrading.feedback(els.qOptions, state.showAnswer ? ChoiceGrading.grade(q, state.selected) : null);
 
     els.answerBox.classList.toggle("hidden", !state.showAnswer);
     if (state.showAnswer) {
@@ -3078,7 +3110,18 @@
     renderShortcutHints();
   }
 
+  function decorateSingleChoiceOption(button, q, label, selected, showAnswer) {
+    button.setAttribute('aria-pressed', String(selected.has(label)));
+    const correct = ChoiceGrading.answer(q);
+    if (!correct || !showAnswer || !selected.size || (label !== correct && !selected.has(label))) return;
+    const tag = document.createElement('span');
+    tag.className = 'choice-option-tag';
+    tag.textContent = label === correct ? '正确答案' : '你的选择';
+    button.appendChild(tag);
+  }
+
   function gradeChoice(q, selectedSet) {
+    if (q.type !== 'multiple_choice' && !ChoiceGrading.answer(q)) return null;
     const labels = (q.correct_labels || []).map((x) => String(x).toUpperCase());
     if (!labels.length || !selectedSet.size) return null;
     const sel = [...selectedSet].sort().join(",");

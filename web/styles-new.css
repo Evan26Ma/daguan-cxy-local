@@ -1208,6 +1208,10 @@ select:focus-visible {
     border-color: var(--brand-orange);
 }
 
+.choice-option-tag { flex-shrink: 0; font-size: 12px; font-weight: 600; margin-left: auto; padding: 2px 8px; border-radius: 4px; background: rgba(255,255,255,.65); }
+.choice-feedback { margin: 8px 0; font-size: 14px; font-weight: 600; }
+.choice-feedback[data-result="correct"] { color: #187347; }
+.choice-feedback[data-result="incorrect"] { color: #b42318; }
 .option-item.correct {
     background: #F0F9F4;
     border-color: var(--success);
