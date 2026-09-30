@@ -104,15 +104,15 @@ test("首屏不阻塞加载题库索引", () => {
 
 test("Service Worker 不预缓存首屏之外的大型索引和字体", () => {
   const sw = fs.readFileSync(new URL("../web/service-worker.js", import.meta.url), "utf8");
-  assert.match(sw, /daguan-shell-v138/);
-  assert.match(app, /service-worker\.js\?v=138/);
-  assert.match(newApp, /service-worker\.js\?v=138/);
+  assert.match(sw, /daguan-shell-v139/);
+  assert.match(app, /service-worker\.js\?v=139/);
+  assert.match(newApp, /service-worker\.js\?v=139/);
   assert.match(sw, /"\.\/legacy\.html"/);
   assert.match(sw, /"\.\/legacy\.css\?v=92"/);
   assert.match(sw, /"\.\/app-legacy\.js\?v=101"/);
   assert.match(sw, /"\.\/guides\.css\?v=2"/);
   assert.match(sw, /"\.\/styles-new\.css\?v=119"/);
-  assert.match(sw, /"\.\/app-new\.js\?v=130"/);
+  assert.match(sw, /"\.\/app-new\.js\?v=131"/);
   assert.match(sw, /"\.\/assets\/math-mark\.svg"/);
   assert.match(sw, /"\.\/assets\/landing\/local-mark\.png"/);
   assert.doesNotMatch(sw, /data\/(category_questions|id_index|search_index)\.json/);
@@ -134,7 +134,7 @@ test("新版入口承载新版前端并与旧版共享版本选择", () => {
   assert.match(newHtml, /styles-new\.css\?v=119/);
   assert.match(newHtml, /ui-version\.js\?v=106/);
   assert.match(newHtml, /ui-bootstrap\.js\?v=1/);
-  assert.match(newHtml, /app-new\.js\?v=130/);
+  assert.match(newHtml, /app-new\.js\?v=131/);
   assert.match(uiBootstrap, /DaguanVersions\.selected\(localStorage\)/);
   assert.match(newHtml, /dlg-preview-access/);
   assert.match(newHtml, /preview-banner/);

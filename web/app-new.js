@@ -5,7 +5,7 @@
 
 // ========== 离线缓存注册（与 app2.js 一致） ==========
 if ("serviceWorker" in navigator && location.protocol !== "file:" && location.protocol !== "https:") {
-    navigator.serviceWorker.register("./service-worker.js?v=138").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=139").catch(() => {});
 }
 
 // ========== 全局状态 ==========
@@ -5731,11 +5731,16 @@ document.getElementById('btn-dl').addEventListener('click', function () {
             answerSection.style.display = 'block';
             btn.textContent = '隐藏答案';
 
-            // 如果答案在屏幕外，滚动到答案位置
+            // Only move the question's scroller. scrollIntoView also scrolls
+            // overflow:hidden ancestors, pulling the footer up and exposing blank space.
             setTimeout(() => {
+                const content = answerSection.closest('.question-content');
+                if (!content || !answerSection.isConnected || answerSection.style.display === 'none') return;
                 const rect = answerSection.getBoundingClientRect();
-                if (rect.top > window.innerHeight || rect.bottom < 0) {
-                    answerSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                const viewport = content.getBoundingClientRect();
+                if (rect.top >= viewport.bottom || rect.bottom <= viewport.top) {
+                    content.scrollTo({ top: content.scrollTop + rect.top - viewport.top,
+                        behavior: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
                 }
             }, 100);
         } else {
