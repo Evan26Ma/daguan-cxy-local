@@ -73,9 +73,10 @@ test('单题和连续模式：长回答独立滚动，拖宽不丢草稿，批�
  await page.evaluate(async()=>{AppState.currentCategory=AppState.categories.categories.find(n=>UIRenderer.findNodeById(n,331));await App.enterChapterQuestions(UIRenderer.findNodeById(AppState.currentCategory,331));App.toggleAI();});
  await page.locator('#ai-input').fill('我的草稿');
  await page.evaluate(()=>{document.getElementById('ai-messages').innerHTML='<div class="ai-message assistant"><div class="ai-message-bubble">'+Array.from({length:100},(_,i)=>`<p>解题步骤 ${i}</p>`).join('')+renderMarkdown('$$'+Array.from({length:60},(_,i)=>'x_{'+i+'}').join('+')+'$$')+'</div></div>';});
- const handle=page.locator('.ai-panel-resize');await handle.focus();await handle.press('End');assert.equal(await handle.getAttribute('aria-valuenow'),'620');
+ const handle=page.locator('.ai-panel-resize');await handle.focus();await handle.press('End');
+ const maxWidth=await page.locator('#app-main').evaluate(e=>Math.round(e.getBoundingClientRect().width-360));assert.equal(Number(await handle.getAttribute('aria-valuenow')),maxWidth);assert.ok(maxWidth>620);
  const box=await handle.boundingBox();await page.mouse.move(box.x+3,box.y+50);await page.mouse.down();await page.mouse.move(box.x+103,box.y+50);await page.mouse.up();
- assert.equal(await handle.getAttribute('aria-valuenow'),'520');assert.equal(await page.locator('#ai-input').inputValue(),'我的草稿');
+ assert.equal(Number(await handle.getAttribute('aria-valuenow')),maxWidth-100);assert.equal(await page.locator('#ai-input').inputValue(),'我的草稿');
  const heights=await page.evaluate(()=>{const main=document.getElementById('app-main'),messages=document.getElementById('ai-messages');messages.scrollTop=messages.scrollHeight;main.scrollTop=main.scrollHeight;return {outer:main.scrollTop,message:messages.scrollTop,client:main.clientHeight,scroll:main.scrollHeight};});
  assert.equal(heights.outer,0);assert.ok(heights.message>1000);assert.ok(heights.scroll<=heights.client+2);
  await page.evaluate(()=>App.toggleAnnotation());assert.ok(await page.locator('#ai-input').isVisible());
@@ -89,7 +90,7 @@ test('单题和连续模式：长回答独立滚动，拖宽不丢草稿，批�
  assert.equal(await handle.isVisible(),false);
  await page.setViewportSize({width:1280,height:900});await page.reload();await page.waitForLoadState('networkidle');await page.waitForFunction('AppState.categories');
  await page.evaluate(async()=>{AppState.currentCategory=AppState.categories.categories.find(n=>UIRenderer.findNodeById(n,331));await App.enterChapterQuestions(UIRenderer.findNodeById(AppState.currentCategory,331));App.toggleAI();});
- assert.equal(await page.locator('.ai-panel-resize').getAttribute('aria-valuenow'),'520');
+ assert.equal(Number(await page.locator('.ai-panel-resize').getAttribute('aria-valuenow')),maxWidth-100);
  await page.goto(base+'/legacy.html?ui=old&entry=chapters');await page.waitForLoadState('networkidle');
  await page.locator('[data-chapter-id="223"]').click();await page.locator('[data-chapter-id="321"]').click();
  await page.locator('[data-chapter-id="327"]').click();await page.locator('[data-chapter-id="331"]').click();await page.locator('#chapter-menu').waitFor({state:'hidden'});
@@ -123,6 +124,7 @@ test('新版阅读：导航、展开、设置、段落跳转、草稿和流式�
  assert.equal(await input.inputValue(),'保留这份追问草稿');
  const expandedHandle=page.locator('.ai-panel-resize');const expandedWidth=Number(await expandedHandle.getAttribute('aria-valuenow'));
  await expandedHandle.focus();await expandedHandle.press('ArrowLeft');assert.equal(Number(await expandedHandle.getAttribute('aria-valuenow')),expandedWidth+16);
+ await expandedHandle.press('End');assert.ok(await ratio()>.7);assert.ok(await page.locator('#app-main').evaluate(e=>e.getBoundingClientRect().width)-Number(await expandedHandle.getAttribute('aria-valuenow'))>=359);
  assert.equal(await page.evaluate(()=>localStorage.getItem('daguan_ai_drawer_width_v1')),null);
  await page.locator('#ai-expand-btn').click();assert.equal(await page.locator('.ai-panel-resize').getAttribute('aria-valuenow'),originalWidth);
  await page.locator('#ai-expand-btn').click();

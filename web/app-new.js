@@ -5,7 +5,7 @@
 
 // ========== 离线缓存注册（与 app2.js 一致） ==========
 if ("serviceWorker" in navigator && location.protocol !== "file:" && location.protocol !== "https:") {
-    navigator.serviceWorker.register("./service-worker.js?v=135").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=137").catch(() => {});
 }
 
 // ========== 全局状态 ==========
@@ -1796,7 +1796,7 @@ class UIRenderer {
         return `<section class="card appearance-settings" aria-labelledby="appearance-title"><h2 id="appearance-title" class="text-section-title">新版外观</h2><p class="text-helper">只影响新版页面，旧版外观设置保持独立。</p>
             <div class="theme-presets">${UI_THEMES.map(theme => `<button type="button" class="theme-preset" data-theme-preset="${theme.id}" aria-pressed="${saved.theme === theme.id}"><span class="theme-swatch" style="--swatch-brand:${theme.brand};--swatch-app:${theme.app};--swatch-reading:${theme.reading}"></span><span>${theme.name}</span></button>`).join('')}</div>
             <div class="custom-colors"><h3>自定义品牌色</h3>${[['brand','品牌色'],['app','应用底色'],['reading','阅读面'],['accent','次强调色']].map(([key,label]) => `<label>${label}<input type="color" data-appearance-color="${key}" value="${saved[key] || UI_THEMES[0][key]}"></label>`).join('')}</div>
-            <fieldset class="font-scale-settings"><legend>界面字号</legend><p class="text-helper">放大题目、答案和界面文字；只保存在这台设备的新版界面。</p><div class="font-scale-choices">${UI_FONT_SCALES.map(scale => `<button type="button" class="font-scale-choice" data-font-scale="${scale}" aria-pressed="${saved.fontScale === scale}">${Math.round(scale * 100)}%</button>`).join('')}</div></fieldset>
+            <fieldset class="font-scale-settings"><legend>界面字号</legend><p class="text-helper">放大题目、答案和界面文字；选择后自动保存，只影响这台设备的新版界面。</p><div class="font-scale-choices">${UI_FONT_SCALES.map(scale => `<button type="button" class="font-scale-choice" data-font-scale="${scale}" aria-pressed="${saved.fontScale === scale}">${Math.round(scale * 100)}%</button>`).join('')}</div></fieldset>
             <div class="appearance-preview" id="appearance-preview"><strong>实时预览</strong><p>正文与按钮文字会按背景自动选择对比色。</p><button type="button" class="btn btn-primary">品牌按钮预览</button></div>
             <div class="appearance-actions"><button type="button" class="btn btn-primary" id="appearance-apply">应用</button><button type="button" class="btn btn-secondary" id="appearance-cancel">取消</button><button type="button" class="btn btn-text" id="appearance-reset">恢复预设</button></div>
         </section>`;
@@ -1820,6 +1820,8 @@ class UIRenderer {
         }));
         document.querySelectorAll('[data-font-scale]').forEach(button => button.addEventListener('click', () => {
             AppState.appearanceDraft.fontScale = normalizeFontScale(button.dataset.fontScale);
+            // 字号即时生效并保存；颜色仍按“应用/取消”的预览流程处理。
+            StorageService.saveUIAppearance({ ...StorageService.getUIAppearance(), fontScale: AppState.appearanceDraft.fontScale });
             document.querySelectorAll('[data-font-scale]').forEach(item => item.setAttribute('aria-pressed', String(item === button)));
             preview();
         }));

@@ -4,9 +4,9 @@
   try { normalWidth = Number(localStorage.getItem(key)) || 400; } catch {}
   function bounds() {
     const available = document.getElementById('app-main')?.getBoundingClientRect().width || window.innerWidth;
-    const max = expanded && window.innerWidth > 1024
-      ? Math.max(340, Math.min(available * .7, available - 360))
-      : window.innerWidth > 1024 ? Math.max(340, Math.min(620, available - 360)) : Math.min(620, window.innerWidth - 24);
+    const max = window.innerWidth > 1024
+      ? Math.max(340, available - 360)
+      : window.innerWidth - 24;
     return {available, min: Math.min(340, max), max};
   }
   function update() {
