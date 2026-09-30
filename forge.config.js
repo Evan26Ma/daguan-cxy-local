@@ -1,10 +1,14 @@
 import { prepareDesktopPackage } from "./scripts/prepare-desktop-package.mjs";
+import { fileURLToPath } from "node:url";
+
+const desktopIcon = fileURLToPath(new URL("./web/assets/landing/local-mark.ico", import.meta.url));
 
 export default {
   packagerConfig: {
     asar: false,
     ...(process.env.DAGUAN_ELECTRON_ZIP_DIR ? { electronZipDir: process.env.DAGUAN_ELECTRON_ZIP_DIR } : {}),
     executableName: "DaguanMath",
+    icon: desktopIcon,
     appBundleId: "com.daguan.math-local",
     ignore: [
       /^\/data(?:\/|$)/i,
@@ -41,6 +45,7 @@ export default {
         authors: "Evan26Ma",
         description: "Windows 本地数学题库学习应用",
         setupExe: process.env.DAGUAN_SQUIRREL_SETUP_EXE || "DaguanMathDesktop-Setup.exe",
+        setupIcon: desktopIcon,
       },
     },
   ],

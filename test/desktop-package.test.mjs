@@ -2,9 +2,18 @@ import assert from "node:assert/strict";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import test from "node:test";
 import forgeConfig from "../forge.config.js";
 import { prepareDesktopPackage } from "../scripts/prepare-desktop-package.mjs";
+
+test("Windows executable and installer both use the bundled Daguan logo", async () => {
+  const icon = new URL("../web/assets/landing/local-mark.ico", import.meta.url);
+  assert.equal(forgeConfig.packagerConfig.icon, fileURLToPath(icon));
+  assert.equal(forgeConfig.makers[0].config.setupIcon, forgeConfig.packagerConfig.icon);
+  const bytes = await fs.readFile(icon);
+  assert.deepEqual([...bytes.subarray(0, 4)], [0, 0, 1, 0]);
+});
 
 test("desktop package excludes local records while retaining the bundled question bank", () => {
   const ignored = (name) => forgeConfig.packagerConfig.ignore.some((pattern) => pattern.test(name));

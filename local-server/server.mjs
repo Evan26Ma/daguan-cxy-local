@@ -12,6 +12,7 @@ import { createAiService } from "./ai-service.mjs";
 import { acquireServiceInstance, serviceOwnerUrl, SERVICE_API_PROTOCOL, waitForServiceOwner } from "./instance-lock.mjs";
 import { createQuestionBankUpdater } from "./question-bank-updater.mjs";
 import { createVisitHistory } from "./visit-history.mjs";
+import { createStudyActivity } from "./study-activity.mjs";
 
 const ROOT = path.resolve(process.env.DAGUAN_ROOT_DIR || path.resolve(path.dirname(fileURLToPath(import.meta.url)), ".."));
 const WEB_ROOT = path.resolve(process.env.DAGUAN_WEB_ROOT || path.join(ROOT, "web"));
@@ -27,6 +28,7 @@ const PREVIEW_TTL_SECONDS = 60 * 60 * 24 * 365;
 
 const store = createStore(ROOT, process.env.DAGUAN_DATA_DIR);
 const visitHistory = createVisitHistory(store.dataDir, () => store.readState());
+const studyActivity = createStudyActivity(store.dataDir, () => store.readState());
 const client = new CxyonlyClient({
   store,
   baseUrl: process.env.DAGUAN_BASE_URL || "https://www.cxyonly.fans",
@@ -85,7 +87,7 @@ function hasPreviewAccess(req) {
 }
 
 function privateApiPath(pathname) {
-  return pathname === "/api/state" || pathname.startsWith("/api/state/") || pathname.startsWith("/api/visit-history") || pathname.startsWith("/api/ai/") || pathname.startsWith("/api/integrations/cxyonly/");
+  return pathname === "/api/state" || pathname.startsWith("/api/state/") || pathname.startsWith("/api/visit-history") || pathname.startsWith("/api/study-activity") || pathname.startsWith("/api/ai/") || pathname.startsWith("/api/integrations/cxyonly/");
 }
 
 function requirePreviewAccess(req, res) {
@@ -125,11 +127,18 @@ async function withLock(task) {
 
 async function writeState(value, options) {
   const saved = await store.writeState(value, options);
+  if (options?.studyImport) await studyActivity.observeImport(saved);
   const event = `event: state\ndata: ${JSON.stringify({ revision: saved.revision, updated_at: saved.updated_at })}\n\n`;
   for (const response of stateEventClients) {
     try { response.write(event); } catch { stateEventClients.delete(response); }
   }
   return saved;
+}
+
+function broadcastStudyActivity() {
+  for (const response of stateEventClients) {
+    try { response.write('event: study-activity\ndata: {}\n\n'); } catch { stateEventClients.delete(response); }
+  }
 }
 
 function broadcastHistory() {
@@ -188,7 +197,7 @@ async function applyPull(previewId, auto = false) {
   const preview = previews.get(previewId);
   if (!preview || Date.now() - preview.createdAt > 30 * 60 * 1000) throw new Error("读取预览已过期，请重新读取");
   const result = preview.merged;
-  await writeState(localStateShape(result.state));
+  await writeState(localStateShape(result.state), { studyImport: true });
   await saveRemoteProgress(preview.remote.states, { last_pull_at: nowIso() });
   const integration = await store.readIntegration();
   if (integration) await store.writeIntegration({ ...integration, last_pull_at: nowIso(), updated_at: nowIso() });
@@ -308,7 +317,7 @@ async function applyReconcile(previewId, bodyValue = {}) {
     });
     const failed = [];
     let succeeded = 0;
-    let saved = await writeState(next, { expectedRevision: current.revision });
+    let saved = await writeState(next, { expectedRevision: current.revision, studyImport: true });
     for (const operation of plan.remoteOperations) {
       try { await client.patchState(operation); succeeded += 1; }
       catch (error) { failed.push({ question_id: operation.questionId, error: error.message, payload: operation.payload }); }
@@ -323,7 +332,7 @@ async function applyReconcile(previewId, bodyValue = {}) {
     if (failed.length || plan.unknownIds.length || saved.pending_remote_operations?.length) {
       if (failed.length) next.pending_remote_operations = failed;
       else delete next.pending_remote_operations;
-      saved = await writeState(next, { expectedRevision: saved.revision });
+      saved = await writeState(next, { expectedRevision: saved.revision, studyImport: true });
     } else {
       delete next.pending_remote_operations;
     }
@@ -397,6 +406,16 @@ async function route(req, res) {
     return task ? json(res, 200, task) : json(res, 404, { ok: false, error: "题库刷新任务不存在" });
   }
   if (privateApiPath(pathname) && !requirePreviewAccess(req, res)) return;
+  if (pathname === "/api/study-activity" && method === "GET") return json(res, 200, await studyActivity.summary({ days: url.searchParams.get('days') || 1, timeZone: url.searchParams.get('timeZone') || 'Asia/Hong_Kong' }));
+  if (pathname === "/api/study-activity/export" && method === "GET") return json(res, 200, await studyActivity.export());
+  if (pathname === "/api/study-activity/events" && method === "POST") {
+    const accepted = await studyActivity.append((await body(req)).events);
+    broadcastStudyActivity(); return json(res, 200, { ok: true, accepted });
+  }
+  if (pathname === "/api/study-activity/merge" && method === "POST") {
+    const result = await studyActivity.merge(await body(req));
+    broadcastStudyActivity(); return json(res, 200, { ok: true, ...result });
+  }
   if (pathname === "/api/visit-history" && method === "GET") return json(res, 200, { ok: true, entries: await visitHistory.list() });
   if (pathname === "/api/visit-history" && method === "POST") { const entry = await visitHistory.visit(await body(req)); broadcastHistory(); return json(res, 200, { ok: true, entry }); }
   if (pathname === "/api/visit-history" && method === "DELETE") { await visitHistory.clear(); broadcastHistory(); return json(res, 200, { ok: true }); }
@@ -421,7 +440,7 @@ async function route(req, res) {
     const incoming = await body(req);
     const expectedRevision = req.headers["if-match"] != null ? Number(req.headers["if-match"]) : Number(incoming.revision);
     if (!Number.isInteger(expectedRevision) || expectedRevision < 0) return json(res, 409, { ok: false, code: "REVISION_REQUIRED", error: "整份状态写入必须携带 revision；请改用逐题接口" });
-    const saved = await withLock(() => writeState(localStateShape(incoming), { expectedRevision }));
+    const saved = await withLock(() => writeState(localStateShape(incoming), { expectedRevision, studyImport: true }));
     return json(res, 200, { ok: true, state: saved, revision: saved.revision });
   }
   if (pathname.startsWith("/api/state/questions/") && !pathname.endsWith("/annotation") && method === "PATCH") {
@@ -459,7 +478,7 @@ async function route(req, res) {
       progress[questionId] = entry;
       const favorites = new Set(current.favorites || []);
       if (entry.favorite) favorites.add(questionId); else favorites.delete(questionId);
-      return writeState({ ...current, progress, favorites: [...favorites].sort((a, b) => Number(a) - Number(b)) }, { expectedRevision: current.revision });
+      return writeState({ ...current, progress, favorites: [...favorites].sort((a, b) => Number(a) - Number(b)) }, { expectedRevision: current.revision, studyAction: true });
     });
     return json(res, 200, { ok: true, revision: saved.revision, state: saved });
   }
@@ -507,7 +526,7 @@ async function route(req, res) {
     const saved = await withLock(async () => {
       const current = await store.readState();
       const merged = { ...current, ...incoming, revision: current.revision, progress: { ...(current.progress || {}), ...(incoming.progress || {}) }, favorites: [...new Set([...(current.favorites || []), ...(incoming.favorites || [])])], picked: [...new Set([...(current.picked || []), ...(incoming.picked || [])])], updated_at: nowIso() };
-      return writeState(merged, { expectedRevision: current.revision });
+      return writeState(merged, { expectedRevision: current.revision, studyImport: true });
     });
     return json(res, 200, { ok: true, state: saved });
   }
@@ -649,6 +668,7 @@ if (!lease?.acquired) {
   serviceInstance = lease.owner;
   try {
     await store.readState();
+    await studyActivity.ensure();
     questionBank = await createQuestionBankUpdater({
       dataDir: store.dataDir, bundledDataDir: path.join(WEB_ROOT, "data"),
       enabled: process.env.DAGUAN_AUTO_UPDATE_BANK === "1",

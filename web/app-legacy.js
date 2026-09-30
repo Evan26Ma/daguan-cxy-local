@@ -2,7 +2,7 @@
   "use strict";
 
   if ("serviceWorker" in navigator && location.protocol !== "file:" && location.protocol !== "https:") {
-    navigator.serviceWorker.register("./service-worker.js?v=123").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=138").catch(() => {});
   }
 
   const DATA = "./data";
@@ -447,6 +447,7 @@
   function setFavorite(id, on) {
     if (!previewPrivateAllowed()) return;
     const key = String(id);
+    if (on && !isFavorite(key)) window.DaguanStudyActivity?.favorite(key, 'manual', studyChapterDetails());
     if (on) state.favorites.add(key);
     else state.favorites.delete(key);
     const cur = state.progress[key] || {};
@@ -1839,6 +1840,7 @@
     const cur = state.progress[key] || {};
     const at = Date.now();
     const nextMastery = mastery === "forgot" ? "learning" : mastery;
+    if (['learning', 'mastered'].includes(nextMastery)) window.DaguanStudyActivity?.study(key, studyChapterDetails());
     state.progress[key] = { ...cur, mastery: nextMastery, seen: true, last_practiced_at: at, updated_at: at, mastery_updated_at: at };
     queueQuestionSync(key, { mastery: nextMastery, seen: true, last_practiced_at: at });
     saveProgress();
@@ -1867,12 +1869,18 @@
     }
   }
 
+  function studyChapterDetails() {
+    return { chapter_id: state.currentCatId, chapter_name: state.crumb || '未分类' };
+  }
+
   function markAnswered(id, ok, automaticSingle = false) {
     // 预览模式下作答仍可进行，只是不保存私人刷题记录。
     if (!previewPrivateAllowed(false)) return;
     const key = String(id);
     const cur = state.progress[key] || {};
     const at = Date.now();
+    window.DaguanStudyActivity?.answer(key, !!ok, automaticSingle, studyChapterDetails());
+    if (automaticSingle && !ok && !isFavorite(key)) window.DaguanStudyActivity?.favorite(key, 'automatic', studyChapterDetails());
     const autoPatch = automaticSingle ? ChoiceGrading.patch(ok, cur, isFavorite(key), at) : {};
     if (automaticSingle && autoPatch.favorite) state.favorites.add(key);
     state.progress[key] = {
@@ -2691,6 +2699,7 @@
   /* ---------- LIST MODE ---------- */
 
   function renderFeed(reset) {
+    window.DaguanStudyActivity?.beginFeed(state.queue.map(q => q.id));
     if (reset) {
       els.qFeed.innerHTML = "";
       state.renderedCount = 0;
@@ -2851,6 +2860,7 @@
     ansBtn.addEventListener("click", () => {
       ui.showAnswer = !ui.showAnswer;
       if (ui.showAnswer) {
+        if (previewPrivateAllowed(false)) window.DaguanStudyActivity?.reveal(q.id);
         const ok = gradeChoice(q, ui.selected);
         if (ok != null) markAnswered(q.id, ok);
         else markSeen(q.id);
@@ -2978,8 +2988,9 @@
           const unchanged = ui.selected.size === 1 && ui.selected.has(L);
           if (unchanged && ui.showAnswer) return;
           ui.selected = new Set([L]);
-          ui.showAnswer = true;
           if (!unchanged) markAnswered(q.id, ChoiceGrading.grade(q, ui.selected), true);
+          if (previewPrivateAllowed(false)) window.DaguanStudyActivity?.reveal(q.id);
+          ui.showAnswer = true;
           const card = container.closest('.q-card');
           const idx = state.queue.findIndex(x => String(x.id) === String(q.id));
           if (card) rebuildCardBody(card, q, idx >= 0 ? idx : 0);
@@ -2991,6 +3002,7 @@
         } else {
           ui.selected = new Set([L]);
         }
+        if (ui.selected.has(L) && previewPrivateAllowed(false)) window.DaguanStudyActivity?.study(q.id, studyChapterDetails());
         // update selection styles without full rebuild when answer hidden
         if (!ui.showAnswer) {
           container.querySelectorAll(".opt").forEach((el) => el.classList.remove("selected"));
@@ -3017,6 +3029,7 @@
   function renderSingle() {
     const q = currentQ();
     if (!q) return;
+    window.DaguanStudyActivity?.beginSingle(q.id);
     clearAiForQuestion(q);
     const p = progressOf(q.id);
     markSeen(q.id);
@@ -3050,8 +3063,9 @@
           const unchanged = state.selected.size === 1 && state.selected.has(L);
           if (unchanged && state.showAnswer) return;
           state.selected = new Set([L]);
-          state.showAnswer = true;
           if (!unchanged) markAnswered(q.id, ChoiceGrading.grade(q, state.selected), true);
+          if (previewPrivateAllowed(false)) window.DaguanStudyActivity?.reveal(q.id);
+          state.showAnswer = true;
           renderSingle();
           return;
         }
@@ -3061,6 +3075,7 @@
         } else {
           state.selected = new Set([L]);
         }
+        if (state.selected.has(L) && previewPrivateAllowed(false)) window.DaguanStudyActivity?.study(q.id, studyChapterDetails());
         renderSingle();
       });
       if (state.showAnswer && q.correct_labels && q.correct_labels.length) {
@@ -3224,6 +3239,7 @@
 
   function expandAllAnswers() {
     if (state.mode !== "list") {
+      if (previewPrivateAllowed(false)) window.DaguanStudyActivity?.reveal(currentQ()?.id);
       state.showAnswer = true;
       renderSingle();
       return;
@@ -3231,6 +3247,7 @@
     const cards = els.qFeed.querySelectorAll(".q-card");
     cards.forEach((card) => {
       const id = card.dataset.id;
+      if (previewPrivateAllowed(false)) window.DaguanStudyActivity?.reveal(id);
       const ui = cardState(id);
       ui.showAnswer = true;
       const q = state.queue.find((x) => String(x.id) === String(id));
@@ -3673,6 +3690,7 @@
   async function backupText() {
     const payload = buildProgressPayload();
     payload.visit_history = await window.DaguanVisitHistory.list();
+    payload.study_activity = await window.DaguanStudyActivity?.export();
     return JSON.stringify(payload, null, 2);
   }
 
@@ -4596,6 +4614,7 @@
     let bundle;
     try {
       bundle = parseProgressBundle(raw);
+      window.DaguanStudyActivity?.validateBackup(JSON.parse(raw).study_activity);
     } catch {
       toast("JSON 解析失败，请检查粘贴内容");
       return;
@@ -4622,6 +4641,8 @@
       try { await window.DaguanVisitHistory.merge(bundle.visitHistory); }
       catch { toast("进度已导入，但做题历史恢复失败，请重试导入"); return; }
     }
+    try { await window.DaguanStudyActivity?.restore(JSON.parse(raw).study_activity, bundle.progress || Object.fromEntries(Object.entries(bundle.map || {}).map(([id, mastery]) => [id, { mastery }]))); }
+    catch (error) { toast(`进度已导入，但战报恢复失败：${error.message}`); return; }
     if (n) toast(`已写入本地 ${n} 题`);
   }
 
@@ -5297,6 +5318,7 @@
       state.showAnswer = !state.showAnswer;
       const q = currentQ();
       if (q && state.showAnswer) {
+        if (previewPrivateAllowed(false)) window.DaguanStudyActivity?.reveal(q.id);
         const ok = gradeChoice(q, state.selected);
         if (ok != null) markAnswered(q.id, ok);
         else markSeen(q.id);

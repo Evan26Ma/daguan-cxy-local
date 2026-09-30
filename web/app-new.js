@@ -5,7 +5,7 @@
 
 // ========== 离线缓存注册（与 app2.js 一致） ==========
 if ("serviceWorker" in navigator && location.protocol !== "file:" && location.protocol !== "https:") {
-    navigator.serviceWorker.register("./service-worker.js?v=137").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=138").catch(() => {});
 }
 
 // ========== 全局状态 ==========
@@ -1615,6 +1615,7 @@ class UIRenderer {
             </div>
         `;
         if (showWelcome) localStorage.setItem('daguan_welcome_once_v2', '1');
+        window.DaguanStudyReport?.mount(document.querySelector('.home-grid'));
         App.refreshHomeSyncStatus();
     }
 
@@ -2173,6 +2174,7 @@ class UIRenderer {
 
         const question = AppState.questions[questionIndex];
         if (!question) return;
+        window.DaguanStudyActivity?.beginSingle(question.id);
 
         AppState.currentQuestionIndex = questionIndex;
 
@@ -2298,6 +2300,7 @@ class UIRenderer {
     }
 
     static renderMultiQuestions(activeIndex = AppState.currentQuestionIndex) {
+        window.DaguanStudyActivity?.beginFeed(AppState.questions.map(q => q.id));
         const main = document.getElementById('app-main');
         const aiSnapshot = this.captureAIPanel();
         const entries = DataService.chapterEntries(AppState.currentChapter);
@@ -4545,6 +4548,7 @@ class App {
         const answer = card?.querySelector('.answer-section');
         if (!answer) return;
         const expanded = button.getAttribute('aria-expanded') !== 'true';
+        if (expanded && PreviewAccess.privateAllowed(false)) window.DaguanStudyActivity?.reveal(card.dataset.questionId);
         answer.style.display = expanded ? 'block' : 'none';
         button.setAttribute('aria-expanded', String(expanded)); button.textContent = expanded ? '隐藏答案' : '显示答案';
     }
@@ -4552,6 +4556,7 @@ class App {
     static async toggleQuestionFavorite(id) {
         if (!PreviewAccess.privateAllowed()) return;
         const active = StorageService.toggleFavorite(id); StateSync.queueQuestion(id, { favorite: active });
+        if (active) window.DaguanStudyActivity?.favorite(id, 'manual', this.studyChapterDetails());
         document.querySelectorAll(`[data-question-id="${CSS.escape(String(id))}"] .multi-card-actions .action-btn:first-child`).forEach(btn => btn.classList.toggle('active', active));
         document.querySelectorAll(`.question-rail-item[data-question-id="${CSS.escape(String(id))}"]`).forEach(btn => btn.classList.toggle('favorite', active));
         this.filterQuestionRailItems();
@@ -4921,6 +4926,8 @@ document.getElementById('btn-dl').addEventListener('click', function () {
         try { visits = await window.DaguanVisitHistory.list(); }
         catch (error) { this.setToolStatus(`备份未开始：${error.message || '无法读取做题历史'}`, 'error'); return; }
         const payload = this.buildBackupPayload(visits);
+        try { payload.study_activity = await window.DaguanStudyActivity?.export(); }
+        catch (error) { this.setToolStatus(`备份未开始：${error.message}`, 'error'); return; }
         const d = new Date();
         const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
         const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
@@ -4981,9 +4988,12 @@ document.getElementById('btn-dl').addEventListener('click', function () {
     static async restoreBackup(input) {
         const file = input && input.files && input.files[0];
         if (!file) return;
-        let parsed;
+        let parsed, studyBackup;
         try {
-            parsed = this.parseBackupText(await file.text());
+            const text = await file.text();
+            parsed = this.parseBackupText(text);
+            studyBackup = JSON.parse(text).study_activity;
+            window.DaguanStudyActivity?.validateBackup(studyBackup);
         } catch (err) {
             this.setToolStatus(`恢复失败：${err.message || '无法读取该 JSON 文件'}（当前数据未改动）`, 'error');
             input.value = '';
@@ -5057,6 +5067,8 @@ document.getElementById('btn-dl').addEventListener('click', function () {
             try { await window.DaguanVisitHistory.merge(parsed.visitHistory); }
             catch (error) { this.setToolStatus(`进度已恢复，但做题历史导入失败：${error.message || '请重试'}`, 'error'); input.value = ''; return; }
         }
+        try { await window.DaguanStudyActivity?.restore(studyBackup, parsed.progress || Object.fromEntries(Object.entries(parsed.map || {}).map(([id, mastery]) => [id, { mastery }]))); }
+        catch (error) { this.setToolStatus(`进度已恢复，但战报恢复失败：${error.message}`, 'error'); input.value = ''; return; }
         if (AppState.currentView === 'records') UIRenderer.renderRecords();
         if (synced) {
             this.setToolStatus('恢复完成（本地与服务端已同步）', 'success');
@@ -5660,6 +5672,11 @@ document.getElementById('btn-dl').addEventListener('click', function () {
             const unchanged = previous.size === 1 && previous.has(label);
             AppState.answers[key] = new Set([label]);
             const ok = ChoiceGrading.grade(question, AppState.answers[key]);
+            if (!unchanged && PreviewAccess.privateAllowed(false)) {
+                window.DaguanStudyActivity?.answer(key, ok, true, this.studyChapterDetails());
+                if (!ok && !StorageService.isFavorite(key)) window.DaguanStudyActivity?.favorite(key, 'automatic', this.studyChapterDetails());
+            }
+            if (PreviewAccess.privateAllowed(false)) window.DaguanStudyActivity?.reveal(key);
             root.querySelectorAll('.option-item').forEach((item, i) => {
                 const optionLabel = ChoiceGrading.label(question, i);
                 const selected = optionLabel === label;
@@ -5692,6 +5709,7 @@ document.getElementById('btn-dl').addEventListener('click', function () {
             return;
         }
         if (question.type !== 'multiple_choice') {
+            if (PreviewAccess.privateAllowed(false)) window.DaguanStudyActivity?.study(key, this.studyChapterDetails());
             AppState.answers[key] = new Set([label]);
             root.querySelectorAll('.option-item').forEach((item, i) => {
                 const selected = i === index; item.classList.toggle('selected', selected);
@@ -5700,6 +5718,7 @@ document.getElementById('btn-dl').addEventListener('click', function () {
             return;
         }
         const selected = optionEl.classList.toggle('selected');
+        if (selected && PreviewAccess.privateAllowed(false)) window.DaguanStudyActivity?.study(key, this.studyChapterDetails());
         if (selected) AppState.answers[key].add(label); else AppState.answers[key].delete(label);
     }
 
@@ -5708,6 +5727,7 @@ document.getElementById('btn-dl').addEventListener('click', function () {
         const btn = document.getElementById('show-answer-btn');
 
         if (answerSection.style.display === 'none') {
+            if (PreviewAccess.privateAllowed(false)) window.DaguanStudyActivity?.reveal(AppState.questions[AppState.currentQuestionIndex]?.id);
             answerSection.style.display = 'block';
             btn.textContent = '隐藏答案';
 
@@ -5728,6 +5748,7 @@ document.getElementById('btn-dl').addEventListener('click', function () {
     static toggleFavorite(questionId) {
         if (!PreviewAccess.privateAllowed()) return;
         const isFav = StorageService.toggleFavorite(questionId);
+        if (isFav) window.DaguanStudyActivity?.favorite(questionId, 'manual', this.studyChapterDetails());
         const btn = event.currentTarget;
         btn.classList.toggle('active', isFav);
         StateSync.queueQuestion(questionId, { favorite: isFav });
@@ -5744,6 +5765,7 @@ document.getElementById('btn-dl').addEventListener('click', function () {
     static cycleMastery(questionId) {
         if (!PreviewAccess.privateAllowed()) return;
         const value = StorageService.cycleMastery(questionId);
+        if (['learning', 'mastered'].includes(value)) window.DaguanStudyActivity?.study(questionId, this.studyChapterDetails());
         StateSync.queueQuestion(questionId, { mastery: value });
         this.updateQuestionStateUI(questionId);
     }
@@ -5751,8 +5773,13 @@ document.getElementById('btn-dl').addEventListener('click', function () {
     static setQuestionMastery(questionId, mastery) {
         if (!questionId || !PreviewAccess.privateAllowed()) return;
         const value = StorageService.setMastery(questionId, mastery);
+        if (['learning', 'mastered'].includes(value)) window.DaguanStudyActivity?.study(questionId, this.studyChapterDetails());
         StateSync.queueQuestion(questionId, { mastery: value });
         this.updateQuestionStateUI(questionId);
+    }
+
+    static studyChapterDetails() {
+        return { chapter_id: AppState.currentChapter?.id, chapter_name: AppState.currentChapter?.name || AppState.currentChapter?.title || '未分类' };
     }
 
     static updateQuestionStateUI(questionId) {
