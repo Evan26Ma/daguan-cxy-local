@@ -108,6 +108,7 @@ contextBridge.exposeInMainWorld("daguanDesktop", Object.freeze({
   getStartup: () => ipcRenderer.invoke("daguan:startup:get"),
   setStartup: (enabled) => ipcRenderer.invoke("daguan:startup", Boolean(enabled)),
   getAppVersion: () => ipcRenderer.invoke("daguan:app:version"),
+  remoteAccess: (action, input) => ipcRenderer.invoke('daguan:remote', String(action), input),
 }));
 ipcRenderer.on("daguan:update-state", (_event, state) => {
   const value = String(state || "idle");

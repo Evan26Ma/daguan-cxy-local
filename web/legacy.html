@@ -8,6 +8,7 @@
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="stylesheet" href="./vendor/katex.min.css" />
     <link rel="stylesheet" href="./legacy.css?v=90" />
+  <link rel="stylesheet" href="./guides.css?v=1" />
   <link rel="stylesheet" href="./browser-retirement.css?v=1" />
   <script src="./ui-version.js?v=106"></script>
   <script src="./ui-bootstrap.js?v=1"></script>
@@ -433,11 +434,11 @@
       </div>
       <button type="button" class="icon-btn" data-close="dlg-tutorial" aria-label="关闭"><svg class="ui-icon"><use href="#icon-close"></use></svg></button>
     </div>
-    <p class="sheet-lead">日常只需要两个动作：双击启动脚本打开本地题库，刷完后按需点击“官网同步”。</p>
+    <p class="sheet-lead">从桌面快捷方式打开大观园，选择章节做题；需要同步时按页面内向导核对后确认。</p>
     <ol class="tutorial-steps">
       <li>
         <span class="tutorial-step-no">1</span>
-        <div><h3>一键启动本地题库</h3><p>Windows 双击仓库根目录的 <code>启动本地题库.cmd</code>，脚本会自动准备 Node.js、启动中控台并打开浏览器。Linux 可运行 <code>./scripts/install-linux.sh</code>。</p></div>
+        <div><h3>打开桌面版</h3><p>从桌面或开始菜单打开大观园。关闭窗口后程序可以留在托盘，学习记录由本地服务保存。</p></div>
       </li>
       <li>
         <span class="tutorial-step-no">2</span>
@@ -479,7 +480,7 @@
     <section class="sync-guide-section" aria-labelledby="sync-guide-first-title">
       <div class="sync-guide-heading"><span>首次配置</span><h3 id="sync-guide-first-title">只需要完成一次</h3></div>
       <ol class="tutorial-steps compact sync-guide-steps">
-        <li><span class="tutorial-step-no">1</span><div><strong>启动本地中控台</strong><p>Windows 双击 <code>启动本地题库.cmd</code>，浏览器打开后保持启动窗口运行。</p></div></li>
+        <li><span class="tutorial-step-no">1</span><div><strong>打开大观园</strong><p>从桌面或开始菜单启动应用，确认本地学习页面可以正常打开。</p></div></li>
         <li><span class="tutorial-step-no">2</span><div><strong>点击“同步进度”</strong><p>首次使用会自动进入配置页面。登录方式二选一：优先填写大观园登录码；没有登录码时填写官网账号和密码。</p></div></li>
         <li><span class="tutorial-step-no">3</span><div><strong>保存并测试读取</strong><p>点击“保存并登录”，再点击“测试读取”。测试阶段只读取官网掌握状态和收藏，不会修改官网。</p></div></li>
         <li><span class="tutorial-step-no">4</span><div><strong>首次同步官网数据</strong><p>点击“导入官网进度”。系统先备份浏览器、本地文件和官网快照，再把官网状态安全导入本地。</p></div></li>
@@ -665,6 +666,8 @@
     </section>
   </dialog>
 
+  <template id="cloudflare-dashboard-link"><a href="https://dash.cloudflare.com/" target="_blank" rel="noopener noreferrer">打开 Cloudflare 控制台 ↗</a></template>
+
   <dialog id="dlg-online-sync" class="sheet sheet-wide">
     <div class="sheet-head">
       <h2>官网同步</h2>
@@ -794,7 +797,9 @@
   <script defer src="./vendor/marked.min.js"></script>
   <script defer src="./vendor/katex.min.js"></script>
   <script defer src="./data-bank-client.js?v=1"></script>
-    <script defer src="./app-legacy.js?v=93"></script>
+    <script defer src="./visit-history-client.js?v=1"></script>
+    <script defer src="./app-legacy.js?v=97"></script>
+    <script defer src="./remote-access.js?v=1"></script>
   <script defer src="./browser-retirement.js?v=1"></script>
 </body>
 </html>

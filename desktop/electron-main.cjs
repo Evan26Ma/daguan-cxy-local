@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Menu, Tray, dialog, nativeImage, net, protocol, shell, session, ipcMain, autoUpdater } = require("electron");
+const { app, BrowserWindow, Menu, Tray, dialog, nativeImage, net, protocol, shell, session, ipcMain, autoUpdater, safeStorage } = require("electron");
 if (require("electron-squirrel-startup")) app.quit();
 const fs = require("node:fs/promises");
 const netNode = require("node:net");
@@ -6,6 +6,8 @@ const path = require("node:path");
 const { spawn } = require("node:child_process");
 const { pathToFileURL } = require("node:url");
 const { createDesktopUpdater } = require("./updater.cjs");
+const { createRemoteGateway } = require("./remote-gateway.cjs");
+const { createTunnelManager } = require("./cloudflare-tunnel.cjs");
 
 
 app.setAppUserModelId("com.squirrel.DaguanMathDesktop.DaguanMath");
@@ -21,6 +23,15 @@ let policy, lock, owner, serverChild = null, mainWindow = null, tray = null, upd
 let ownsService = false, quitting = false, quitPromise = null, startupEnabled = false;
 let revisionPollTimer = null, lastServiceRevision = null;
 let updateMenuReady = false;
+let remoteGateway = null, remoteTunnel = null;
+const hasSingleInstanceLock = app.requestSingleInstanceLock();
+if (!hasSingleInstanceLock) app.quit();
+else app.on("second-instance", () => {
+  if (!mainWindow || mainWindow.isDestroyed()) return;
+  if (mainWindow.isMinimized()) mainWindow.restore();
+  mainWindow.show();
+  mainWindow.focus();
+});
 
 function dataDirectory() {
   const base = process.env.LOCALAPPDATA || path.join(app.getPath("home"), "AppData", "Local");
@@ -148,7 +159,12 @@ async function switchUi(ui) {
     return await mainWindow.webContents.executeJavaScript("(async()=>{const switcher=" + method + ";if(typeof switcher!==\"function\")return false;await switcher(" + JSON.stringify(target) + ");return true})()", true);
   } catch { return false; }
 }
-function validIpc(event) { return mainWindow && event.sender === mainWindow.webContents && policy.isTrustedAppUrl(event.sender.getURL()); }
+function validIpc(event) { return mainWindow && event.sender === mainWindow.webContents && event.senderFrame === mainWindow.webContents.mainFrame && policy.isTrustedAppUrl(event.sender.getURL()); }
+async function remoteStatus() {
+  const result = { ...remoteTunnel.status(), passwordSet: remoteGateway.hasPassword(), serviceOnline: false };
+  try { result.serviceOnline = (await fetch(serviceEndpoint() + '/api/health', { signal: AbortSignal.timeout(1200) })).ok; } catch {}
+  return result;
+}
 async function pollServiceRevision() {
   if (quitting || !owner) return;
   try {
@@ -196,6 +212,8 @@ async function stopOwnedServiceForRestart() {
 }
 async function installDownloadedUpdate() {
   if (!updater?.getState().updateDownloaded || quitting) return false;
+  await remoteTunnel?.stop();
+  await remoteGateway?.stop();
   quitting = true;
   if (revisionPollTimer) clearTimeout(revisionPollTimer);
   if (tray) { tray.destroy(); tray = null; }
@@ -256,6 +274,8 @@ async function requestQuit() {
     const detail = ownsService ? "本次桌面版启动了共享服务。退出后，浏览器中打开的学习页会暂时断开；重新打开任一学习页会自动恢复服务。请先完成页面提示的保存操作。" : "当前浏览器服务由其他窗口启动，会继续运行。请先完成页面提示的保存操作。";
     const result = await dialog.showMessageBox(mainWindow, { type: "warning", buttons: ["取消", "退出大观园"], defaultId: 0, cancelId: 0, title: "退出大观园", message: "确定退出吗？", detail });
     if (result.response !== 1) { quitPromise = null; return false; }
+    await remoteTunnel?.stop();
+    await remoteGateway?.stop();
     quitting = true; if (tray) { tray.destroy(); tray = null; }
     if (policy.shouldStopService({ owned: ownsService, confirmed: true }) && serverChild && serverChild.exitCode === null) {
       const child = serverChild;
@@ -284,11 +304,26 @@ async function requestQuit() {
 }
 
 app.whenReady().then(async () => {
+  if (!hasSingleInstanceLock) return;
   policy = await import(pathToFileURL(path.join(__dirname, "policy.mjs")).href);
   app.setAppUserModelId("com.squirrel.DaguanMathDesktop.DaguanMath");
   startupEnabled = app.getLoginItemSettings().openAtLogin;
   try { await connectOrStartService(); }
   catch (error) { await dialog.showMessageBox({ type: "error", title: "本地服务启动失败", message: error.message, buttons: ["退出"] }); app.quit(); return; }
+  try {
+    const userData = app.getPath('userData');
+    let savedPort = 0;
+    try { const saved = JSON.parse(await fs.readFile(path.join(userData, 'remote-tunnel.json'), 'utf8')); if (saved.version === 1 && Number.isInteger(saved.port) && saved.port > 0 && saved.port < 65536) savedPort = saved.port; }
+    catch (error) { if (error.code !== 'ENOENT') throw error; }
+    remoteGateway = createRemoteGateway({ authFile: path.join(userData, 'remote-auth.json'), upstream: serviceEndpoint, port: savedPort, getMode: () => remoteTunnel?.status().mode || 'off' });
+    await remoteGateway.init();
+    remoteTunnel = createTunnelManager({ userData, gateway: remoteGateway,
+      encrypt: value => { if (!safeStorage.isEncryptionAvailable()) throw Error('系统加密存储不可用，无法保存 Tunnel 令牌'); return safeStorage.encryptString(value); },
+      decrypt: bytes => safeStorage.decryptString(bytes),
+    });
+    await remoteTunnel.init();
+    if (remoteTunnel.namedEnabled()) void remoteTunnel.startNamed().catch(error => console.error('固定地址启动失败：', error.message));
+  } catch (error) { console.error('外网访问初始化失败：', error.message); }
   protocol.handle("daguan", serveAppRequest);
   session.defaultSession.on("will-download", (event, item, webContents) => {
     if (!mainWindow || webContents !== mainWindow.webContents) { event.preventDefault(); item.cancel(); return; }
@@ -316,6 +351,22 @@ app.whenReady().then(async () => {
   ipcMain.handle("daguan:update:install", (event) => validIpc(event) && updater ? updater.installDownloadedUpdate() : false);
   ipcMain.handle("daguan:startup", (event, enabled) => { if (!validIpc(event)) return false; setStartup(enabled); return startupEnabled; });
   ipcMain.handle("daguan:startup:get", (event) => validIpc(event) && startupEnabled);
+  ipcMain.handle('daguan:remote', async (event, action, input) => {
+    if (!validIpc(event) || !remoteGateway || !remoteTunnel) return { error: '仅可在本机桌面版管理外网访问' };
+    try {
+      if (action === 'status') return remoteStatus();
+      if (action === 'password') await remoteGateway.setPassword(input?.password, input?.oldPassword);
+      else if (action === 'revoke') await remoteGateway.revokeSessions();
+      else if (action === 'quick:start') await remoteTunnel.startQuick();
+      else if (action === 'stop') await remoteTunnel.stop();
+      else if (action === 'named:setup') await remoteTunnel.setupNamed(input || {});
+      else if (action === 'named:disable') await remoteTunnel.disableNamed();
+      else if (action === 'named:enable') await remoteTunnel.enableNamed();
+      else if (action === 'download') await remoteTunnel.download();
+      else return { error: '未知操作' };
+      return remoteStatus();
+    } catch (error) { return { ...(await remoteStatus()), operationError: error.message }; }
+  });
   makeTray(); createWindow();
   updater = createDesktopUpdater({
     app, autoUpdater,
@@ -326,5 +377,5 @@ app.whenReady().then(async () => {
   app.on("activate", () => { if (!mainWindow) createWindow(); else { mainWindow.show(); mainWindow.focus(); } });
 }).catch((error) => { console.error(error); app.quit(); });
 
-app.on("before-quit", (event) => { if (!quitting) { event.preventDefault(); void requestQuit(); } else if (revisionPollTimer) clearTimeout(revisionPollTimer); });
+app.on("before-quit", (event) => { if (!hasSingleInstanceLock) return; if (!quitting) { event.preventDefault(); void requestQuit(); } else if (revisionPollTimer) clearTimeout(revisionPollTimer); });
 app.on("before-quit-for-update", () => { quitting = true; updater?.stop(); if (revisionPollTimer) clearTimeout(revisionPollTimer); });

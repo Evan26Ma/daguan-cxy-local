@@ -11,6 +11,7 @@ import { applyLocalChanges, buildPullMerge, buildReconcilePlan, localToAndroidDo
 import { createAiService } from "./ai-service.mjs";
 import { acquireServiceInstance, serviceOwnerUrl, SERVICE_API_PROTOCOL, waitForServiceOwner } from "./instance-lock.mjs";
 import { createQuestionBankUpdater } from "./question-bank-updater.mjs";
+import { createVisitHistory } from "./visit-history.mjs";
 
 const ROOT = path.resolve(process.env.DAGUAN_ROOT_DIR || path.resolve(path.dirname(fileURLToPath(import.meta.url)), ".."));
 const WEB_ROOT = path.resolve(process.env.DAGUAN_WEB_ROOT || path.join(ROOT, "web"));
@@ -25,6 +26,7 @@ const PREVIEW_COOKIE = "daguan_preview_access";
 const PREVIEW_TTL_SECONDS = 60 * 60 * 24 * 365;
 
 const store = createStore(ROOT, process.env.DAGUAN_DATA_DIR);
+const visitHistory = createVisitHistory(store.dataDir, () => store.readState());
 const client = new CxyonlyClient({
   store,
   baseUrl: process.env.DAGUAN_BASE_URL || "https://www.cxyonly.fans",
@@ -83,7 +85,7 @@ function hasPreviewAccess(req) {
 }
 
 function privateApiPath(pathname) {
-  return pathname === "/api/state" || pathname.startsWith("/api/state/") || pathname.startsWith("/api/ai/") || pathname.startsWith("/api/integrations/cxyonly/");
+  return pathname === "/api/state" || pathname.startsWith("/api/state/") || pathname.startsWith("/api/visit-history") || pathname.startsWith("/api/ai/") || pathname.startsWith("/api/integrations/cxyonly/");
 }
 
 function requirePreviewAccess(req, res) {
@@ -128,6 +130,12 @@ async function writeState(value, options) {
     try { response.write(event); } catch { stateEventClients.delete(response); }
   }
   return saved;
+}
+
+function broadcastHistory() {
+  for (const response of stateEventClients) {
+    try { response.write("event: visit-history\ndata: {}\n\n"); } catch { stateEventClients.delete(response); }
+  }
 }
 
 function openBrowser(url) {
@@ -389,6 +397,11 @@ async function route(req, res) {
     return task ? json(res, 200, task) : json(res, 404, { ok: false, error: "题库刷新任务不存在" });
   }
   if (privateApiPath(pathname) && !requirePreviewAccess(req, res)) return;
+  if (pathname === "/api/visit-history" && method === "GET") return json(res, 200, { ok: true, entries: await visitHistory.list() });
+  if (pathname === "/api/visit-history" && method === "POST") { const entry = await visitHistory.visit(await body(req)); broadcastHistory(); return json(res, 200, { ok: true, entry }); }
+  if (pathname === "/api/visit-history" && method === "DELETE") { await visitHistory.clear(); broadcastHistory(); return json(res, 200, { ok: true }); }
+  if (pathname === "/api/visit-history/merge" && method === "POST") { const count = await visitHistory.merge((await body(req)).entries); broadcastHistory(); return json(res, 200, { ok: true, count }); }
+  if (pathname.startsWith("/api/visit-history/") && method === "DELETE") { await visitHistory.remove(pathname.slice("/api/visit-history/".length)); broadcastHistory(); return json(res, 200, { ok: true }); }
   if (pathname === "/api/state/events" && method === "GET") {
     res.writeHead(200, {
       "Content-Type": "text/event-stream; charset=utf-8",

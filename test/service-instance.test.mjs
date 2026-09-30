@@ -167,6 +167,23 @@ test("桌面版优雅接管浏览器服务，原端口和学习记录保持可�
   assert.equal((await jsonRequest(port, "/api/state")).value.progress["31006"].favorite, true);
 });
 
+test("共享服务的做题历史接口按题去重并支持删除与清空", async () => {
+  const dataDir = await tempDataDir();
+  const port = await unusedPort();
+  const child = startServer(dataDir, port, "desktop");
+  await waitReady(child, port);
+  const visits = await Promise.all(Array.from({ length: 12 }, (_, index) => jsonRequest(port, "/api/visit-history", {
+    method: "POST", body: { question_id: String(index % 3 + 1), category_id: "223", chapter_id: "601", visited_at: new Date(Date.now() + index).toISOString() },
+  })));
+  assert.ok(visits.every(result => result.status === 200));
+  assert.equal((await jsonRequest(port, "/api/visit-history")).value.entries.length, 3);
+  assert.equal((await jsonRequest(port, "/api/visit-history/2", { method: "DELETE" })).status, 200);
+  assert.equal((await jsonRequest(port, "/api/visit-history")).value.entries.length, 2);
+  assert.equal((await jsonRequest(port, "/api/visit-history", { method: "DELETE" })).status, 200);
+  assert.equal((await jsonRequest(port, "/api/visit-history")).value.entries.length, 0);
+  await stop(child);
+});
+
 test("旧浏览器进程只有身份与 Windows 映像都匹配时才可识别", async () => {
   const owner = { pid: 123, port: 8080, instanceId: "legacy", apiProtocol: 1 };
   const health = { service: "daguan-local-console", pid: 123, instanceId: "legacy", apiProtocol: 1 };

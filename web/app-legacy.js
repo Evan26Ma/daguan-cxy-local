@@ -1,8 +1,8 @@
 (() => {
   "use strict";
 
-  if ("serviceWorker" in navigator && location.protocol !== "file:") {
-    navigator.serviceWorker.register("./service-worker.js?v=121").catch(() => {});
+  if ("serviceWorker" in navigator && location.protocol !== "file:" && location.protocol !== "https:") {
+    navigator.serviceWorker.register("./service-worker.js?v=122").catch(() => {});
   }
 
   const DATA = "./data";
@@ -1007,6 +1007,11 @@
   }
 
   function connectStateEvents() {
+    if (location.protocol === 'https:') {
+      const timer = setInterval(() => { if (document.visibilityState === 'visible') void refreshStateFromServerEvent(); }, 5000);
+      window.addEventListener('pagehide', () => clearInterval(timer), { once: true });
+      return;
+    }
     if (stateEventSource || !window.EventSource || !previewPrivateAllowed(false)) return;
     stateEventSource = new EventSource("./api/state/events");
     stateEventSource.onopen = () => {
@@ -1404,6 +1409,7 @@
   }
 
   function setView(name) {
+    if (name !== "home") $("#legacy-welcome-card")?.remove();
     if (name !== "browse" && state.chapterMenuOpen) closeChapterMenu({ restoreFocus: false });
     state.view = name;
     els.home.classList.toggle("hidden", name !== "home");
@@ -1986,6 +1992,10 @@
     else if (/(真题|历年)/.test(src) || (exam && y)) srcType = "真题";
     return { exam, src: srcType, year: y ? Number(y[0]) : null, type: String(q.type || "").trim() };
   }
+  function isRealExamQuestion(q) {
+    return /历年真题/.test(String(q?.category_path || ""))
+      || /(?:19|20)\d{2}\s*(?:年)?\s*(?:数学|数)[一二三]/.test(String(q?.source || ""));
+  }
   function advFilterActive() {
     const f = state.advFilter || {};
     return Object.values(f).some((arr) => (arr || []).length);
@@ -2222,10 +2232,7 @@
   function filterQuestions(qs) {
     return qs.filter((q) => {
       if ((state.filterCore || state.scope === "core") && !q.is_core) return false;
-      if (state.scope === "real") {
-        const source = `${q.source || ""} ${q.year || ""} ${q.category || ""}`;
-        if (!/(真题|历年|模拟卷|数一|数二|数三)/.test(source)) return false;
-      }
+      if (state.scope === "real" && !isRealExamQuestion(q)) return false;
       if (state.filterTodo) {
         const p = progressOf(q.id);
         if (p.mastery === "mastered") return false;
@@ -2342,6 +2349,18 @@
     renderHeroProgress();
     renderActivityHeatmap();
     updateStats();
+  }
+
+  function showLegacyWelcomeOnce() {
+    if (localStorage.getItem("daguan_welcome_once_v2") === "1") return;
+    localStorage.setItem("daguan_welcome_once_v2", "1");
+    const card = document.createElement("section");
+    card.className = "guide-card-entry home-welcome";
+    card.id = "legacy-welcome-card";
+    card.innerHTML = `<div><strong>欢迎来到大观园</strong><p>先从科目选一章做题；需要时打开页面内教程。</p></div><div class="guide-actions"><button type="button" class="btn primary" id="legacy-welcome-guide">查看教程</button><button type="button" class="btn" id="legacy-welcome-dismiss">我先自己看看</button></div>`;
+    els.home.prepend(card);
+    card.querySelector("#legacy-welcome-guide").addEventListener("click", () => openFeaturePage("usage-guide"));
+    card.querySelector("#legacy-welcome-dismiss").addEventListener("click", () => card.remove());
   }
 
   function renderActivityHeatmap() {
@@ -2589,6 +2608,7 @@
       if (i >= 0) state.index = i;
     }
     clearAiForQuestion(state.queue[state.index] || null);
+    recordCurrentVisit();
 
     setView("browse");
     applyModeUI();
@@ -2616,6 +2636,21 @@
     } else {
       renderSingle();
     }
+    let historyScrollTimer;
+    els.main.onscroll = () => {
+      if (state.view !== "browse" || state.mode !== "list") return;
+      clearTimeout(historyScrollTimer);
+      historyScrollTimer = setTimeout(() => {
+        const cards = [...els.qFeed.querySelectorAll(".q-card")];
+        const top = els.main.getBoundingClientRect().top + 100;
+        const card = cards.filter(item => item.getBoundingClientRect().top <= top).at(-1) || cards[0];
+        const index = card ? state.queue.findIndex(question => String(question.id) === card.dataset.id) : -1;
+        if (index < 0 || index === state.index) return;
+        state.index = index;
+        recordCurrentVisit();
+        queueLastStudyPosition();
+      }, 180);
+    };
 
     if (window.innerWidth <= 900) els.sidebar.classList.remove("open");
     window.scrollTo({ top: 0, behavior: "instant" in window ? "instant" : "auto" });
@@ -2624,6 +2659,11 @@
 
   function currentQ() {
     return state.queue[state.index] || null;
+  }
+
+  function recordCurrentVisit() {
+    const question = currentQ();
+    if (question) void window.DaguanVisitHistory?.visit(question.id, state.currentCatId == null ? null : state.chapterPathIds?.[0] || null, state.currentCatId);
   }
 
   /* ---------- LIST MODE ---------- */
@@ -2805,6 +2845,7 @@
     focusBtn.title = "在沉浸模式中打开本题";
     focusBtn.addEventListener("click", () => {
       state.index = index;
+      recordCurrentVisit();
       setMode("single");
     });
 
@@ -3065,6 +3106,7 @@
       else if (p.seen || p.answered) b.classList.add("done");
       b.addEventListener("click", () => {
         state.index = i;
+        recordCurrentVisit();
         state.showAnswer = false;
         state.selected = new Set();
         renderSingle();
@@ -3097,6 +3139,7 @@
     }
     if (next < 0 || next >= state.queue.length) return;
     state.index = next;
+    recordCurrentVisit();
     state.showAnswer = false;
     state.selected = new Set();
     renderSingle();
@@ -3318,6 +3361,12 @@
 
   function renderFeaturePage(kind) {
     if (!els.feature) return;
+    const inlineSync = $("#dlg-online-sync");
+    if (inlineSync?.parentElement === els.feature || inlineSync?.closest("#view-feature")) {
+      inlineSync.removeAttribute("open");
+      inlineSync.classList.remove("legacy-sync-inline");
+      document.body.appendChild(inlineSync);
+    }
     const buckets = progressBuckets();
     const favoriteCount = state.favorites.size;
     const total = state.manifest?.total || 0;
@@ -3366,12 +3415,18 @@
         `<button type="button" class="btn" id="feature-records-home">回到学习区</button>`,
         `<section class="feature-panel"><div class="feature-stat-grid three">${featureStat("已作答", String(Object.keys(state.progress).length), "道题", "trend")}${featureStat("已掌握", String(buckets.mastered.length), "道题", "flame")}${featureStat("连续学习", buckets.mastered.length || buckets.learning.length ? "进行中" : "待开始", "学习状态", "calendar")}</div><div class="empty-state compact"><p>更详细的每日记录会随着刷题自动积累。</p></div></section>`
       );
+    } else if (kind === "usage-guide") {
+      html = featureShell("使用教程", "选一个任务，边看边操作。", "", `<div class="guide-page legacy-guide-page"><nav class="guide-step-nav" aria-label="教程任务"><button data-legacy-guide="usage" data-step="1">1 选题做题</button><button data-legacy-guide="usage" data-step="2">2 复习与批注</button><button data-legacy-guide="usage" data-step="3">3 备份与同步</button></nav><button class="btn" id="legacy-usage-restart">从头再看</button><section class="guide-panel" data-legacy-panel="usage" data-step="1"><h2>找到一章开始练习</h2><p>从首页选择科目，打开章节与小节。做完一题再展开答案和解析；有视频的题目还能查看讲解。</p><button class="btn primary" id="legacy-guide-library">去选题</button></section><section class="guide-panel" data-legacy-panel="usage" data-step="2"><h2>标记并回看</h2><p>在题目中收藏、标记易错或掌握，写下批注；再从收藏本、错题复测和题目笔记回看。</p><button class="btn primary" id="legacy-guide-review">去收藏本</button></section><section class="guide-panel" data-legacy-panel="usage" data-step="3"><h2>备份后再同步</h2><p>在进度工具下载 JSON 备份；官网同步会先读取并展示两边变化，你确认后才写入。</p><button class="btn primary" id="legacy-guide-sync">打开官网同步向导</button><button class="btn" id="legacy-guide-backup">打开本机备份</button></section></div>`);
+    } else if (kind === "sync-guide") {
+      html = featureShell("官网同步向导", "登录、只读检查、核对变化、手动确认。你的进度不会自动上传。", "", `<div class="guide-page legacy-guide-page" id="legacy-sync-inline"><nav class="guide-step-nav" aria-label="官网同步步骤"><button data-legacy-guide="sync" data-step="1">1 登录</button><button data-legacy-guide="sync" data-step="2">2 只读检查</button><button data-legacy-guide="sync" data-step="3">3 核对变化</button><button data-legacy-guide="sync" data-step="4">4 确认写入</button></nav><button class="btn" id="legacy-sync-restart">从头再看</button><p id="legacy-sync-step-note" role="status"></p><section class="guide-panel" data-legacy-panel="sync" data-step="1"><h2>登录官网</h2><p>登录信息只交给本机服务。登录码方式只填第一项；账号密码方式填写后两项。</p><div class="remote-form-grid"><label>登录码<input id="legacy-sync-code" type="password" autocomplete="one-time-code"></label><label>账号<input id="legacy-sync-user" type="text" autocomplete="username"></label><label>密码<input id="legacy-sync-pass" type="password" autocomplete="current-password"></label></div><button class="btn primary" id="legacy-sync-login">保存并验证登录</button><p id="legacy-sync-login-status" role="status"></p></section><section class="guide-panel" data-legacy-panel="sync" data-step="2"><h2>只读检查两边进度</h2><p>点击下方「检查同步内容」会读取本地和官网状态；此时不会写入。首次同步也先走这一步。</p></section><section class="guide-panel" data-legacy-panel="sync" data-step="3"><h2>核对变化与冲突</h2><p>展开章节和题号明细，检查更新方向。若有冲突，可在高级选项更改策略并重新检查。</p><button class="btn primary" id="legacy-sync-reviewed">已核对，下一步</button></section><section class="guide-panel" data-legacy-panel="sync" data-step="4"><h2>确认写入</h2><p>只有点击「确认同步」才会应用。同步前会保留快照；失败后重新检查再试。</p></section><div id="legacy-sync-mount"></div></div>`);
+    } else if (kind === "remote-guide") {
+      html = featureShell("外网浏览器访问", "在自己的手机或电脑上使用同一份学习记录。关闭窗口留在托盘时继续，退出应用即断开。", "", `<div class="guide-page legacy-guide-page"><div class="guide-card-entry"><div><strong>先保护访问入口</strong><p>设置至少 12 位外网访问密码，再开启临时地址或配置固定域名。</p></div><div class="guide-actions"><input id="legacy-remote-password" type="password" placeholder="新访问密码" autocomplete="new-password" aria-label="新访问密码"><input id="legacy-remote-old-password" type="password" placeholder="修改时输入原密码" autocomplete="current-password" aria-label="原密码"><button class="btn" id="legacy-remote-save-password">设置 / 修改密码</button><button class="btn" id="legacy-remote-revoke">撤销全部登录</button></div></div><div class="guide-card-entry"><div><strong>临时随机地址</strong><p>开启后会验证公网登录页，验证通过才显示可复制地址。</p></div><div class="guide-actions"><button class="btn primary" id="legacy-remote-quick">开启临时地址</button><button class="btn" id="legacy-remote-stop">断开连接</button><a id="legacy-remote-url" target="_blank" rel="noopener noreferrer" hidden></a></div></div><nav class="guide-step-nav" aria-label="固定域名配置步骤"><button data-legacy-guide="remote" data-step="1">1 接入域名</button><button data-legacy-guide="remote" data-step="2">2 准备令牌</button><button data-legacy-guide="remote" data-step="3">3 创建并检查</button><button data-legacy-guide="remote" data-step="4">4 取得地址</button></nav><button class="btn" id="legacy-remote-restart">从头再看</button><section class="guide-panel" data-legacy-panel="remote" data-step="1"><h2>接入自己的域名</h2><p>由你购买域名并添加到 Cloudflare。按照控制台给出的名称服务器，到购买平台修改 NS；Cloudflare 显示「活动」后继续。</p><div class="guide-diagram"><span>域名购买平台<br><small>修改 NS</small></span><b>→</b><span>Cloudflare<br><small>状态：活动</small></span><b>→</b><span>大观园<br><small>下一步连接</small></span></div><span id="legacy-cloudflare-link-slot"></span><label class="guide-check"><input id="legacy-domain-ready" type="checkbox">我已看到域名状态为「活动」</label><button class="btn primary" id="legacy-domain-next">下一步</button></section><section class="guide-panel" data-legacy-panel="remote" data-step="2"><h2>准备限权 API 令牌</h2><ol><li>账户首页复制 Account ID；域名概览复制 Zone ID。</li><li>在 API 令牌创建自定义令牌，只给 Account · Cloudflare Tunnel · Edit 和 Zone · DNS · Edit，区域限定为该域名。</li><li>令牌只用于本次创建，不长期保存。请勿使用 Global API Key。</li></ol><button class="btn primary" id="legacy-token-next">下一步</button></section><section class="guide-panel" data-legacy-panel="remote" data-step="3"><h2>创建并检查</h2><p>下方显示创建 Tunnel、设置路由、添加 DNS 和公网验证的真实阶段。</p><div class="remote-form-grid"><label>你接入的域名<input id="legacy-remote-zone" placeholder="example.com"></label><label>想用的子域名<input id="legacy-remote-subdomain" placeholder="study"></label><label>Account ID<input id="legacy-remote-account-id" placeholder="从账户首页复制"></label><label>Zone ID<input id="legacy-remote-zone-id" placeholder="从域名概览复制"></label><label class="remote-token-field">限权 API 令牌<input id="legacy-remote-api-token" type="password" placeholder="本次创建后不保存" autocomplete="off"></label></div><div class="guide-actions"><button class="btn primary" id="legacy-remote-setup">创建固定地址</button><button class="btn" id="legacy-remote-download">下载 cloudflared</button><button class="btn" id="legacy-remote-recheck">重新检查</button></div></section><section class="guide-panel" data-legacy-panel="remote" data-step="4"><h2>取得地址与管理连接</h2><p id="legacy-remote-result">正在检查配置…</p><div class="guide-actions"><a class="btn primary" id="legacy-remote-named-url" target="_blank" rel="noopener noreferrer" hidden>打开固定地址</a><button class="btn" id="legacy-remote-enable">连接 / 恢复</button><button class="btn" id="legacy-remote-disable">停用</button></div><p>停用只断开本机连接，Cloudflare 上的 Tunnel 和 DNS 保留。</p></section><div class="guide-stage" id="legacy-remote-stage" role="status" aria-live="polite">等待操作</div></div>`);
     } else {
       html = featureShell(
         "工具区",
         "把题库之外的准备工作，收进一个清爽的工作台。",
         "",
-        `<div class="tool-card-grid"><button type="button" class="tool-card" id="feature-open-tutorial"><span>${iconMarkup("book")}</span><strong>使用教程</strong><small>了解本地题库的基本操作</small></button><button type="button" class="tool-card" id="feature-open-sync-guide"><span>${iconMarkup("book")}</span><strong>官网同步教程</strong><small>首次连接与日常同步的完整步骤</small></button><button type="button" class="tool-card" id="feature-open-sync"><span>${iconMarkup("cloud-upload")}</span><strong>打开同步中心</strong><small>检查变化并确认同步</small></button><button type="button" class="tool-card" id="feature-open-appearance"><span>${iconMarkup("palette")}</span><strong>界面设置</strong><small>调整主题、背景和阅读体验</small></button></div>`
+        `<div class="tool-card-grid"><button type="button" class="tool-card" id="feature-open-tutorial"><span>${iconMarkup("book")}</span><strong>使用教程</strong><small>按任务一步步操作</small></button><button type="button" class="tool-card" id="feature-open-sync-guide"><span>${iconMarkup("book")}</span><strong>官网同步向导</strong><small>登录、检查、核对并确认</small></button><button type="button" class="tool-card" id="feature-open-remote"><span>${iconMarkup("cloud-upload")}</span><strong>外网访问向导</strong><small>临时地址与固定域名</small></button><button type="button" class="tool-card" id="feature-open-appearance"><span>${iconMarkup("palette")}</span><strong>界面设置</strong><small>调整主题、背景和阅读体验</small></button></div>`
       );
     }
 
@@ -3407,11 +3462,114 @@
     }
     if (kind === "learning-records") $("#feature-records-home")?.addEventListener("click", goHome);
     if (kind === "tools") {
-      $("#feature-open-tutorial")?.addEventListener("click", () => openSheet("dlg-tutorial"));
-      $("#feature-open-sync-guide")?.addEventListener("click", (event) => openSheet("dlg-sync-guide", event.currentTarget));
-      $("#feature-open-sync")?.addEventListener("click", () => $("#btn-online-sync")?.click());
+      $("#feature-open-tutorial")?.addEventListener("click", () => openFeaturePage("usage-guide"));
+      $("#feature-open-sync-guide")?.addEventListener("click", () => openFeaturePage("sync-guide"));
+      $("#feature-open-remote")?.addEventListener("click", () => openFeaturePage("remote-guide"));
       $("#feature-open-appearance")?.addEventListener("click", () => openSheet("dlg-appearance"));
     }
+    if (kind === "usage-guide" || kind === "sync-guide" || kind === "remote-guide") {
+      const guide = kind === "usage-guide" ? "usage" : kind === "sync-guide" ? "sync" : "remote";
+      if (guide === "remote") els.feature.querySelector(".legacy-guide-page").dataset.firstOpen = String(localStorage.getItem("daguan_legacy_remote_step_v1") === null);
+      els.feature.querySelectorAll(`[data-legacy-guide="${guide}"]`).forEach(button => button.addEventListener("click", () => setLegacyGuideStep(guide, Number(button.dataset.step))));
+      setLegacyGuideStep(guide, Number(localStorage.getItem(`daguan_legacy_${guide}_step_v1`)) || 1);
+    }
+    if (kind === "usage-guide") {
+      $("#legacy-usage-restart")?.addEventListener("click", () => setLegacyGuideStep("usage", 1));
+      $("#legacy-guide-library")?.addEventListener("click", () => { state.crumb = "选择一个小节"; setView("browse"); applyMode("list"); openChapterMenu(); legacyGuideFocus("#chapter-menu"); });
+      $("#legacy-guide-review")?.addEventListener("click", () => { openFeaturePage("favorites"); legacyGuideFocus("#feature-open-favorites"); });
+      $("#legacy-guide-sync")?.addEventListener("click", () => { openFeaturePage("sync-guide"); legacyGuideFocus("#legacy-sync-login"); });
+      $("#legacy-guide-backup")?.addEventListener("click", () => { refreshSyncStats(); openSheet("dlg-sync"); legacyGuideFocus("#btn-download-progress"); });
+    }
+    if (kind === "sync-guide") {
+      const dialog = $("#dlg-online-sync");
+      $("#legacy-sync-mount")?.appendChild(dialog);
+      dialog.classList.add("legacy-sync-inline");
+      dialog.setAttribute("open", "");
+      $("#legacy-sync-restart")?.addEventListener("click", () => setLegacyGuideStep("sync", 1));
+      $("#legacy-sync-reviewed")?.addEventListener("click", () => setLegacyGuideStep("sync", 4));
+      $("#legacy-sync-login")?.addEventListener("click", async () => {
+        const code = $("#legacy-sync-code").value.trim(), username = $("#legacy-sync-user").value.trim(), password = $("#legacy-sync-pass").value;
+        const feedback = $("#legacy-sync-login-status");
+        if (!code && !(username && password)) { feedback.textContent = "请输入登录码，或同时填写账号和密码。"; return; }
+        feedback.textContent = "正在验证登录…";
+        try { await syncRequest("login", { code, username, password }); $("#legacy-sync-code").value = ""; $("#legacy-sync-pass").value = ""; feedback.textContent = "登录成功。"; setLegacyGuideStep("sync", 2); refreshHomeSyncCard(); }
+        catch (error) { feedback.textContent = `登录失败：${error.message || String(error)}`; }
+      });
+      void syncRequest("status").then(status => { if (!status.authenticated) setLegacyGuideStep("sync", 1); else if (!reconcilePreview && Number(localStorage.getItem("daguan_legacy_sync_step_v1")) > 2) setLegacyGuideStep("sync", 2); }).catch(error => { $("#legacy-sync-step-note").textContent = `连接检查失败：${error.message || String(error)}`; });
+    }
+    if (kind === "remote-guide") bindLegacyRemoteGuide();
+  }
+
+  function bindLegacyRemoteGuide() {
+    const api = window.daguanDesktop?.remoteAccess;
+    const stage = $("#legacy-remote-stage");
+    $("#legacy-cloudflare-link-slot")?.replaceChildren($("#cloudflare-dashboard-link")?.content.cloneNode(true));
+    $("[data-legacy-panel='remote'][data-step='2'] h2")?.insertAdjacentHTML("afterend", '<div class="guide-diagram guide-diagram-stacked"><span>账户首页 <strong>Account ID</strong></span><span>域名概览 <strong>Zone ID</strong></span><span>API 令牌 <strong>仅本次使用</strong></span></div>');
+    $("[data-legacy-panel='remote'][data-step='3'] h2")?.insertAdjacentHTML("afterend", '<div class="guide-diagram remote-stage-diagram"><span data-legacy-phase="tunnel">创建 Tunnel</span><span data-legacy-phase="route">设置路由</span><span data-legacy-phase="dns">添加 DNS</span><span data-legacy-phase="probe">验证公网登录页</span></div>');
+    $("[data-legacy-panel='remote'][data-step='4'] h2")?.insertAdjacentHTML("afterend", '<div class="guide-diagram"><span>手机或另一台电脑</span><b>→</b><span>你的固定域名</span><b>→</b><span>本机安全网关</span></div>');
+    if (!api) { stage.textContent = "外网访问管理只在本机桌面版开放。"; return; }
+    let startedHere = false, wasConnected = false, firstOpen = $(".legacy-guide-page")?.dataset.firstOpen === "true";
+    const render = status => {
+      if (!$("#legacy-remote-stage")) return;
+      const connected = status.state === "connected", named = connected && status.mode === "named";
+      stage.textContent = status.error ? `${status.phase || "操作失败"}：${status.error}` : status.phase || (connected ? "公网登录页已验证" : "尚未连接");
+      const phase = /Tunnel/.test(status.phase) ? "tunnel" : /路由/.test(status.phase) ? "route" : /DNS/.test(status.phase) ? "dns" : /公网|Cloudflare/.test(status.phase) ? "probe" : "";
+      document.querySelectorAll("[data-legacy-phase]").forEach(item => { item.dataset.active = String(item.dataset.legacyPhase === phase); });
+      const quick = $("#legacy-remote-url"); quick.hidden = !(connected && status.mode === "quick"); if (!quick.hidden) { quick.href = status.url; quick.textContent = status.url; }
+      $("#legacy-remote-result").textContent = !status.configured ? "还没有固定域名配置。" : named ? `公网登录页已验证：${status.url}` : `${status.hostname} · ${status.phase || (status.enabled ? "正在连接" : "已停用")}。地址尚未验证可访问。`;
+      const namedUrl = $("#legacy-remote-named-url"); namedUrl.hidden = !named; if (named) namedUrl.href = status.url;
+      $("#legacy-remote-setup").disabled = status.configured;
+      $("#legacy-remote-enable").disabled = !status.configured || named;
+      $("#legacy-remote-disable").disabled = !status.configured || !status.enabled;
+      if (status.configured && firstOpen) { setLegacyGuideStep("remote", 4); firstOpen = false; }
+      if (connected && !wasConnected && startedHere) { if (named) setLegacyGuideStep("remote", 4); if (!matchMedia("(prefers-reduced-motion: reduce)").matches) { stage.classList.add("guide-celebrate"); setTimeout(() => stage.classList.remove("guide-celebrate"), 1900); } }
+      wasConnected = connected;
+    };
+    const refresh = async () => { try { render(await api("status")); } catch (error) { stage.textContent = error.message || String(error); } };
+    const invoke = async (action, input) => {
+      startedHere = true; stage.textContent = "正在执行，请看当前阶段…";
+      try { const result = await api(action, input); render(result); await refresh(); if (result.operationError) stage.textContent = `${result.phase || "操作失败"}：${result.operationError}`; else if (action === "download") stage.textContent = "cloudflared 已下载并校验。"; }
+      catch (error) { stage.textContent = error.message || String(error); }
+    };
+    $("#legacy-remote-restart").onclick = () => { firstOpen = false; setLegacyGuideStep("remote", 1); };
+    $("#legacy-domain-next").onclick = () => { if (!$("#legacy-domain-ready").checked) { $("#legacy-domain-ready").focus(); return; } setLegacyGuideStep("remote", 2); };
+    $("#legacy-token-next").onclick = () => setLegacyGuideStep("remote", 3);
+    $("#legacy-remote-save-password").onclick = () => { const password = $("#legacy-remote-password").value, oldPassword = $("#legacy-remote-old-password").value; $("#legacy-remote-password").value = ""; $("#legacy-remote-old-password").value = ""; void invoke("password", { password, oldPassword }); };
+    $("#legacy-remote-revoke").onclick = () => void invoke("revoke");
+    $("#legacy-remote-quick").onclick = () => void invoke("quick:start");
+    $("#legacy-remote-stop").onclick = () => void invoke("stop");
+    $("#legacy-remote-download").onclick = () => void invoke("download");
+    $("#legacy-remote-recheck").onclick = () => void refresh();
+    $("#legacy-remote-setup").onclick = () => { const input = { zone: $("#legacy-remote-zone").value.trim(), subdomain: $("#legacy-remote-subdomain").value.trim(), accountId: $("#legacy-remote-account-id").value.trim(), zoneId: $("#legacy-remote-zone-id").value.trim(), apiToken: $("#legacy-remote-api-token").value }; if (Object.values(input).some(value => !value)) { stage.textContent = "请填写域名、子域名、两个 ID 和限权令牌。"; return; } $("#legacy-remote-api-token").value = ""; void invoke("named:setup", input); };
+    $("#legacy-remote-enable").onclick = () => void invoke("named:enable");
+    $("#legacy-remote-disable").onclick = () => void invoke("named:disable");
+    void refresh();
+    const timer = setInterval(() => { if (!$("#legacy-remote-stage")) { clearInterval(timer); return; } void refresh(); }, 1500);
+  }
+
+  function setLegacyGuideStep(kind, requested) {
+    const count = kind === "usage" ? 3 : 4;
+    const step = Math.max(1, Math.min(count, requested || 1));
+    localStorage.setItem(`daguan_legacy_${kind}_step_v1`, String(step));
+    document.querySelectorAll(`[data-legacy-panel="${kind}"]`).forEach(panel => { panel.hidden = Number(panel.dataset.step) !== step; });
+    document.querySelectorAll(`[data-legacy-guide="${kind}"]`).forEach(button => button.setAttribute("aria-current", Number(button.dataset.step) === step ? "step" : "false"));
+    if (kind === "sync") {
+      const root = $("#legacy-sync-inline");
+      if (root) root.dataset.step = String(step);
+      const note = $("#legacy-sync-step-note");
+      if (note) note.textContent = `第 ${step} 步，共 4 步`;
+      const reviewed = $("#legacy-sync-reviewed");
+      if (reviewed) reviewed.disabled = !reconcilePreview?.previewId;
+    }
+  }
+
+  function legacyGuideFocus(selector) {
+    const target = $(selector);
+    if (!target) return;
+    target.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "center" });
+    target.classList.add("guide-target");
+    target.focus({ preventScroll: true });
+    setTimeout(() => target.classList.remove("guide-target"), 3500);
   }
 
   function openFeaturePage(kind) {
@@ -3459,8 +3617,10 @@
     return `daguan-progress-${isoDate()}.json`;
   }
 
-  function backupText() {
-    return JSON.stringify(buildProgressPayload(), null, 2);
+  async function backupText() {
+    const payload = buildProgressPayload();
+    payload.visit_history = await window.DaguanVisitHistory.list();
+    return JSON.stringify(payload, null, 2);
   }
 
   const TUTORIAL_SEEN_KEY = "daguan_tutorial_seen_v1";
@@ -3486,7 +3646,7 @@
         setHomeSyncCard("setup", "尚未完成登录配置", "点击“同步进度”开始首次配置，输入一次大观园登录信息即可。");
       }
     }).catch(() => {
-      setHomeSyncCard("warning", "本地中控台未连接", "请重新双击启动脚本，或检查 8080 端口是否被占用。");
+      setHomeSyncCard("warning", "本地服务暂不可用", "请确认桌面版正在运行；本机学习记录仍会保留。");
     });
   }
 
@@ -3529,7 +3689,7 @@
       if (resultEl) resultEl.textContent = `中控台运行正常：${result.service}`;
     } catch (error) {
       if (resultEl) {
-        resultEl.textContent = `本地服务不可用：${error.message || String(error)}。请重新运行启动脚本。`;
+        resultEl.textContent = `本地服务不可用：${error.message || String(error)}。请重新打开大观园桌面版。`;
         resultEl.dataset.error = "1";
       }
     }
@@ -3936,12 +4096,15 @@
       } catch {}
       reconcilePreview = await syncRequest("reconcilePreview", { winner });
       showSyncResult(formatReconcilePreview(reconcilePreview));
+      if ($("#legacy-sync-inline")) setLegacyGuideStep("sync", 3);
       return reconcilePreview;
     } catch (error) {
+      reconcilePreview = null;
       if (card) card.dataset.state = "error";
       if (summary) summary.textContent = "检查失败";
       if (note) note.textContent = error.message || String(error);
       showSyncResult(String(error.message || error), true);
+      if ($("#legacy-sync-inline")) setLegacyGuideStep("sync", 3);
       throw error;
     } finally {
       if (pullButton) { pullButton.disabled = false; pullButton.textContent = "重新检查同步内容"; }
@@ -4297,6 +4460,7 @@
         progress: data.progress,
         favorites: Array.isArray(data.favorites) ? data.favorites.map(String) : [],
         annotations: data.annotations && typeof data.annotations === "object" ? data.annotations : {},
+        visitHistory: Array.isArray(data.visit_history) ? data.visit_history : [],
       };
     }
     const map = {};
@@ -4314,7 +4478,7 @@
         put(id, value.mastery);
         if (value.favorite === true || value.favorited_at) favorites.push(id);
       }
-      return { kind: "map", map, favorites };
+      return { kind: "map", map, favorites, visitHistory: Array.isArray(data.visit_history) ? data.visit_history : [] };
     }
     if (data && Array.isArray(data.question_states?.states)) {
       for (const entry of data.question_states.states) {
@@ -4326,11 +4490,11 @@
           favorites.push(id);
         }
       }
-      return { kind: "map", map, favorites };
+      return { kind: "map", map, favorites, visitHistory: Array.isArray(data.visit_history) ? data.visit_history : [] };
     }
     if (data && data.map && typeof data.map === "object" && !Array.isArray(data.map)) {
       for (const [id, v] of Object.entries(data.map)) put(id, v);
-      return { kind: "map", map, favorites };
+      return { kind: "map", map, favorites, visitHistory: Array.isArray(data.visit_history) ? data.visit_history : [] };
     }
     if (data && typeof data === "object" && !Array.isArray(data)) {
       for (const [id, v] of Object.entries(data)) {
@@ -4338,7 +4502,7 @@
         else if (typeof v === "string") put(id, v);
       }
     }
-    return { kind: "map", map, favorites };
+    return { kind: "map", map, favorites, visitHistory: Array.isArray(data?.visit_history) ? data.visit_history : [] };
   }
 
   function applyImportedMap(map, favorites = []) {
@@ -4400,6 +4564,10 @@
       n = Object.keys(bundle.progress).length;
     } else {
       n = applyImportedMap(bundle.map, bundle.favorites);
+    }
+    if (bundle.visitHistory?.length) {
+      try { await window.DaguanVisitHistory.merge(bundle.visitHistory); }
+      catch { toast("进度已导入，但做题历史恢复失败，请重试导入"); return; }
     }
     if (n) toast(`已写入本地 ${n} 题`);
   }
@@ -5175,21 +5343,15 @@
 
     const openOnlineSyncPanel = async (actionId = "", trigger = document.activeElement) => {
       if (!previewPrivateAllowed()) return;
+      openFeaturePage("sync-guide");
       try {
         const status = await syncRequest("status");
-        if (!status.authenticated) {
-          openSetupWizard();
-          return;
-        }
-        if (status.needsFirstSync) {
-          openSetupWizard(4);
-          return;
-        }
+        if (!status.authenticated) { setLegacyGuideStep("sync", 1); return; }
+        setLegacyGuideStep("sync", 2);
         refreshSyncStats();
-        openSheet("dlg-online-sync", trigger);
         if (actionId) window.setTimeout(() => $("#" + actionId)?.click(), 0);
-      } catch {
-        openSetupWizard();
+      } catch (error) {
+        $("#legacy-sync-step-note").textContent = `连接检查失败：${error.message || String(error)}。本地记录仍可使用。`;
       }
     };
 
@@ -5197,10 +5359,10 @@
     $("#nav-sync")?.addEventListener("click", (event) => openOnlineSyncPanel("", event.currentTarget));
 
     const btnTutorial = $("#btn-tutorial");
-    if (btnTutorial) btnTutorial.addEventListener("click", () => openSheet("dlg-tutorial"));
+    if (btnTutorial) btnTutorial.addEventListener("click", () => openFeaturePage("usage-guide"));
 
     const btnHeroTutorial = $("#btn-hero-tutorial");
-    if (btnHeroTutorial) btnHeroTutorial.addEventListener("click", () => openSheet("dlg-tutorial"));
+    if (btnHeroTutorial) btnHeroTutorial.addEventListener("click", () => openFeaturePage("usage-guide"));
 
     const btnWelcomeLater = $("#btn-welcome-later");
     if (btnWelcomeLater) {
@@ -5215,7 +5377,7 @@
       btnWelcomeTutorial.addEventListener("click", () => {
         localStorage.setItem(TUTORIAL_SEEN_KEY, "1");
         closeSheet("dlg-welcome");
-        openSheet("dlg-tutorial");
+        openFeaturePage("usage-guide");
       });
     }
 
@@ -5230,21 +5392,20 @@
     if (btnTutorialSyncCard) {
       btnTutorialSyncCard.addEventListener("click", () => {
         closeSheet("dlg-tutorial");
-        openSetupWizard();
+        openFeaturePage("sync-guide");
       });
     }
     $("#btn-tutorial-sync-guide")?.addEventListener("click", () => {
       closeSheet("dlg-tutorial");
-      openSheet("dlg-sync-guide");
+      openFeaturePage("sync-guide");
     });
-    $("#btn-home-sync-guide")?.addEventListener("click", (event) => openSheet("dlg-sync-guide", event.currentTarget));
+    $("#btn-home-sync-guide")?.addEventListener("click", () => openFeaturePage("sync-guide"));
     $("#btn-online-sync-guide")?.addEventListener("click", () => {
-      closeSheet("dlg-online-sync");
-      openSheet("dlg-sync-guide");
+      setLegacyGuideStep("sync", 1);
     });
     $("#btn-sync-guide-setup")?.addEventListener("click", () => {
       closeSheet("dlg-sync-guide");
-      openSetupWizard();
+      openFeaturePage("sync-guide");
     });
     $("#btn-sync-guide-center")?.addEventListener("click", () => {
       closeSheet("dlg-sync-guide");
@@ -5268,8 +5429,7 @@
     const btnReopenSetupWizard = $("#btn-reopen-setup-wizard");
     if (btnReopenSetupWizard) {
       btnReopenSetupWizard.addEventListener("click", () => {
-        closeSheet("dlg-online-sync");
-        openSetupWizard();
+        setLegacyGuideStep("sync", 1);
       });
     }
     const btnHomeSync = $("#btn-home-sync");
@@ -5366,7 +5526,7 @@
           renderHome();
           refreshFavoriteUI();
         }
-        const partial = result.failed || result.unknownIds?.length;
+        const partial = result.failed || result.unknownIds?.length || !result.verified;
         applyButton.hidden = true;
         const card = $("#sync-flow-card");
         if (card) card.dataset.state = partial ? "partial" : "success";
@@ -5376,6 +5536,11 @@
         showSyncResult(`${partial ? "同步未完成" : "同步完成"}\n本地更新：${result.appliedLocal || 0} 项\n官网更新：${result.succeeded || 0} 项\n失败：${result.failed || 0}\n未知题号：${result.unknownIds?.length || 0}\n${result.verified ? "官网校验成功" : "官网校验失败，请重新检查"}`);
         setHomeSyncCard(partial ? "warning" : "ready", partial ? "同步未完成" : "同步完成", partial ? "有失败项，点击同步进度重新检查并继续。" : `本地 ${result.appliedLocal || 0} 项，官网 ${result.succeeded || 0} 项。`);
         toast(partial ? "同步未完成，请重新检查并继续" : "两边进度已同步");
+        if (!partial && $("#legacy-sync-inline") && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+          const target = $("#sync-flow-card");
+          target.classList.add("guide-celebrate");
+          setTimeout(() => target.classList.remove("guide-celebrate"), 1900);
+        }
       } catch (error) {
         if (error.status === 409 || ["STATE_CONFLICT", "PREVIEW_STRATEGY_CHANGED"].includes(error.code) || /过期|发生变化|策略已改变/.test(error.message || "")) {
           reconcilePreview = null;
@@ -5414,20 +5579,21 @@
       saveLearningPosition();
       window.location.reload();
     });
-    $("#btn-download-progress").addEventListener("click", () => {
+    $("#btn-download-progress").addEventListener("click", async () => {
       if (!previewPrivateAllowed()) return;
-      downloadText(backupFilename(), backupText(), "application/json");
-      toast("已开始下载备份");
+      try { downloadText(backupFilename(), await backupText(), "application/json"); toast("已开始下载备份"); }
+      catch { toast("做题历史暂时无法读取，备份未开始"); }
     });
     $("#btn-copy-backup").addEventListener("click", async () => {
       if (!previewPrivateAllowed()) return;
-      const ok = await copyText(backupText());
+      const ok = await backupText().then(copyText).catch(() => false);
       toast(ok ? "已复制备份 JSON" : "复制失败，请改用下载");
     });
     $("#btn-share-progress").addEventListener("click", async () => {
       if (!previewPrivateAllowed()) return;
       const name = backupFilename();
-      const text = backupText();
+      const text = await backupText().catch(() => null);
+      if (!text) { toast("做题历史暂时无法读取，分享未开始"); return; }
       try {
         const file = new File([text], name, { type: "application/json" });
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
@@ -5652,11 +5818,11 @@
       refreshSyncStats();
       openSheet("dlg-sync");
     } else if (entry === "sync-guide") {
-      openSheet("dlg-sync-guide");
+      openFeaturePage("sync-guide");
     } else if (entry === "ai-settings") {
       openAiSettings();
     } else if (entry === "tutorial") {
-      openSheet("dlg-tutorial");
+      openFeaturePage("usage-guide");
     }
   }
 
@@ -5691,9 +5857,7 @@
       setView("home");
 
       refreshPickUI();
-      if (landingEntry === null && !switched && !localStorage.getItem(TUTORIAL_SEEN_KEY)) {
-        openSheet("dlg-welcome");
-      }
+      if (landingEntry === null && !switched) showLegacyWelcomeOnce();
       // 首页直达需要完整进度；普通首屏仍不等待 IndexedDB 和服务端状态。
       Promise.allSettled([hydrated, serverHydrated]).then(async () => {
         refreshHomeSyncCard();
@@ -5732,8 +5896,8 @@
       await replayPendingAnnotations();
       return !pendingHasAny() && !serverQuestionQueue.size && !serverStateSyncing;
     },
-    downloadBackup() {
-      downloadText(backupFilename(), backupText(), "application/json");
+    async downloadBackup() {
+      downloadText(backupFilename(), await backupText(), "application/json");
     },
   };
   init();

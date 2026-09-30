@@ -3,7 +3,21 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
+import forgeConfig from "../forge.config.js";
 import { prepareDesktopPackage } from "../scripts/prepare-desktop-package.mjs";
+
+test("desktop package excludes local records while retaining the bundled question bank", () => {
+  const ignored = (name) => forgeConfig.packagerConfig.ignore.some((pattern) => pattern.test(name));
+  assert.equal(ignored("/data/state.json"), true);
+  assert.equal(ignored("/data/ai-profiles.json"), true);
+  assert.equal(ignored("/design/draft.html"), true);
+  assert.equal(ignored("/AGENTS.md"), true);
+  assert.equal(ignored("/draft.md"), true);
+  assert.equal(ignored("/.zcodeignore"), true);
+  assert.equal(ignored("/README.md"), false);
+  assert.equal(ignored("/web/data/manifest.json"), false);
+  assert.equal(ignored("/web/data/shards/questions.json"), false);
+});
 
 test("desktop packaging ASCII-normalizes shard paths without changing shard contents", async () => {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), "daguan-desktop-package-"));

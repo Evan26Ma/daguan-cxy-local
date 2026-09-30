@@ -104,14 +104,15 @@ test("首屏不阻塞加载题库索引", () => {
 
 test("Service Worker 不预缓存首屏之外的大型索引和字体", () => {
   const sw = fs.readFileSync(new URL("../web/service-worker.js", import.meta.url), "utf8");
-  assert.match(sw, /daguan-shell-v124/);
-  assert.match(app, /service-worker\.js\?v=121/);
-  assert.match(newApp, /service-worker\.js\?v=124/);
+  assert.match(sw, /daguan-shell-v131/);
+  assert.match(app, /service-worker\.js\?v=122/);
+  assert.match(newApp, /service-worker\.js\?v=125/);
   assert.match(sw, /"\.\/legacy\.html"/);
   assert.match(sw, /"\.\/legacy\.css\?v=90"/);
-  assert.match(sw, /"\.\/app-legacy\.js\?v=93"/);
-  assert.match(sw, /"\.\/styles-new\.css\?v=113"/);
-  assert.match(sw, /"\.\/app-new\.js\?v=117"/);
+  assert.match(sw, /"\.\/app-legacy\.js\?v=97"/);
+  assert.match(sw, /"\.\/guides\.css\?v=1"/);
+  assert.match(sw, /"\.\/styles-new\.css\?v=116"/);
+  assert.match(sw, /"\.\/app-new\.js\?v=124"/);
   assert.match(sw, /"\.\/assets\/math-mark\.svg"/);
   assert.match(sw, /"\.\/assets\/landing\/local-mark\.png"/);
   assert.doesNotMatch(sw, /data\/(category_questions|id_index|search_index)\.json/);
@@ -130,10 +131,10 @@ test("新版与旧版都监听本地服务状态事件并刷新共享学习记�
 });
 
 test("新版入口承载新版前端并与旧版共享版本选择", () => {
-  assert.match(newHtml, /styles-new\.css\?v=113/);
+  assert.match(newHtml, /styles-new\.css\?v=116/);
   assert.match(newHtml, /ui-version\.js\?v=106/);
   assert.match(newHtml, /ui-bootstrap\.js\?v=1/);
-  assert.match(newHtml, /app-new\.js\?v=117/);
+  assert.match(newHtml, /app-new\.js\?v=124/);
   assert.match(uiBootstrap, /DaguanVersions\.selected\(localStorage\)/);
   assert.match(newHtml, /dlg-preview-access/);
   assert.match(newHtml, /preview-banner/);
@@ -146,7 +147,8 @@ test("新版入口承载新版前端并与旧版共享版本选择", () => {
 });
 
 test("新版首页提供使用与双向同步引导，快捷键帮助只保留左下入口", () => {
-  assert.match(newHtml, /id="new-user-guide"/);
+  assert.match(newApp, /renderUsageGuide\(\)/);
+  assert.doesNotMatch(newHtml, /id="new-user-guide"/);
   assert.match(newApp, /class="home-sync-card"/);
   assert.match(newApp, /reconcilePreview: \['\/integrations\/cxyonly\/reconcile\/preview'/);
   assert.match(newApp, /reconcileApply: \['\/integrations\/cxyonly\/reconcile\/apply'/);
@@ -198,7 +200,7 @@ test("界面版本：旧大观承载完整旧版前端", () => {
   const legacyApp = fs.readFileSync(new URL("../web/app-legacy.js", import.meta.url), "utf8");
   assert.match(legacyHtml, /<title>大观园 · 本地刷题<\/title>/);
   assert.match(legacyHtml, /legacy\.css\?v=90/);
-  assert.match(legacyHtml, /app-legacy\.js\?v=93/);
+  assert.match(legacyHtml, /app-legacy\.js\?v=97/);
   assert.match(legacyHtml, /<header class="topbar learning-shell__topbar">[\s\S]*id="btn-switch-new"/);
   assert.doesNotMatch(legacyHtml, /legacy-version-toggle|practice-version-toggle|data-version-choice/);
   assert.match(legacyApp, /\$\("#btn-switch-new"\)\?\.addEventListener\("click", \(\) => setUiVersion\("new"\)\)/);

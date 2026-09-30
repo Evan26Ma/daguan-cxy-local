@@ -27,6 +27,8 @@ test("desktop question bank updates atomically and keeps the last good version o
       fs.writeFile(path.join(bundled, "manifest.json"), JSON.stringify({ total: 1 })),
       fs.writeFile(path.join(bundled, "lecture-video-mappings.json"), JSON.stringify({ questions: {} })),
       fs.writeFile(path.join(bundled, "paradiyu-linear-video.json"), JSON.stringify({ questions: {} })),
+      fs.writeFile(path.join(bundled, "official-orphan-classifications.json"),
+        JSON.stringify({ version: 1, categories: [], assignments: {} })),
     ]);
     const updater = await createQuestionBankUpdater({ dataDir, bundledDataDir: bundled, enabled: true });
     assert.equal(updater.status().activeId, "bundled");
@@ -36,12 +38,17 @@ test("desktop question bank updates atomically and keeps the last good version o
     const manifest = JSON.parse(await fs.readFile(path.join(updater.dataRoot(), "manifest.json"), "utf8"));
     assert.equal(manifest.total, 1);
     assert.equal((await updater.update()).unchanged, true);
+    await fs.writeFile(path.join(bundled, "official-orphan-classifications.json"),
+      JSON.stringify({ version: 1, categories: [], assignments: {}, description: "revised" }));
+    const revised = await updater.update();
+    assert.equal(revised.total, 1);
+    assert.notEqual(revised.id, result.id);
     online = false;
     await assert.rejects(updater.update());
-    assert.equal(updater.status().activeId, result.id);
+    assert.equal(updater.status().activeId, revised.id);
     await updater.stop();
     const reopened = await createQuestionBankUpdater({ dataDir, bundledDataDir: bundled, enabled: false });
-    assert.equal(reopened.status().activeId, result.id);
+    assert.equal(reopened.status().activeId, revised.id);
   } finally {
     globalThis.fetch = originalFetch;
     const resolved = path.resolve(temp);

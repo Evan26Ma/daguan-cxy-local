@@ -31,7 +31,8 @@ test('全库搜索将常见分数、括号和关系符公式写法归一', () =>
 test('全库搜索索引保留完整题库规模并可用路径、来源字段命中', () => {
   const { App } = loadApp();
   const rows = JSON.parse(fs.readFileSync(new URL('../web/data/search_index.json', import.meta.url), 'utf8'));
-  assert.equal(rows.length, 6473);
+  const manifest = JSON.parse(fs.readFileSync(new URL('../web/data/manifest.json', import.meta.url), 'utf8'));
+  assert.equal(rows.length, manifest.total);
   const normalize = App.normalizeSearchText;
   const query = normalize('第5章 数理统计部分');
   assert.ok(rows.some(row => normalize(row.path).includes(query)));
@@ -41,8 +42,8 @@ test('全库搜索索引保留完整题库规模并可用路径、来源字段�
 
 test('快捷键保留旧版自定义键，同时识别其与新固定键或彼此之间的冲突', () => {
   const { App, AppState } = loadApp();
-  AppState.shortcuts = { ...AppState.shortcuts, favorite: 'f', ai: 'm', note: 'f' };
+  AppState.shortcuts = { ...AppState.shortcuts, favorite: 'f', ai: 'g', note: 'f' };
   const conflicts = App.shortcutConflicts().join(' ');
-  assert.match(conflicts, /固定键 M/);
+  assert.match(conflicts, /固定键 G/);
   assert.match(conflicts, /打开题目批注 与 切换收藏/);
 });

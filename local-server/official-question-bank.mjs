@@ -14,6 +14,7 @@ const fileByShard = new Map([
   ...[...shardByRoot.values()].map(name => [name, `shards/${name}.json`]),
   ["未分类", "shards/未分类.json"],
 ]);
+const localClassificationsFile = "official-orphan-classifications.json";
 
 async function getJson(url, signal) {
   for (let attempt = 0; attempt < 4; attempt += 1) {
@@ -71,6 +72,59 @@ function categoryIndex(categories) {
     if (!byId.has(rootId) || byId.get(rootId).parent !== null) throw new Error(`官网缺少预期根分类 ${rootId}`);
   }
   return byId;
+}
+
+export function applyLocalClassifications(snapshot, config) {
+  if (!config) return snapshot;
+  if (config.version !== 1 || !config.assignments || typeof config.assignments !== "object" ||
+      !Array.isArray(config.categories)) throw new Error("本地分类映射格式不合法");
+  const appliedIds = new Set();
+  const questions = snapshot.questions.map(question => {
+    const assignment = config.assignments[String(question.id)];
+    if (question.category_id != null || (question.category_ids || []).length) {
+      if (question.category_id != null && !(question.category_ids || []).length) {
+        return { ...question, category_ids: [question.category_id] };
+      }
+      return question;
+    }
+    if (!assignment) return question;
+    if (!Array.isArray(assignment.category_ids) || !assignment.category_ids.length ||
+        assignment.category_ids.some(id => !Number.isInteger(id))) {
+      throw new Error(`题目 ${question.id} 的本地分类无效`);
+    }
+    const ids = [...new Set(assignment.category_ids)];
+    ids.forEach(id => appliedIds.add(id));
+    return { ...question, category_id: ids[0], category_ids: ids };
+  });
+  const categories = structuredClone(snapshot.categories);
+  const existing = categoryIndex(categories);
+  for (const added of config.categories) {
+    if (!appliedIds.has(added.id)) continue;
+    if (!Number.isInteger(added.id) || !Number.isInteger(added.parent_id) ||
+        !added.name || existing.has(added.id)) throw new Error(`本地分类 ID 不合法或已被官网占用：${added.id}`);
+    const parent = existing.get(added.parent_id)?.source;
+    if (!parent) throw new Error(`本地分类缺少父节点：${added.parent_id}`);
+    parent.children ||= [];
+    const category = { id: added.id, name: added.name, children: [] };
+    parent.children.push(category);
+    existing.set(added.id, { source: category, parent: added.parent_id });
+  }
+  const validIds = categoryIndex(categories);
+  for (const question of questions) {
+    for (const id of question.category_ids || []) {
+      if (!validIds.has(Number(id))) throw new Error(`题目 ${question.id} 的本地分类不存在：${id}`);
+    }
+  }
+  return { ...snapshot, questions, categories };
+}
+
+async function readLocalClassifications(overlayDir) {
+  try {
+    return JSON.parse(await fs.readFile(path.join(overlayDir, localClassificationsFile), "utf8"));
+  } catch (error) {
+    if (error.code === "ENOENT") return null;
+    throw error;
+  }
 }
 
 function normalizeQuestion(source, categories) {
@@ -233,13 +287,14 @@ async function reconcileVideoMappings(stage, dataDir) {
 }
 
 export async function syncOfficialQuestionBank({ targetDir, overlayDir = targetDir, fallbackAssetsDir = null, signal, currentFingerprint = null }) {
-  const snapshot = await fetchOfficial(signal);
-  const result = buildCatalog(snapshot);
+  const officialSnapshot = await fetchOfficial(signal);
   const fingerprint = createHash("sha256").update(JSON.stringify({
-    questions: snapshot.questions.map(question => [question.id, question.content_hash, question.is_core, question.category_ids, question.category_id]),
-    categories: snapshot.categories,
+    questions: officialSnapshot.questions.map(question => [question.id, question.content_hash, question.is_core, question.category_ids, question.category_id]),
+    categories: officialSnapshot.categories,
   })).digest("hex");
-  if (fingerprint === currentFingerprint) return { unchanged: true, fingerprint, sourceTotal: snapshot.total };
+  if (fingerprint === currentFingerprint) return { unchanged: true, fingerprint, sourceTotal: officialSnapshot.total };
+  const snapshot = applyLocalClassifications(officialSnapshot, await readLocalClassifications(overlayDir));
+  const result = buildCatalog(snapshot);
   const stage = await fs.mkdtemp(path.join(os.tmpdir(), "daguan-official-sync-"));
   try {
     for (const [name, file] of fileByShard) await writeJson(path.join(stage, file), result.shards[name]);

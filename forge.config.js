@@ -7,6 +7,10 @@ export default {
     executableName: "DaguanMath",
     appBundleId: "com.daguan.math-local",
     ignore: [
+      /^\/data(?:\/|$)/i,
+      /^\/design(?:\/|$)/i,
+      /^\/(?:\.dockerignore|\.gitattributes|\.gitignore|\.zcodeignore)$/i,
+      /^\/(?!README\.md$|CHANGELOG\.md$)[^/]+\.md$/i,
       /(?:^|[/\\])\.git(?:[/\\]|$)/i,
       /(?:^|[/\\])\.github(?:[/\\]|$)/i,
       /(?:^|[/\\])android(?:[/\\]|$)/i,

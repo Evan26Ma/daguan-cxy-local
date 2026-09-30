@@ -4,13 +4,13 @@
  */
 
 // ========== 离线缓存注册（与 app2.js 一致） ==========
-if ("serviceWorker" in navigator && location.protocol !== "file:") {
-    navigator.serviceWorker.register("./service-worker.js?v=124").catch(() => {});
+if ("serviceWorker" in navigator && location.protocol !== "file:" && location.protocol !== "https:") {
+    navigator.serviceWorker.register("./service-worker.js?v=125").catch(() => {});
 }
 
 // ========== 全局状态 ==========
 const AppState = {
-    currentView: 'home', // home, library, question, review, notes, records, tools, settings
+    currentView: 'home', // home, library, question, review, notes, records, history, tools, settings
     currentCategory: null,
     currentChapter: null,
     currentQuestionIndex: 0,
@@ -36,6 +36,9 @@ const AppState = {
     globalSearchReturn: null,
     globalSearchScrollTop: 0,
     globalSearchContext: null,
+    visitHistory: [],
+    historyFilters: { query: '', category: '', from: '', to: '', mastery: '', favorite: '', mistake: '' },
+    historyLimit: 50,
     shortcuts: {},
     videoMappings: null,
     paradiyuVideoMapping: null,
@@ -75,7 +78,7 @@ const AppState = {
 const SHORTCUT_STORAGE_KEY = 'daguan_focus_shortcuts_v1';
 const SHORTCUT_DEFAULTS = Object.freeze({ focus: 'F6', up: 'ArrowUp', down: 'ArrowDown', answer: ' ', mastery1: '1', mastery2: '2', mastery3: '3', error: 'e', favorite: 'f', ai: 'a', note: 'n', copy: 'c', help: '?', escape: 'Escape' });
 const SHORTCUT_LABELS = Object.freeze({ focus: '沉浸阅读', up: '上一题', down: '下一题', answer: '显示 / 隐藏答案', mastery1: '标记未开始', mastery2: '标记学习中', mastery3: '标记已掌握', error: '切换易错', favorite: '切换收藏', ai: '打开 AI 解答', note: '打开题目批注', copy: '复制本题 Markdown', help: '显示快捷键帮助', escape: '关闭面板' });
-const RESERVED_SHORTCUTS = new Set(['/', 'm', 'j', 'k', 'g']);
+const RESERVED_SHORTCUTS = new Set(['/', 'g']);
 const SHORTCUT_CODE_FALLBACK = Object.freeze({ Space: ' ', ArrowUp: 'ArrowUp', ArrowDown: 'ArrowDown', ArrowLeft: 'ArrowLeft', ArrowRight: 'ArrowRight', Escape: 'Escape', F6: 'F6', KeyA: 'a', KeyC: 'c', KeyE: 'e', KeyF: 'f', KeyN: 'n', Digit1: '1', Digit2: '2', Digit3: '3', Digit4: '4', Slash: '/' });
 
 function sourceGroup(source) {
@@ -93,6 +96,11 @@ function sourceGroup(source) {
 function sourceYear(source) {
     const match = String(source || '').match(/(?:19|20)\d{2}/);
     return match ? match[0] : '';
+}
+
+function isRealExamQuestion(question) {
+    return /历年真题/.test(String(question?.category_path || ''))
+        || /(?:19|20)\d{2}\s*(?:年)?\s*(?:数学|数)[一二三]/.test(String(question?.source || ''));
 }
 
 function masteryLabel(value) {
@@ -181,6 +189,7 @@ class DataService {
         AppState.idIndex = idIndex || {};
 
         this.populateQuestions(AppState.categories.categories);
+        AppState.historyLocationCache = null;
         return AppState.categories;
     }
 
@@ -1038,6 +1047,13 @@ const StateSync = {
     },
 
     connectEvents() {
+        if (location.protocol === 'https:') {
+            if (!this.remotePollTimer) {
+                this.remotePollTimer = setInterval(() => { if (document.visibilityState === 'visible') void this.refreshFromEvent(); }, 5000);
+                window.addEventListener('pagehide', () => clearInterval(this.remotePollTimer), { once: true });
+            }
+            return;
+        }
         if (this.eventSource || !window.EventSource || !PreviewAccess.privateAllowed(false)) return;
         const status = document.getElementById('local-service-status');
         let disconnected = false;
@@ -1066,6 +1082,7 @@ const StateSync = {
             try { revision = Number(JSON.parse(event.data || '{}').revision) || 0; } catch {}
             if (revision > this.revision) this.refreshFromEvent();
         });
+        this.eventSource.addEventListener('visit-history', () => { if (AppState.currentView === 'history') void App.showHistory(); });
         window.addEventListener('pagehide', () => this.eventSource?.close(), { once: true });
     },
 
@@ -1085,6 +1102,7 @@ const StateSync = {
             if (AppState.currentView === 'question' && !AppState.annotationDirty) await UIRenderer.renderQuestion(AppState.currentQuestionIndex);
             else if (AppState.currentView === 'home') UIRenderer.renderHome();
             else if (AppState.currentView === 'records') UIRenderer.renderRecords();
+            else if (AppState.currentView === 'library') UIRenderer.renderLibrary(AppState.currentCategory?.id);
             else if (AppState.currentView === 'notes' && !AppState.memoDirty) UIRenderer.renderNotes();
         } catch (error) {
             console.warn('刷新其他窗口的学习记录失败', error);
@@ -1473,6 +1491,44 @@ function renderSearchResultStem(text) {
 
 // ========== UI 渲染器 ==========
 class UIRenderer {
+    static scopeQuestionIdsCache = new Map();
+    static scopeQuestionIdsInflight = new Map();
+
+    static async ensureScopeQuestionIds(scope) {
+        if (scope === 'all') return null;
+        if (this.scopeQuestionIdsCache.has(scope)) return this.scopeQuestionIdsCache.get(scope);
+        if (this.scopeQuestionIdsInflight.has(scope)) return this.scopeQuestionIdsInflight.get(scope);
+        const job = (async () => {
+            const names = Object.keys(AppState.manifest?.shards || {});
+            if (!names.length) throw new Error('题库分片尚未加载');
+            const maps = await Promise.all(names.map(name => DataService.ensureShard(name)));
+            const ids = new Set();
+            for (const map of maps) for (const question of map.values()) {
+                if (scope === 'core' ? question.is_core === true : isRealExamQuestion(question)) ids.add(String(question.id));
+            }
+            this.scopeQuestionIdsCache.set(scope, ids);
+            return ids;
+        })();
+        this.scopeQuestionIdsInflight.set(scope, job);
+        try { return await job; } finally { this.scopeQuestionIdsInflight.delete(scope); }
+    }
+
+    static scopeCountForNode(node, directOnly = false) {
+        const entries = directOnly ? (node?.direct_questions || []) : (node?.questions || []);
+        if (AppState.chapterScope === 'all' || !this.scopeQuestionIdsCache.has(AppState.chapterScope)) {
+            return directOnly ? Number(node?.direct_count ?? entries.length) : Number(node?.question_count ?? entries.length);
+        }
+        const ids = this.scopeQuestionIdsCache.get(AppState.chapterScope);
+        return entries.reduce((count, entry) => count + Number(ids.has(String(entry.id))), 0);
+    }
+    static lastPositionTrail() {
+        const position = StorageService.getLearningPosition();
+        const category = position && this.findCategoryById(position.categoryId);
+        const trail = category && this.pathToNode(category, position.chapterId);
+        const leaf = trail?.at(-1);
+        if (!leaf || !DataService.chapterEntries(leaf).some(entry => String(entry.id) === String(position.questionId))) return null;
+        return { position, trail };
+    }
     static renderHome() {
         const main = document.getElementById('app-main');
         const progress = StorageService.getProgress();
@@ -1483,7 +1539,7 @@ class UIRenderer {
             const category = this.findCategoryById(position.categoryId);
             const chapter = category ? this.findChapterById(category, position.chapterId) : null;
 
-            if (chapter) {
+            if (chapter && DataService.chapterEntries(chapter).some(entry => String(entry.id) === String(position.questionId))) {
                 continueSection = `
                     <div class="continue-section">
                         ${this.renderBrandGeometry()}
@@ -1513,8 +1569,10 @@ class UIRenderer {
             `;
         }
 
+        const showWelcome = localStorage.getItem('daguan_welcome_once_v2') !== '1';
         main.innerHTML = `
             <div class="home-content">
+                ${showWelcome ? `<section class="guide-card-entry home-welcome" id="home-welcome"><div><p class="guide-kicker">第一次来？</p><strong>欢迎来到大观园</strong><p>先挑一章做题；需要时打开页面内教程，跟着步骤操作。</p></div><div class="guide-actions"><button class="btn btn-primary" onclick="App.showUserGuide()">开始看教程</button><button class="btn btn-text" onclick="document.getElementById('home-welcome')?.remove()">我先自己看看</button></div></section>` : ''}
                 <div class="home-grid">
                     ${continueSection}
                     <div class="review-section">
@@ -1551,6 +1609,7 @@ class UIRenderer {
                 </div>
             </div>
         `;
+        if (showWelcome) localStorage.setItem('daguan_welcome_once_v2', '1');
         App.refreshHomeSyncStatus();
     }
 
@@ -1640,6 +1699,7 @@ class UIRenderer {
                     <div class="library-header">
                         <nav class="library-breadcrumb" id="library-breadcrumb" aria-label="当前目录路径"></nav>
                         <div class="library-title-row"><h1 id="library-node-title">${escapeHtml(active.name || active.title || category.name)}</h1></div>
+                        ${StorageService.getLearningPosition() && !this.lastPositionTrail() ? '<p class="text-helper" role="status">上次学习的题目已不在当前题库，无法直达；可重新选择小节。</p>' : ''}
                         <div class="library-toolbar">
                             <div class="search-box">
                                 <input type="search" class="search-input"
@@ -1655,6 +1715,7 @@ class UIRenderer {
                             </button>
                         </div>
                         <div class="catalog-scopes" role="group" aria-label="题库范围">${this.scopeButtons()}</div>
+                        <p class="catalog-scope-summary" id="catalog-scope-summary" role="status">${this.scopeSummaryText()}</p>
                     </div>
                     <div class="library-content" id="library-content"></div>
                 </div>
@@ -1795,8 +1856,8 @@ class UIRenderer {
                     node,
                     selected: !!selected && String(node.id) === String(selected.id),
                     hasChildren: !!(node.children || []).length,
-                    questionCount: Number(node.question_count || 0),
-                    directCount: Number(node.direct_count ?? (node.direct_questions || []).length),
+                    questionCount: this.scopeCountForNode(node),
+                    directCount: this.scopeCountForNode(node, true),
                 })),
                 directNode: parent && (parent.children || []).length && (parent.direct_questions || parent.questions || []).length ? parent : null,
             });
@@ -1811,19 +1872,24 @@ class UIRenderer {
         const host = document.getElementById('directory-columns');
         if (!host) return;
         const columns = this.catalogColumns(category, activeNode);
+        const last = this.lastPositionTrail();
+        const lastIds = new Set(last?.trail.map(node => String(node.id)) || []);
         host.innerHTML = columns.map(column => {
             const parentName = column.parent ? (column.parent.name || column.parent.title || '章节') : '科目';
             const items = column.items.map(({ node, selected, hasChildren, questionCount }) => {
                 const name = node.name || node.title || '';
                 const rootCategoryId = column.depth === 0 ? node.id : category.id;
-                return `<button type="button" class="directory-column-item${selected ? ' selected' : ''}${hasChildren ? ' has-children' : ''}" role="option" aria-selected="${selected}" aria-current="${selected ? 'page' : 'false'}" data-catalog-node="${escapeHtml(String(node.id))}" data-catalog-category="${escapeHtml(String(rootCategoryId))}" data-catalog-depth="${column.depth}" aria-label="${escapeHtml(name)}，全范围总题数 ${questionCount}"><span class="directory-column-name">${escapeHtml(name)}</span><small>${questionCount} 题</small>${hasChildren ? '<span class="directory-column-chevron" aria-hidden="true">›</span>' : '<span aria-hidden="true"></span>'}</button>`;
+                const onLastPath = lastIds.has(String(node.id));
+                return `<div class="directory-column-row"><button type="button" class="directory-column-item${selected ? ' selected' : ''}${hasChildren ? ' has-children' : ''}" role="option" aria-selected="${selected}" aria-current="${selected ? 'page' : 'false'}" data-catalog-node="${escapeHtml(String(node.id))}" data-catalog-category="${escapeHtml(String(rootCategoryId))}" data-catalog-depth="${column.depth}" aria-label="${escapeHtml(name)}，当前范围 ${questionCount} 题"><span class="directory-column-name">${escapeHtml(name)}</span><small>${questionCount} 题</small>${hasChildren ? '<span class="directory-column-chevron" aria-hidden="true">›</span>' : '<span aria-hidden="true"></span>'}</button>${onLastPath ? `<button type="button" class="directory-resume" data-resume-last aria-label="回到上次做到的题号 ${escapeHtml(String(last.position.questionId))}">上次${String(node.id) === String(last.trail.at(-1).id) ? ` · 题号 ${escapeHtml(String(last.position.questionId))}` : ''} ↗</button>` : ''}</div>`;
             }).join('');
             const direct = column.directNode;
-            const directHtml = direct ? `<button type="button" class="directory-column-item directory-direct-item" data-cascade-direct="${escapeHtml(String(direct.id))}" data-catalog-category="${escapeHtml(String(category.id))}" aria-label="练习 ${escapeHtml(direct.name || direct.title || '')} 的本级直属题"><span class="directory-column-name"><strong>本级直属题</strong><small>只练习${escapeHtml(direct.name || direct.title || '')}</small></span><small>${Number(direct.direct_count ?? (direct.direct_questions || []).length)} 题</small><span aria-hidden="true">↗</span></button>` : '';
+            const directCount = direct ? this.scopeCountForNode(direct, true) : 0;
+            const directHtml = direct && directCount ? `<button type="button" class="directory-column-item directory-direct-item" data-cascade-direct="${escapeHtml(String(direct.id))}" data-catalog-category="${escapeHtml(String(category.id))}" aria-label="练习 ${escapeHtml(direct.name || direct.title || '')} 的本级直属题"><span class="directory-column-name"><strong>本级直属题</strong><small>只练习${escapeHtml(direct.name || direct.title || '')}</small></span><small>${directCount} 题</small><span aria-hidden="true">↗</span></button>` : '';
             return `<section class="directory-column" role="listbox" aria-label="${escapeHtml(parentName)}下级"><h2 class="directory-column-heading">${escapeHtml(parentName)}${column.depth ? ' · 下级' : ''}</h2><div class="directory-column-list">${items || '<p class="directory-column-empty">暂无下级章节</p>'}${directHtml}</div></section>`;
         }).join('');
         host.querySelectorAll('[data-catalog-node]').forEach(button => button.addEventListener('click', () => App.selectDirectoryItem(button.dataset.catalogCategory, button.dataset.catalogNode)));
         host.querySelectorAll('[data-cascade-direct]').forEach(button => button.addEventListener('click', () => App.startDirectDirectory(button.dataset.catalogCategory, button.dataset.cascadeDirect)));
+        host.querySelectorAll('[data-resume-last]').forEach(button => button.addEventListener('click', () => App.resumeLearning()));
         const reveal = () => { host.scrollLeft = Math.max(0, host.scrollWidth - host.clientWidth); };
         if (typeof requestAnimationFrame === 'function') requestAnimationFrame(reveal); else setTimeout(reveal, 0);
     }
@@ -1847,14 +1913,16 @@ class UIRenderer {
         const positionIndex = position && String(position.categoryId) === String(category.id) && String(position.chapterId) === String(node.id)
             ? Math.max(0, Number(position.questionIndex) || 0) : -1;
         const isLeaf = !(node.children || []).length;
-        const directTotal = Number(node.direct_count ?? direct.length);
+        const directTotal = this.scopeCountForNode(node, true);
         const locationText = positionIndex >= 0 ? `已到第 ${positionIndex + 1} 题 · 题号 ${escapeHtml(String(position.questionId || direct[positionIndex]?.id || ''))}` : '本机还没有此章节的学习位置';
         contentEl.innerHTML = `<section class="directory-cascade" aria-label="题库级联目录"><div class="directory-columns" id="directory-columns" tabindex="0" aria-label="横向章节目录"></div><div class="directory-selection-state" id="directory-selection-state" role="status"></div></section>`;
         this.renderCatalogColumns(category, node);
         const state = document.getElementById('directory-selection-state');
-        if (state && isLeaf && direct.length === 0) state.innerHTML = `<div class="empty-state"><h3>此章节暂无题目</h3><p>该空节点可从目录定位，但没有可开始的题目。</p></div>`;
-        else if (state && isLeaf && direct.length) state.innerHTML = `<div class="directory-leaf-actions"><p>${locationText}；点击当前小节可按当前范围开始练习。</p><button type="button" class="btn btn-primary" id="start-directory">按当前范围开始练习</button>${positionIndex >= 0 ? '<button type="button" class="btn btn-secondary" id="continue-directory">继续上次练习</button>' : ''}</div>`;
-        else if (state && direct.length && (node.children || []).length) state.innerHTML = `<p class="directory-help">${escapeHtml(node.name || node.title || '')} 含 ${directTotal} 道直属题；可在最右列单独练习。</p>`;
+        if (state && isLeaf && directTotal === 0) state.innerHTML = AppState.chapterScope === 'all'
+            ? `<div class="empty-state"><h3>此章节暂无题目</h3><p>该空节点可从目录定位，但没有可开始的题目。</p></div>`
+            : `<div class="empty-state"><h3>此范围暂无题目</h3><p>可切换“完整 / 严选 / 真题”查看其他范围。</p></div>`;
+        else if (state && isLeaf && directTotal) state.innerHTML = `<div class="directory-leaf-actions"><p>${locationText}；当前范围有 ${directTotal} 题，点击当前小节可开始练习。</p><button type="button" class="btn btn-primary" id="start-directory">按当前范围开始练习</button>${positionIndex >= 0 ? '<button type="button" class="btn btn-secondary" id="continue-directory">继续上次练习</button>' : ''}</div>`;
+        else if (state && directTotal && (node.children || []).length) state.innerHTML = `<p class="directory-help">${escapeHtml(node.name || node.title || '')} 当前范围含 ${directTotal} 道直属题；可在最右列单独练习。</p>`;
         document.getElementById('start-directory')?.addEventListener('click', () => App.showChapter(node));
         document.getElementById('continue-directory')?.addEventListener('click', () => App.continueDirectoryNode(node));
         contentEl.onscroll = () => this.saveDirectoryState();
@@ -1864,6 +1932,13 @@ class UIRenderer {
 
     static scopeButtons() {
         return [['all', '完整'], ['core', '严选'], ['real', '真题']].map(([key, label]) => `<button type="button" class="catalog-scope${AppState.chapterScope === key ? ' active' : ''}" data-chapter-scope="${key}" aria-pressed="${AppState.chapterScope === key}">${label}</button>`).join('');
+    }
+
+    static scopeSummaryText() {
+        const scope = AppState.chapterScope;
+        const count = scope === 'all' ? Number(AppState.manifest?.total || 0) : this.scopeQuestionIdsCache.get(scope)?.size;
+        const name = scope === 'core' ? '严选' : scope === 'real' ? '真题' : '完整';
+        return `${name}范围 · 全库去重 ${count ?? '统计中'} 题；目录按章节关联统计`;
     }
 
     static bindScopeButtons() {
@@ -1876,10 +1951,7 @@ class UIRenderer {
 
     static chapterScopeMatch(question) {
         if (AppState.chapterScope === 'core' && !question?.is_core) return false;
-        if (AppState.chapterScope === 'real') {
-            const source = `${question?.source || ''} ${question?.year || ''} ${question?.category || ''}`;
-            if (!/(真题|历年|模拟卷|数一|数二|数三)/.test(source)) return false;
-        }
+        if (AppState.chapterScope === 'real' && !isRealExamQuestion(question)) return false;
         const filters = AppState.filters || {};
         if (filters.sources?.length && !filters.sources.includes(sourceGroup(question?.source))) return false;
         if (filters.years?.length && !filters.years.includes(sourceYear(question?.source))) return false;
@@ -1922,9 +1994,9 @@ class UIRenderer {
                 const selected = String(node.id) === String(selectedId);
                 const children = node.children || [];
                 const hasBranch = children.length > 0;
-                const count = Number(node.question_count || 0);
+                const count = this.scopeCountForNode(node);
                 return `<button type="button" class="chapter-picker-item${selected ? ' active' : ''}${hasBranch ? ' has-children' : ''}" role="option" aria-selected="${selected}" aria-expanded="${hasBranch ? selected : 'false'}" data-picker-id="${escapeHtml(String(node.id))}" data-picker-depth="${depth}"><span>${escapeHtml(node.name || node.title || '')}</span><small>${count} 题</small>${hasBranch ? '<span aria-hidden="true">›</span>' : ''}</button>`;
-            }).join('')}${path.at(-1)?.direct_questions?.length ? `<button type="button" class="chapter-picker-item direct-picker-item" data-picker-direct="${escapeHtml(String(path.at(-1).id))}" data-picker-depth="${depth}"><span>本级直属题</span><small>${path.at(-1).direct_questions.length} 题</small></button>` : ''}</div>`);
+            }).join('')}${path.at(-1) && this.scopeCountForNode(path.at(-1), true) ? `<button type="button" class="chapter-picker-item direct-picker-item" data-picker-direct="${escapeHtml(String(path.at(-1).id))}" data-picker-depth="${depth}"><span>本级直属题</span><small>${this.scopeCountForNode(path.at(-1), true)} 题</small></button>` : ''}</div>`);
             const selectedNode = nodes.find(node => String(node.id) === String(selectedId));
             if (!selectedNode || !selectedNode.children?.length) break;
             path.push(selectedNode);
@@ -1939,7 +2011,7 @@ class UIRenderer {
             cursor = node.children || [];
         }
         const backDisabled = selectedIds.length ? '' : 'disabled aria-disabled="true"';
-        host.innerHTML = `<div class="chapter-picker-backdrop" data-picker-close></div><section class="chapter-picker-dialog" role="dialog" aria-modal="true" aria-label="选择小节"><header><div><p>章节导航</p><h2>${escapeHtml(pathNodes.at(-1)?.name || '选择小节')}</h2></div><button type="button" class="btn btn-text" data-picker-close aria-label="关闭章节导航">关闭</button></header><div class="chapter-picker-controls">${this.scopeButtons()}</div><nav class="chapter-picker-path" aria-label="当前目录路径"><button type="button" data-picker-path="0">科目</button>${pathNodes.map((node, index) => `<span aria-hidden="true">›</span><button type="button" data-picker-path="${index + 1}" aria-current="${index === pathNodes.length - 1 ? 'page' : 'false'}">${escapeHtml(node.name || node.title || '')}</button>`).join('')}</nav><div class="chapter-picker-columns">${columns.join('')}</div><footer><button type="button" class="btn btn-secondary" data-picker-back ${backDisabled}>上一级</button><p class="chapter-picker-feedback" role="status" aria-live="polite">目录题数为总数；进入章节后显示筛选结果。</p></footer></section>`;
+        host.innerHTML = `<div class="chapter-picker-backdrop" data-picker-close></div><section class="chapter-picker-dialog" role="dialog" aria-modal="true" aria-label="选择小节"><header><div><p>章节导航</p><h2>${escapeHtml(pathNodes.at(-1)?.name || '选择小节')}</h2></div><button type="button" class="btn btn-text" data-picker-close aria-label="关闭章节导航">关闭</button></header><div class="chapter-picker-controls">${this.scopeButtons()}</div><nav class="chapter-picker-path" aria-label="当前目录路径"><button type="button" data-picker-path="0">科目</button>${pathNodes.map((node, index) => `<span aria-hidden="true">›</span><button type="button" data-picker-path="${index + 1}" aria-current="${index === pathNodes.length - 1 ? 'page' : 'false'}">${escapeHtml(node.name || node.title || '')}</button>`).join('')}</nav><div class="chapter-picker-columns">${columns.join('')}</div><footer><button type="button" class="btn btn-secondary" data-picker-back ${backDisabled}>上一级</button><p class="chapter-picker-feedback" role="status" aria-live="polite">目录题数按当前范围统计；详细筛选进入章节后生效。</p></footer></section>`;
         host.querySelectorAll('[data-picker-id]').forEach(button => button.addEventListener('click', () => App.selectPickerNode(button.dataset.pickerId, Number(button.dataset.pickerDepth))));
         host.querySelectorAll('[data-picker-direct]').forEach(button => button.addEventListener('click', () => App.startDirectFromPicker(button.dataset.pickerDirect)));
         host.querySelectorAll('[data-picker-path]').forEach(button => button.addEventListener('click', () => { AppState.chapterPickerPath = AppState.chapterPickerPath.slice(0, Number(button.dataset.pickerPath)); this.renderChapterPicker(); }));
@@ -2008,6 +2080,8 @@ class UIRenderer {
 
         const mapping = AppState.videoMappings?.questions || {};
         const matches = this.libraryRows().filter(row => {
+            const scopeIds = this.scopeQuestionIdsCache.get(AppState.chapterScope);
+            if (AppState.chapterScope !== 'all' && !scopeIds?.has(String(row.id))) return false;
             if (query && !App.normalizeSearchText(`${row.id} ${row.stem || ''} ${row.source || ''} ${row.path || ''}`).includes(query)) return false;
             if (filters.sources.length && !filters.sources.includes(sourceGroup(row.source))) return false;
             if (filters.years.length && !filters.years.includes(sourceYear(row.source))) return false;
@@ -2122,7 +2196,7 @@ class UIRenderer {
                         ${AppState.globalSearchReturn ? '<button type="button" class="btn btn-secondary" onclick="App.returnToGlobalSearch()">返回搜索</button>' : ''}
                     </div>
 
-                    ${AppState.currentCategory && AppState.currentChapter ? `<div class="mode-toolbar"><span>单题阅读</span><div class="mode-toolbar-actions"><button type="button" class="mode-jump-button" data-shortcut-hint="jump" onclick="App.promptJumpToQuestion()">跳题</button><div class="mode-switch"><button type="button" class="active" aria-pressed="true">单题</button><button type="button" data-shortcut-hint="mode" onclick="App.changeQuestionMode('multi')">多题</button></div></div></div>` : ''}
+                    ${AppState.currentCategory && AppState.currentChapter ? `<div class="mode-toolbar"><span>单题做题</span><div class="mode-toolbar-actions"><button type="button" class="mode-jump-button" data-shortcut-hint="jump" onclick="App.promptJumpToQuestion()">跳题</button><div class="mode-switch"><button type="button" class="active" aria-pressed="true">单题做题</button><button type="button" onclick="App.changeQuestionMode('multi')">连续做题</button></div></div></div>` : ''}
 
                     <div class="question-content" id="question-content">
                         <div class="question-wrapper" data-question-id="${escapeHtml(String(question.id))}">
@@ -2190,7 +2264,7 @@ class UIRenderer {
         App.refreshShortcutHints(main);
         this.renderKaTeX();
         // 仅在从章节进入做题时记录学习位置；复习/笔记单题跳转不覆盖“继续学习”
-        if (AppState.currentCategory && AppState.currentChapter) {
+        if (AppState.currentCategory && AppState.currentChapter && !AppState.suspendLastStudy && !AppState.temporaryQuestionView) {
             StorageService.saveLearningPosition(
                 AppState.currentCategory.id,
                 AppState.currentChapter.id,
@@ -2236,7 +2310,7 @@ class UIRenderer {
             const mistake = StorageService.isMistake(id);
             const stem = this.renderQuestionContent(question, {
                 multi: true,
-                statusControls: this.renderQuestionStatusControls(id, mastery, mistake)
+                statusControls: this.renderQuestionStatusControls(id, mastery, mistake, false)
             })
                 .replace(/ id="(?:question-options|answer-section)"/g, '');
             return `<article class="multi-question-card${active ? ' active-question' : ''}" id="multi-question-${globalIndex}" data-question-id="${escapeHtml(id)}">
@@ -2254,7 +2328,7 @@ class UIRenderer {
         const railTools = `<div class="question-rail-tools"><label class="sr-only">按题号定位</label><input type="search" inputmode="numeric" aria-label="按题号定位" placeholder="题号" value="${escapeHtml(AppState.questionRailQuery)}" oninput="App.filterQuestionIndex(this)" onkeydown="if(event.key==='Enter'){event.preventDefault();App.jumpByQuestionNumber(this.value)}"><div class="question-rail-filters"><button type="button" data-rail-filter="favorite" aria-pressed="${AppState.questionRailFilter === 'favorite'}" class="${AppState.questionRailFilter === 'favorite' ? 'active' : ''}" onclick="App.toggleQuestionRailFilter('favorite')">收藏</button><button type="button" data-rail-filter="error-prone" aria-pressed="${AppState.questionRailFilter === 'error-prone'}" class="${AppState.questionRailFilter === 'error-prone' ? 'active' : ''}" onclick="App.toggleQuestionRailFilter('error-prone')">易错</button><button type="button" data-rail-filter="learning" aria-pressed="${AppState.questionRailFilter === 'learning'}" class="${AppState.questionRailFilter === 'learning' ? 'active' : ''}" onclick="App.toggleQuestionRailFilter('learning')">学习中</button><button type="button" data-rail-filter="mastered" aria-pressed="${AppState.questionRailFilter === 'mastered'}" class="${AppState.questionRailFilter === 'mastered' ? 'active' : ''}" onclick="App.toggleQuestionRailFilter('mastered')">已掌握</button><button type="button" data-rail-filter="not_started" aria-pressed="${AppState.questionRailFilter === 'not_started'}" class="${AppState.questionRailFilter === 'not_started' ? 'active' : ''}" onclick="App.toggleQuestionRailFilter('not_started')">未开始</button></div></div>`;
         main.innerHTML = `<div class="multi-question-view">
             <div class="question-header"><div class="breadcrumb-nav"><a href="#" onclick="App.showHome(); return false;">首页</a><span class="breadcrumb-sep">/</span><a href="#" onclick="App.showLibrary('${escapeHtml(AppState.currentCategory?.id || '')}'); return false;">${escapeHtml(AppState.currentCategory?.name || '题库')}</a><span class="breadcrumb-sep">/</span><span>${escapeHtml(AppState.currentChapter?.name || AppState.currentChapter?.title || '章节')}</span></div><div class="question-sequence">${total} 题 · 每段 20 题</div>${AppState.globalSearchReturn ? '<button type="button" class="btn btn-secondary" onclick="App.returnToGlobalSearch()">返回搜索</button>' : ''}</div>
-            <div class="mode-toolbar"><span>多题阅读 · 第 ${pageStart + 1}–${Math.min(pageStart + AppState.questions.length, total)} 题</span><div class="mode-toolbar-actions"><button type="button" class="mode-step-button" data-shortcut-hint="multiPrev" onclick="App.goToChapterQuestion(AppState.questionOffset + AppState.currentQuestionIndex - 1)">上一题</button><button type="button" class="mode-step-button" data-shortcut-hint="multiNext" onclick="App.goToChapterQuestion(AppState.questionOffset + AppState.currentQuestionIndex + 1)">下一题</button><button type="button" class="mode-jump-button" data-shortcut-hint="jump" onclick="App.promptJumpToQuestion()">跳题</button><div class="mode-switch"><button type="button" data-shortcut-hint="mode" onclick="App.changeQuestionMode('single')">单题</button><button type="button" class="active" aria-pressed="true">多题</button></div><button type="button" class="mobile-question-index-btn" onclick="App.toggleQuestionDrawer()">题号目录</button></div></div>
+            <div class="mode-toolbar"><span>连续做题 · 第 ${pageStart + 1}–${Math.min(pageStart + AppState.questions.length, total)} 题</span><div class="mode-toolbar-actions"><button type="button" class="mode-step-button" onclick="App.goToChapterQuestion(AppState.questionOffset + AppState.currentQuestionIndex - 1)">上一题</button><button type="button" class="mode-step-button" onclick="App.goToChapterQuestion(AppState.questionOffset + AppState.currentQuestionIndex + 1)">下一题</button><button type="button" class="mode-jump-button" onclick="App.promptJumpToQuestion()">跳题</button><div class="mode-switch"><button type="button" onclick="App.changeQuestionMode('single')">单题做题</button><button type="button" class="active" aria-pressed="true">连续做题</button></div><button type="button" class="mobile-question-index-btn" onclick="App.toggleQuestionDrawer()">题号目录</button></div></div>
             <div class="multi-reading-layout"><aside class="question-rail" aria-label="题号目录">${railTools}${rangeButtons}</aside><div class="multi-question-list">${cards}<div class="multi-page-nav"><button type="button" class="btn btn-secondary" ${start === 0 ? 'disabled' : ''} onclick="App.goToChapterQuestion(${Math.max(0, start - 1)})">上一段</button><button type="button" class="btn btn-secondary" ${start + AppState.questions.length >= total ? 'disabled' : ''} onclick="App.goToChapterQuestion(${Math.min(total - 1, start + AppState.questions.length)})">下一段</button></div></div></div>
             <div class="question-drawer-backdrop" onclick="App.toggleQuestionDrawer()"></div><aside class="question-drawer" aria-label="题号目录">${railTools}${rangeButtons}</aside>
             <div class="ai-panel closed" id="ai-panel"></div><div class="annotation-panel closed" id="annotation-panel"></div>
@@ -2264,8 +2338,26 @@ class UIRenderer {
         this.renderKaTeX();
         AppState.currentQuestionIndex = Math.min(Math.max(0, activeIndex), AppState.questions.length - 1);
         App.filterQuestionRailItems();
+        main.onscroll = () => {
+            clearTimeout(this.multiScrollTimer);
+            this.multiScrollTimer = setTimeout(() => {
+                if (AppState.currentView !== 'question' || AppState.questionMode !== 'multi') return;
+                const cards = [...main.querySelectorAll('.multi-question-card')];
+                const top = main.getBoundingClientRect().top + 100;
+                const active = cards.filter(card => card.getBoundingClientRect().top <= top).at(-1) || cards[0];
+                const local = cards.indexOf(active);
+                if (local < 0 || local === AppState.currentQuestionIndex) return;
+                AppState.currentQuestionIndex = local;
+                const question = AppState.questions[local];
+                if (!question) return;
+                StorageService.saveLearningPosition(AppState.currentCategory.id, AppState.currentChapter.id, AppState.questionOffset + local, question.id, 'multi');
+                App.recordVisit(question.id, AppState.currentCategory.id, AppState.currentChapter.id);
+                void StateSync.pushLastStudy(AppState.currentChapter.id, question.id, 'multi');
+                main.querySelectorAll('.question-rail-item').forEach(button => button.classList.toggle('current', button.dataset.questionId === String(question.id)));
+            }, 180);
+        };
         const selected = AppState.questions[AppState.currentQuestionIndex];
-        if (selected && AppState.currentCategory && AppState.currentChapter) {
+        if (selected && AppState.currentCategory && AppState.currentChapter && !AppState.suspendLastStudy && !AppState.temporaryQuestionView) {
             StorageService.saveLearningPosition(AppState.currentCategory.id, AppState.currentChapter.id, start + AppState.currentQuestionIndex, selected.id, 'multi');
         }
         if (AppState.ui.aiPanelOpen) this.renderAIPanel();
@@ -2294,7 +2386,7 @@ class UIRenderer {
         </span>`;
     }
 
-    static renderQuestionStatusControls(questionId, mastery, mistake) {
+    static renderQuestionStatusControls(questionId, mastery, mistake, showShortcutHints = true) {
         const id = escapeHtml(String(questionId));
         const normalizedMastery = ['not_started', 'learning', 'mastered'].includes(mastery) ? mastery : 'not_started';
         const choices = [
@@ -2306,11 +2398,11 @@ class UIRenderer {
             <span class="question-mastery-label">掌握程度</span>
             <div class="question-mastery-choices">${choices.map(([value, label, shortcut]) => `
                 <button type="button" class="mastery-btn question-mastery-choice mastery-${value}${normalizedMastery === value ? ' active' : ''}"
-                    data-mastery-choice="${value}" data-shortcut-hint="${shortcut}" aria-label="掌握程度：${label}"
+                    data-mastery-choice="${value}" ${showShortcutHints ? `data-shortcut-hint="${shortcut}"` : ''} aria-label="掌握程度：${label}"
                     aria-pressed="${normalizedMastery === value}" onclick="App.setQuestionMastery('${id}', '${value}')">${label}</button>
             `).join('')}</div>
             <button type="button" class="mastery-btn question-mistake-toggle${mistake ? ' active' : ''}"
-                data-shortcut-hint="error" aria-pressed="${mistake}" onclick="App.toggleQuestionMistake('${id}')">${mistake ? '✓ ' : ''}易错</button>
+                ${showShortcutHints ? 'data-shortcut-hint="error"' : ''} aria-pressed="${mistake}" onclick="App.toggleQuestionMistake('${id}')">${mistake ? '✓ ' : ''}易错</button>
         </div>`;
     }
 
@@ -2894,6 +2986,36 @@ class UIRenderer {
         `;
     }
 
+    static renderHistory() {
+        const main = document.getElementById('app-main');
+        const filters = AppState.historyFilters;
+        const option = (value, label, selected) => `<option value="${value}"${String(selected) === value ? ' selected' : ''}>${label}</option>`;
+        main.innerHTML = `<div class="home-content history-page"><div class="history-heading"><div><p class="eyebrow">本机学习轨迹</p><h1 class="text-page-title">历史做题记录</h1><p class="text-helper">每题保留最近一次进入时间；旧记录的时间可能来自进度修改。</p></div><button type="button" class="btn btn-secondary" id="history-clear">清空历史</button></div>
+            <div class="history-filters"><label>搜索题号或章节<input type="search" data-history-filter="query" value="${escapeHtml(filters.query)}" placeholder="题号、科目、小节"></label><label>科目<select data-history-filter="category">${option('', '全部科目', filters.category)}${(AppState.categories?.categories || []).map(cat => option(String(cat.id), escapeHtml(cat.name), filters.category)).join('')}</select></label><label>开始日期<input type="date" data-history-filter="from" value="${escapeHtml(filters.from)}"></label><label>结束日期<input type="date" data-history-filter="to" value="${escapeHtml(filters.to)}"></label><label>掌握度<select data-history-filter="mastery">${[['','全部'],['not_started','未开始'],['learning','学习中'],['mastered','已掌握']].map(([v,l]) => option(v,l,filters.mastery)).join('')}</select></label><label>收藏<select data-history-filter="favorite">${[['','全部'],['yes','已收藏'],['no','未收藏']].map(([v,l]) => option(v,l,filters.favorite)).join('')}</select></label><label>易错<select data-history-filter="mistake">${[['','全部'],['yes','易错'],['no','非易错']].map(([v,l]) => option(v,l,filters.mistake)).join('')}</select></label></div><div id="history-results" aria-live="polite"></div></div>`;
+        main.querySelectorAll('[data-history-filter]').forEach(input => input.addEventListener(input.type === 'search' ? 'input' : 'change', () => {
+            AppState.historyFilters[input.dataset.historyFilter] = input.value;
+            AppState.historyLimit = 50;
+            this.renderHistoryRows();
+        }));
+        main.querySelector('#history-clear')?.addEventListener('click', () => App.clearHistory());
+        this.renderHistoryRows();
+    }
+
+    static renderHistoryRows() {
+        const host = document.getElementById('history-results');
+        if (!host) return;
+        const rows = App.filteredHistory();
+        const visible = rows.slice(0, AppState.historyLimit);
+        host.innerHTML = `<p class="text-helper">共 ${rows.length} 道题${rows.length > visible.length ? ` · 已显示 ${visible.length} 道` : ''}</p>${visible.length ? `<div class="history-list">${visible.map(({ entry, location, progress }) => {
+            const title = location ? location.path.map(node => node.name || node.title).filter(Boolean).join(' / ') : '当前题库中无法定位';
+            const time = entry.visited_at ? this.formatDateTime(entry.visited_at) : '时间未知';
+            return `<article class="history-row"><div><strong>题号 ${escapeHtml(entry.question_id)}</strong><p>${escapeHtml(title)}</p><small>${escapeHtml(time)}${entry.time_kind === 'legacy' ? ' · 旧记录时间' : ''} · ${escapeHtml(masteryLabel(progress.mastery || 'not_started'))}${StorageService.isFavorite(entry.question_id) ? ' · 已收藏' : ''}${progress.error_prone ? ' · 易错' : ''}</small></div><div class="history-actions"><button type="button" class="btn btn-primary btn-sm" data-history-open="${escapeHtml(entry.question_id)}"${location ? '' : ' disabled'}>回到这题</button><button type="button" class="btn btn-text btn-sm" data-history-delete="${escapeHtml(entry.question_id)}">删除</button></div></article>`;
+        }).join('')}</div>${rows.length > visible.length ? '<button type="button" class="btn btn-secondary" id="history-more">加载更多</button>' : ''}` : '<div class="empty-state"><h3>没有符合条件的历史题目</h3><p>进入题目后会记录在这里。</p></div>'}`;
+        host.querySelectorAll('[data-history-open]').forEach(button => button.addEventListener('click', () => App.openHistoryQuestion(button.dataset.historyOpen)));
+        host.querySelectorAll('[data-history-delete]').forEach(button => button.addEventListener('click', () => App.deleteHistoryQuestion(button.dataset.historyDelete)));
+        host.querySelector('#history-more')?.addEventListener('click', () => { AppState.historyLimit += 50; this.renderHistoryRows(); });
+    }
+
     // ---- 工具页 ----
 
     static renderTools() {
@@ -2957,7 +3079,7 @@ class UIRenderer {
                     </div>
                 </div>
 
-                <div class="card tool-card">
+                <div class="card tool-card" id="tool-backup-card">
                     <div class="tool-row">
                         <div class="tool-info">
                             <h2 class="text-section-title">进度备份</h2>
@@ -3005,9 +3127,11 @@ class UIRenderer {
                             <h2 class="text-section-title">官网同步</h2>
                             <p>先检查本地和官网两边变化，确认后再同步。</p>
                         </div>
-                        <button type="button" class="btn btn-secondary" id="sync-toggle-btn" onclick="App.toggleToolPanel('sync-panel')">进入</button>
+                        <button type="button" class="btn btn-secondary" id="sync-toggle-btn" onclick="App.openSyncCenter()">打开同步向导</button>
                     </div>
-                    <div class="tool-panel hidden" id="sync-panel">
+                    <div class="tool-panel sync-wizard hidden" id="sync-panel">
+                        <nav class="guide-step-nav" aria-label="官网同步步骤"><button type="button" data-guide-nav="sync" data-step="1">1 登录</button><button type="button" data-guide-nav="sync" data-step="2">2 只读检查</button><button type="button" data-guide-nav="sync" data-step="3">3 核对变化</button><button type="button" data-guide-nav="sync" data-step="4">4 确认写入</button></nav><p class="guide-step-live" id="sync-step-live" aria-live="polite"></p><button type="button" class="btn btn-text btn-sm" id="sync-restart">从头再看</button>
+                        <section data-guide-panel="sync" data-step="1" class="guide-panel"><h3>连接官网账号</h3><p>输入官网登录码；如果使用账号密码，请同时填写密码。先验证登录，后续检查只会读取数据。</p>
                         <div class="sync-status" id="sync-status">正在检查官网连接…</div>
                         <div class="tool-controls">
                             <button type="button" class="btn btn-secondary btn-sm" id="btn-sync-status">检查状态</button>
@@ -3023,11 +3147,12 @@ class UIRenderer {
                             </label>
                             <button type="submit" class="btn btn-primary btn-sm">保存登录配置</button>
                         </form>
+                        </section><section data-guide-panel="sync" data-step="2" class="guide-panel"><h3>只读检查两边进度</h3><p>这一步读取本地和官网进度，不会写入。首次同步会先保留快照；日常同步也会先预览冲突。</p>
+                        <div class="tool-controls"><button type="button" class="btn btn-primary btn-sm" id="btn-sync-preview" disabled>检查同步内容</button></div></section><section data-guide-panel="sync" data-step="3" class="guide-panel"><h3>核对变化和冲突</h3><p>先看更新方向和题号。冲突可以选择保留较新状态、以官网为准或以本地为准；更改选择会重新检查。</p>
                         <div class="sync-flow-card" id="sync-flow-card" data-state="idle" aria-live="polite"><strong id="sync-summary">还没有检查同步内容</strong><p id="sync-summary-note">检查会读取官网和本地进度，确认前不会修改学习进度。</p></div>
-                        <div class="tool-controls"><button type="button" class="btn btn-primary btn-sm" id="btn-sync-preview" disabled>检查同步内容</button><button type="button" class="btn btn-primary btn-sm" id="btn-sync-apply" hidden disabled>确认同步</button></div>
                         <div id="sync-conflict-wrap" hidden><label for="sync-conflict-winner">冲突处理</label><select id="sync-conflict-winner"><option value="latest">保留更新时间较新的状态</option><option value="remote">以官网为准</option><option value="local">以本地为准</option></select></div>
                         <details id="sync-detail" hidden><summary>查看变化题号</summary><div id="sync-detail-content"></div></details>
-                        <div class="tool-result" id="sync-result" role="status"></div>
+                        <button type="button" class="btn btn-primary" id="sync-review-next" disabled>已核对，下一步</button></section><section data-guide-panel="sync" data-step="4" class="guide-panel"><h3>由你确认写入</h3><p>点击下方按钮才会应用本次预览。备份与冲突处理仍由现有同步流程执行；失败后重新检查再确认。</p><button type="button" class="btn btn-primary btn-sm" id="btn-sync-apply" hidden disabled>确认同步</button></section><div class="tool-result" id="sync-result" role="status"></div>
                     </div>
                 </div>
 
@@ -3037,15 +3162,7 @@ class UIRenderer {
                             <h2 class="text-section-title">使用教程</h2>
                             <p>了解本地学习、备份与官网同步。</p>
                         </div>
-                        <button type="button" class="btn btn-secondary" id="tutorial-toggle-btn" onclick="App.toggleTutorial()">展开</button>
-                    </div>
-                    <div class="tutorial-panel hidden" id="tutorial-panel">
-                        <ol>
-                            <li>在「题库」选择科目与章节开始做题，答完可展开答案与解析，观看老师视频讲解。</li>
-                            <li>用「收藏 / 易错 / 已掌握 / 批注」标记题目，在「复习」和「笔记」页集中回看。</li>
-                            <li>在「工具」页定期下载备份；更换设备前保留备份文件。官网同步先检查两边变化，再确认应用。</li>
-                        </ol>
-                        <button type="button" class="btn btn-secondary btn-sm" onclick="App.showUserGuide()">查看完整教程</button>
+                        <button type="button" class="btn btn-secondary" onclick="App.showUserGuide()">打开使用教程</button>
                     </div>
                 </div>
 
@@ -3065,6 +3182,10 @@ class UIRenderer {
         document.getElementById('btn-sync-preview')?.addEventListener('click', () => App.syncReconcilePreview());
         document.getElementById('btn-sync-apply')?.addEventListener('click', () => App.syncReconcileApply());
         document.getElementById('sync-conflict-winner')?.addEventListener('change', () => App.syncReconcilePreview());
+        document.querySelectorAll('[data-guide-nav="sync"]').forEach(button => button.addEventListener('click', () => App.selectGuideStep('sync', button.dataset.step, 4)));
+        document.getElementById('sync-restart')?.addEventListener('click', () => App.selectGuideStep('sync', 1, 4));
+        document.getElementById('sync-review-next')?.addEventListener('click', () => App.selectGuideStep('sync', 4, 4));
+        App.selectGuideStep('sync', App.guideStep('sync', 4), 4);
         document.getElementById('migration-backup-saved')?.addEventListener('change', (event) => {
             const button = document.getElementById('btn-migration-apply');
             if (button) button.disabled = !event.target.checked;
@@ -3327,8 +3448,35 @@ class AIService {
 
 // ========== 应用控制器 ==========
 class App {
+    static syncTitlebarInset() {
+        const root = document.documentElement;
+        const overlay = navigator.windowControlsOverlay;
+        let titlebarHeight = 0;
+        try {
+            if (overlay?.visible && typeof overlay.getTitlebarAreaRect === 'function') {
+                titlebarHeight = Math.max(0, Number(overlay.getTitlebarAreaRect().height) || 0);
+            }
+        } catch {}
+
+        const inset = titlebarHeight > 0 && !document.getElementById('daguan-desktop-bar') ? titlebarHeight : 0;
+        root.classList?.toggle('native-titlebar-content-inset', inset > 0);
+        root.style?.setProperty('--native-titlebar-inset', `${inset}px`);
+        return inset;
+    }
+
+    static watchTitlebarInset() {
+        this.syncTitlebarInset();
+        const overlay = navigator.windowControlsOverlay;
+        overlay?.addEventListener?.('geometrychange', () => this.syncTitlebarInset());
+        if (typeof MutationObserver === 'function' && document.body) {
+            const observer = new MutationObserver(() => this.syncTitlebarInset());
+            observer.observe(document.body, { childList: true });
+        }
+    }
+
     static async init() {
         console.log('大观园新版 - 初始化');
+        this.watchTitlebarInset();
 
         AppState.shortcuts = { ...SHORTCUT_DEFAULTS };
         try { AppState.shortcuts = { ...AppState.shortcuts, ...(JSON.parse(localStorage.getItem(SHORTCUT_STORAGE_KEY) || '{}') || {}) }; } catch {}
@@ -3347,11 +3495,6 @@ class App {
         // 绑定导航
         this.bindNavigation();
         this.bindKeyboardShortcuts();
-        document.querySelectorAll('[data-guide-close]').forEach(button => button.addEventListener('click', () => document.getElementById('new-user-guide')?.close()));
-        document.getElementById('guide-open-sync')?.addEventListener('click', () => {
-            document.getElementById('new-user-guide')?.close();
-            this.openSyncCenter();
-        });
 
         // 检查版本偏好
         const urlParams = new URLSearchParams(window.location.search);
@@ -3478,7 +3621,7 @@ class App {
             dialog.className = 'shortcut-help-dialog';
             document.body.append(dialog);
         }
-        const fixed = [['/', '搜索题目'], ['M', '切换单题 / 多题'], ['J / K', '多题模式定位上一题 / 下一题'], ['G', '按题号跳转'], ['Alt + 1–4', '选择 A–D 选项']];
+        const fixed = [['/', '搜索题目'], ['G', '单题做题时按题号跳转'], ['Alt + 1–4', '单题做题时选择 A–D 选项']];
         dialog.innerHTML = `<div class="shortcut-help-head"><h2>快捷键</h2><button type="button" class="btn btn-text" data-close>关闭</button></div><dl>${fixed.map(([key, label]) => `<div><dt><kbd>${key}</kbd></dt><dd>${label}</dd></div>`).join('')}${Object.entries(SHORTCUT_LABELS).map(([action, label]) => `<div><dt><kbd>${escapeHtml(this.shortcutLabel(AppState.shortcuts[action]))}</kbd></dt><dd>${escapeHtml(label)}</dd></div>`).join('')}</dl><p class="text-helper">输入框、批注与 AI 编辑区聚焦时，练习快捷键会暂停。</p>`;
         dialog.querySelector('[data-close]').onclick = () => dialog.close();
         dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); }, { once: true });
@@ -3492,7 +3635,7 @@ class App {
     }
 
     static refreshShortcutHints(root = document) {
-        const fixed = { mode: 'M', jump: 'G', multiPrev: 'K', multiNext: 'J' };
+        const fixed = { jump: 'G' };
         root.querySelectorAll('[data-shortcut-hint]').forEach(button => {
             const action = button.dataset.shortcutHint;
             const keys = action === 'mastery'
@@ -3582,19 +3725,14 @@ class App {
             if (editing || event.ctrlKey || event.metaKey) return;
             const pressed = event.key && event.key !== 'Unidentified' ? event.key : SHORTCUT_CODE_FALLBACK[event.code] || event.code || '';
             if (pressed === '/' && !event.altKey && !event.shiftKey) { event.preventDefault(); this.openGlobalSearch(); return; }
-            if (pressed.toLowerCase() === 'm' && !event.altKey && AppState.currentView === 'question') { event.preventDefault(); this.changeQuestionMode(AppState.questionMode === 'single' ? 'multi' : 'single'); return; }
-            if (AppState.currentView !== 'question') return;
-            if (AppState.questionMode === 'multi' && ['j', 'k'].includes(pressed.toLowerCase())) {
-                event.preventDefault(); const delta = pressed.toLowerCase() === 'j' ? 1 : -1; this.goToChapterQuestion((AppState.questionOffset || 0) + AppState.currentQuestionIndex + delta); return;
-            }
+            if (AppState.currentView !== 'question' || AppState.questionMode !== 'single') return;
             if (pressed.toLowerCase() === 'g' && !event.altKey) {
                 event.preventDefault(); this.promptJumpToQuestion(); return;
             }
             const q = AppState.questions[AppState.currentQuestionIndex];
             if (event.altKey && /^[1-4]$/.test(pressed)) {
                 event.preventDefault(); const index = Number(pressed) - 1;
-                if (AppState.questionMode === 'multi') this.selectQuestionOption(q?.id, index, document.querySelector(`#multi-question-${AppState.questionOffset + AppState.currentQuestionIndex} .option-item:nth-child(${index + 1})`));
-                else this.selectOption(index);
+                this.selectOption(index);
                 return;
             }
             const key = pressed === 'Space' || pressed === 'Spacebar' ? ' ' : pressed;
@@ -3603,7 +3741,7 @@ class App {
             event.preventDefault();
             if (action === 'up') { this.previousQuestion(); return; }
             if (action === 'down') { this.nextQuestion(); return; }
-            if (action === 'answer') { if (AppState.questionMode === 'multi') this.toggleCardAnswer(AppState.questionOffset + AppState.currentQuestionIndex, document.querySelector(`#multi-question-${AppState.questionOffset + AppState.currentQuestionIndex} .expand-answer-btn`)); else this.toggleAnswer(); return; }
+            if (action === 'answer') { this.toggleAnswer(); return; }
             if (action.startsWith('mastery')) { this.setQuestionMastery(q?.id, ({ mastery1: 'not_started', mastery2: 'learning', mastery3: 'mastered' })[action]); return; }
             if (action === 'favorite') { this.toggleQuestionFavorite(q?.id); return; }
             if (action === 'error') { this.toggleQuestionMistake(q?.id); return; }
@@ -3625,6 +3763,87 @@ class App {
                 if (view) this.navigate(view);
             });
         });
+    }
+
+    static historyLocation(questionId, entry = null) {
+        if (!AppState.historyLocationCache) {
+            const locations = new Map();
+            const walk = (node, top, path) => {
+                const trail = [...path, node];
+                const entries = node.direct_questions || (!(node.children || []).length ? node.questions : []) || [];
+                entries.forEach(item => {
+                    const id = String(item.id);
+                    if (!locations.has(id)) locations.set(id, []);
+                    locations.get(id).push({ top, leaf: node, path: trail });
+                });
+                (node.children || []).forEach(child => walk(child, top, trail));
+            };
+            (AppState.categories?.categories || []).forEach(top => walk(top, top, []));
+            AppState.historyLocationCache = locations;
+        }
+        const candidates = AppState.historyLocationCache.get(String(questionId)) || [];
+        if (entry?.chapter_id != null) {
+            return candidates.find(item => String(item.leaf.id) === String(entry.chapter_id)
+                && (entry.category_id == null || String(item.top.id) === String(entry.category_id))) || null;
+        }
+        if (entry?.category_id != null) return candidates.find(item => String(item.top.id) === String(entry.category_id)) || null;
+        return candidates[0] || null;
+    }
+
+    static recordVisit(questionId, categoryId = null, chapterId = null) {
+        if (questionId == null) return;
+        void window.DaguanVisitHistory?.visit(questionId, categoryId, chapterId);
+    }
+
+    static filteredHistory() {
+        const filters = AppState.historyFilters;
+        const query = filters.query.trim().toLocaleLowerCase();
+        const progress = StorageService.getProgress().progress;
+        return AppState.visitHistory.map(entry => ({ entry, location: this.historyLocation(entry.question_id, entry), progress: progress[String(entry.question_id)] || {} }))
+            .filter(({ entry, location, progress: row }) => {
+                const path = location?.path.map(node => node.name || node.title).join(' / ') || '';
+                if (query && !`${entry.question_id} ${path}`.toLocaleLowerCase().includes(query)) return false;
+                if (filters.category && String(location?.top.id) !== filters.category) return false;
+                const date = entry.visited_at ? new Date(entry.visited_at) : null;
+                const day = date && Number.isFinite(date.getTime()) ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}` : '';
+                if (filters.from && (!day || day < filters.from)) return false;
+                if (filters.to && (!day || day > filters.to)) return false;
+                if (filters.mastery && (row.mastery || 'not_started') !== filters.mastery) return false;
+                if (filters.favorite && StorageService.isFavorite(entry.question_id) !== (filters.favorite === 'yes')) return false;
+                if (filters.mistake && (row.error_prone === true) !== (filters.mistake === 'yes')) return false;
+                return true;
+            });
+    }
+
+    static async showHistory() {
+        AppState.currentView = 'history';
+        try { AppState.visitHistory = await window.DaguanVisitHistory.list(); }
+        catch (error) { toast(error.message || '做题历史暂时无法读取'); AppState.visitHistory = []; }
+        if (AppState.currentView === 'history') UIRenderer.renderHistory();
+    }
+
+    static async openHistoryQuestion(id) {
+        const entry = AppState.visitHistory.find(item => String(item.question_id) === String(id));
+        const location = this.historyLocation(id, entry);
+        if (!location) { toast('当前题库中无法定位这道题'); return; }
+        const index = DataService.chapterEntries(location.leaf).findIndex(entry => String(entry.id) === String(id));
+        if (index < 0) { toast('当前章节中没有这道题'); return; }
+        AppState.currentCategory = location.top;
+        await this.enterChapterQuestions(location.leaf, index, id, this.preferredQuestionMode(), { ignoreFilters: true });
+    }
+
+    static async deleteHistoryQuestion(id) {
+        try {
+            await window.DaguanVisitHistory.remove(id);
+            AppState.visitHistory = AppState.visitHistory.filter(entry => String(entry.question_id) !== String(id));
+            UIRenderer.renderHistoryRows();
+        } catch (error) { toast(error.message || '删除失败'); }
+    }
+
+    static async clearHistory() {
+        if (!confirm('确定清空做题历史吗？掌握度、收藏和最近学习位置会保留。')) return;
+        try { await window.DaguanVisitHistory.clear(); AppState.visitHistory = []; UIRenderer.renderHistoryRows(); }
+        catch (error) { toast(error.message || '清空失败'); }
     }
 
     static async navigate(view) {
@@ -3684,11 +3903,20 @@ class App {
             case 'records':
                 UIRenderer.renderRecords();
                 break;
+            case 'history':
+                await this.showHistory();
+                break;
             case 'tools':
                 UIRenderer.renderTools();
                 break;
             case 'settings':
                 this.showSettings();
+                break;
+            case 'remote-guide':
+                this.showRemoteGuide();
+                break;
+            case 'usage-guide':
+                this.renderUsageGuide();
                 break;
             default:
                 this.showHome();
@@ -3701,8 +3929,48 @@ class App {
     }
 
     static showUserGuide() {
-        const dialog = document.getElementById('new-user-guide');
-        if (dialog && !dialog.open) dialog.showModal();
+        void this.navigate('usage-guide');
+    }
+
+    static guideStep(key, count) {
+        const value = Number(localStorage.getItem(`daguan_guide_${key}_step_v1`));
+        return Number.isInteger(value) && value >= 1 && value <= count ? value : 1;
+    }
+
+    static selectGuideStep(key, step, count) {
+        const next = Math.max(1, Math.min(count, Number(step) || 1));
+        localStorage.setItem(`daguan_guide_${key}_step_v1`, String(next));
+        (document.querySelectorAll?.(`[data-guide-panel="${key}"]`) || []).forEach(panel => { panel.hidden = Number(panel.dataset.step) !== next; });
+        (document.querySelectorAll?.(`[data-guide-nav="${key}"]`) || []).forEach(button => {
+            button.setAttribute('aria-current', Number(button.dataset.step) === next ? 'step' : 'false');
+        });
+        document.getElementById(`${key}-step-live`)?.replaceChildren(document.createTextNode(`第 ${next} 步，共 ${count} 步`));
+    }
+
+    static async guideJump(view, selector) {
+        await this.navigate(view);
+        const target = document.querySelector(selector);
+        if (!target) return;
+        target.scrollIntoView({ behavior: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth', block: 'center' });
+        target.classList.add('guide-target');
+        const hadTabIndex = target.hasAttribute('tabindex');
+        if (!hadTabIndex) target.setAttribute('tabindex', '-1');
+        target.focus({ preventScroll: true });
+        setTimeout(() => { target.classList.remove('guide-target'); if (!hadTabIndex) target.removeAttribute('tabindex'); }, 3500);
+    }
+
+    static renderUsageGuide() {
+        const main = document.getElementById('app-main');
+        main.innerHTML = `<div class="guide-page"><div class="guide-page-head"><div><p class="guide-kicker">使用教程</p><h1>挑一件事，跟着做</h1><p>每一步都能直接前往对应页面。进度只保存在这台设备上。</p></div><button class="btn btn-text" id="usage-restart">从头再看</button></div>
+          <nav class="guide-step-nav" aria-label="教程任务"><button type="button" data-guide-nav="usage" data-step="1">1 选题做题</button><button type="button" data-guide-nav="usage" data-step="2">2 复习与批注</button><button type="button" data-guide-nav="usage" data-step="3">3 备份与同步</button></nav><p class="guide-step-live" id="usage-step-live" aria-live="polite"></p>
+          <section class="guide-panel" data-guide-panel="usage" data-step="1"><span class="guide-panel-number">任务一</span><h2>找到一章，开始练习</h2><p>进入「题库」，选科目后依次点章节和小节。末级小节会打开题目；有直属题的章节也能直接做。</p><div class="guide-callout">在题目页可切换「单题做题 / 连续做题」。连续做题每段显示 20 题，向下翻页继续。</div><button class="btn btn-primary" data-guide-jump="library" data-target="#library-content">去题库选题</button></section>
+          <section class="guide-panel" data-guide-panel="usage" data-step="2"><span class="guide-panel-number">任务二</span><h2>留下标记，下次接着学</h2><p>做题时收藏、标记易错或已掌握，并在题目下方写批注；「复习」按标记集中回看，「笔记」汇总你的记录。</p><div class="guide-actions"><button class="btn btn-primary" data-guide-jump="review" data-target=".review-tabs">去复习</button><button class="btn btn-secondary" data-guide-jump="notes" data-target=".notes-list-panel">看笔记</button></div></section>
+          <section class="guide-panel" data-guide-panel="usage" data-step="3"><span class="guide-panel-number">任务三</span><h2>先备份，再核对同步</h2><p>在「工具」下载本地备份并妥善保存。官网同步先登录、只读检查，再核对变化；只有你点击确认后才写入。</p><div class="guide-callout">官网同步覆盖掌握状态、收藏和最近学习位置。易错标记、批注、AI 密钥及聊天记录不会上传官网。</div><div class="guide-actions"><button class="btn btn-primary" id="usage-open-sync">打开同步向导</button><button class="btn btn-secondary" data-guide-jump="tools" data-target="#tool-backup-card">去工具页备份</button></div></section></div>`;
+        main.querySelectorAll('[data-guide-nav="usage"]').forEach(button => button.onclick = () => this.selectGuideStep('usage', button.dataset.step, 3));
+        main.querySelectorAll('[data-guide-jump]').forEach(button => button.onclick = () => void this.guideJump(button.dataset.guideJump, button.dataset.target));
+        document.getElementById('usage-restart').onclick = () => this.selectGuideStep('usage', 1, 3);
+        document.getElementById('usage-open-sync').onclick = () => void this.openSyncCenter();
+        this.selectGuideStep('usage', this.guideStep('usage', 3), 3);
     }
 
     static async refreshHomeSyncStatus() {
@@ -3822,7 +4090,7 @@ class App {
         AppState.currentCategory = resolved.top;
         const index = DataService.chapterEntries(resolved.leaf).findIndex(item => String(item.id) === String(questionId));
         if (index < 0) { toast('题目暂时无法加载'); return; }
-        await this.enterChapterQuestions(resolved.leaf, index, questionId, 'single');
+        await this.enterChapterQuestions(resolved.leaf, index, questionId, 'single', { preserveLastStudy: true, ignoreFilters: true });
     }
 
     static resolveSearchChapter(top, questionId) {
@@ -3865,12 +4133,14 @@ class App {
     static showLibrary(categoryId = null) {
         if (AppState.currentView === 'library') UIRenderer.saveDirectoryState();
         const saved = UIRenderer.readDirectoryState();
-        if (!categoryId) categoryId = AppState.currentCategory?.id || saved.lastCategory || AppState.categories?.categories?.[0]?.id;
-        if (categoryId == null) return;
-        AppState.currentCategory = UIRenderer.findCategoryById(categoryId);
+        const category = [categoryId, AppState.currentCategory?.id, saved.lastCategory, AppState.categories?.categories?.[0]?.id]
+            .map(id => id == null ? null : UIRenderer.findCategoryById(id))
+            .find(Boolean);
+        if (!category) return;
+        AppState.currentCategory = category;
         AppState.directoryPathIds = [];
         AppState.currentView = 'library';
-        UIRenderer.renderLibrary(categoryId);
+        UIRenderer.renderLibrary(category.id);
     }
 
     static selectCatalogNode(categoryId, nodeId) {
@@ -3960,11 +4230,30 @@ class App {
     }
 
     static async changeChapterScope(scope) {
-        if (!['all', 'core', 'real'].includes(scope) || scope === AppState.chapterScope) return;
+        if (!['all', 'core', 'real'].includes(scope)) return;
+        const token = (this.chapterScopeToken || 0) + 1;
+        this.chapterScopeToken = token;
+        const summary = document.getElementById('catalog-scope-summary');
+        if (scope === AppState.chapterScope) {
+            if (summary) summary.textContent = UIRenderer.scopeSummaryText();
+            return;
+        }
         const previous = AppState.chapterScope;
         const current = AppState.questions?.[AppState.currentQuestionIndex];
         if (AppState.currentView === 'question' && AppState.currentChapter && !await this.ensureSavedBeforeLeavingQuestion()) return;
+        if (summary) summary.textContent = `正在统计${scope === 'core' ? '严选' : scope === 'real' ? '真题' : '完整'}题数…`;
+        try {
+            await UIRenderer.ensureScopeQuestionIds(scope);
+        } catch (error) {
+            if (token === this.chapterScopeToken) {
+                if (summary) summary.textContent = UIRenderer.scopeSummaryText();
+                toast(`题库范围暂时无法加载：${error.message || '请重试'}`);
+            }
+            return;
+        }
+        if (token !== this.chapterScopeToken) return;
         AppState.chapterScope = scope;
+        if (summary) summary.textContent = UIRenderer.scopeSummaryText();
         document.querySelectorAll('[data-chapter-scope]').forEach(button => {
             const active = button.dataset.chapterScope === scope;
             button.classList.toggle('active', active);
@@ -3993,7 +4282,8 @@ class App {
         if (AppState.currentView === 'library') {
             const filtering = String(AppState.libraryQuery || '').trim()
                 || Object.values(AppState.filters || {}).some(values => Array.isArray(values) && values.length > 0);
-            if (!filtering) {
+            if (filtering) UIRenderer.renderLibraryResults();
+            else {
                 const node = UIRenderer.findNodeById(AppState.currentCategory, AppState.directoryNodeId) || AppState.currentCategory;
                 UIRenderer.renderDirectoryNode(node);
             }
@@ -4025,7 +4315,7 @@ class App {
         AppState.currentChapter = node;
         const entries = DataService.chapterEntries(node);
         const index = position.questionId != null ? entries.findIndex(e => String(e.id) === String(position.questionId)) : Number(position.questionIndex) || 0;
-        await this.enterChapterQuestions(node, Math.max(0, index), position.questionId, this.preferredQuestionMode());
+        await this.enterChapterQuestions(node, Math.max(0, index), position.questionId, this.preferredQuestionMode(), { ignoreFilters: true });
     }
 
     static preferredQuestionMode() {
@@ -4033,9 +4323,11 @@ class App {
         catch { return 'single'; }
     }
 
-    static async enterChapterQuestions(chapter, index = 0, questionId = null, mode = 'single') {
+    static async enterChapterQuestions(chapter, index = 0, questionId = null, mode = 'single', { preserveLastStudy = false, ignoreFilters = false } = {}) {
         const directOnly = chapter?._directOnly === true;
-        chapter = await UIRenderer.filteredChapter(chapter, directOnly);
+        chapter = ignoreFilters
+            ? { ...chapter, direct_questions: directOnly ? (chapter.direct_questions || []) : (chapter.direct_questions || chapter.questions || []), children: [] }
+            : await UIRenderer.filteredChapter(chapter, directOnly);
         chapter._directOnly = directOnly;
         const entries = DataService.chapterEntries(chapter);
         if (!entries.length) {
@@ -4046,6 +4338,8 @@ class App {
         AppState.chapterQuestionCount = entries.length;
         AppState.questionMode = mode === 'multi' ? 'multi' : 'single';
         AppState.currentView = 'question';
+        AppState.suspendLastStudy = preserveLastStudy;
+        AppState.temporaryQuestionView = preserveLastStudy;
         try {
             if (AppState.questionMode === 'multi') {
                 const start = Math.floor(index / 20) * 20;
@@ -4057,9 +4351,16 @@ class App {
                 const resolved = questionId == null ? index : questions.findIndex(q => String(q.id) === String(questionId));
                 await UIRenderer.renderQuestion(Math.min(Math.max(resolved, 0), questions.length - 1));
             }
+            const selected = AppState.questions[AppState.currentQuestionIndex];
+            if (selected) {
+                this.recordVisit(selected.id, AppState.currentCategory?.id, chapter.id);
+                if (AppState.questionMode === 'multi' && !preserveLastStudy) void StateSync.pushLastStudy(chapter.id, selected.id, 'multi');
+            }
         } catch (error) {
             AppState.currentView = 'library';
             toast(`题目暂时无法加载：${error.message || '请重试'}`);
+        } finally {
+            AppState.suspendLastStudy = false;
         }
     }
 
@@ -4079,6 +4380,7 @@ class App {
             if (token === AppState.modeSwitchToken) AppState.modeSwitchTarget = null;
             return;
         }
+        AppState.temporaryQuestionView = false;
         try {
             if (mode === 'multi') {
                 AppState.questionMode = 'multi';
@@ -4102,7 +4404,7 @@ class App {
             if (token !== AppState.modeSwitchToken) return;
             AppState.questionMode = previousMode;
             AppState.modeSwitchTarget = null;
-            toast(`切换模式失败，仍在${previousMode === 'single' ? '单题' : '多题'}模式：${error.message || '请重试'}`);
+            toast(`切换模式失败，仍在${previousMode === 'single' ? '单题做题' : '连续做题'}模式：${error.message || '请重试'}`);
         }
     }
 
@@ -4110,6 +4412,7 @@ class App {
         const entries = DataService.chapterEntries(AppState.currentChapter);
         const target = Math.max(0, Math.min(entries.length - 1, Number(index) || 0));
         if (!await this.ensureSavedBeforeLeavingQuestion()) return;
+        AppState.temporaryQuestionView = false;
         const segmentStart = Math.floor(target / 20) * 20;
         const previousQuestions = AppState.questions;
         const previousOffset = AppState.questionOffset;
@@ -4126,6 +4429,8 @@ class App {
                 if (AppState.ui.aiPanelOpen) UIRenderer.renderAIPanel();
                 if (AppState.ui.annotationPanelOpen) UIRenderer.renderAnnotationPanel();
             }
+            const selected = AppState.questions[AppState.currentQuestionIndex];
+            if (selected) { this.recordVisit(selected.id, AppState.currentCategory?.id, AppState.currentChapter?.id); void StateSync.pushLastStudy(AppState.currentChapter.id, selected.id, 'multi'); }
         } catch (error) {
             AppState.questions = previousQuestions; AppState.questionOffset = previousOffset;
             toast(`这一段暂时无法加载：${error.message || '请重试'}`);
@@ -4165,6 +4470,7 @@ class App {
         let index = list.findIndex(entry => String(entry.id) === text);
         if (index < 0 && /^\d+$/.test(text)) index = Number(text) - 1;
         if (index < 0 || index >= list.length) return;
+        AppState.temporaryQuestionView = false;
         if (AppState.questionMode === 'multi' && AppState.currentChapter) return this.goToChapterQuestion(index);
         if (!await this.ensureSavedBeforeLeavingQuestion()) return;
         if (AppState.currentChapter) {
@@ -4176,6 +4482,7 @@ class App {
             AppState.questionOffset = 0;
         }
         await UIRenderer.renderQuestion(index);
+        this.recordVisit(AppState.questions[AppState.currentQuestionIndex]?.id, AppState.currentCategory?.id, AppState.currentChapter?.id);
     }
 
     static toggleCardAnswer(globalIndex, button) {
@@ -4205,6 +4512,7 @@ class App {
         const index = AppState.questions.findIndex(q => String(q.id) === String(id)); if (index < 0) return;
         if (index !== AppState.currentQuestionIndex && !await this.ensureSavedBeforeLeavingQuestion()) return;
         AppState.currentQuestionIndex = index; AppState.ui.aiPanelOpen = true;
+        this.recordVisit(id, AppState.currentCategory?.id, AppState.currentChapter?.id);
         const panel = document.getElementById('ai-panel'); panel?.classList.remove('closed');
         UIRenderer.renderAIPanel();
     }
@@ -4213,6 +4521,7 @@ class App {
         const index = AppState.questions.findIndex(q => String(q.id) === String(id)); if (index < 0) return;
         if (index !== AppState.currentQuestionIndex && !await this.ensureSavedBeforeLeavingQuestion()) return;
         AppState.currentQuestionIndex = index; AppState.ui.annotationPanelOpen = true;
+        this.recordVisit(id, AppState.currentCategory?.id, AppState.currentChapter?.id);
         const panel = document.getElementById('annotation-panel'); panel?.classList.remove('closed');
         UIRenderer.renderAnnotationPanel();
     }
@@ -4224,12 +4533,15 @@ class App {
         const chapter = category && UIRenderer.findNodeById(category, Number(question.category_id));
         AppState.currentChapter = chapter || category;
         if (chapter) {
-            const index = DataService.chapterEntries(chapter).findIndex(item => String(item.id) === String(questionId));
-            await this.enterChapterQuestions(chapter, Math.max(index, 0), questionId, this.preferredQuestionMode());
+            const queueChapter = await UIRenderer.filteredChapter(chapter);
+            const index = DataService.chapterEntries(queueChapter).findIndex(item => String(item.id) === String(questionId));
+            if (index >= 0) await this.enterChapterQuestions(queueChapter, index, questionId, this.preferredQuestionMode());
+            else toast('这道题不在当前范围中，请切换题库范围');
         } else {
             AppState.questions = [question]; AppState.questionOffset = 0; AppState.chapterQuestionCount = 1;
             AppState.questionMode = 'single'; AppState.currentView = 'question';
             await UIRenderer.renderQuestion(0);
+            this.recordVisit(question.id);
         }
     }
 
@@ -4252,7 +4564,7 @@ class App {
                 UIRenderer.renderLibrary(AppState.currentCategory.id);
             }
             const content = document.getElementById('library-content');
-            if (content && DataService.chapterEntries(chapter).length > 0) content.insertAdjacentHTML('beforeend', `<div class="empty-state filtered-empty" role="status"><h3>此章节当前范围没有题目</h3><p>目录题数是总数；本次练习按“${escapeHtml(AppState.chapterScope === 'all' ? '完整' : AppState.chapterScope === 'core' ? '严选' : '真题')}”和已有详细筛选显示。</p></div>`);
+            if (content && DataService.chapterEntries(chapter).length > 0) content.insertAdjacentHTML('beforeend', `<div class="empty-state filtered-empty" role="status"><h3>此章节当前条件没有题目</h3><p>目录题数按当前范围统计；详细筛选也会影响本次练习。可调整“${escapeHtml(AppState.chapterScope === 'all' ? '完整' : AppState.chapterScope === 'core' ? '严选' : '真题')}”范围或筛选条件。</p></div>`);
             return false;
         }
 
@@ -4275,7 +4587,7 @@ class App {
         const entries = DataService.chapterEntries(chapter);
         let index = Number.isInteger(position.questionIndex) ? position.questionIndex : 0;
         if (position.questionId != null) { const byId = entries.findIndex(e => String(e.id) === String(position.questionId)); if (byId >= 0) index = byId; }
-        await this.enterChapterQuestions(chapter, Math.max(0, Math.min(index, entries.length - 1)), position.questionId, this.preferredQuestionMode());
+        await this.enterChapterQuestions(chapter, Math.max(0, Math.min(index, entries.length - 1)), position.questionId, this.preferredQuestionMode(), { ignoreFilters: true });
     }
 
     static showReview(tab) {
@@ -4297,6 +4609,7 @@ class App {
         AppState.currentQuestionIndex = 0;
         AppState.currentView = 'question';
         await UIRenderer.renderQuestion(0);
+        this.recordVisit(question.id);
     }
 
     static async selectNote(id) {
@@ -4455,6 +4768,7 @@ class App {
         AppState.currentQuestionIndex = 0;
         AppState.currentView = 'question';
         await UIRenderer.renderQuestion(0);
+        this.recordVisit(paper[0].id);
     }
 
     static async exportQuestions({ download = false } = {}) {
@@ -4515,7 +4829,7 @@ document.getElementById('btn-dl').addEventListener('click', function () {
 
     // 备份格式与旧版一致（daguan-local-progress v3）：批注为 {markdown, updated_at, history}，
     // 不包含 AI 服务配置与密钥
-    static buildBackupPayload() {
+    static buildBackupPayload(visitHistory = []) {
         const progress = StorageService.getProgress();
         const map = {};
         for (const [id, p] of Object.entries(progress.progress)) {
@@ -4536,6 +4850,7 @@ document.getElementById('btn-dl').addEventListener('click', function () {
             favorites: progress.favorites,
             annotations: StorageService.normalizeAnnotationsForStorage(StorageService.readAnnotationsStorage()),
             picked: Array.isArray(picked) ? picked : [],
+            visit_history: visitHistory,
             last_study: (() => {
                 const position = StorageService.getLearningPosition();
                 return position?.chapterId != null && position?.questionId != null
@@ -4545,9 +4860,12 @@ document.getElementById('btn-dl').addEventListener('click', function () {
         };
     }
 
-    static downloadBackup() {
+    static async downloadBackup() {
         if (!PreviewAccess.privateAllowed()) return;
-        const payload = this.buildBackupPayload();
+        let visits;
+        try { visits = await window.DaguanVisitHistory.list(); }
+        catch (error) { this.setToolStatus(`备份未开始：${error.message || '无法读取做题历史'}`, 'error'); return; }
+        const payload = this.buildBackupPayload(visits);
         const d = new Date();
         const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
         const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
@@ -4574,6 +4892,7 @@ document.getElementById('btn-dl').addEventListener('click', function () {
                 favorites: Array.isArray(data.favorites) ? data.favorites.map(String) : [],
                 annotations: data.annotations && typeof data.annotations === 'object' && !Array.isArray(data.annotations) ? data.annotations : null,
                 picked: Array.isArray(data.picked) ? data.picked.map(String) : null,
+                visitHistory: Array.isArray(data.visit_history) ? data.visit_history : [],
                 aiPreferences: null, // 旧版新键备份里的 ai_preferences 可能含密钥，恢复时一律不读取
             };
         }
@@ -4590,7 +4909,7 @@ document.getElementById('btn-dl').addEventListener('click', function () {
             for (const [id, v] of Object.entries(data.map)) put(id, v);
             if (Array.isArray(data.favorites)) data.favorites.forEach(id => favorites.push(String(id)));
             if (!Object.keys(map).length && !favorites.length) throw new Error('备份内容为空');
-            return { kind: 'map', map, favorites, annotations: null, picked: Array.isArray(data.picked) ? data.picked.map(String) : null };
+            return { kind: 'map', map, favorites, annotations: null, picked: Array.isArray(data.picked) ? data.picked.map(String) : null, visitHistory: Array.isArray(data.visit_history) ? data.visit_history : [] };
         }
         if (data.states && typeof data.states === 'object' && !Array.isArray(data.states)) {
             for (const [id, value] of Object.entries(data.states)) {
@@ -4599,7 +4918,7 @@ document.getElementById('btn-dl').addEventListener('click', function () {
                 if (value.favorite === true || value.favorited_at) favorites.push(String(id));
             }
             if (!Object.keys(map).length && !favorites.length) throw new Error('备份内容为空');
-            return { kind: 'map', map, favorites, annotations: null, picked: null };
+            return { kind: 'map', map, favorites, annotations: null, picked: null, visitHistory: Array.isArray(data.visit_history) ? data.visit_history : [] };
         }
         throw new Error('无法识别的备份格式（缺少进度数据）');
     }
@@ -4679,6 +4998,10 @@ document.getElementById('btn-dl').addEventListener('click', function () {
                 StateSync.clearRestoreRollback();
             }
         }
+        if (parsed.visitHistory.length) {
+            try { await window.DaguanVisitHistory.merge(parsed.visitHistory); }
+            catch (error) { this.setToolStatus(`进度已恢复，但做题历史导入失败：${error.message || '请重试'}`, 'error'); input.value = ''; return; }
+        }
         if (AppState.currentView === 'records') UIRenderer.renderRecords();
         if (synced) {
             this.setToolStatus('恢复完成（本地与服务端已同步）', 'success');
@@ -4734,6 +5057,10 @@ document.getElementById('btn-dl').addEventListener('click', function () {
         try {
             const status = await this.syncRequest('status');
             AppState.syncStatus = status;
+            if (document.getElementById('sync-panel') && !document.getElementById('sync-panel').classList.contains('hidden')) {
+                const savedStep = this.guideStep('sync', 4);
+                this.selectGuideStep('sync', status.authenticated ? (AppState.syncReconcilePreview?.previewId ? savedStep : 2) : 1, 4);
+            }
             const line = status.authenticated
                 ? (status.needsFirstSync ? '官网已配置，但还没导入过进度。可先「读取官网进度」。' : `官网已连接。${status.lastPullAt ? `上次同步：${String(status.lastPullAt).slice(0, 16).replace('T', ' ')}` : ''}`)
                 : (status.configured ? '登录已失效，请重新配置。' : '尚未配置官网登录。点击「配置登录」填入登录码或账号。');
@@ -4747,6 +5074,8 @@ document.getElementById('btn-dl').addEventListener('click', function () {
             }
         } catch (error) {
             if (statusEl) statusEl.textContent = `本地中控台未连接：${error.message}`;
+            this.syncResultHtml(`<p>连接检查失败：${escapeHtml(error.message || String(error))}。请确认大观园正在运行后重试。</p>`);
+            this.selectGuideStep('sync', 1, 4);
             const preview = document.getElementById('btn-sync-preview');
             if (preview) preview.disabled = true;
             this.syncResetPreview();
@@ -4771,6 +5100,7 @@ document.getElementById('btn-dl').addEventListener('click', function () {
             this.syncResultHtml('<p class="text-helper">登录配置已保存。请重新「检查状态」。</p>');
             document.getElementById('sync-login-form')?.classList.add('hidden');
             await this.syncStatus();
+            this.selectGuideStep('sync', 2, 4);
         } catch (error) {
             this.syncResultHtml(`<p class="text-helper">登录失败：${escapeHtml(error.message || String(error))}</p>`);
         }
@@ -4784,6 +5114,8 @@ document.getElementById('btn-dl').addEventListener('click', function () {
         if (detail) detail.hidden = true;
         const conflict = document.getElementById('sync-conflict-wrap');
         if (conflict) conflict.hidden = true;
+        const next = document.getElementById('sync-review-next');
+        if (next) next.disabled = true;
     }
 
     static async syncReconcilePreview() {
@@ -4822,11 +5154,14 @@ document.getElementById('btn-dl').addEventListener('click', function () {
             if (content) content.innerHTML = changes.slice(0, 100).map(item => `<div>${escapeHtml(item.direction)} · #${escapeHtml(String(item.questionId ?? item.question_id ?? ''))}</div>`).join('') + (changes.length > 100 ? `<p>另有 ${changes.length - 100} 项变化。</p>` : '');
             if (detail) detail.hidden = !changes.length;
             this.syncResultHtml(`<p>冲突 ${conflicts} 道题；未知题号 ${(preview.unknownIds || []).length} 项。同步前会保留本地及官网快照。</p>`);
+            const next = document.getElementById('sync-review-next');
+            if (next) next.disabled = !apply || apply.hidden;
+            this.selectGuideStep('sync', 3, 4);
         } catch (error) {
             if (card) card.dataset.state = 'error';
             if (summary) summary.textContent = '检查失败';
             if (note) note.textContent = error.message || String(error);
-            this.syncResultHtml('');
+            this.syncResultHtml(`<p>只读检查失败：${escapeHtml(error.message || String(error))}。请检查官网登录与本地连接后重试。</p>`);
         } finally {
             if (check) { check.disabled = false; check.textContent = '重新检查同步内容'; }
         }
@@ -4859,11 +5194,14 @@ document.getElementById('btn-dl').addEventListener('click', function () {
             document.getElementById('sync-summary').textContent = partial ? '同步未完全完成' : '两边进度已同步';
             document.getElementById('sync-summary-note').textContent = partial ? '失败项已保留，请重新检查后继续。' : `本地更新 ${result.appliedLocal || 0} 项，官网更新 ${result.succeeded || 0} 项。`;
             this.syncResultHtml(`<p>官网成功 ${result.succeeded || 0} 项；失败 ${result.failed || 0} 项；未知题号 ${(result.unknownIds || []).length} 项；官网校验${result.verified ? '成功' : '未完成'}。</p>`);
+            if (!partial) this.celebrateGuide(document.getElementById('sync-result'));
         } catch (error) {
             this.syncResetPreview();
             if (card) card.dataset.state = 'error';
             document.getElementById('sync-summary').textContent = '同步未完成';
             document.getElementById('sync-summary-note').textContent = error.status === 409 || error.code === 'STATE_CONFLICT' || error.code === 'PREVIEW_STRATEGY_CHANGED' ? '预览后进度发生变化，请重新检查并确认。' : `请重新检查同步内容：${error.message || String(error)}`;
+            this.syncResultHtml(`<p>同步未完成：${escapeHtml(error.message || String(error))}。请重新检查并确认。</p>`);
+            this.selectGuideStep('sync', 3, 4);
         } finally {
             if (check) check.disabled = false;
         }
@@ -4977,11 +5315,21 @@ document.getElementById('btn-dl').addEventListener('click', function () {
             <div class="home-content">
                 <h1 class="text-page-title" style="margin-bottom: var(--spacing-xl);">设置</h1>
 
+                ${window.daguanDesktop?.remoteAccess ? `<section class="card" style="margin-bottom:var(--spacing-xl)" aria-labelledby="remote-title">
+                    <h2 class="text-section-title" id="remote-title">外网浏览器访问</h2>
+                    <p class="text-helper">供你在自己的手机或电脑使用同一份学习记录。关闭窗口留在托盘时继续连接；退出大观园即断开。外网仅可学习，不能管理此处设置。</p>
+                    <p id="remote-status" class="text-helper" aria-live="polite">正在读取连接状态…</p>
+                    <div class="tool-controls"><input id="remote-password" type="password" autocomplete="new-password" placeholder="新访问密码，至少 12 位" aria-label="新访问密码"><input id="remote-old-password" type="password" autocomplete="current-password" placeholder="修改时输入原密码" aria-label="原密码"><button class="btn btn-secondary" id="remote-save-password" type="button">设置 / 修改密码</button><button class="btn btn-text" id="remote-revoke" type="button">撤销全部登录</button></div>
+                    <div class="tool-controls" style="margin-top:var(--spacing-m)"><button class="btn btn-primary" id="remote-quick" type="button">开启临时地址</button><button class="btn btn-secondary" id="remote-stop" type="button">断开连接</button><button class="btn btn-text" id="remote-download" type="button">下载 cloudflared</button></div>
+                    <div class="tool-controls" style="margin-top:var(--spacing-s)"><a id="remote-url" target="_blank" rel="noopener noreferrer" hidden></a><button class="btn btn-text" id="remote-copy" type="button" style="display:none" hidden>复制地址</button></div>
+                    <div class="guide-card-entry"><div><strong>想用自己的固定网址？</strong><p>打开页面内向导，按四步接入域名、准备令牌并检查结果。</p></div><button class="btn btn-secondary" type="button" id="remote-open-guide">配置固定域名</button></div><p id="remote-feedback" class="text-helper" role="status"></p>
+                </section>` : ''}
+
                 ${UIRenderer.renderThemeSettings()}
 
                 <section class="card shortcut-settings-card" aria-labelledby="shortcut-settings-title">
                     <h2 class="text-section-title" id="shortcut-settings-title">快捷键</h2>
-                    <p class="text-helper">单击按键后按下新键。快捷键与旧版共用本机配置；/、M、J、K、G 为固定搜索与导航键。</p>
+                    <p class="text-helper">单击按键后按下新键。做题快捷键仅在单题做题时生效；/ 为全局搜索键，G 为单题跳题键。</p>
                     <div id="shortcut-list" class="shortcut-list"></div><p id="shortcut-feedback" class="text-helper" aria-live="polite"></p>
                     <button type="button" class="btn btn-text" onclick="App.resetShortcuts()">恢复旧版默认键</button>
                 </section>
@@ -5038,6 +5386,7 @@ document.getElementById('btn-dl').addEventListener('click', function () {
         PreviewAccess.applyUi();
         UIRenderer.bindThemeSettings();
         this.renderShortcutSettings();
+        if (window.daguanDesktop?.remoteAccess) this.bindRemoteSettings();
         document.getElementById('btn-ai-profile-save')?.addEventListener('click', () => this.saveAIProfile());
         document.getElementById('btn-ai-profile-test')?.addEventListener('click', () => this.testAIProfile());
         document.getElementById('btn-ai-profile-delete')?.addEventListener('click', () => this.deleteAIProfile());
@@ -5047,6 +5396,108 @@ document.getElementById('btn-dl').addEventListener('click', function () {
             document.getElementById('ai-profile-url-new').value = editing.baseUrl || '';
             document.getElementById('ai-profile-model-new').value = editing.model || '';
         }
+    }
+
+    static bindRemoteSettings() {
+        const api = window.daguanDesktop.remoteAccess;
+        const byId = id => document.getElementById(id);
+        let startedQuickHere = false, wasQuickConnected = false;
+        const render = status => {
+            const node = byId('remote-status'); if (!node) return;
+            const labels = { off: '未连接', quick: '临时地址', named: '固定地址' };
+            node.textContent = `${labels[status.mode] || '未连接'} · ${status.state === 'connected' ? '公网登录页已验证' : status.state === 'connecting' ? (status.phase || '连接中') : status.state === 'error' ? '连接失败' : '已断开'}${status.hostname ? ` · ${status.hostname}` : ''}${status.binary ? '' : ' · 未找到 cloudflared'}${status.serviceOnline ? '' : ' · 本地学习服务暂不可用'}`;
+            const link = byId('remote-url'), copy = byId('remote-copy');
+            const verified = status.state === 'connected';
+            if (link) { link.hidden = !verified; link.href = verified ? status.url : '#'; link.textContent = verified ? status.url : ''; }
+            if (copy) { copy.hidden = !verified; copy.style.display = verified ? '' : 'none'; }
+            if (status.error && byId('remote-feedback')) byId('remote-feedback').textContent = `${status.phase || '连接失败'}：${status.error}`;
+            if (verified && status.mode === 'quick' && startedQuickHere && !wasQuickConnected) this.celebrateGuide(byId('remote-status'));
+            wasQuickConnected = verified && status.mode === 'quick';
+        };
+        const invoke = async (action, input) => {
+            const feedback = byId('remote-feedback'); feedback.textContent = '处理中…';
+            try { const result = await api(action, input); render(result); feedback.textContent = result.operationError || (action === 'download' ? 'cloudflared 已下载并校验。' : result.error || (result.state === 'connecting' ? '连接中，正在验证公网登录页…' : '操作完成。')); }
+            catch (error) { feedback.textContent = error.message || String(error); }
+        };
+        byId('remote-save-password').onclick = () => { const password = byId('remote-password').value, oldPassword = byId('remote-old-password').value; byId('remote-password').value = ''; byId('remote-old-password').value = ''; void invoke('password', { password, oldPassword }); };
+        byId('remote-revoke').onclick = () => void invoke('revoke');
+        byId('remote-quick').onclick = () => { startedQuickHere = true; void invoke('quick:start'); };
+        byId('remote-stop').onclick = () => void invoke('stop');
+        byId('remote-download').onclick = () => void invoke('download');
+        byId('remote-open-guide').onclick = () => void this.navigate('remote-guide');
+        byId('remote-copy').onclick = () => { const url = byId('remote-url')?.href; if (url) void navigator.clipboard.writeText(url).then(() => { byId('remote-feedback').textContent = '地址已复制。'; }); };
+        void api('status').then(render);
+        const timer = setInterval(() => { if (!byId('remote-status')) { clearInterval(timer); return; } void api('status').then(render); }, 3000);
+    }
+
+    static showRemoteGuide() {
+        const main = document.getElementById('app-main');
+        main.innerHTML = `<div class="guide-page remote-guide"><div class="guide-page-head"><div><p class="guide-kicker">外网访问 · 固定网址</p><h1>用自己的域名访问大观园</h1><p>电脑和大观园运行时，才能从外面打开。域名需要你自己购买并接入 Cloudflare。</p></div><button class="btn btn-text" id="remote-guide-restart">从头再看</button></div>
+          <nav class="guide-step-nav" aria-label="固定域名配置步骤"><button type="button" data-guide-nav="remote" data-step="1">1 接入域名</button><button type="button" data-guide-nav="remote" data-step="2">2 准备令牌</button><button type="button" data-guide-nav="remote" data-step="3">3 创建并检查</button><button type="button" data-guide-nav="remote" data-step="4">4 取得地址</button></nav><p class="guide-step-live" id="remote-step-live" aria-live="polite"></p>
+          <section class="guide-panel" data-guide-panel="remote" data-step="1"><span class="guide-panel-number">第一步 · 由你在 Cloudflare 完成</span><h2>让 Cloudflare 管理你的域名</h2><p>购买域名后，打开 Cloudflare 控制台，添加这个域名。按控制台显示的两个名称服务器，到域名购买平台修改 NS。Cloudflare 显示「活动」后再继续。</p><div class="guide-diagram" role="img" aria-label="域名购买平台将名称服务器指向 Cloudflare，Cloudflare 再连接本机大观园"><span>域名购买平台<br><small>修改 NS</small></span><b aria-hidden="true">→</b><span>Cloudflare<br><small>域名状态：活动</small></span><b aria-hidden="true">→</b><span>大观园<br><small>下一步连接</small></span></div><a href="https://dash.cloudflare.com/" target="_blank" rel="noopener noreferrer">打开 Cloudflare 控制台 ↗</a><label class="guide-check"><input id="remote-domain-ready" type="checkbox">我已经看到域名状态为「活动」</label><button class="btn btn-primary" id="remote-domain-next" type="button">下一步：准备令牌</button></section>
+          <section class="guide-panel" data-guide-panel="remote" data-step="2"><span class="guide-panel-number">第二步 · 复制所需信息</span><h2>准备三个 ID 和一个限权令牌</h2><ol class="guide-list"><li>从 Cloudflare 账户首页复制 <strong>Account ID</strong>。</li><li>打开你的域名，在概览页复制 <strong>Zone ID</strong>。</li><li>在「我的个人资料 → API 令牌」创建自定义令牌，只授予 <strong>Account · Cloudflare Tunnel · Edit</strong> 和 <strong>Zone · DNS · Edit</strong>，区域资源限定为这一个域名。</li></ol><div class="guide-diagram guide-diagram-stacked"><span>账户首页 <strong>Account ID</strong></span><span>域名概览 <strong>Zone ID</strong></span><span>API 令牌 <strong>仅本次使用</strong></span></div><p class="guide-callout">API 令牌只在创建时发送给 Cloudflare，不会长期保存在本机。请勿使用 Global API Key。</p><button class="btn btn-primary" data-remote-next="3" type="button">下一步：填写并创建</button></section>
+          <section class="guide-panel" data-guide-panel="remote" data-step="3"><span class="guide-panel-number">第三步 · 大观园执行</span><h2>创建并检查固定地址</h2><p>先在设置页设置至少 12 位外网访问密码；若未安装 cloudflared，可在下方下载。填写后点击创建，下方会显示 Tunnel、路由、DNS 和公网登录页的真实阶段。</p><div class="guide-diagram remote-stage-diagram" aria-label="真实创建阶段"><span data-remote-phase="tunnel">创建 Tunnel</span><span data-remote-phase="route">设置路由</span><span data-remote-phase="dns">添加 DNS</span><span data-remote-phase="probe">验证公网登录页</span></div><div class="remote-form-grid"><label>你接入的域名<input id="remote-zone" type="text" placeholder="example.com" autocomplete="off"></label><label>想用的子域名<input id="remote-subdomain" type="text" placeholder="study" autocomplete="off"></label><label>Account ID<input id="remote-account-id" type="text" placeholder="从账户首页复制" autocomplete="off"></label><label>Zone ID<input id="remote-zone-id" type="text" placeholder="从域名概览复制" autocomplete="off"></label><label class="remote-token-field">限权 API 令牌<input id="remote-api-token" type="password" placeholder="本次创建后不保存" autocomplete="off"></label></div><div class="guide-actions"><button class="btn btn-primary" id="remote-named-setup" type="button">创建固定地址</button><button class="btn btn-secondary" id="remote-guide-download" type="button">下载 cloudflared</button><button class="btn btn-text" id="remote-guide-settings" type="button">去设置访问密码</button><button class="btn btn-secondary" id="remote-recheck" type="button">重新检查状态</button></div><div class="guide-stage" id="remote-stage" role="status" aria-live="polite">等待创建</div><p class="text-helper" id="remote-guide-error" role="alert"></p></section>
+          <section class="guide-panel" data-guide-panel="remote" data-step="4"><span class="guide-panel-number">第四步 · 管理连接</span><h2>你的固定地址</h2><div class="guide-diagram" role="img" aria-label="你的其他设备通过固定域名和 Cloudflare 连接本机安全网关"><span>手机或另一台电脑</span><b aria-hidden="true">→</b><span>你的固定域名</span><b aria-hidden="true">→</b><span>本机安全网关</span></div><div class="guide-stage" id="remote-result" role="status" aria-live="polite">正在检查已保存的配置…</div><div class="guide-actions"><a class="btn btn-primary" id="remote-named-url" target="_blank" rel="noopener noreferrer" hidden>打开地址</a><button class="btn btn-secondary" id="remote-named-copy" type="button" hidden>复制地址</button><button class="btn btn-secondary" id="remote-named-enable" type="button">连接 / 恢复</button><button class="btn btn-text" id="remote-named-disable" type="button">停用</button></div><p class="text-helper">停用只断开这台电脑，Cloudflare 上的 Tunnel 和 DNS 保留。临时地址与固定地址一次只能运行一种。</p></section></div>`;
+        const byId = id => document.getElementById(id);
+        const api = window.daguanDesktop?.remoteAccess;
+        let startedHere = false, previousConnected = false;
+        let firstOpen = localStorage.getItem('daguan_guide_remote_step_v1') === null;
+        const render = status => {
+            if (!byId('remote-result')) return;
+            const configured = Boolean(status.configured);
+            const connected = status.mode === 'named' && status.state === 'connected';
+            byId('remote-named-setup').disabled = configured;
+            byId('remote-named-enable').disabled = !configured || connected;
+            byId('remote-named-disable').disabled = !configured || !status.enabled;
+            byId('remote-stage').textContent = status.phase || (status.state === 'error' ? '连接失败' : '等待创建');
+            const phase = /Tunnel/.test(status.phase) ? 'tunnel' : /路由/.test(status.phase) ? 'route' : /DNS/.test(status.phase) ? 'dns' : /公网|Cloudflare/.test(status.phase) ? 'probe' : '';
+            main.querySelectorAll('[data-remote-phase]').forEach(item => { item.dataset.active = String(item.dataset.remotePhase === phase); });
+            if (status.error) byId('remote-guide-error').textContent = `${status.phase || '失败'}：${status.error}。检查令牌权限、DNS 冲突或网络后重试；如果配置已保存，请使用「连接 / 恢复」。`;
+            else if (connected) byId('remote-guide-error').textContent = '';
+            byId('remote-result').textContent = !configured ? '还没有固定域名配置。请从第一步开始。' : connected ? `公网登录页已验证：${status.url}` : `${status.hostname} · ${status.phase || (status.enabled ? '正在连接' : '已停用')}。地址尚未验证可访问。`;
+            byId('remote-named-url').hidden = !connected;
+            byId('remote-named-copy').hidden = !connected;
+            if (connected) byId('remote-named-url').href = status.url;
+            if (configured && firstOpen && !startedHere) { this.selectGuideStep('remote', 4, 4); firstOpen = false; }
+            if (connected && !previousConnected && startedHere) {
+                this.selectGuideStep('remote', 4, 4);
+                this.celebrateGuide(byId('remote-result'));
+            }
+            previousConnected = connected;
+        };
+        const refresh = async () => { try { render(await api('status')); } catch (error) { byId('remote-guide-error').textContent = error.message || String(error); } };
+        const invoke = async (action, input) => {
+            startedHere = true;
+            byId('remote-guide-error').textContent = '';
+            try { const result = await api(action, input); render(result); await refresh(); if (result.operationError) byId('remote-guide-error').textContent = `${result.phase || '操作失败'}：${result.operationError}`; else if (action === 'download') byId('remote-stage').textContent = 'cloudflared 已下载并校验，可以继续创建。'; }
+            catch (error) { byId('remote-guide-error').textContent = `${error.message || String(error)}。请检查当前阶段后重试。`; await refresh(); }
+        };
+        main.querySelectorAll('[data-guide-nav="remote"]').forEach(button => button.onclick = () => this.selectGuideStep('remote', button.dataset.step, 4));
+        main.querySelectorAll('[data-remote-next]').forEach(button => button.onclick = () => this.selectGuideStep('remote', button.dataset.remoteNext, 4));
+        byId('remote-guide-restart').onclick = () => { firstOpen = false; this.selectGuideStep('remote', 1, 4); };
+        byId('remote-domain-next').onclick = () => { if (!byId('remote-domain-ready').checked) { byId('remote-domain-ready').focus(); return; } this.selectGuideStep('remote', 2, 4); };
+        byId('remote-named-setup').onclick = () => {
+            const input = { zone: byId('remote-zone').value.trim(), subdomain: byId('remote-subdomain').value.trim(), accountId: byId('remote-account-id').value.trim(), zoneId: byId('remote-zone-id').value.trim(), apiToken: byId('remote-api-token').value };
+            if (Object.values(input).some(value => !value)) { byId('remote-guide-error').textContent = '请填写域名、子域名、两个 ID 和限权令牌。'; return; }
+            byId('remote-api-token').value = '';
+            byId('remote-named-setup').disabled = true;
+            void invoke('named:setup', input);
+        };
+        byId('remote-recheck').onclick = () => void refresh();
+        byId('remote-guide-download').onclick = () => void invoke('download');
+        byId('remote-guide-settings').onclick = () => void this.navigate('settings');
+        byId('remote-named-enable').onclick = () => void invoke('named:enable');
+        byId('remote-named-disable').onclick = () => void invoke('named:disable');
+        byId('remote-named-copy').onclick = () => { const url = byId('remote-named-url').href; void navigator.clipboard.writeText(url).then(() => { byId('remote-result').textContent = `已复制：${url}`; }); };
+        this.selectGuideStep('remote', this.guideStep('remote', 4), 4);
+        if (api) void refresh();
+        const timer = setInterval(() => { if (!byId('remote-result')) { clearInterval(timer); return; } void refresh(); }, 1500);
+    }
+
+    static celebrateGuide(target) {
+        if (!target?.classList || window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+        target.classList.add('guide-celebrate');
+        setTimeout(() => target.classList.remove('guide-celebrate'), 1900);
     }
 
     static async saveAIProfile() {
@@ -5150,14 +5601,18 @@ document.getElementById('btn-dl').addEventListener('click', function () {
     static async previousQuestion() {
         if (AppState.currentQuestionIndex > 0) {
             if (!await this.ensureSavedBeforeLeavingQuestion()) return;
+            AppState.temporaryQuestionView = false;
             await UIRenderer.renderQuestion(AppState.currentQuestionIndex - 1);
+            this.recordVisit(AppState.questions[AppState.currentQuestionIndex]?.id, AppState.currentCategory?.id, AppState.currentChapter?.id);
         }
     }
 
     static async nextQuestion() {
         if (AppState.currentQuestionIndex < AppState.questions.length - 1) {
             if (!await this.ensureSavedBeforeLeavingQuestion()) return;
+            AppState.temporaryQuestionView = false;
             await UIRenderer.renderQuestion(AppState.currentQuestionIndex + 1);
+            this.recordVisit(AppState.questions[AppState.currentQuestionIndex]?.id, AppState.currentCategory?.id, AppState.currentChapter?.id);
         }
     }
 

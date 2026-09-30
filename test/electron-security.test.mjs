@@ -53,6 +53,14 @@ test("Electron entry registers the stable scheme before readiness and keeps brow
   assert.match(source, /will-navigate/);
 });
 
+test("second desktop launch reuses and raises the first window before starting a service", () => {
+  const source = fs.readFileSync(path.join(ROOT, "desktop", "electron-main.cjs"), "utf8");
+  assert.ok(source.indexOf("requestSingleInstanceLock()") < source.indexOf("app.whenReady()"));
+  assert.match(source, /if \(!hasSingleInstanceLock\) app\.quit\(\)/);
+  assert.match(source, /app\.on\("second-instance",[\s\S]*?mainWindow\.isMinimized\(\)[\s\S]*?mainWindow\.restore\(\)[\s\S]*?mainWindow\.show\(\)[\s\S]*?mainWindow\.focus\(\)/);
+  assert.match(source, /app\.whenReady\(\)\.then\(async \(\) => \{\s*if \(!hasSingleInstanceLock\) return;/);
+});
+
 test("Windows app packaging excludes Android sources and archived UI prototypes", () => {
   const patterns = forgeConfig.packagerConfig.ignore;
   const excluded = (relative) => patterns.some((pattern) => pattern.test(path.join(ROOT, relative)));

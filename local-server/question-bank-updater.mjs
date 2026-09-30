@@ -36,6 +36,9 @@ export async function createQuestionBankUpdater({ dataDir, bundledDataDir, enabl
   async function bundledFingerprint() {
     const digest = createHash("sha256");
     for (const file of DATA_FILES) digest.update(await fs.readFile(path.join(bundledDataDir, file)));
+    const classifications = await fs.readFile(path.join(bundledDataDir, "official-orphan-classifications.json"))
+      .catch(error => { if (error.code === "ENOENT") return Buffer.alloc(0); throw error; });
+    digest.update(classifications);
     const overlayDir = path.join(bundledDataDir, "local_question_banks");
     const files = await fs.readdir(overlayDir).catch(() => []);
     for (const file of files.filter(name => name.endsWith(".json")).sort()) {

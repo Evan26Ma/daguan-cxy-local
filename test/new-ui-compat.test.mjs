@@ -100,14 +100,21 @@ test("新版官网同步先双向预览，确认后应用服务端结果", async
 test("新版同步预览后状态冲突要求重新检查", async () => {
   const { sandbox, document } = createContext();
   const elements = syncElements(document);
-  const { App, AppState, PreviewAccess } = sandbox.window;
+  const { App, AppState, PreviewAccess, StateSync } = sandbox.window;
   PreviewAccess.privateAllowed = () => true;
+  StateSync.available = true;
+  StateSync.ensureFlushed = async () => {};
   AppState.syncReconcilePreview = { previewId: "stale", winner: "latest", summary: { localQuestionCount: 0 } };
-  sandbox.fetch = async () => ({ ok: false, status: 409, text: async () => JSON.stringify({ code: "STATE_CONFLICT", error: "状态已变化" }) });
+  sandbox.fetch = async url => url.endsWith("/preview")
+    ? { ok: true, text: async () => JSON.stringify({ previewId: "fresh", winner: "latest", summary: { remoteQuestionCount: 1, localQuestionCount: 0 }, localChanges: [{ questionId: 1 }], remoteOperations: [] }) }
+    : { ok: false, status: 409, text: async () => JSON.stringify({ code: "STATE_CONFLICT", error: "状态已变化" }) };
   await App.syncReconcileApply();
   assert.equal(AppState.syncReconcilePreview, null);
   assert.equal(elements.get("btn-sync-apply").hidden, true);
   assert.match(elements.get("sync-summary-note").textContent, /重新检查并确认/);
+  await App.syncReconcilePreview();
+  assert.equal(AppState.syncReconcilePreview.previewId, "fresh");
+  assert.equal(elements.get("btn-sync-apply").disabled, false);
 });
 
 test("新版在后台错过 SSE 后于重新可见时补读状态，且保留未保存批注", async () => {
@@ -339,6 +346,17 @@ test("备份文件为旧版兼容格式且不包含 AI 密钥", () => {
   assert.ok(Array.isArray(annotation.history));
 });
 
+test("做题历史随新版备份导出，旧备份仍可解析", () => {
+  const { sandbox } = createContext();
+  const entry = { question_id: "11", visited_at: "2026-09-29T12:00:00Z", time_kind: "visit" };
+  const payload = sandbox.window.App.buildBackupPayload([entry]);
+  assert.equal(payload.visit_history.length, 1);
+  const parsed = sandbox.window.App.parseBackupText(JSON.stringify(payload));
+  assert.equal(parsed.visitHistory[0].question_id, "11");
+  const old = sandbox.window.App.parseBackupText(JSON.stringify({ progress: { 11: { seen: true } } }));
+  assert.equal(old.visitHistory.length, 0);
+});
+
 test("进度键写旧版同形纯映射，收藏独立键；两版离线即可共享", () => {
   const { sandbox, storage } = createContext();
   const { StorageService } = sandbox.window;
@@ -443,18 +461,23 @@ test("单题和多题渲染都提供三态直选、独立易错按钮和当前�
   App.refreshShortcutHints = () => {};
   UIRenderer.bindChapterPickerTriggers = () => {};
   UIRenderer.renderKaTeX = () => {};
+  StateSync.pushLastStudy = () => {};
 
   const question = { id: 734, stem: "题干", options: [{ label: "A", content_md: "选项" }], answer: "A", explanation: "解析" };
   AppState.questions = [question];
   AppState.currentQuestionIndex = 0;
-  AppState.currentCategory = null;
-  AppState.currentChapter = null;
+  AppState.currentCategory = { id: "test-category", name: "测试科目" };
+  AppState.currentChapter = { id: "test-chapter", name: "测试章节", questions: [question] };
+  AppState.chapterQuestionCount = 1;
   AppState.questionMode = "single";
   StorageService.setMastery(question.id, "learning");
   StorageService.toggleMistake(question.id);
 
   await UIRenderer.renderQuestion(0);
   const singleMarkup = main.innerHTML;
+  assert.match(singleMarkup, /<span>单题做题<\/span>/);
+  assert.match(singleMarkup, />单题做题<\/button>/);
+  assert.match(singleMarkup, />连续做题<\/button>/);
   const controlsIndex = singleMarkup.indexOf("question-mastery-controls");
   assert.ok(controlsIndex > singleMarkup.indexOf("question-options"), "单题状态操作应位于题干和选项之后");
   assert.ok(controlsIndex < singleMarkup.indexOf("answer-section"), "单题状态操作应位于答案解析之前");
@@ -478,13 +501,16 @@ test("单题和多题渲染都提供三态直选、独立易错按钮和当前�
   assert.equal(StorageService.isMistake("734"), true, "直选状态不应改动易错标记");
   assert.deepEqual(queued.at(-1), { qid: "734", patch: { mastery: "mastered" } });
 
-  AppState.currentChapter = { name: "测试章节", questions: [question] };
-  AppState.chapterQuestionCount = 1;
   AppState.questionOffset = 0;
   AppState.questionRailQuery = "";
   AppState.questionRailFilter = "";
   UIRenderer.renderMultiQuestions(0);
   const multiMarkup = main.innerHTML;
+  assert.match(multiMarkup, /连续做题 · 第 1–1 题/);
+  assert.match(multiMarkup, />单题做题<\/button>/);
+  assert.match(multiMarkup, /class="active" aria-pressed="true">连续做题<\/button>/);
+  assert.match(multiMarkup, /每段 20 题/);
+  assert.doesNotMatch(multiMarkup, /data-shortcut-hint=|button-shortcut|aria-keyshortcuts=/, "连续做题不展示做题快捷键");
   assert.match(multiMarkup, /question-mastery-badge mastery-mastered">已掌握/);
   assert.match(multiMarkup, /question-mistake-badge[^>]*>易错/);
   const multiButtons = getStatusButtons(multiMarkup).filter(tag => /\bdata-mastery-choice=/.test(tag));
@@ -676,6 +702,101 @@ test("学习位置保留当前阅读模式；新版模式默认为单题并记�
   StorageService.saveLearningPosition(31, 32, 20, 3356, "multi");
   assert.equal(StorageService.getLearningPosition().mode, "multi");
   assert.equal(JSON.parse(sandbox.sessionStorage.getItem("daguan_learning_position_v2")).mode, "multi");
+});
+
+test("标题栏 overlay 缺少桌面栏时为窗口控制按钮留出安全高度", () => {
+  const { sandbox, document, appearanceVariables } = createContext();
+  const { App } = sandbox.window;
+  const classes = new Set();
+  document.documentElement.classList = {
+    toggle(name, enabled) { if (enabled) classes.add(name); else classes.delete(name); },
+    contains(name) { return classes.has(name); },
+  };
+  document.getElementById = () => null;
+  sandbox.navigator.windowControlsOverlay = {
+    visible: true,
+    getTitlebarAreaRect: () => ({ x: 0, y: 0, width: 1183, height: 42 }),
+  };
+
+  assert.equal(App.syncTitlebarInset(), 42);
+  assert.equal(classes.has("native-titlebar-content-inset"), true);
+  assert.equal(appearanceVariables.get("--native-titlebar-inset"), "42px");
+
+  document.getElementById = id => id === "daguan-desktop-bar" ? {} : null;
+  assert.equal(App.syncTitlebarInset(), 0, "桌面栏已注入时不应重复预留标题栏高度");
+  assert.equal(classes.has("native-titlebar-content-inset"), false);
+});
+
+test("切换做题模式和连续做题分段导航保留题号及学习位置", async () => {
+  const { sandbox, localStorage } = createContext();
+  const { App, AppState, DataService, StorageService, UIRenderer } = sandbox.window;
+  const entries = Array.from({ length: 60 }, (_, index) => ({ id: index + 1 }));
+  const chapter = { id: "chapter-1", questions: entries };
+  const savedPositions = [];
+  AppState.currentCategory = { id: "category-1" };
+  AppState.currentChapter = chapter;
+  AppState.chapterQuestionCount = entries.length;
+  AppState.questionMode = "single";
+  AppState.questions = entries;
+  AppState.currentQuestionIndex = 26;
+  AppState.questionOffset = 0;
+  App.ensureSavedBeforeLeavingQuestion = async () => true;
+  DataService.loadQuestionRange = async (_chapter, start, count) => entries.slice(start, start + count);
+  DataService.loadQuestionsForChapter = async () => entries;
+  StorageService.saveLearningPosition = (...position) => savedPositions.push(position);
+  UIRenderer.renderMultiRange = async (start, selectedId) => {
+    AppState.questions = entries.slice(start, start + 20);
+    AppState.questionOffset = start;
+    AppState.currentQuestionIndex = selectedId == null ? 0 : AppState.questions.findIndex(question => question.id === selectedId);
+    const selected = AppState.questions[AppState.currentQuestionIndex];
+    if (selected) StorageService.saveLearningPosition(AppState.currentCategory.id, chapter.id, start + AppState.currentQuestionIndex, selected.id, "multi");
+  };
+  UIRenderer.renderQuestion = async index => { AppState.currentQuestionIndex = index; };
+
+  await App.changeQuestionMode("multi");
+  assert.equal(AppState.questionOffset, 20);
+  assert.equal(AppState.currentQuestionIndex, 6);
+  assert.equal(AppState.questions[AppState.currentQuestionIndex].id, 27);
+  assert.deepEqual(savedPositions.at(-1), ["category-1", "chapter-1", 26, 27, "multi"]);
+  assert.equal(localStorage.getItem("daguan_new_question_mode_v1"), "multi");
+
+  await App.goToChapterQuestion(40);
+  assert.equal(AppState.questionOffset, 40, "跳入下一段应只载入第 41–60 题所在的 20 题段");
+  assert.equal(AppState.questions[AppState.currentQuestionIndex].id, 41);
+  await App.changeQuestionMode("single");
+  assert.equal(AppState.currentQuestionIndex, 40);
+  assert.equal(AppState.questions[AppState.currentQuestionIndex].id, 41);
+  assert.deepEqual(savedPositions.at(-1), ["category-1", "chapter-1", 40, 41, "single"]);
+  assert.equal(localStorage.getItem("daguan_new_question_mode_v1"), "single");
+});
+
+test("连续做题忽略做题快捷键，单题做题仍可用键盘切题", () => {
+  const { sandbox, documentListeners } = createContext();
+  const { App, AppState } = sandbox.window;
+  AppState.currentView = "question";
+  AppState.questionMode = "multi";
+  AppState.questions = [{ id: 1, stem: "题干" }];
+  AppState.currentQuestionIndex = 0;
+  AppState.shortcuts = { down: "ArrowDown", answer: " ", favorite: "f" };
+  const calls = [];
+  App.nextQuestion = () => calls.push("next");
+  App.goToChapterQuestion = () => calls.push("jump");
+  App.changeQuestionMode = () => calls.push("mode");
+  App.promptJumpToQuestion = () => calls.push("prompt");
+  App.toggleAnswer = () => calls.push("answer");
+  App.selectOption = () => calls.push("option");
+  App.toggleQuestionFavorite = () => calls.push("favorite");
+  App.bindKeyboardShortcuts();
+  const onKeyDown = documentListeners.get("keydown")[0];
+  for (const [key, altKey] of [["j", false], ["k", false], ["m", false], ["g", false], ["1", true], ["ArrowDown", false], [" ", false], ["f", false]]) {
+    let prevented = false;
+    onKeyDown({ key, altKey, ctrlKey: false, metaKey: false, shiftKey: false, target: {}, preventDefault: () => { prevented = true; } });
+    assert.equal(prevented, false, `${key} 在连续做题里不应被拦截`);
+  }
+  assert.deepEqual(calls, []);
+  AppState.questionMode = "single";
+  onKeyDown({ key: "ArrowDown", ctrlKey: false, metaKey: false, target: {}, preventDefault: () => {} });
+  assert.deepEqual(calls, ["next"]);
 });
 
 test("三态掌握循环保留旧版 learning/mastered 语义", () => {

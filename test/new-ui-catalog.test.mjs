@@ -90,10 +90,52 @@ test("新版章节范围沿用严选和真题匹配，并与详细筛选同时�
 
   state.chapterScope = "real";
   assert.equal(match({ id: 3, source: "2022 数学一真题", year: 2022 }), true);
+  assert.equal(match({ id: 7, source: "数一强化练习" }), false);
+  assert.equal(match({ id: 8, source: "模拟卷 数二" }), false);
+  assert.equal(match({ id: 9, source: "真题同源练习" }), false);
+  assert.equal(match({ id: 10, source: "普通练习", category_path: "历年真题 / 数一 / 2022" }), true);
   assert.equal(match({ id: 4, source: "普通练习", year: "", category: "高数" }), false);
   state.filters.years = ["2022"];
   assert.equal(match({ id: 5, source: "2021 数学一真题", year: 2021 }), false);
   assert.equal(match({ id: 6, source: "2022 数学一真题", year: 2022 }), true);
+});
+
+test("新版目录题数随严选和真题范围变化", async () => {
+  const ui = loadNewUI();
+  const state = ui.AppState;
+  state.manifest = { shards: { high: { file: "shards/high.json" } } };
+  const questions = [
+    { id: 1, source: "基础练习", is_core: true },
+    { id: 2, source: "2022 数学一真题", is_core: false },
+    { id: 3, source: "数一强化练习", is_core: false },
+  ];
+  ui.DataService.ensureShard = async () => new Map(questions.map(q => [q.id, q]));
+  const node = { id: "chapter", question_count: 3, questions: questions.map(q => ({ id: q.id, shard: "high" })) };
+  state.chapterScope = "core";
+  await ui.UIRenderer.ensureScopeQuestionIds("core");
+  assert.equal(ui.UIRenderer.scopeCountForNode(node), 1);
+  state.chapterScope = "real";
+  await ui.UIRenderer.ensureScopeQuestionIds("real");
+  assert.equal(ui.UIRenderer.scopeCountForNode(node), 1);
+});
+
+test("进入同一小节时严选与真题得到不同题目队列", async () => {
+  const ui = loadNewUI();
+  ui.AppState.filters = { sources: [], years: [], types: [], lecturers: [] };
+  ui.AppState.libraryQuery = "";
+  const questions = [
+    { id: 1, source: "基础练习", is_core: true },
+    { id: 2, source: "2022 数学一真题", is_core: false },
+    { id: 3, source: "模拟卷 数二", is_core: false },
+  ];
+  ui.DataService.loadQuestionsForChapter = async () => questions;
+  const chapter = { id: "leaf", direct_questions: questions.map(q => ({ id: q.id, shard: "high" })) };
+  ui.AppState.chapterScope = "core";
+  const core = await ui.UIRenderer.filteredChapter(chapter);
+  assert.deepEqual(Array.from(core.direct_questions, entry => entry.id), [1]);
+  ui.AppState.chapterScope = "real";
+  const real = await ui.UIRenderer.filteredChapter(chapter);
+  assert.deepEqual(Array.from(real.direct_questions, entry => entry.id), [2]);
 });
 
 test("混合节点练习只取直属映射，题目顺序按目录映射保持", async () => {
@@ -225,7 +267,7 @@ test("级联目录保留混合节点直属题入口，并为零题叶子显示�
   subject.children = [emptyNode];
   ui.AppState.directoryNodeId = "empty";
   ui.UIRenderer.renderDirectoryNode(emptyNode);
-  assert.match(ui.__elements.get("directory-selection-state").innerHTML, /此章节暂无题目/);
+  assert.match(ui.__elements.get("directory-selection-state").innerHTML, /此范围暂无题目/);
 
   const source = fs.readFileSync(new URL("../web/app-new.js", import.meta.url), "utf8");
   const styles = fs.readFileSync(new URL("../web/styles-new.css", import.meta.url), "utf8");
@@ -269,4 +311,64 @@ test("目录恢复本地节点路径，主动选新节点时滚动位置归零",
   assert.equal(ui.AppState.directoryNodeId, "branch");
   assert.equal(ui.AppState.libraryScrollTop, 0);
   assert.equal(content.scrollTop, 0, "新章节不沿用上一个章节的滚动位置");
+});
+
+test("题库入口在上次科目已不属于当前题库时回退到现有科目", () => {
+  const ui = loadNewUI();
+  const subject = { id: "current", name: "高等数学", children: [] };
+  ui.AppState.categories = { categories: [subject] };
+  ui.AppState.currentCategory = { id: "removed", name: "旧科目" };
+  ui.UIRenderer.readDirectoryState = () => ({ version: 1, lastCategory: "removed", subjects: {} });
+  let rendered = null;
+  ui.UIRenderer.renderLibrary = id => { rendered = id; };
+  ui.App.showLibrary();
+  assert.equal(String(rendered), "current");
+  assert.equal(ui.AppState.currentCategory, subject);
+});
+
+test("最近章节位置沿目录路径标记，失效题号不提供直达", () => {
+  const ui = loadNewUI();
+  const leaf = { id: "leaf", name: "小节", direct_questions: [{ id: 11, shard: "a" }], children: [] };
+  const branch = { id: "branch", name: "章节", children: [leaf] };
+  const top = { id: "top", name: "高等数学", children: [branch] };
+  ui.AppState.categories = { categories: [top] };
+  ui.StorageService.getLearningPosition = () => ({ categoryId: "top", chapterId: "leaf", questionId: "11" });
+  const host = new FakeElement();
+  ui.__elements.set("directory-columns", host);
+  ui.UIRenderer.renderCatalogColumns(top, leaf);
+  assert.match(host.innerHTML, /data-resume-last/);
+  assert.match(host.innerHTML, /题号 11/);
+  ui.StorageService.getLearningPosition = () => ({ categoryId: "top", chapterId: "leaf", questionId: "999" });
+  ui.UIRenderer.renderCatalogColumns(top, leaf);
+  assert.doesNotMatch(host.innerHTML, /data-resume-last/);
+});
+
+test("历史按题号章节和状态组合筛选，失效题目保留", () => {
+  const ui = loadNewUI();
+  const leaf = { id: "leaf", name: "极限", direct_questions: [{ id: 11, shard: "a" }], children: [] };
+  ui.AppState.categories = { categories: [{ id: "top", name: "高等数学", children: [leaf] }] };
+  ui.AppState.visitHistory = [
+    { question_id: "11", visited_at: "2026-09-28T12:00:00Z", time_kind: "visit" },
+    { question_id: "999", visited_at: "2026-09-27T12:00:00Z", time_kind: "legacy" },
+  ];
+  ui.StorageService.getProgress = () => ({ progress: { 11: { mastery: "learning", error_prone: true } } });
+  ui.StorageService.isFavorite = id => String(id) === "11";
+  assert.equal(ui.App.filteredHistory().length, 2);
+  ui.AppState.historyFilters = { query: "极限", category: "top", from: "2026-09-28", to: "2026-09-28", mastery: "learning", favorite: "yes", mistake: "yes" };
+  assert.deepEqual(Array.from(ui.App.filteredHistory(), row => row.entry.question_id), ["11"]);
+});
+
+test("历史原章节失效时不跳到同题号的新章节，直达原题忽略目录筛选", async () => {
+  const ui = loadNewUI();
+  const leaf = { id: "new-leaf", name: "新章节", direct_questions: [{ id: 11, shard: "a" }], children: [] };
+  ui.AppState.categories = { categories: [{ id: "top", name: "高等数学", children: [leaf] }] };
+  ui.AppState.visitHistory = [{ question_id: "11", category_id: "top", chapter_id: "old-leaf", visited_at: "2026-09-28T12:00:00Z" }];
+  assert.equal(ui.App.historyLocation("11", ui.AppState.visitHistory[0]), null);
+  ui.AppState.visitHistory[0].chapter_id = "new-leaf";
+  let call;
+  ui.App.enterChapterQuestions = async (...args) => { call = args; };
+  await ui.App.openHistoryQuestion("11");
+  assert.equal(call[0], leaf);
+  assert.equal(call[2], "11");
+  assert.equal(call[4].ignoreFilters, true);
 });
