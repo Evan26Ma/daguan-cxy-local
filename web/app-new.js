@@ -5,7 +5,7 @@
 
 // ========== 离线缓存注册（与 app2.js 一致） ==========
 if ("serviceWorker" in navigator && location.protocol !== "file:" && location.protocol !== "https:") {
-    navigator.serviceWorker.register("./service-worker.js?v=125").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=126").catch(() => {});
 }
 
 // ========== 全局状态 ==========
@@ -2170,6 +2170,7 @@ class UIRenderer {
         AppState.currentQuestionIndex = questionIndex;
 
         const main = document.getElementById('app-main');
+        main.scrollTop = 0;
         const progress = StorageService.getProgress();
         const isFav = StorageService.isFavorite(question.id);
         const isMistake = StorageService.isMistake(question.id);
@@ -2239,7 +2240,7 @@ class UIRenderer {
                         <div class="footer-nav">
                             <button class="btn btn-secondary" data-shortcut-hint="up"
                                 onclick="App.previousQuestion()"
-                                ${questionIndex === 0 ? 'disabled' : ''}>
+                                ${questionIndex === 0 && !App.adjacentQuestionSections(-1).length ? 'disabled' : ''}>
                                 上一题
                             </button>
                             <button class="btn btn-secondary" id="show-answer-btn" data-shortcut-hint="answer"
@@ -2248,7 +2249,7 @@ class UIRenderer {
                             </button>
                             <button class="btn btn-secondary" data-shortcut-hint="down"
                                 onclick="App.nextQuestion()"
-                                ${questionIndex === AppState.questions.length - 1 ? 'disabled' : ''}>
+                                ${questionIndex === AppState.questions.length - 1 && !App.adjacentQuestionSections(1).length && !AppState.currentChapter ? 'disabled' : ''}>
                                 下一题
                             </button>
                         </div>
@@ -2328,7 +2329,7 @@ class UIRenderer {
         const railTools = `<div class="question-rail-tools"><label class="sr-only">按题号定位</label><input type="search" inputmode="numeric" aria-label="按题号定位" placeholder="题号" value="${escapeHtml(AppState.questionRailQuery)}" oninput="App.filterQuestionIndex(this)" onkeydown="if(event.key==='Enter'){event.preventDefault();App.jumpByQuestionNumber(this.value)}"><div class="question-rail-filters"><button type="button" data-rail-filter="favorite" aria-pressed="${AppState.questionRailFilter === 'favorite'}" class="${AppState.questionRailFilter === 'favorite' ? 'active' : ''}" onclick="App.toggleQuestionRailFilter('favorite')">收藏</button><button type="button" data-rail-filter="error-prone" aria-pressed="${AppState.questionRailFilter === 'error-prone'}" class="${AppState.questionRailFilter === 'error-prone' ? 'active' : ''}" onclick="App.toggleQuestionRailFilter('error-prone')">易错</button><button type="button" data-rail-filter="learning" aria-pressed="${AppState.questionRailFilter === 'learning'}" class="${AppState.questionRailFilter === 'learning' ? 'active' : ''}" onclick="App.toggleQuestionRailFilter('learning')">学习中</button><button type="button" data-rail-filter="mastered" aria-pressed="${AppState.questionRailFilter === 'mastered'}" class="${AppState.questionRailFilter === 'mastered' ? 'active' : ''}" onclick="App.toggleQuestionRailFilter('mastered')">已掌握</button><button type="button" data-rail-filter="not_started" aria-pressed="${AppState.questionRailFilter === 'not_started'}" class="${AppState.questionRailFilter === 'not_started' ? 'active' : ''}" onclick="App.toggleQuestionRailFilter('not_started')">未开始</button></div></div>`;
         main.innerHTML = `<div class="multi-question-view">
             <div class="question-header"><div class="breadcrumb-nav"><a href="#" onclick="App.showHome(); return false;">首页</a><span class="breadcrumb-sep">/</span><a href="#" onclick="App.showLibrary('${escapeHtml(AppState.currentCategory?.id || '')}'); return false;">${escapeHtml(AppState.currentCategory?.name || '题库')}</a><span class="breadcrumb-sep">/</span><span>${escapeHtml(AppState.currentChapter?.name || AppState.currentChapter?.title || '章节')}</span></div><div class="question-sequence">${total} 题 · 每段 20 题</div>${AppState.globalSearchReturn ? '<button type="button" class="btn btn-secondary" onclick="App.returnToGlobalSearch()">返回搜索</button>' : ''}</div>
-            <div class="mode-toolbar"><span>连续做题 · 第 ${pageStart + 1}–${Math.min(pageStart + AppState.questions.length, total)} 题</span><div class="mode-toolbar-actions"><button type="button" class="mode-step-button" onclick="App.goToChapterQuestion(AppState.questionOffset + AppState.currentQuestionIndex - 1)">上一题</button><button type="button" class="mode-step-button" onclick="App.goToChapterQuestion(AppState.questionOffset + AppState.currentQuestionIndex + 1)">下一题</button><button type="button" class="mode-jump-button" onclick="App.promptJumpToQuestion()">跳题</button><div class="mode-switch"><button type="button" onclick="App.changeQuestionMode('single')">单题做题</button><button type="button" class="active" aria-pressed="true">连续做题</button></div><button type="button" class="mobile-question-index-btn" onclick="App.toggleQuestionDrawer()">题号目录</button></div></div>
+            <div class="mode-toolbar"><span>连续做题 · 第 ${pageStart + 1}–${Math.min(pageStart + AppState.questions.length, total)} 题</span><div class="mode-toolbar-actions"><button type="button" class="mode-step-button" onclick="App.previousQuestion()">上一题</button><button type="button" class="mode-step-button" onclick="App.nextQuestion()">下一题</button><button type="button" class="mode-jump-button" onclick="App.promptJumpToQuestion()">跳题</button><div class="mode-switch"><button type="button" onclick="App.changeQuestionMode('single')">单题做题</button><button type="button" class="active" aria-pressed="true">连续做题</button></div><button type="button" class="mobile-question-index-btn" onclick="App.toggleQuestionDrawer()">题号目录</button></div></div>
             <div class="multi-reading-layout"><aside class="question-rail" aria-label="题号目录">${railTools}${rangeButtons}</aside><div class="multi-question-list">${cards}<div class="multi-page-nav"><button type="button" class="btn btn-secondary" ${start === 0 ? 'disabled' : ''} onclick="App.goToChapterQuestion(${Math.max(0, start - 1)})">上一段</button><button type="button" class="btn btn-secondary" ${start + AppState.questions.length >= total ? 'disabled' : ''} onclick="App.goToChapterQuestion(${Math.min(total - 1, start + AppState.questions.length)})">下一段</button></div></div></div>
             <div class="question-drawer-backdrop" onclick="App.toggleQuestionDrawer()"></div><aside class="question-drawer" aria-label="题号目录">${railTools}${rangeButtons}</aside>
             <div class="ai-panel closed" id="ai-panel"></div><div class="annotation-panel closed" id="annotation-panel"></div>
@@ -2526,6 +2527,7 @@ class UIRenderer {
     static renderAIPanel() {
         const panel = document.getElementById('ai-panel');
         if (!panel) return;
+        if (AppState.ui.aiPanelOpen) panel.classList.remove('closed');
 
         const question = AppState.questions[AppState.currentQuestionIndex];
         const draft = question ? StorageService.getAIDraft(question.id) : '';
@@ -2535,6 +2537,7 @@ class UIRenderer {
             : '<option value="">未配置 AI</option>';
 
         panel.innerHTML = `
+            <div class="ai-panel-resize" role="separator" tabindex="0" aria-label="调整 AI 面板宽度" aria-orientation="vertical"></div>
             <div class="ai-header">
                 <h3>AI 辅助</h3>
                 <button class="btn btn-icon btn-text" onclick="App.toggleAI()" aria-label="关闭 AI 面板">
@@ -2543,10 +2546,11 @@ class UIRenderer {
             </div>
             <div class="ai-profile-row">
                 <label for="ai-profile-select-new">服务</label>
-                <select id="ai-profile-select-new" onchange="App.selectAIProfile(this.value)">${profileOptions}</select>
+                <select data-ai-service-control="true" id="ai-profile-select-new" onchange="App.selectAIProfile(this.value)">${profileOptions}</select>
                 <button type="button" class="btn btn-text btn-sm" onclick="App.navigate('settings')">设置</button>
             </div>
 
+            <label class="ai-streaming-control"><input type="checkbox" id="ai-streaming-new"> 流式回答</label>
             <div class="ai-quick-prompts">
                 <button class="quick-prompt-btn" onclick="App.sendAIPrompt(AI_COMPOSE_PROMPTS.full)">完整解答</button>
                 <button class="quick-prompt-btn" onclick="App.sendAIPrompt(AI_COMPOSE_PROMPTS.hint)">给我提示</button>
@@ -2571,6 +2575,13 @@ class UIRenderer {
             </div>
         `;
 
+        window.DaguanAIPanelLayout?.bind(panel);
+        window.DaguanAISettings?.bindStreaming(document.getElementById('ai-streaming-new'), {
+            profile: () => AIService.activeProfile(), busy: () => AppState.aiBusy,
+            allowed: () => PreviewAccess.privateAllowed(), error: message => toast(message),
+            changed: profile => { Object.assign(AIService.activeProfile() || {}, profile); },
+        });
+        document.getElementById('ai-profile-select-new').disabled = AppState.aiBusy;
         const input = document.getElementById('ai-input');
         if (input) {
             input.addEventListener('input', () => {
@@ -4343,7 +4354,7 @@ class App {
         try {
             if (AppState.questionMode === 'multi') {
                 const start = Math.floor(index / 20) * 20;
-                await UIRenderer.renderMultiRange(start, questionId);
+                await UIRenderer.renderMultiRange(start, questionId ?? entries[index]?.id);
             } else {
                 const questions = await DataService.loadQuestionsForChapter(chapter);
                 if (!questions.length) throw new Error('题目暂时无法加载');
@@ -5334,43 +5345,7 @@ document.getElementById('btn-dl').addEventListener('click', function () {
                     <button type="button" class="btn btn-text" onclick="App.resetShortcuts()">恢复旧版默认键</button>
                 </section>
 
-                <div class="card" style="margin-bottom: var(--spacing-xl);">
-                    <h2 class="text-section-title" style="margin-bottom: var(--spacing-l);">AI 服务</h2>
-                    <p class="text-helper" style="margin-bottom: var(--spacing-l);">AI 服务档案统一保存在本地中控台，新旧两版共用；此处只选择使用哪一个，不录入密钥。</p>
-                    <div style="display: flex; flex-direction: column; gap: var(--spacing-l);">
-                        <div>
-                            <label style="display: block; margin-bottom: var(--spacing-s); font-weight: 600;">使用的服务档案</label>
-                            <select id="ai-profile-setting" style="width: 100%; padding: 10px; border: 1px solid var(--border-default); border-radius: 8px;" onchange="App.selectAIProfile(this.value)">${profileOptions}</select>
-                        </div>
-                        <details class="profile-form-details" id="ai-profile-form-new">
-                            <summary class="btn btn-secondary" style="cursor: pointer; display: inline-flex;">新增 / 编辑服务档案</summary>
-                            <div style="display: flex; flex-direction: column; gap: var(--spacing-l); margin-top: var(--spacing-l);">
-                                <div>
-                                    <label style="display: block; margin-bottom: var(--spacing-s); font-weight: 600;">档案名称</label>
-                                    <input type="text" id="ai-profile-name-new" placeholder="例如：我的中转站" style="width: 100%; padding: 10px; border: 1px solid var(--border-default); border-radius: 8px;">
-                                </div>
-                                <div>
-                                    <label style="display: block; margin-bottom: var(--spacing-s); font-weight: 600;">Base URL</label>
-                                    <input type="text" id="ai-profile-url-new" placeholder="OpenAI 兼容接口地址" style="width: 100%; padding: 10px; border: 1px solid var(--border-default); border-radius: 8px;">
-                                </div>
-                                <div>
-                                    <label style="display: block; margin-bottom: var(--spacing-s); font-weight: 600;">模型</label>
-                                    <input type="text" id="ai-profile-model-new" placeholder="例如 gpt-4o-mini" style="width: 100%; padding: 10px; border: 1px solid var(--border-default); border-radius: 8px;">
-                                </div>
-                                <div>
-                                    <label style="display: block; margin-bottom: var(--spacing-s); font-weight: 600;">API Key（保存到本地中控台，不写入浏览器存储）</label>
-                                    <input type="password" id="ai-profile-key-new" placeholder="留空表示沿用已保存的 Key" style="width: 100%; padding: 10px; border: 1px solid var(--border-default); border-radius: 8px;">
-                                </div>
-                                <div class="tool-controls">
-                                    <button type="button" class="btn btn-primary" id="btn-ai-profile-save">保存档案</button>
-                                    <button type="button" class="btn btn-secondary" id="btn-ai-profile-test">测试连接</button>
-                                    <button type="button" class="btn btn-text" id="btn-ai-profile-delete">删除当前档案</button>
-                                </div>
-                                <p class="text-helper" id="ai-profile-feedback"></p>
-                            </div>
-                        </details>
-                    </div>
-                </div>
+                <section class="card" id="ai-services-settings"></section>
 
                 <div class="card" style="margin-bottom: var(--spacing-xl);">
                     <h2 class="text-section-title" style="margin-bottom: var(--spacing-l);">访问与数据</h2>
@@ -5387,15 +5362,13 @@ document.getElementById('btn-dl').addEventListener('click', function () {
         UIRenderer.bindThemeSettings();
         this.renderShortcutSettings();
         if (window.daguanDesktop?.remoteAccess) this.bindRemoteSettings();
-        document.getElementById('btn-ai-profile-save')?.addEventListener('click', () => this.saveAIProfile());
-        document.getElementById('btn-ai-profile-test')?.addEventListener('click', () => this.testAIProfile());
-        document.getElementById('btn-ai-profile-delete')?.addEventListener('click', () => this.deleteAIProfile());
-        const editing = profiles.find(item => item.id === AppState.aiProfileId);
-        if (editing) {
-            document.getElementById('ai-profile-name-new').value = editing.name || '';
-            document.getElementById('ai-profile-url-new').value = editing.baseUrl || '';
-            document.getElementById('ai-profile-model-new').value = editing.model || '';
-        }
+        window.DaguanAISettings?.mount(document.getElementById('ai-services-settings'), {
+            selectedId: () => AppState.aiProfileId,
+            busy: () => AppState.aiBusy,
+            allowed: () => PreviewAccess.privateAllowed(),
+            select: id => this.selectAIProfile(id),
+            changed: profiles => { AppState.aiProfiles = profiles; if (!profiles.some(p => p.id === AppState.aiProfileId)) AIService.selectProfile(profiles[0]?.id || ''); },
+        });
     }
 
     static bindRemoteSettings() {
@@ -5500,68 +5473,6 @@ document.getElementById('btn-dl').addEventListener('click', function () {
         setTimeout(() => target.classList.remove('guide-celebrate'), 1900);
     }
 
-    static async saveAIProfile() {
-        if (!PreviewAccess.privateAllowed()) return;
-        const feedback = document.getElementById('ai-profile-feedback');
-        const existing = (AppState.aiProfiles || []).find(item => item.id === AppState.aiProfileId);
-        const name = document.getElementById('ai-profile-name-new')?.value.trim();
-        const baseUrl = document.getElementById('ai-profile-url-new')?.value.trim();
-        const model = document.getElementById('ai-profile-model-new')?.value.trim();
-        const key = document.getElementById('ai-profile-key-new')?.value;
-        const body = { name, model, baseUrl };
-        if (key) body.key = key;
-        try {
-            const response = await fetch(existing ? `./api/ai/profiles/${encodeURIComponent(existing.id)}` : './api/ai/profiles', {
-                method: existing ? 'PATCH' : 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body),
-            });
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.error || '保存失败');
-            AIService.selectProfile(data.profile.id);
-            await AIService.loadProfiles();
-            if (feedback) feedback.textContent = 'AI 服务档案已保存并启用。';
-            this.showSettings();
-        } catch (error) {
-            if (feedback) feedback.textContent = `保存失败：${error.message || String(error)}`;
-        }
-    }
-
-    static async testAIProfile() {
-        const feedback = document.getElementById('ai-profile-feedback');
-        if (!AppState.aiProfileId) { if (feedback) feedback.textContent = '请先保存档案，再测试。'; return; }
-        if (feedback) feedback.textContent = '正在测试…';
-        try {
-            const response = await fetch(`./api/ai/profiles/${encodeURIComponent(AppState.aiProfileId)}/test`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ kind: 'text' }),
-            });
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.error || data.message || '测试失败');
-            if (feedback) feedback.textContent = `文本测试通过 · HTTP ${data.status} · ${data.latencyMs}ms · ${data.response || '无摘要'}`;
-        } catch (error) {
-            if (feedback) feedback.textContent = error.message || String(error);
-        }
-    }
-
-    static async deleteAIProfile() {
-        if (!PreviewAccess.privateAllowed()) return;
-        const profile = AIService.activeProfile();
-        if (!profile) { toast('当前没有可删除的档案'); return; }
-        if (!confirm(`删除“${profile.name}”？历史记录默认保留。`)) return;
-        const response = await fetch(`./api/ai/profiles/${encodeURIComponent(profile.id)}`, {
-            method: 'DELETE',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ clearHistory: false }),
-        }).catch(() => null);
-        if (!response || !response.ok) { toast('删除失败'); return; }
-        AIService.selectProfile('');
-        await AIService.loadProfiles();
-        this.showSettings();
-        toast('AI 服务已删除');
-    }
-
     static async switchToLegacy() {
         await this.setUiVersion('old');
     }
@@ -5599,20 +5510,74 @@ document.getElementById('btn-dl').addEventListener('click', function () {
     }
 
     static async previousQuestion() {
-        if (AppState.currentQuestionIndex > 0) {
-            if (!await this.ensureSavedBeforeLeavingQuestion()) return;
-            AppState.temporaryQuestionView = false;
-            await UIRenderer.renderQuestion(AppState.currentQuestionIndex - 1);
-            this.recordVisit(AppState.questions[AppState.currentQuestionIndex]?.id, AppState.currentCategory?.id, AppState.currentChapter?.id);
-        }
+        return this.stepQuestion(-1);
     }
 
     static async nextQuestion() {
-        if (AppState.currentQuestionIndex < AppState.questions.length - 1) {
+        return this.stepQuestion(1);
+    }
+
+    static adjacentQuestionSections(delta) {
+        if (!AppState.currentCategory || !AppState.currentChapter || AppState.temporaryQuestionView) return [];
+        const sections = [];
+        const visit = node => {
+            const children = node.children || [];
+            if (children.length) {
+                if (node.direct_questions?.length) sections.push({ ...node, _directOnly: true });
+                children.forEach(visit);
+            } else if (DataService.chapterEntries(node).length) sections.push(node);
+        };
+        visit(AppState.currentCategory);
+        const index = sections.findIndex(node => String(node.id) === String(AppState.currentChapter.id));
+        if (index < 0) return [];
+        return delta > 0 ? sections.slice(index + 1) : sections.slice(0, index).reverse();
+    }
+
+    static async stepQuestion(delta) {
+        if (AppState.questionStepping || !AppState.questions.length) return;
+        AppState.questionStepping = true;
+        try {
+            const index = AppState.currentQuestionIndex + (AppState.questionMode === 'multi' ? AppState.questionOffset : 0);
+            const count = AppState.questionMode === 'multi' ? DataService.chapterEntries(AppState.currentChapter).length : AppState.questions.length;
+            const target = index + delta;
+            if (target >= 0 && target < count) {
+                if (AppState.questionMode === 'multi') return await this.goToChapterQuestion(target);
+                if (!await this.ensureSavedBeforeLeavingQuestion()) return;
+                AppState.temporaryQuestionView = false;
+                await UIRenderer.renderQuestion(target);
+                this.recordVisit(AppState.questions[AppState.currentQuestionIndex]?.id, AppState.currentCategory?.id, AppState.currentChapter?.id);
+                return;
+            }
+            const candidates = this.adjacentQuestionSections(delta);
+            if (!AppState.currentChapter || AppState.temporaryQuestionView) return;
             if (!await this.ensureSavedBeforeLeavingQuestion()) return;
-            AppState.temporaryQuestionView = false;
-            await UIRenderer.renderQuestion(AppState.currentQuestionIndex + 1);
-            this.recordVisit(AppState.questions[AppState.currentQuestionIndex]?.id, AppState.currentCategory?.id, AppState.currentChapter?.id);
+            const completed = AppState.currentChapter;
+            for (const node of candidates) {
+                const chapter = await UIRenderer.filteredChapter(node, node._directOnly === true);
+                chapter._directOnly = node._directOnly === true;
+                const entries = DataService.chapterEntries(chapter);
+                if (!entries.length) continue;
+                const previous = {
+                    currentChapter: AppState.currentChapter, questions: AppState.questions,
+                    currentQuestionIndex: AppState.currentQuestionIndex, questionOffset: AppState.questionOffset,
+                    chapterQuestionCount: AppState.chapterQuestionCount, questionMode: AppState.questionMode,
+                };
+                await this.enterChapterQuestions(chapter, delta > 0 ? 0 : entries.length - 1, null, AppState.questionMode);
+                if (AppState.currentView !== 'question') {
+                    Object.assign(AppState, previous, { currentView: 'question' });
+                    if (AppState.questionMode === 'multi') await UIRenderer.renderMultiRange(previous.questionOffset, previous.questions[previous.currentQuestionIndex]?.id);
+                    else await UIRenderer.renderQuestion(previous.currentQuestionIndex);
+                    return;
+                }
+                if (delta > 0) window.DaguanSectionCelebration?.show(completed.name || completed.title, completed.id);
+                return;
+            }
+            if (delta > 0) window.DaguanSectionCelebration?.show(completed.name || completed.title, completed.id);
+            else toast('已经是当前范围的第一节');
+        } catch (error) {
+            toast(`切换小节失败：${error.message || '请重试'}`);
+        } finally {
+            AppState.questionStepping = false;
         }
     }
 
@@ -5760,6 +5725,7 @@ document.getElementById('btn-dl').addEventListener('click', function () {
         const isOpen = !panel.classList.contains('closed');
         panel.classList.toggle('closed', isOpen);
         AppState.ui.aiPanelOpen = !isOpen;
+        window.DaguanAIPanelLayout?.update();
 
         if (!isOpen) {
             if (!AppState.aiProfiles) AIService.loadProfiles();
@@ -5788,13 +5754,18 @@ document.getElementById('btn-dl').addEventListener('click', function () {
     }
 
     static selectAIProfile(profileId) {
+        if (AppState.aiBusy) return;
         AIService.selectProfile(profileId);
+        const stream = document.getElementById('ai-streaming-new');
+        if (stream) stream.checked = AIService.activeProfile()?.streaming !== false;
         const question = AppState.questions[AppState.currentQuestionIndex];
         if (question) UIRenderer.renderAIHistory(question);
     }
 
     static aiBusyUi(busy) {
         AppState.aiBusy = busy;
+        document.querySelectorAll('[data-ai-service-control]').forEach(el => { el.disabled = busy; });
+        document.getElementById('ai-services-settings')?.aiSettings?.syncBusy();
         const stop = document.getElementById('ai-stop-btn');
         const send = document.getElementById('ai-send-btn');
         if (stop) stop.hidden = !busy;

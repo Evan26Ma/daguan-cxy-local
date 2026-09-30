@@ -64,3 +64,48 @@ dialog.legacy-sync-inline[open] { position: static !important; display: block; w
 @keyframes guide-stars { from { opacity: 0; transform: translateY(10px) scale(.7); } 30% { opacity: 1; } to { opacity: 0; transform: translateY(-32px) scale(1.2); } }
 @media (max-width: 700px) { .guide-page { padding: 14px 14px 42px; } .legacy-guide-page { padding: 0; } .guide-page-head { flex-direction: column; gap: 5px; } .guide-step-nav { display: flex; overflow-x: auto; padding-bottom: 6px; scroll-snap-type: x proximity; } .guide-step-nav button { flex: 0 0 145px; scroll-snap-align: start; } .remote-form-grid { grid-template-columns: minmax(0, 1fr); } .remote-token-field { grid-column: auto; } .guide-diagram b { display: none; } }
 @media (prefers-reduced-motion: reduce) { .guide-target, .guide-celebrate, .guide-celebrate::after { animation: none !important; transition: none !important; } }
+/* A small, non-blocking reward after finishing a subsection. */
+.section-celebration {
+  position: fixed;
+  bottom: max(28px, env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10000;
+  max-width: calc(100vw - 40px);
+  padding: 10px 16px;
+  border-radius: 20px;
+  background: #e9f5ef;
+  color: #235d46;
+  box-shadow: 0 3px 16px #163f2520;
+  font-size: 13px;
+  pointer-events: none;
+  animation: section-reward 1.8s ease both;
+}
+.section-celebration span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.section-celebration i {
+  position: absolute;
+  left: calc(12% + var(--piece) * 10%);
+  top: 0;
+  width: 4px;
+  height: 7px;
+  background: #4a9877;
+  animation: section-paper 850ms ease-out both;
+  animation-delay: calc(var(--piece) * 25ms);
+}
+.section-celebration i:nth-child(2n) { background: #c49b48; }
+@keyframes section-reward {
+  0% { opacity: 0; translate: 0 8px; }
+  15%, 80% { opacity: 1; translate: 0 0; }
+  100% { opacity: 0; translate: 0 -3px; }
+}
+@keyframes section-paper {
+  0% { opacity: 0; transform: translateY(0) rotate(0); }
+  20% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-42px) rotate(160deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .section-celebration { animation: none; }
+  .section-celebration i { display: none; }
+}
+[data-reduce-motion="true"] .section-celebration { animation: none; }
+[data-reduce-motion="true"] .section-celebration i { display: none; }

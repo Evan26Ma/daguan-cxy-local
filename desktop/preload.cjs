@@ -84,6 +84,7 @@ function addDesktopBar() {
   `;
   document.head.appendChild(style);
   document.body.prepend(bar);
+  document.documentElement.style.setProperty("--desktop-bar-height", `${bar.getBoundingClientRect().height}px`);
   for (const button of bar.querySelectorAll("button")) button.addEventListener("click", async () => {
     const action = button.dataset.action;
     if (action === "switch") {

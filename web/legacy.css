@@ -3175,3 +3175,15 @@ body.focus-mode[data-view="browse"] #app.learning-shell .learning-shell__sidebar
 .practice-version-toggle { display: flex; justify-content: flex-end; gap: .4rem; margin-bottom: .6rem; }
 .practice-version-toggle [aria-pressed="true"], .legacy-version-toggle [aria-pressed="true"] { border-color: var(--color-brand); color: var(--color-brand); }
 .topbar-version-switch { flex: 0 0 auto; white-space: nowrap; }
+/* Keep long assistant answers inside the drawer, independently of the page. */
+.ai-drawer { top: var(--desktop-bar-height, 0px); }
+.ai-drawer-body { overflow: hidden; }
+#ai-chat-panel { display: flex; flex-direction: column; height: 100%; min-height: 0; }
+#ai-chat-panel > :not(.ai-messages) { flex-shrink: 0; }
+#ai-chat-panel .ai-messages { display: block; flex: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; }
+#ai-chat-panel .ai-message { margin-bottom: 10px; }
+#ai-note-panel { height: 100%; min-height: 0; overflow: auto; }
+#ai-chat-panel .katex-display { overflow-x: auto; overflow-y: hidden; max-width: 100%; }
+#app.learning-shell { min-height: calc(100dvh - var(--desktop-bar-height, 0px)); }
+.learning-shell__sidebar { height: calc(100dvh - var(--desktop-bar-height, 0px)); }
+@media(max-width:672px) { .ai-drawer { top: var(--desktop-bar-height, 0px); } .learning-shell__sidebar { height: 4.25rem; } }

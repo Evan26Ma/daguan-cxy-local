@@ -143,7 +143,7 @@ html[data-theme="eye-care"] {
     display: flex;
     flex-direction: column;
     height: 100vh;
-    height: 100dvh;
+    height: calc(100dvh - var(--desktop-bar-height, 0px));
     min-height: 0;
     overflow: hidden;
 }
@@ -2970,4 +2970,28 @@ html.native-titlebar-content-inset .app-container {
   .question-mistake-toggle { flex: 1 1 100%; }
   .text-question-body, .question-stem { font-size: calc(19px * var(--ui-font-scale, 1)); line-height: 1.7; }
   .option-content, .answer-content, .explanation-content { font-size: calc(17px * var(--ui-font-scale, 1)); line-height: 1.7; }
+}
+/* Single questions own their content scroll; the shell never stretches with chat. */
+#app-main:has(> .question-layout) { overflow: hidden; }
+#app-main > .question-layout { height: 100%; min-height: 0; overflow: hidden; }
+.question-layout > .question-main { min-height: 0; }
+.ai-panel { position: relative; width: var(--ai-drawer-width, 400px); min-width: 0; overflow: hidden; }
+.ai-panel > .ai-header, .ai-panel > .ai-profile-row, .ai-panel > .ai-quick-prompts, .ai-panel > .ai-streaming-control, .ai-panel > .ai-input-area { flex-shrink: 0; }
+.ai-panel .ai-messages { flex: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; }
+.ai-panel .ai-message, .ai-panel .ai-message-bubble { min-width: 0; overflow-wrap: anywhere; }
+.ai-panel .katex-display { max-width: 100%; overflow-x: auto; overflow-y: hidden; }
+.ai-panel-resize { position: absolute; z-index: 5; left: 0; top: 0; bottom: 0; width: 8px; cursor: col-resize; touch-action: none; }
+.ai-panel-resize:hover, .ai-panel-resize:focus-visible { background: var(--brand-light-bg); outline: 2px solid var(--brand-orange); outline-offset: -2px; }
+.ai-panel-resizing, .ai-panel-resizing * { cursor: col-resize !important; user-select: none !important; }
+.multi-question-view > .ai-panel:not(.closed), .multi-question-view > .annotation-panel:not(.closed) { top: var(--learning-content-top, calc(var(--topbar-height, 56px) + var(--desktop-bar-height, 0px))); bottom: var(--statusbar-height, 28px); }
+.multi-question-view > .ai-panel:not(.closed) { width: var(--ai-drawer-width, 400px); }
+@media(min-width:1025px) {
+  .multi-question-view:has(> .ai-panel:not(.closed)) { padding-right: var(--ai-drawer-width, 400px); }
+}
+@media(max-width:1024px) {
+  .question-layout > .ai-panel:not(.closed) { position: fixed; z-index: 1200; top: var(--learning-content-top, calc(var(--topbar-height, 56px) + var(--desktop-bar-height, 0px))); right: 0; bottom: var(--statusbar-height, 28px); width: min(var(--ai-drawer-width, 400px), 100vw); }
+}
+@media(max-width:672px) {
+  .question-layout > .ai-panel:not(.closed), .multi-question-view > .ai-panel:not(.closed) { width: 100vw; }
+  .ai-panel-resize { display: none; }
 }

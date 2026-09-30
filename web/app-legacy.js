@@ -1779,9 +1779,9 @@
     else if (els.chapterMenuFeedback) els.chapterMenuFeedback.textContent = "当前题库范围下没有可用题目，请切换“完整 / 核心 / 真题”。";
   }
 
-  function findAdjacentChapter(delta) {
+  function findAdjacentChapter(delta, acrossSubject = false) {
     if (!state.currentCatId || state.specialQueue) return null;
-    const leaves = chapterLeavesFor(state.currentCatId);
+    const leaves = acrossSubject ? flattenCategoryLeaves([(findCat(state.currentCatId) || [])[0]].filter(Boolean)) : chapterLeavesFor(state.currentCatId);
     const currentIndex = leaves.findIndex((entry) => String(entry.node.id) === String(state.currentCatId));
     if (currentIndex < 0) return null;
     for (let index = currentIndex + delta; index >= 0 && index < leaves.length; index += delta) {
@@ -1791,15 +1791,23 @@
     return null;
   }
 
-  async function goToAdjacentChapter(delta) {
+  async function goToAdjacentChapter(delta, { acrossSubject = false, atEnd = false } = {}) {
     if (!state.currentCatId || state.specialQueue) return false;
-    const leaves = chapterLeavesFor(state.currentCatId);
+    const leaves = acrossSubject ? flattenCategoryLeaves([(findCat(state.currentCatId) || [])[0]].filter(Boolean)) : chapterLeavesFor(state.currentCatId);
     const currentIndex = leaves.findIndex((entry) => String(entry.node.id) === String(state.currentCatId));
     if (currentIndex < 0) return false;
     for (let index = currentIndex + delta; index >= 0 && index < leaves.length; index += delta) {
       const entry = leaves[index];
       const ok = await openCategory(entry.node.id, null, { silent: true });
-      if (ok) return true;
+      if (ok) {
+        if (atEnd) {
+          state.index = state.queue.length - 1;
+          renderSingle();
+          recordCurrentVisit();
+          queueLastStudyPosition();
+        }
+        return true;
+      }
     }
     toast(delta < 0 ? "已经是本章第一节" : "已经是本章最后一节");
     updateChapterHeader();
@@ -3052,9 +3060,8 @@
       if (answerButton) answerButton.innerHTML = shortcutButtonMarkup("显示答案", "answer");
     }
 
-    $("#btn-prev").disabled = state.index <= 0;
-    const canContinueToNextChapter = state.focusMode && Boolean(findAdjacentChapter(1));
-    $("#btn-next").disabled = state.index >= state.queue.length - 1 && !canContinueToNextChapter;
+    $("#btn-prev").disabled = state.index <= 0 && !findAdjacentChapter(-1, true);
+    $("#btn-next").disabled = state.index >= state.queue.length - 1 && (!state.currentCatId || state.specialQueue);
     const favoriteButton = $("#btn-toggle-favorite");
     if (favoriteButton) {
       favoriteButton.dataset.favoriteId = String(q.id);
@@ -3117,16 +3124,19 @@
 
   async function go(delta) {
     const next = state.index + delta;
-    if (next >= state.queue.length && delta > 0 && state.focusMode) {
+    if ((next >= state.queue.length || next < 0) && state.currentCatId && !state.specialQueue) {
       if (chapterTransitioning) return;
       chapterTransitioning = true;
       try {
-        const opened = await goToAdjacentChapter(1);
+        const completedId = state.currentCatId;
+        const completedName = (findCat(completedId) || []).at(-1)?.name;
+        const opened = await goToAdjacentChapter(delta, { acrossSubject: true, atEnd: delta < 0 });
+        if (delta > 0) window.DaguanSectionCelebration?.show(completedName, completedId);
         if (opened) {
           state.showAnswer = false;
           state.selected = new Set();
           if (state.focusSnapshot) {
-            state.focusSnapshot.index = 0;
+            state.focusSnapshot.index = state.index;
             state.focusSnapshot.scrollY = 0;
           }
           queueLastStudyPosition();
@@ -4728,6 +4738,7 @@
       if (els.aiProfileSelect) {
         els.aiProfileSelect.innerHTML = state.aiProfiles.length ? state.aiProfiles.map((item) => `<option value="${escapeHtml(item.id)}">${escapeHtml(item.name)}${item.model ? ` · ${escapeHtml(item.model)}` : ""}</option>`).join("") : `<option value="">未配置 AI</option>`;
         els.aiProfileSelect.value = state.aiProfileId;
+        updateAiStreaming();
       }
       renderAiProfilesSettings();
       if (state.aiOpen) loadAiHistory();
@@ -4736,7 +4747,7 @@
 
   function openAiSettings() {
     openSheet("dlg-appearance");
-    window.setTimeout(() => $("#ai-settings-title")?.scrollIntoView({ block: "center" }), 80);
+    window.setTimeout(() => $("#ai-services-settings")?.scrollIntoView({ block: "center" }), 80);
   }
 
   function applyAiComposePosition() {
@@ -4880,6 +4891,7 @@
       stream.controller?.abort();
     });
     aiStreamStates.clear();
+    syncAiServiceBusy();
     state.aiRuns.clear();
     activeAiRunId = "";
     runIds.forEach((runId) => fetch(`./api/ai/runs/${encodeURIComponent(runId)}`, { method: "DELETE" }).catch(() => {}));
@@ -4955,7 +4967,7 @@
   }
 
   async function sendAiMessage(prompt = els.aiPrompt?.value || "") {
-    if (!previewPrivateAllowed()) return;
+    if (!previewPrivateAllowed() || aiStreamStates.size) return;
     const q = currentAiQuestion();
     const text = String(prompt || "").trim();
     if (!q || !text) return;
@@ -4987,16 +4999,19 @@
       paintNow();
     };
     aiStreamStates.add(stream);
+    syncAiServiceBusy();
     const images = (state.aiProfiles.find((item) => item.id === state.aiProfileId)?.capabilities?.vision === "passed") ? await questionImages(q) : [];
     if (stream.disposed || state.aiQuestionId !== questionId) {
       aiStreamStates.delete(stream);
+      syncAiServiceBusy();
       return;
     }
+    let runId = "";
     try {
       const response = await fetch("./api/ai/chat", { method: "POST", headers: { "Content-Type": "application/json" }, signal: controller.signal, body: JSON.stringify({ profileId: state.aiProfileId, question: aiQuestionPayload(q), prompt: text, includePrivate: $("#ai-include-private")?.checked === true, images }) });
       if (!response.ok) throw new Error(`AI 请求失败（HTTP ${response.status}）`);
       if (stream.disposed || state.aiQuestionId !== questionId) return;
-      const runId = response.headers.get("X-Daguan-Run-Id");
+      runId = response.headers.get("X-Daguan-Run-Id");
       activeAiRunId = runId || "";
       if (runId) state.aiRuns.set(runId, { questionId: String(q.id), startedAt: Date.now() });
       $("#btn-ai-stop")?.removeAttribute("hidden");
@@ -5024,6 +5039,8 @@
       if (stream.timer) window.clearTimeout(stream.timer);
       stream.timer = 0;
       aiStreamStates.delete(stream);
+      if (runId) state.aiRuns.delete(runId);
+      syncAiServiceBusy();
     }
   }
 
@@ -5054,63 +5071,27 @@
   }
 
   function renderAiProfilesSettings() {
-    const root = $("#ai-profile-list"); if (!root) return;
-    if (!state.aiProfiles.length) { root.innerHTML = `<div class="empty-state compact"><p>尚未配置 AI 服务。</p></div>`; return; }
-    root.innerHTML = state.aiProfiles.map((item) => `<div class="ai-profile-card ${item.id === state.aiProfileId ? "active" : ""}"><div><strong>${escapeHtml(item.name)}</strong><span>${escapeHtml(item.model || "未选模型")} · ${escapeHtml(item.keyHint || "未设置")}</span></div><div class="ai-profile-card-actions"><button type="button" class="btn ghost" data-ai-edit="${escapeHtml(item.id)}">编辑</button><button type="button" class="btn ghost" data-ai-use="${escapeHtml(item.id)}">使用</button><button type="button" class="btn ghost" data-ai-delete="${escapeHtml(item.id)}">删除</button></div></div>`).join("");
-    root.querySelectorAll("[data-ai-edit]").forEach((button) => button.addEventListener("click", () => openAiProfileForm(button.dataset.aiEdit)));
-    root.querySelectorAll("[data-ai-use]").forEach((button) => button.addEventListener("click", () => { state.aiProfileId = button.dataset.aiUse; saveAiPrefs({ ...aiPrefs(), profileId: state.aiProfileId }); if (els.aiProfileSelect) els.aiProfileSelect.value = state.aiProfileId; renderAiProfilesSettings(); toast("已切换 AI 服务"); }));
-    root.querySelectorAll("[data-ai-delete]").forEach((button) => button.addEventListener("click", async () => {
-      if (!previewPrivateAllowed()) return;
-      const profile = state.aiProfiles.find((item) => item.id === button.dataset.aiDelete);
-      if (!profile || !confirm(`删除“${profile.name}”？历史记录默认保留。`)) return;
-      const clearHistory = confirm("是否同时删除这个服务的全部 AI 历史？点击“取消”将只删除服务配置。");
-      const response = await fetch(`./api/ai/profiles/${encodeURIComponent(profile.id)}`, { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ clearHistory }) });
-      if (!response.ok) { toast("删除失败"); return; }
-      if (state.aiProfileId === profile.id) state.aiProfileId = "";
-      await loadAiProfiles(); toast("AI 服务已删除");
-    }));
+    window.DaguanAISettings?.mount($("#ai-services-settings"), {
+      selectedId: () => state.aiProfileId, busy: () => aiStreamStates.size > 0,
+      allowed: () => previewPrivateAllowed(),
+      select: id => { if (aiStreamStates.size) return; state.aiProfileId = id; saveAiPrefs({ ...aiPrefs(), profileId: id }); if (els.aiProfileSelect) els.aiProfileSelect.value = id; updateAiStreaming(); loadAiHistory(); },
+      changed: profiles => {
+        state.aiProfiles = profiles;
+        if (!profiles.some(p => p.id === state.aiProfileId)) state.aiProfileId = profiles[0]?.id || "";
+        if (els.aiProfileSelect) { els.aiProfileSelect.innerHTML = profiles.map(p => `<option value="${escapeHtml(p.id)}">${escapeHtml(p.name)} · ${escapeHtml(p.model || "未选模型")}</option>`).join(""); els.aiProfileSelect.value = state.aiProfileId; }
+        updateAiStreaming();
+      },
+    });
   }
 
-  function openAiProfileForm(id = "") {
-    if (!previewPrivateAllowed()) return;
-    const form = $("#ai-profile-form"); if (!form) return;
-    const item = state.aiProfiles.find((profile) => profile.id === id);
-    $("#ai-profile-id").value = item?.id || "";
-    $("#ai-profile-name").value = item?.name || "";
-    $("#ai-profile-model").value = item?.model || "";
-    $("#ai-profile-url").value = item?.baseUrl || "";
-    $("#ai-profile-key").value = "";
-    $("#ai-test-result").textContent = "";
-    form.classList.remove("hidden");
-    $("#ai-profile-name")?.focus();
+  function updateAiStreaming() {
+    const input = $("#ai-streaming-legacy");
+    if (input) input.checked = state.aiProfiles.find(p => p.id === state.aiProfileId)?.streaming !== false;
   }
 
-  function closeAiProfileForm() { $("#ai-profile-form")?.classList.add("hidden"); }
-
-  async function saveAiProfile(event) {
-    event.preventDefault();
-    if (!previewPrivateAllowed()) return;
-    const id = $("#ai-profile-id").value;
-    const body = { name: $("#ai-profile-name").value, model: $("#ai-profile-model").value, baseUrl: $("#ai-profile-url").value, key: $("#ai-profile-key").value };
-    try {
-      const response = await fetch(id ? `./api/ai/profiles/${encodeURIComponent(id)}` : "./api/ai/profiles", { method: id ? "PATCH" : "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-      const data = await response.json(); if (!response.ok) throw new Error(data.error || "保存失败");
-      state.aiProfileId = data.profile.id; saveAiPrefs({ ...aiPrefs(), profileId: state.aiProfileId }); closeAiProfileForm(); await loadAiProfiles(); toast("AI 服务已保存");
-    } catch (error) { $("#ai-test-result").textContent = error.message || String(error); }
-  }
-
-  async function aiProfileAction(kind) {
-    if (!previewPrivateAllowed()) return;
-    const id = $("#ai-profile-id").value;
-    if (!id) { $("#ai-test-result").textContent = "请先保存服务，再测试。"; return; }
-    const result = $("#ai-test-result"); result.textContent = "正在测试…";
-    try {
-      const response = await fetch(`./api/ai/profiles/${encodeURIComponent(id)}/${kind === "models" ? "models" : "test"}`, { method: kind === "models" ? "GET" : "POST", headers: kind === "models" ? {} : { "Content-Type": "application/json" }, body: kind === "models" ? undefined : JSON.stringify({ kind }) });
-      const data = await response.json(); if (!response.ok) throw new Error(data.error || data.message || "测试失败");
-      if (kind === "models") { result.textContent = data.models?.length ? `已获取 ${data.models.length} 个模型：${data.models.slice(0, 12).join("、")}` : "接口未返回模型列表，请手动填写模型名。"; if (data.models?.[0] && !$("#ai-profile-model").value) $("#ai-profile-model").value = data.models[0]; }
-      else result.textContent = `${kind === "vision" ? "视觉" : "文本"}测试通过 · HTTP ${data.status} · ${data.latencyMs}ms · ${data.response || "无摘要"}`;
-      await loadAiProfiles();
-    } catch (error) { result.textContent = error.message || String(error); }
+  function syncAiServiceBusy() {
+    document.querySelectorAll('[data-ai-service-control], #btn-ai-send').forEach(el => { el.disabled = aiStreamStates.size > 0; });
+    $("#ai-services-settings")?.aiSettings?.syncBusy();
   }
 
   function bindUI() {
@@ -5660,7 +5641,12 @@
     $("#btn-ai-close")?.addEventListener("click", closeAiDrawer);
     bindAiDrawerResize();
     document.querySelectorAll("[data-ai-tab]").forEach((button) => button.addEventListener("click", () => setAiTab(button.dataset.aiTab)));
-    $("#ai-profile-select")?.addEventListener("change", (event) => { state.aiProfileId = event.target.value; saveAiPrefs({ ...aiPrefs(), profileId: state.aiProfileId }); loadAiHistory(); });
+    window.DaguanAISettings?.bindStreaming($("#ai-streaming-legacy"), {
+      profile: () => state.aiProfiles.find(p => p.id === state.aiProfileId), busy: () => aiStreamStates.size > 0,
+      allowed: () => previewPrivateAllowed(), error: message => toast(message),
+      changed: profile => { Object.assign(state.aiProfiles.find(p => p.id === profile.id) || {}, profile); },
+    });
+    $("#ai-profile-select")?.addEventListener("change", (event) => { if (aiStreamStates.size) return; state.aiProfileId = event.target.value; saveAiPrefs({ ...aiPrefs(), profileId: state.aiProfileId }); updateAiStreaming(); loadAiHistory(); });
     document.querySelectorAll("[data-ai-prompt]").forEach((button) => button.addEventListener("click", () => sendAiMessage(button.dataset.aiPrompt)));
     $("#ai-compose")?.addEventListener("submit", (event) => { event.preventDefault(); sendAiMessage(); });
     $("#ai-prompt")?.addEventListener("keydown", (event) => {
@@ -5677,12 +5663,6 @@
       if (item && els.noteEditor) { els.noteEditor.value = item.markdown || ""; scheduleQuestionNoteSave(); toast("已恢复历史批注"); }
     });
     $("#btn-ai-settings")?.addEventListener("click", openAiSettings);
-    $("#btn-ai-add-profile")?.addEventListener("click", () => openAiProfileForm());
-    $("#ai-profile-form")?.addEventListener("submit", saveAiProfile);
-    $("#btn-ai-cancel-profile")?.addEventListener("click", closeAiProfileForm);
-    $("#btn-ai-fetch-models")?.addEventListener("click", () => aiProfileAction("models"));
-    $("#btn-ai-test-text")?.addEventListener("click", () => aiProfileAction("text"));
-    $("#btn-ai-test-vision")?.addEventListener("click", () => aiProfileAction("vision"));
     $("#btn-shortcuts-reset")?.addEventListener("click", () => {
       Object.assign(shortcuts, SHORTCUT_DEFAULTS);
       localStorage.setItem(SHORTCUTS_KEY, JSON.stringify(shortcuts));

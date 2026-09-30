@@ -1019,3 +1019,169 @@ test("待同步日志与旧版共用同一键，旧版写入的收藏也能被�
   const merged = StateSync.mergeFavorites(["old"], StorageService.getProgress(), { 3357: { favorite: true }, old: {} });
   assert.deepEqual(Array.from(merged), ["old", "3357"]);
 });
+
+test("上一题、下一题跨子节，跳过筛选为空的小节并保留模式", async () => {
+  const { sandbox } = createContext();
+  const { App, AppState, UIRenderer } = sandbox;
+  const sections = [
+    { id: 'a', name: 'A', questions: [{ id: 1 }, { id: 2 }] },
+    { id: 'empty', questions: [{ id: 9 }] },
+    { id: 'b', name: 'B', questions: [{ id: 3 }, { id: 4 }] },
+  ];
+  AppState.currentCategory = { id: 'subject', children: [{ id: 'chapter', children: sections }] };
+  AppState.currentChapter = sections[0];
+  AppState.questions = sections[0].questions;
+  AppState.currentQuestionIndex = 1;
+  AppState.questionMode = 'single';
+  AppState.currentView = 'question';
+  App.ensureSavedBeforeLeavingQuestion = async () => true;
+  UIRenderer.filteredChapter = async node => ({ ...node, direct_questions: node.id === 'empty' ? [] : node.questions });
+  const transitions = [];
+  const rewards = [];
+  sandbox.DaguanSectionCelebration = { show: (name, id) => rewards.push(id) };
+  App.enterChapterQuestions = async (chapter, index, id, mode) => {
+    transitions.push([chapter.id, index, mode]);
+    AppState.currentChapter = chapter;
+    AppState.questions = chapter.direct_questions;
+    AppState.currentQuestionIndex = index;
+    AppState.questionOffset = 0;
+  };
+  await App.nextQuestion();
+  assert.deepEqual(transitions, [['b', 0, 'single']]);
+  assert.deepEqual(rewards, ['a']);
+  AppState.questionMode = 'multi';
+  await App.previousQuestion();
+  assert.deepEqual(transitions[1], ['a', 1, 'multi']);
+  assert.deepEqual(rewards, ['a']);
+});
+
+test("跨节先保存，快速连按只切换一次，临时题目不跨节", async () => {
+  const { sandbox } = createContext();
+  const { App, AppState, UIRenderer } = sandbox;
+  const a = { id: 'a', questions: [{ id: 1 }] };
+  const b = { id: 'b', questions: [{ id: 2 }] };
+  Object.assign(AppState, { currentCategory: { children: [a, b] }, currentChapter: a, questions: a.questions, currentQuestionIndex: 0, currentView: 'question', questionMode: 'single' });
+  let entered = 0;
+  UIRenderer.filteredChapter = async node => node;
+  App.enterChapterQuestions = async () => { entered++; };
+  App.ensureSavedBeforeLeavingQuestion = async () => false;
+  await App.nextQuestion();
+  assert.equal(entered, 0);
+  let release;
+  App.ensureSavedBeforeLeavingQuestion = () => new Promise(resolve => { release = resolve; });
+  const pending = App.nextQuestion();
+  await App.nextQuestion();
+  release(true);
+  await pending;
+  assert.equal(entered, 1);
+  AppState.temporaryQuestionView = true;
+  await App.nextQuestion();
+  assert.equal(entered, 1);
+});
+
+test("连续模式在 20 题分页内外使用全局题号，子节加载失败恢复原题", async () => {
+  const { sandbox } = createContext();
+  const { App, AppState, UIRenderer } = sandbox;
+  const a = { id: 'a', questions: Array.from({ length: 25 }, (_, i) => ({ id: i + 1 })) };
+  const b = { id: 'b', questions: [{ id: 30 }] };
+  Object.assign(AppState, { currentCategory: { children: [a, b] }, currentChapter: a, questions: a.questions.slice(20), questionOffset: 20, currentQuestionIndex: 0, currentView: 'question', questionMode: 'multi' });
+  const targets = [];
+  App.goToChapterQuestion = async index => { targets.push(index); };
+  await App.previousQuestion();
+  await App.nextQuestion();
+  assert.deepEqual(targets, [19, 21]);
+  AppState.currentQuestionIndex = 4;
+  App.ensureSavedBeforeLeavingQuestion = async () => true;
+  UIRenderer.filteredChapter = async node => node;
+  App.enterChapterQuestions = async chapter => { AppState.currentChapter = chapter; AppState.questions = []; AppState.currentView = 'library'; };
+  let restored;
+  UIRenderer.renderMultiRange = async (offset, id) => { restored = [offset, id]; };
+  let celebrated = false;
+  sandbox.DaguanSectionCelebration = { show: () => { celebrated = true; } };
+  await App.nextQuestion();
+  assert.equal(AppState.currentChapter.id, 'a');
+  assert.equal(AppState.currentQuestionIndex, 4);
+  assert.deepEqual(restored, [20, 25]);
+  assert.equal(celebrated, false);
+});
+
+test("小庆祝不重复触发、文字安全写入并自动移除", () => {
+  const source = fs.readFileSync(new URL('../web/section-celebration.js', import.meta.url), 'utf8');
+  const appended = [];
+  let remove;
+  const sandbox = { window: {}, clearTimeout() {}, setTimeout(fn) { remove = fn; }, document: {
+    querySelector: () => null,
+    createElement: () => ({ style: { setProperty() {} }, children: [], setAttribute() {}, appendChild(child) { this.children.push(child); }, remove() { this.removed = true; } }),
+    body: { appendChild(node) { appended.push(node); } },
+  } };
+  vm.runInNewContext(source, sandbox);
+  sandbox.window.DaguanSectionCelebration.show('<b>极限</b>', 321);
+  sandbox.window.DaguanSectionCelebration.show('极限', 321);
+  assert.equal(appended.length, 1);
+  assert.equal(appended[0].children[0].textContent, '✓ <b>极限</b>刷完啦');
+  assert.equal(appended[0].children.length, 9);
+  remove();
+  assert.equal(appended[0].removed, true);
+});
+
+test("旧版普通和沉浸模式首尾双向跨节，特殊队列保持边界", async () => {
+  const source = fs.readFileSync(new URL('../web/app-legacy.js', import.meta.url), 'utf8');
+  const start = source.indexOf('  async function go(delta) {');
+  const end = source.indexOf('\n  function shuffleQueue()', start);
+  const rewards = [];
+  const transitions = [];
+  const state = { index: 1, queue: [{ id: 1 }, { id: 2 }], currentCatId: 'a', focusMode: false, specialQueue: null };
+  let release;
+  const sandbox = {
+    state, chapterTransitioning: false,
+    findCat: () => [{ name: '小节' }],
+    goToAdjacentChapter: async (delta, options) => {
+      transitions.push([delta, options.acrossSubject, options.atEnd]);
+      if (release) await release;
+      state.currentCatId = delta > 0 ? 'b' : 'a';
+      state.index = delta > 0 ? 0 : state.queue.length - 1;
+      return true;
+    },
+    recordCurrentVisit() {}, renderSingle() {}, queueLastStudyPosition() {},
+    window: { scrollTo() {}, DaguanSectionCelebration: { show: (name, id) => rewards.push(id) } },
+  };
+  vm.runInNewContext(source.slice(start, end), sandbox);
+  await sandbox.go(1);
+  assert.deepEqual(transitions, [[1, true, false]]);
+  assert.deepEqual(rewards, ['a']);
+  state.focusMode = true;
+  state.focusSnapshot = { index: 0 };
+  await sandbox.go(-1);
+  assert.deepEqual(transitions[1], [-1, true, true]);
+  assert.equal(state.focusSnapshot.index, 1);
+  assert.deepEqual(rewards, ['a']);
+  state.specialQueue = 'favorites';
+  await sandbox.go(1);
+  assert.equal(transitions.length, 2);
+  state.specialQueue = null;
+  let resolve;
+  release = new Promise(done => { resolve = done; });
+  const pending = sandbox.go(1);
+  await sandbox.go(1);
+  resolve();
+  await pending;
+  assert.equal(transitions.length, 3);
+});
+
+test("连续模式进入子节末题时向真实渲染器传递末题 ID", async () => {
+  const { sandbox } = createContext();
+  const { App, AppState, UIRenderer } = sandbox;
+  const chapter = { id: 'a', questions: Array.from({ length: 25 }, (_, index) => ({ id: index + 1 })) };
+  AppState.currentCategory = { id: 'subject' };
+  UIRenderer.filteredChapter = async node => node;
+  let rendered;
+  UIRenderer.renderMultiRange = async (start, id) => {
+    rendered = [start, id];
+    AppState.questions = chapter.questions.slice(start);
+    AppState.currentQuestionIndex = 4;
+  };
+  App.recordVisit = () => {};
+  sandbox.StateSync.pushLastStudy = async () => {};
+  await App.enterChapterQuestions(chapter, 24, null, 'multi');
+  assert.deepEqual(rendered, [20, 25]);
+});

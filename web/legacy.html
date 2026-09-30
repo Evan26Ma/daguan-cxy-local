@@ -7,8 +7,9 @@
   <meta name="description" content="大观园数学题库本地静态刷题站" />
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="stylesheet" href="./vendor/katex.min.css" />
-    <link rel="stylesheet" href="./legacy.css?v=90" />
-  <link rel="stylesheet" href="./guides.css?v=1" />
+    <link rel="stylesheet" href="./legacy.css?v=91" />
+  <link rel="stylesheet" href="./ai-services.css?v=1" />
+  <link rel="stylesheet" href="./guides.css?v=2" />
   <link rel="stylesheet" href="./browser-retirement.css?v=1" />
   <script src="./ui-version.js?v=106"></script>
   <script src="./ui-bootstrap.js?v=1"></script>
@@ -347,7 +348,7 @@
     <div class="ai-tabs" role="tablist"><button type="button" class="ai-tab active" id="ai-tab-chat" data-ai-tab="chat" role="tab" aria-selected="true">AI 解答</button><button type="button" class="ai-tab" id="ai-tab-note" data-ai-tab="note" role="tab" aria-selected="false">题目批注</button></div>
     <div class="ai-drawer-body">
       <section class="ai-panel" id="ai-chat-panel" data-ai-panel="chat">
-        <div class="ai-profile-row"><label for="ai-profile-select">服务</label><select id="ai-profile-select"><option value="">未配置 AI</option></select><button type="button" class="btn ghost" id="btn-ai-settings">设置</button></div>
+        <label class="ai-streaming-control"><input type="checkbox" id="ai-streaming-legacy"> 流式回答</label><div class="ai-profile-row"><label for="ai-profile-select">服务</label><select id="ai-profile-select" data-ai-service-control="true"><option value="">未配置 AI</option></select><button type="button" class="btn ghost" id="btn-ai-settings">设置</button></div>
         <div class="ai-privacy-note" id="ai-privacy-note">已附带题干、选项、答案和解析；本地批注与掌握状态不会发送。</div>
         <div class="ai-messages" id="ai-messages" aria-live="polite"><div class="ai-empty"><svg class="ui-icon"><use href="#icon-spark"></use></svg><strong>先问一个问题</strong><p>题目上下文已经准备好，选择下方提示或直接输入你的疑问。</p></div></div>
         <div class="ai-suggestions" id="ai-suggestions">
@@ -756,16 +757,7 @@
       <label class="appearance-field" for="ui-bg-position"><span>图片位置</span><select id="ui-bg-position"><option value="center">居中</option><option value="top">顶部</option><option value="bottom">底部</option><option value="left">左侧</option><option value="right">右侧</option></select></label>
       <label class="appearance-field" for="ui-bg-overlay"><span>背景遮罩 <output id="ui-bg-overlay-value">78%</output></span><input id="ui-bg-overlay" type="range" min="0.55" max="0.95" step="0.01" value="0.78" /></label>
     </div>
-    <section class="ai-settings-section" aria-labelledby="ai-settings-title">
-      <div class="ai-settings-heading"><div><p class="dialog-kicker">可选连接</p><h3 id="ai-settings-title">AI 服务档案</h3><p class="muted">支持 OpenAI 兼容接口。密钥只保存在本机 Node 配置，不进入进度导出。</p></div><button type="button" class="btn primary" id="btn-ai-add-profile">添加服务</button></div>
-      <div class="ai-profile-list" id="ai-profile-list"><div class="empty-state compact"><p>尚未配置 AI 服务。</p></div></div>
-      <form class="ai-profile-form hidden" id="ai-profile-form">
-        <input type="hidden" id="ai-profile-id" />
-        <div class="ai-profile-form-grid"><label class="appearance-field"><span>名称</span><input id="ai-profile-name" required placeholder="例如：本地模型" /></label><label class="appearance-field"><span>模型</span><input id="ai-profile-model" required placeholder="填写模型名或先获取列表" /></label><label class="appearance-field ai-profile-url"><span>API 根地址 <small>例如 https://api.example.com/v1</small></span><input id="ai-profile-url" type="url" required placeholder="https://…/v1" /></label><label class="appearance-field ai-profile-key"><span>API Key <small>留空表示保持原 Key</small></span><input id="ai-profile-key" type="password" autocomplete="new-password" placeholder="sk-…" /></label></div>
-        <div class="ai-profile-actions"><button type="button" class="btn" id="btn-ai-fetch-models">获取模型列表</button><button type="button" class="btn" id="btn-ai-test-text">测试连接与文本</button><button type="button" class="btn" id="btn-ai-test-vision">测试视觉能力</button><button type="submit" class="btn primary">保存服务</button><button type="button" class="btn ghost" id="btn-ai-cancel-profile">取消</button></div>
-        <div class="ai-test-result" id="ai-test-result" role="status" aria-live="polite"></div>
-      </form>
-    </section>
+    <section class="ai-settings-section" id="ai-services-settings" aria-label="AI 服务配置"></section>
     <section class="shortcut-settings" aria-labelledby="shortcut-settings-title">
       <div class="ai-settings-heading"><div><p class="dialog-kicker">沉浸操作</p><h3 id="shortcut-settings-title">沉浸模式快捷键</h3><p class="muted">点击按键后直接按下新键。输入框、批注和 AI 对话中会自动停用题目快捷键。</p></div><button type="button" class="btn ghost" id="btn-shortcuts-reset">恢复默认</button></div>
       <div id="shortcut-list" class="shortcut-list"></div>
@@ -796,9 +788,12 @@
 
   <script defer src="./vendor/marked.min.js"></script>
   <script defer src="./vendor/katex.min.js"></script>
+  <script defer src="./ai-settings.js?v=1"></script>
+  <script defer src="./ai-panel-layout.js?v=1"></script>
+  <script defer src="./section-celebration.js?v=1"></script>
   <script defer src="./data-bank-client.js?v=1"></script>
     <script defer src="./visit-history-client.js?v=1"></script>
-    <script defer src="./app-legacy.js?v=97"></script>
+    <script defer src="./app-legacy.js?v=99"></script>
     <script defer src="./remote-access.js?v=1"></script>
   <script defer src="./browser-retirement.js?v=1"></script>
 </body>

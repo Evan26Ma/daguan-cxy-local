@@ -57,10 +57,61 @@ function endpoint(baseUrl, path) {
   return `${String(baseUrl).replace(/\/+$/, "")}/${String(path).replace(/^\/+/, "")}`;
 }
 
+// Hold partial tags across upstream chunks so hidden text never reaches clients.
+export function createAnswerFilter() {
+  let pending = "";
+  let depth = 0;
+  return {
+    push(chunk, final = false) {
+      pending += String(chunk || "");
+      let visible = "";
+      while (pending) {
+        const start = pending.indexOf("<");
+        if (start < 0) { if (!depth) visible += pending; pending = ""; break; }
+        if (!depth) visible += pending.slice(0, start);
+        pending = pending.slice(start);
+        const end = pending.indexOf(">");
+        const nextStart = pending.indexOf("<", 1);
+        if (nextStart > 0 && (end < 0 || nextStart < end)) {
+          if (!depth) visible += pending.slice(0, nextStart);
+          pending = pending.slice(nextStart);
+          continue;
+        }
+        if (end < 0) break;
+        const tag = pending.slice(0, end + 1);
+        const match = /^<(\/)?(?:think|thinking)(?:\s[^>]*)?>$/i.exec(tag);
+        if (match) depth = match[1] ? Math.max(0, depth - 1) : depth + 1;
+        else if (!depth) visible += tag;
+        pending = pending.slice(end + 1);
+      }
+      if (final) {
+        const partial = /^<\/?(?:t|th|thi|thin|think|thinki|thinkin|thinking)(?:\s[^>]*)?$/i.test(pending);
+        if (!depth && !partial) visible += pending;
+        pending = "";
+      }
+      return visible;
+    },
+  };
+}
+
+export function visibleAnswer(content) {
+  return createAnswerFilter().push(safeText(content), true);
+}
+
+function visibleHistory(history) {
+  return { ...history, messages: (Array.isArray(history.messages) ? history.messages : []).map(item =>
+    item?.role === "assistant" ? { ...item, content: visibleAnswer(item.content) } : item) };
+}
+
 function authHeaders(profile) {
   const headers = { "Content-Type": "application/json", Accept: "application/json" };
   if (profile.key) headers.Authorization = `Bearer ${profile.key}`;
   return headers;
+}
+
+function upstreamError(label, status) {
+  const detail = status === 401 ? "请检查 API Key 是否有效" : status === 403 ? "请检查服务或模型的访问权限" : status === 404 ? "请检查 API 基地址和模型名称" : status === 429 ? "服务限流或额度不足，请稍后再试" : status >= 500 ? "上游服务暂时不可用，请稍后再试" : "请检查服务配置";
+  return new Error(`${label}（HTTP ${status}）：${detail}`);
 }
 
 async function fetchWithTimeout(url, options = {}, timeoutMs = REQUEST_TIMEOUT_MS) {
@@ -76,6 +127,7 @@ function publicProfile(profile) {
     name: profile.name,
     baseUrl: profile.baseUrl,
     model: profile.model,
+    streaming: profile.streaming !== false,
     active: profile.active === true,
     keyHint: profile.key ? `${profile.key.slice(0, 3)}••••${profile.key.slice(-3)}` : "未设置",
     capabilities: profile.capabilities || { text: false, vision: "unknown" },
@@ -93,6 +145,7 @@ function normalizeProfile(value, existing = {}) {
     baseUrl: safeText(input.baseUrl || existing.baseUrl || "", 500).trim(),
     key: input.key === "" || input.key == null ? (existing.key || "") : safeText(input.key, 500).trim(),
     model: safeText(input.model || existing.model || "", 160).trim(),
+    streaming: input.streaming == null ? existing.streaming !== false : input.streaming !== false,
     active: input.active == null ? existing.active === true : input.active === true,
     capabilities: { ...(existing.capabilities || {}), ...(object(input.capabilities)) },
     createdAt: existing.createdAt || new Date().toISOString(),
@@ -112,7 +165,7 @@ function parseChatContent(value) {
   const body = object(value);
   const choice = Array.isArray(body.choices) ? object(body.choices[0]) : {};
   const message = object(choice.message);
-  return safeText(message.content || choice.text || "");
+  return visibleAnswer(message.content || choice.text || "");
 }
 
 function writeSse(res, value) {
@@ -178,11 +231,11 @@ export function createAiService({ store }) {
     await store.writeAiProfiles({ version: PROFILE_VERSION, profiles: profiles.slice(0, MAX_PROFILES) });
   }
 
-  async function getProfile(id) {
+  async function getProfile(id, { requireModel = true } = {}) {
     const profile = (await readAll()).find((item) => item.id === String(id));
     if (!profile) throw new Error("AI 服务档案不存在");
     if (!profile.baseUrl) throw new Error("请先填写 AI API 地址");
-    if (!profile.model) throw new Error("请先选择或填写 AI 模型");
+    if (requireModel && !profile.model) throw new Error("请先选择或填写 AI 模型");
     return { ...profile, baseUrl: await validateBaseUrl(profile.baseUrl) };
   }
 
@@ -191,6 +244,8 @@ export function createAiService({ store }) {
   async function upsert(input) {
     const all = await readAll();
     const existing = input?.id ? all.find((item) => item.id === String(input.id)) : null;
+    if (input?.id && !existing) throw new Error("AI 服务档案不存在，请重新选择");
+    if (!existing && all.length >= MAX_PROFILES) throw new Error(`最多保存 ${MAX_PROFILES} 个 AI 服务，请先删除不用的服务`);
     const next = normalizeProfile(input, existing || {});
     next.baseUrl = await validateBaseUrl(next.baseUrl);
     if (!next.active && !all.length) next.active = true;
@@ -215,11 +270,11 @@ export function createAiService({ store }) {
   }
 
   async function models(id) {
-    const profile = await getProfile(id);
+    const profile = await getProfile(id, { requireModel: false });
     const started = Date.now();
     const response = await fetchWithTimeout(endpoint(profile.baseUrl, "models"), { headers: authHeaders(profile) });
     const text = await response.text();
-    if (!response.ok) throw new Error(`模型列表失败（HTTP ${response.status}）`);
+    if (!response.ok) throw upstreamError("模型列表失败", response.status);
     let parsed;
     try { parsed = JSON.parse(text); } catch { throw new Error("模型列表返回的不是 JSON"); }
     return { models: parseModels(parsed), status: response.status, latencyMs: Date.now() - started };
@@ -239,10 +294,11 @@ export function createAiService({ store }) {
       body: JSON.stringify({ model: profile.model, messages: [{ role: "user", content: user }], stream: false, temperature: 0 }),
     });
     const text = await response.text();
-    if (!response.ok) throw new Error(`模型测试失败（HTTP ${response.status}）`);
+    if (!response.ok) throw upstreamError("模型测试失败", response.status);
     let parsed;
     try { parsed = JSON.parse(text); } catch { throw new Error("模型测试返回的不是 JSON"); }
     content = parseChatContent(parsed);
+    if (!content.trim()) throw new Error("模型测试未返回正式答案，请检查模型或重试");
     const updated = all.map((item) => item.id === profile.id ? { ...item, capabilities: { ...(item.capabilities || {}), text: true, ...(kind === "vision" ? { vision: "passed", visionTestedAt: new Date().toISOString() } : {}) }, updatedAt: new Date().toISOString() } : item);
     await saveAll(updated);
     return { ok: true, kind, status: response.status, latencyMs: Date.now() - started, model: profile.model, response: content.slice(0, 2000), usage: parsed.usage || null };
@@ -270,7 +326,7 @@ export function createAiService({ store }) {
     const profile = await getProfile(payload.profileId);
     const questionId = String(object(payload.question).id || "unknown");
     const key = `${profileKey(profile.id)}--${profileKey(questionId)}`;
-    const history = object(await store.readAiHistory(key));
+    const history = visibleHistory(object(await store.readAiHistory(key)));
     const historyMessages = Array.isArray(history.messages) ? history.messages.filter((item) => item && (item.role === "user" || item.role === "assistant")).slice(-24) : [];
     const prompt = safeText(payload.prompt || "请讲解这道题。", 20_000);
     const userMessage = `${contextText(payload.question, payload.includePrivate === true)}\n\n本次请求：${prompt}`;
@@ -290,44 +346,57 @@ export function createAiService({ store }) {
     res.writeHead(200, { "Content-Type": "text/event-stream; charset=utf-8", "Cache-Control": "no-cache", Connection: "keep-alive", "X-Daguan-Run-Id": runId });
     writeSse(res, { type: "started", runId, historyTruncated: historyMessages.length >= 24 });
     const abortOnClose = () => controller.abort(new Error("浏览器已断开 AI 请求"));
-    req.once("close", abortOnClose);
+    res.once("close", abortOnClose);
     try {
       const upstream = await fetch(endpoint(profile.baseUrl, "chat/completions"), {
         method: "POST",
         headers: { ...authHeaders(profile), Accept: "text/event-stream, application/json" },
-        body: JSON.stringify({ model: profile.model, messages, stream: true, temperature: 0.2 }),
+        body: JSON.stringify({ model: profile.model, messages, stream: profile.streaming !== false, temperature: 0.2 }),
         signal: controller.signal,
         redirect: "error",
       });
-      if (!upstream.ok) throw new Error(`AI 请求失败（HTTP ${upstream.status}）`);
+      if (!upstream.ok) throw upstreamError("AI 请求失败", upstream.status);
       const contentType = upstream.headers.get("content-type") || "";
       if (!upstream.body) throw new Error("AI 服务没有返回内容");
       if (contentType.includes("text/event-stream")) {
         const reader = upstream.body.getReader();
         const decoder = new TextDecoder();
+        const filter = createAnswerFilter();
         let buffer = "";
+        const emit = content => {
+          if (!content) return;
+          answer += content;
+          if (profile.streaming !== false) writeSse(res, { type: "delta", content });
+        };
+        const consume = row => {
+          if (!row.startsWith("data:")) return;
+          const data = row.slice(5).trim();
+          if (!data || data === "[DONE]") return;
+          let parsed;
+          try { parsed = JSON.parse(data); } catch { return; }
+          if (parsed.error) throw new Error("AI 服务返回生成错误");
+          emit(filter.push(safeText(object(object(parsed.choices?.[0]).delta).content)));
+        };
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
           buffer += decoder.decode(value, { stream: true });
           const rows = buffer.split(/\r?\n/);
           buffer = rows.pop() || "";
-          for (const row of rows) {
-            if (!row.startsWith("data:")) continue;
-            const data = row.slice(5).trim();
-            if (!data || data === "[DONE]") continue;
-            try {
-              const delta = safeText(object(object(JSON.parse(data).choices?.[0]).delta).content);
-              if (delta) { answer += delta; writeSse(res, { type: "delta", content: delta }); }
-            } catch { /* ignore malformed keep-alive chunks */ }
-          }
+          for (const row of rows) consume(row);
         }
+        consume(buffer + decoder.decode());
+        emit(filter.push("", true));
+        if (profile.streaming === false && answer) writeSse(res, { type: "delta", content: answer });
       } else {
         let parsed;
         try { parsed = JSON.parse(await upstream.text()); } catch { throw new Error("AI 返回的不是 JSON"); }
+        if (parsed.error) throw new Error("AI 服务返回生成错误");
         answer = parseChatContent(parsed);
         if (answer) writeSse(res, { type: "delta", content: answer });
       }
+      if (controller.signal.aborted) throw controller.signal.reason;
+      if (!answer.trim()) throw new Error("AI 服务未返回正式答案，请检查模型或重试");
       const nextMessages = [...(Array.isArray(history.messages) ? history.messages : []), { role: "user", content: userMessage, at: new Date().toISOString() }, { role: "assistant", content: answer, at: new Date().toISOString() }].slice(-MAX_HISTORY_MESSAGES);
       await store.writeAiHistory(key, { version: 1, profileId: profile.id, questionId, messages: nextMessages, updatedAt: new Date().toISOString() });
       writeSse(res, { type: "done", runId, message: { role: "assistant", content: answer } });
@@ -335,7 +404,7 @@ export function createAiService({ store }) {
       writeSse(res, { type: "error", runId, error: error?.name === "AbortError" ? "AI 请求已停止" : safeText(error?.message || error, 500) });
     } finally {
       clearTimeout(timeout);
-      req.off("close", abortOnClose);
+      res.off("close", abortOnClose);
       runs.delete(runId);
       res.end();
     }
@@ -343,7 +412,7 @@ export function createAiService({ store }) {
 
   async function conversation(profileId, questionId) {
     const key = `${profileKey(profileId)}--${profileKey(questionId)}`;
-    return store.readAiHistory(key);
+    return visibleHistory(object(await store.readAiHistory(key)));
   }
 
   async function clearConversation(profileId, questionId) {
