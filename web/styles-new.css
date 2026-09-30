@@ -2999,3 +2999,58 @@ html.native-titlebar-content-inset .app-container {
   .question-layout > .ai-panel:not(.closed), .multi-question-view > .ai-panel:not(.closed) { width: 100vw; }
   .ai-panel-resize { display: none; }
 }
+
+/* New UI reading column: controls stay compact; teaching content gets the space. */
+#btn-toggle-nav { display: inline-flex; flex: none; }
+@media (min-width: 1024px) {
+  body.desktop-nav-hidden .app-nav.sidebar-nav { display: none; }
+}
+#ai-panel [hidden] { display: none !important; }
+#ai-panel .ai-header { padding: 10px 20px; gap: 8px; }
+#ai-panel .ai-header h3 { margin: 0; white-space: nowrap; }
+#ai-panel .ai-header-actions { display: flex; align-items: center; gap: 2px; }
+#ai-panel .ai-header-actions .btn { min-width: 0; padding: 6px 8px; }
+#ai-panel .ai-panel-settings {
+  position: absolute; z-index: 10; top: 56px; right: 12px; left: 16px;
+  max-height: calc(100% - 72px); overflow: auto;
+  padding: 16px; border: 1px solid var(--border-default); border-radius: 8px;
+  background: var(--bg-surface); box-shadow: 0 8px 24px #0002;
+}
+#ai-panel .ai-panel-settings .ai-profile-row { padding: 0; margin-bottom: 12px; flex-wrap: wrap; }
+#ai-panel .ai-panel-settings .ai-profile-row select { flex-basis: 60%; }
+#ai-panel .ai-panel-settings .ai-streaming-control { display: flex; padding: 0; margin-bottom: 12px; }
+#ai-panel .ai-private-status { margin: 0; padding: 4px 24px; color: var(--brand-text-on-white); font-size: calc(12px * var(--ui-font-scale, 1)); }
+#ai-panel .ai-quick-prompts { padding: 8px 20px; gap: 8px; }
+#ai-panel .ai-messages { padding: 20px 24px; gap: 24px; overflow-anchor: none; }
+#ai-panel .ai-message.assistant .ai-message-bubble {
+  width: 100%; max-width: 100%; padding: 0; border: 0; border-radius: 0;
+  background: transparent; line-height: 1.75;
+}
+#ai-panel .ai-message.user .ai-message-bubble { line-height: 1.75; }
+#ai-panel .ai-message-bubble p { margin: .8em 0; }
+#ai-panel .ai-message-bubble :is(h1,h2,h3,h4,h5,h6) {
+  font-size: 1.25em; line-height: 1.5; margin: 1.4em 0 .6em; font-weight: 650;
+}
+#ai-panel .ai-message-bubble > :first-child { margin-top: 0; }
+#ai-panel .ai-message-bubble > :last-child { margin-bottom: 0; }
+#ai-panel .ai-message-bubble :is(ul,ol) { padding-left: 1.5em; margin: .8em 0; }
+#ai-panel .ai-message-bubble li + li { margin-top: .6em; }
+#ai-panel .ai-message-bubble .katex-display { margin: 1em 0; padding-block: 4px; }
+#ai-panel .ai-message-bubble pre { max-width: 100%; overflow: auto; }
+#ai-panel .ai-section-nav { flex: none; display: flex; overflow-x: auto; gap: 8px; padding: 8px 20px; border-bottom: 1px solid var(--border-default); }
+#ai-panel .ai-section-nav button { flex: none; max-width: 18em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; border: 0; background: var(--bg-nav); color: var(--text-secondary); padding: 5px 8px; border-radius: 4px; font: inherit; font-size: calc(12px * var(--ui-font-scale, 1)); cursor: pointer; }
+#ai-panel .ai-reading-actions { position: absolute; right: 20px; bottom: 112px; z-index: 3; pointer-events: none; }
+#ai-panel .ai-reading-actions button { pointer-events: auto; box-shadow: 0 2px 8px #0001; }
+#ai-panel .ai-input-area { padding: 10px 20px 12px; flex: none; }
+#ai-panel .ai-input-wrapper { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 8px; }
+#ai-panel .ai-input { min-height: 0; max-height: none; line-height: 1.75; padding: 7px 10px; resize: none; overflow-y: auto; }
+#ai-panel .ai-input-actions { justify-content: flex-end; margin-top: 0; }
+#ai-panel .ai-panel-resize { width: 10px; display: grid; place-items: center; }
+#ai-panel .ai-panel-resize::after { content: ''; height: 60px; width: 4px; border-radius: 4px; background: var(--border-control); }
+#ai-panel .ai-panel-resize:hover::after, #ai-panel .ai-panel-resize:focus-visible::after { background: var(--brand-orange); }
+#ai-panel :is(button,select,input,textarea):focus-visible { outline: 2px solid var(--brand-orange); outline-offset: 2px; }
+@media (max-width: 672px) {
+  #ai-panel .ai-panel-resize { display: none; }
+  #ai-panel .ai-messages { padding: 16px 20px; }
+  #ai-panel .ai-header { padding-inline: 16px; }
+}

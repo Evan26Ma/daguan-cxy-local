@@ -21,7 +21,7 @@ async function unusedPort() {
   await new Promise((resolve, reject) => server.once("error", reject).listen(0, "127.0.0.1", resolve));
   const port = server.address().port;
   await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
-  return port;
+  return port >= 12000 ? port : unusedPort();
 }
 
 test("双浏览器页：后台错过收藏 SSE 后，回到前台读取并显示最终服务端状态", { skip: !playwright && "Install Playwright or set DAGUAN_PLAYWRIGHT_MODULE" }, async t => {
@@ -76,7 +76,7 @@ test("双浏览器页：后台错过收藏 SSE 后，回到前台读取并显示
   await Promise.all([pageA, pageB].map(page => page.evaluate(() => App.openQuestionFromList("3356"))));
   const favoriteSelector = '.question-actions [data-shortcut-hint="favorite"]';
   await Promise.all([pageA, pageB].map(page => page.waitForSelector(favoriteSelector)));
-  await Promise.all([pageA, pageB].map(page => page.waitForFunction(() => StateSync.queue.size === 0 && !StateSync.lastStudyInFlight)));
+  await Promise.all([pageA, pageB].map(page => page.waitForFunction(() => StateSync.queue.size === 0 && !StateSync.syncing && !StateSync.lastStudyInFlight)));
   await pageB.waitForFunction(async () => (await fetch("./api/state", { cache: "no-store" }).then(response => response.json())).revision === StateSync.revision);
   assert.equal(await pageB.locator(favoriteSelector).evaluate(button => button.classList.contains("active")), false);
 

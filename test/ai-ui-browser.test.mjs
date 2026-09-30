@@ -11,7 +11,7 @@ import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 let playwright;try {playwright=createRequire(import.meta.url)(process.env.DAGUAN_PLAYWRIGHT_MODULE || 'playwright');}catch{}
-async function port(){const s=net.createServer();await new Promise(r=>s.listen(0,'127.0.0.1',r));const n=s.address().port;await new Promise(r=>s.close(r));return n;}
+async function port(){const s=net.createServer();await new Promise(r=>s.listen(0,'127.0.0.1',r));const n=s.address().port;await new Promise(r=>s.close(r));return n>=12000?n:port();}
 async function fixture(t){
  const temp=await fs.mkdtemp(path.join(os.tmpdir(),'daguan-ai-ui-'));const n=await port();
  const service=spawn(process.execPath,[path.join(ROOT,'local-server/server.mjs')],{cwd:ROOT,env:{...process.env,PORT:String(n),DAGUAN_DATA_DIR:path.join(temp,'data'),DAGUAN_OPEN_BROWSER:'0'},windowsHide:true,stdio:['ignore','ignore','ignore','ipc']});
@@ -53,6 +53,7 @@ test('AI 配置真实交互：新增、模型、测试、Key 保留、流式设�
  await page.locator('#ai-input').fill('请讲解');await page.locator('#ai-send-btn').click();
  assert.equal(await page.locator('#ai-profile-select-new').isDisabled(),true);assert.equal(await page.locator('#ai-streaming-new').isDisabled(),true);
  await page.waitForFunction('!AppState.aiBusy');assert.equal(chatCalls.at(-1).stream,false);assert.doesNotMatch(await page.locator('#ai-messages').innerText(),/秘密/);
+ if(!await page.locator('#ai-streaming-new').isVisible()) await page.locator('#ai-settings-btn').click();
  await page.locator('#ai-streaming-new').check();await page.waitForFunction('AIService.activeProfile().streaming === true');
  await page.evaluate(()=>App.showSettings());
  await host.getByRole('button',{name:'新增服务',exact:true}).click();assert.equal(await form.locator('[name=name]').inputValue(),'');
@@ -97,6 +98,88 @@ test('单题和连续模式：长回答独立滚动，拖宽不丢草稿，批�
  assert.equal(await oldHandle.getAttribute('aria-valuenow'),'620');assert.equal(await page.locator('#ai-prompt').inputValue(),'旧版草稿');
  const oldScroll=await page.evaluate(()=>{const msg=document.getElementById('ai-messages');msg.innerHTML='<div class="ai-message">'+('<p>旧版长回答</p>'.repeat(100))+'</div>';msg.scrollTop=msg.scrollHeight;const body=document.querySelector('.ai-drawer-body');body.scrollTop=body.scrollHeight;return {messages:msg.scrollTop,outer:body.scrollTop,height:body.clientHeight,scroll:body.scrollHeight};});
  assert.ok(oldScroll.messages>1000,JSON.stringify(oldScroll));assert.equal(oldScroll.outer,0);assert.ok(oldScroll.scroll<=oldScroll.height+2);
+});
+
+test('新版阅读：导航、展开、设置、段落跳转、草稿和流式阅读位置', {skip,timeout:60000},async t=>{
+ const {base}=await fixture(t);
+ const browser=await playwright.chromium.launch({headless:true, ...(process.env.DAGUAN_CHROMIUM_EXECUTABLE ? {executablePath:process.env.DAGUAN_CHROMIUM_EXECUTABLE} : {})});t.after(()=>browser.close());
+ const page=await browser.newPage({viewport:{width:1920,height:1080},serviceWorkers:'block'});
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.route('**/api/state/events',route=>route.abort());await page.goto(base+'/index.html?ui=new');await page.waitForLoadState('networkidle');await page.waitForFunction('AppState.categories');
+ await page.evaluate(async()=>{
+  AppState.aiProfiles=[{id:'reading-fixture',name:'阅读测试',model:'数学模型',streaming:true}];AppState.aiProfileId='reading-fixture';
+  AIService.loadHistory=async()=>[{role:'user',content:'请详细讲解这道题。'},{role:'assistant',content:'## 答案\n选 D。\n\n## 简短思路\n从线性无关的定义出发，验证每个向量都不能由其余向量表示。\n\n## 详细推导\n'+Array.from({length:45},(_,i)=>`### 第 ${i+1} 步\n明确知识点、适用条件与题干信息，再进行推导。\n\n`).join('')+'## 方法与易错点\n两两线性无关不能推出整体线性无关。'}];
+  AppState.currentCategory=AppState.categories.categories.find(n=>UIRenderer.findNodeById(n,127));await App.enterChapterQuestions(UIRenderer.findNodeById(AppState.currentCategory,127),2);App.toggleAI();
+ });
+ await page.waitForSelector('#ai-section-nav button');
+ assert.equal(await page.locator('#ai-section-nav button').count(),4);
+ const input=page.locator('#ai-input');await input.fill('保留这份追问草稿');
+ const originalWidth=await page.locator('.ai-panel-resize').getAttribute('aria-valuenow');
+ await page.locator('#ai-expand-btn').click();
+ const ratio=()=>page.evaluate(()=>document.getElementById('ai-panel').getBoundingClientRect().width/document.getElementById('app-main').getBoundingClientRect().width);
+ const waitForExpanded=()=>page.waitForFunction(()=>Math.abs(document.getElementById('ai-panel').getBoundingClientRect().width/document.getElementById('app-main').getBoundingClientRect().width-.55)<.005);
+ assert.ok(Math.abs(await ratio()-.55)<.005);
+ await page.locator('#btn-toggle-nav').click();assert.equal(await page.locator('#app-nav').isVisible(),false);assert.ok(Math.abs(await ratio()-.55)<.005);
+ assert.equal(await input.inputValue(),'保留这份追问草稿');
+ const expandedHandle=page.locator('.ai-panel-resize');const expandedWidth=Number(await expandedHandle.getAttribute('aria-valuenow'));
+ await expandedHandle.focus();await expandedHandle.press('ArrowLeft');assert.equal(Number(await expandedHandle.getAttribute('aria-valuenow')),expandedWidth+16);
+ assert.equal(await page.evaluate(()=>localStorage.getItem('daguan_ai_drawer_width_v1')),null);
+ await page.locator('#ai-expand-btn').click();assert.equal(await page.locator('.ai-panel-resize').getAttribute('aria-valuenow'),originalWidth);
+ await page.locator('#ai-expand-btn').click();
+ await page.locator('#ai-section-nav button').filter({hasText:'简短思路'}).click();
+ const readingTop=await page.locator('#ai-messages').evaluate(e=>e.scrollTop);
+ await page.locator('#ai-expand-btn').click();assert.equal(await page.locator('#ai-messages').evaluate(e=>e.scrollTop),readingTop);
+ await page.locator('#ai-settings-btn').click();assert.equal(await page.locator('#ai-profile-select-new').evaluate(e=>document.activeElement===e),true);
+ await page.locator('#ai-include-private-new').check();assert.ok(await page.locator('#ai-private-status').isVisible());
+ await page.locator('#ai-include-private-new').press('Escape');assert.equal(await page.locator('#ai-panel-settings').isVisible(),false);assert.equal(await page.locator('#ai-settings-btn').evaluate(e=>document.activeElement===e),true);
+ await input.fill(Array.from({length:12},(_,i)=>'追问 '+i).join('\n'));
+ const inputSize=await input.evaluate(e=>({height:e.clientHeight,scroll:e.scrollHeight,line:parseFloat(getComputedStyle(e).lineHeight)}));assert.ok(inputSize.height<inputSize.line*6);assert.ok(inputSize.scroll>inputSize.height);
+ await input.fill('请详细讲解');
+ await page.evaluate(()=>{
+  AIService.chatStream=async()=>new Response(new ReadableStream({start(controller){window.readingStream=controller;}}),{headers:{'Content-Type':'text/event-stream'}});
+  window.sendReadingDelta=content=>readingStream.enqueue(new TextEncoder().encode('data: '+JSON.stringify({type:'delta',content})+'\n\n'));
+  window.readingRequest=App.sendAIMessage();
+ });
+ await page.waitForFunction('!!window.readingStream');
+ await page.evaluate(()=>sendReadingDelta('## 答案\nD\n\n## 详细推导\n'+('线性无关的定义与推导过程。 '.repeat(1500))));
+ await page.waitForFunction(()=>document.getElementById('ai-current-response').textContent.includes('推导过程'));
+ await page.waitForFunction(()=>{const m=document.getElementById('ai-messages');return m.scrollHeight-m.scrollTop-m.clientHeight<10;});
+ await page.locator('#ai-messages').evaluate(e=>{e.scrollTop=120;});await page.waitForFunction('!document.getElementById("ai-panel").reading.follow');
+ await page.evaluate(()=>sendReadingDelta('\n\n## 方法与易错点\n不要遗漏适用条件。'));
+ await page.waitForFunction(()=>document.getElementById('ai-current-response').textContent.includes('不要遗漏'));
+ assert.equal(await page.locator('#ai-messages').evaluate(e=>e.scrollTop),120);assert.ok(await page.locator('#ai-latest-btn').isVisible());
+ // Width and navigation changes while generating keep the same DOM and stream.
+ await page.locator('#ai-expand-btn').click();await page.locator('#btn-toggle-nav').click();assert.equal(await page.evaluate('AppState.aiBusy'),true);
+ assert.equal(await page.locator('#ai-messages').evaluate(e=>e.scrollTop),120);
+ await input.fill('生成中保留的追问');
+ assert.equal(await page.evaluate(async()=>{const panel=document.getElementById('ai-panel');await App.changeQuestionMode('multi');return document.getElementById('ai-panel')===panel;}),true);
+ assert.equal(await page.evaluate('AppState.aiBusy'),true);assert.equal(await input.inputValue(),'生成中保留的追问');assert.equal(await page.locator('#ai-messages').evaluate(e=>e.scrollTop),120);
+ assert.equal(await page.evaluate(async()=>{const panel=document.getElementById('ai-panel');await App.changeQuestionMode('single');return document.getElementById('ai-panel')===panel;}),true);
+ assert.equal(await page.evaluate('AppState.aiBusy'),true);assert.equal(await page.locator('#ai-messages').evaluate(e=>e.scrollTop),120);
+ await page.evaluate(async()=>{readingStream.close();await readingRequest;});
+ assert.equal(await page.locator('#ai-messages').evaluate(e=>e.scrollTop),120);
+ assert.equal(await page.locator('#ai-section-nav button').count(),3);
+ await page.evaluate(()=>{const panel=document.getElementById('ai-panel');panel.querySelector('.ai-message.assistant:last-child .ai-message-bubble').innerHTML='<p>没有标题的回答</p>';DaguanAIReading.refreshSections();});assert.equal(await page.locator('#ai-section-nav').isVisible(),false);
+ await page.locator('#ai-latest-btn').click();assert.equal(await page.locator('#ai-latest-btn').isVisible(),false);
+ // Stop and delayed paints must not replace the partial answer after cancellation.
+ await input.fill('再讲一个步骤');await page.evaluate(()=>{window.readingRequest=App.sendAIMessage();});
+ await page.waitForFunction('AppState.aiBusy');await page.waitForFunction('!!window.readingStream');
+ await page.evaluate(()=>{sendReadingDelta('保留部分推导');readingStream.error(new DOMException('已停止','AbortError'));});
+ await page.evaluate(async()=>{await readingRequest;});assert.match(await page.locator('#ai-messages').innerText(),/已停止生成.*保留部分推导/s);
+ await page.evaluate(()=>new Promise(r=>setTimeout(r,180)));assert.match(await page.locator('#ai-messages').innerText(),/已停止生成/);
+ const capture=async(name)=>{if(process.env.DAGUAN_AI_SCREENSHOT_DIR){await fs.mkdir(process.env.DAGUAN_AI_SCREENSHOT_DIR,{recursive:true});await page.screenshot({path:path.join(process.env.DAGUAN_AI_SCREENSHOT_DIR,name+'.png')});}};
+ await page.evaluate(async()=>{await UIRenderer.renderAIHistory(AppState.questions[AppState.currentQuestionIndex]);document.getElementById('ai-messages').scrollTop=0;});
+ await capture('reading-1920');await page.setViewportSize({width:1366,height:768});await waitForExpanded();await capture('reading-1366');
+ await page.evaluate(()=>{document.documentElement.style.setProperty('--ui-font-scale','1.5');DaguanAIPanelLayout.update();});
+ await page.locator('#btn-toggle-nav').click();await waitForExpanded();
+ const fontLayout=await page.evaluate(()=>{const body=document.querySelector('#ai-panel .ai-message.assistant .ai-message-bubble'),heading=body.querySelector('h2'),panel=document.getElementById('ai-panel');return {body:parseFloat(getComputedStyle(body).fontSize),heading:parseFloat(getComputedStyle(heading).fontSize),overflow:panel.scrollWidth>panel.clientWidth,inputBottom:document.querySelector('.ai-input-area').getBoundingClientRect().bottom};});
+ assert.equal(fontLayout.body,21);assert.ok(fontLayout.heading<=fontLayout.body*1.25+.1);assert.equal(fontLayout.overflow,false);assert.ok(fontLayout.inputBottom<=768);await capture('reading-large-font');
+ await page.locator('#btn-toggle-nav').click();await page.evaluate(()=>{document.documentElement.style.removeProperty('--ui-font-scale');DaguanAIPanelLayout.update();});await waitForExpanded();
+ await page.evaluate(async()=>App.changeQuestionMode('multi'));await page.waitForSelector('.multi-question-view');await waitForExpanded();await capture('reading-multi');
+ await page.setViewportSize({width:1024,height:768});assert.equal(await page.locator('#ai-expand-btn').isDisabled(),true);
+ await page.setViewportSize({width:500,height:800});assert.equal(await page.locator('#ai-panel').evaluate(e=>e.getBoundingClientRect().width),500);await capture('reading-small');
+ await page.setViewportSize({width:1366,height:768});await page.locator('#btn-toggle-nav').click();await page.reload();await page.waitForLoadState('networkidle');assert.equal(await page.locator('#app-nav').isVisible(),false);
+ assert.equal(errors.length,0,errors.join('\n'));
 });
 
 test('Electron 实际 preload：桌面顶栏不增加外层空白，消息和输入区均处于视口内', {skip:!playwright || process.platform!=='win32',timeout:60000},async t=>{

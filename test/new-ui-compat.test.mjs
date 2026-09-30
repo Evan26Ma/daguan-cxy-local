@@ -266,6 +266,16 @@ test("AI 偏好只存 profileId，不再要求浏览器端 API Key", () => {
   assert.equal(Storage.getAIPreferences().profileId, "profile-2");
 });
 
+test("新版完整解答先给答案并保留详细教学，提示模式仍不剧透", () => {
+  const { sandbox } = createContext();
+  const prompts = sandbox.window.AI_COMPOSE_PROMPTS;
+  assert.match(prompts.full, /## 答案、## 简短思路、## 详细推导、## 方法与易错点/);
+  assert.match(prompts.full, /先明确给出答案/);
+  assert.match(prompts.full, /适用条件[\s\S]*题干[\s\S]*推导过程与结果/);
+  assert.match(prompts.full, /清楚区分题干直接信息/);
+  assert.match(prompts.hint, /不要直接跳到结论/);
+});
+
 test("AI 请求体对齐本地中控台协议：profileId + question + prompt，无浏览器凭据", async () => {
   const { sandbox } = createContext();
   const { AIService, AppState, StorageService } = sandbox.window;

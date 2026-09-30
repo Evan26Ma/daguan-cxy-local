@@ -5,7 +5,7 @@
 
 // ========== 离线缓存注册（与 app2.js 一致） ==========
 if ("serviceWorker" in navigator && location.protocol !== "file:" && location.protocol !== "https:") {
-    navigator.serviceWorker.register("./service-worker.js?v=127").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=135").catch(() => {});
 }
 
 // ========== 全局状态 ==========
@@ -2175,6 +2175,7 @@ class UIRenderer {
         AppState.currentQuestionIndex = questionIndex;
 
         const main = document.getElementById('app-main');
+        const aiSnapshot = this.captureAIPanel();
         main.scrollTop = 0;
         const progress = StorageService.getProgress();
         const isFav = StorageService.isFavorite(question.id);
@@ -2291,11 +2292,12 @@ class UIRenderer {
             }
         }
         // AI 抽屉按题隔离：切题即刷新消息与草稿
-        if (AppState.ui.aiPanelOpen) UIRenderer.renderAIPanel();
+        if (!this.restoreAIPanel(aiSnapshot, question) && AppState.ui.aiPanelOpen) this.renderAIPanel();
     }
 
     static renderMultiQuestions(activeIndex = AppState.currentQuestionIndex) {
         const main = document.getElementById('app-main');
+        const aiSnapshot = this.captureAIPanel();
         const entries = DataService.chapterEntries(AppState.currentChapter);
         const start = AppState.questionOffset || 0;
         const total = AppState.chapterQuestionCount || entries.length;
@@ -2366,7 +2368,7 @@ class UIRenderer {
         if (selected && AppState.currentCategory && AppState.currentChapter && !AppState.suspendLastStudy && !AppState.temporaryQuestionView) {
             StorageService.saveLearningPosition(AppState.currentCategory.id, AppState.currentChapter.id, start + AppState.currentQuestionIndex, selected.id, 'multi');
         }
-        if (AppState.ui.aiPanelOpen) this.renderAIPanel();
+        if (!this.restoreAIPanel(aiSnapshot, selected) && AppState.ui.aiPanelOpen) this.renderAIPanel();
         if (AppState.ui.annotationPanelOpen) this.renderAnnotationPanel();
     }
 
@@ -2529,12 +2531,30 @@ class UIRenderer {
         }
     }
 
+    static captureAIPanel() {
+        const panel = document.getElementById('ai-panel');
+        return { panel, scrollTop: panel?.querySelector?.('#ai-messages')?.scrollTop || 0 };
+    }
+
+    static restoreAIPanel(snapshot, question) {
+        const panel = snapshot.panel;
+        if (!panel?.dataset?.questionId || panel.dataset.questionId !== String(question?.id)) return false;
+        const placeholder = document.getElementById('ai-panel');
+        if (!placeholder || placeholder === panel) return false;
+        placeholder.replaceWith(panel);
+        panel.classList.toggle('closed', !AppState.ui.aiPanelOpen);
+        panel.querySelector('#ai-messages').scrollTop = snapshot.scrollTop;
+        window.DaguanAIPanelLayout?.update();
+        return true;
+    }
+
     static renderAIPanel() {
         const panel = document.getElementById('ai-panel');
         if (!panel) return;
         if (AppState.ui.aiPanelOpen) panel.classList.remove('closed');
 
         const question = AppState.questions[AppState.currentQuestionIndex];
+        panel.dataset.questionId = String(question?.id || '');
         const draft = question ? StorageService.getAIDraft(question.id) : '';
         const profiles = AppState.aiProfiles || [];
         const profileOptions = profiles.length
@@ -2545,10 +2565,15 @@ class UIRenderer {
             <div class="ai-panel-resize" role="separator" tabindex="0" aria-label="调整 AI 面板宽度" aria-orientation="vertical"></div>
             <div class="ai-header">
                 <h3>AI 辅助</h3>
+                <div class="ai-header-actions">
+                <button type="button" class="btn btn-text btn-sm" id="ai-expand-btn" aria-pressed="false">展开</button>
+                <button type="button" class="btn btn-text btn-sm" id="ai-settings-btn" aria-expanded="false" aria-controls="ai-panel-settings">设置</button>
                 <button class="btn btn-icon btn-text" onclick="App.toggleAI()" aria-label="关闭 AI 面板">
                     <svg class="icon" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
                 </button>
+                </div>
             </div>
+            <div class="ai-panel-settings" id="ai-panel-settings" hidden role="region" aria-label="AI 设置">
             <div class="ai-profile-row">
                 <label for="ai-profile-select-new">服务</label>
                 <select data-ai-service-control="true" id="ai-profile-select-new" onchange="App.selectAIProfile(this.value)">${profileOptions}</select>
@@ -2556,21 +2581,25 @@ class UIRenderer {
             </div>
 
             <label class="ai-streaming-control"><input type="checkbox" id="ai-streaming-new"> 流式回答</label>
+            <label class="ai-privacy-check"><input type="checkbox" id="ai-include-private-new"> 包含我的批注与学习状态</label>
+            </div>
+            <p class="ai-private-status" id="ai-private-status" hidden>已包含批注与学习状态</p>
             <div class="ai-quick-prompts">
                 <button class="quick-prompt-btn" onclick="App.sendAIPrompt(AI_COMPOSE_PROMPTS.full)">完整解答</button>
                 <button class="quick-prompt-btn" onclick="App.sendAIPrompt(AI_COMPOSE_PROMPTS.hint)">给我提示</button>
                 <button class="quick-prompt-btn" onclick="App.sendAIPrompt(AI_COMPOSE_PROMPTS.pitfall)">易错点</button>
             </div>
 
+            <nav class="ai-section-nav" id="ai-section-nav" aria-label="回答段落跳转" hidden></nav>
             <div class="ai-messages" id="ai-messages"><div class="ai-empty"><strong>先问一个问题</strong><p>题目上下文已经准备好，选择上方提示或直接输入你的疑问。</p></div></div>
+            <div class="ai-reading-actions"><button type="button" class="btn btn-secondary btn-sm" id="ai-latest-btn" hidden>回到最新内容</button></div>
 
             <div class="ai-input-area">
                 <div class="ai-input-wrapper">
                     <textarea class="ai-input" id="ai-input"
                         placeholder="输入你的问题..."
-                        rows="2">${escapeHtml(draft)}</textarea>
+                        rows="1">${escapeHtml(draft)}</textarea>
                     <div class="ai-input-actions">
-                        <label class="ai-privacy-check"><input type="checkbox" id="ai-include-private-new"> 包含我的批注与学习状态</label>
                         <span class="ai-input-buttons">
                             <button type="button" class="btn btn-secondary btn-sm" id="ai-stop-btn" hidden onclick="App.stopAIStream()">停止</button>
                             <button class="btn btn-primary ai-send-btn" id="ai-send-btn" onclick="App.sendAIMessage()">发送</button>
@@ -2580,6 +2609,7 @@ class UIRenderer {
             </div>
         `;
 
+        window.DaguanAIReading?.bind(panel);
         window.DaguanAIPanelLayout?.bind(panel);
         window.DaguanAISettings?.bindStreaming(document.getElementById('ai-streaming-new'), {
             profile: () => AIService.activeProfile(), busy: () => AppState.aiBusy,
@@ -2596,16 +2626,19 @@ class UIRenderer {
                 if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); App.sendAIMessage(); }
             });
         }
+        App.aiBusyUi(AppState.aiBusy);
         if (question) this.renderAIHistory(question);
     }
 
     static async renderAIHistory(question) {
         const messagesEl = document.getElementById('ai-messages');
         if (!messagesEl || !question) return;
+        const profileId = AppState.aiProfileId;
         const history = await AIService.loadHistory(question);
         // 用户可能已切题，历史回来时校验仍是当前题
         const current = AppState.questions[AppState.currentQuestionIndex];
-        if (!current || String(current.id) !== String(question.id)) return;
+        if (!current || String(current.id) !== String(question.id) || profileId !== AppState.aiProfileId ||
+            messagesEl !== document.getElementById('ai-messages') || AppState.aiBusy) return;
         if (!history.length) return;
         messagesEl.innerHTML = '';
         for (const message of history) {
@@ -2615,6 +2648,8 @@ class UIRenderer {
             messagesEl.appendChild(msg);
         }
         messagesEl.scrollTop = messagesEl.scrollHeight;
+        window.DaguanAIReading?.refreshSections();
+        window.DaguanAIReading?.toLatest();
     }
 
     static renderAnnotationPanel() {
@@ -3338,7 +3373,7 @@ class UIRenderer {
 
 // ========== AI 服务（对接本地中控台 /api/ai/*：profileId + question + prompt，SSE） ==========
 const AI_COMPOSE_PROMPTS = {
-    full: '请对这道题进行可追踪的逐步解题，不要只给结论或一段连续推导。一、总体思路：先用 1、2、3……列出完整解题路线，说明每一步要解决什么问题，以及这些步骤之间的关系。二、逐步解题：按照总体思路逐步展开。每一步都必须明确写出：1. 这是总体思路中的第几步，本步的目标是什么；2. 本步使用的知识点名称；3. 这个知识点的具体内容，包括定义、定理、公式、适用条件或判断依据；4. 从题目中的什么信息知道要使用这个知识点；5. 题干、图像、条件、选项中的具体信息是什么；6. 由这些信息如何进行推导、计算或判断；7. 本步得到的结果是什么，以及它如何用于下一步。请严格区分题目直接给出的信息、根据题目推出的中间结论、上一步已经得到的结果、官方解析中提供但题干没有直接给出的内容。如果某个知识点不是从题干直接判断出来的，而是由前一步结果推出的，要明确说明这是由前一步结果得到的。三、最终答案：完成所有步骤后，再单独给出最终答案，并说明答案是如何由前面的步骤得到的。四、方法总结：最后说明这类题遇到时应该优先识别哪些信息、第一时间想到什么方法，以及本题的通用解题套路。只围绕以上结构回答，不省略关键依据，不把多个推理步骤合并成一句话。数学公式使用 LaTeX。',
+    full: '请给出这道题的完整解答，按以下 Markdown 标题组织：## 答案、## 简短思路、## 详细推导、## 方法与易错点。先明确给出答案，再用简短段落说明解题路线，随后保留详细教学过程。每个关键步骤都应说明本步目标、知识点及其具体定义或公式、适用条件、从哪些题干或前一步信息想到该方法、推导过程与结果；把这些依据自然融入步骤，不机械重复七项标签，不把关键推理合并成一句话。清楚区分题干直接信息、前一步推出的结论和官方解析提供的信息，不能将题干没有给出的信息说成已知。最后总结识别这类题的信息、通用方法和必要的易错提醒，避免重复前文。选择题逐项解释关键判断理由。数学公式使用 LaTeX，较长公式单独成行。',
     hint: '先不要直接跳到结论，给我一个解题提示。',
     pitfall: '请指出这道题最容易犯的错误。'
 };
@@ -3511,6 +3546,8 @@ class App {
         // 绑定导航
         this.bindNavigation();
         this.bindKeyboardShortcuts();
+        try { AppState.ui.navExpanded = localStorage.getItem('daguan_new_nav_hidden') !== '1'; } catch {}
+        this.syncNav();
 
         // 检查版本偏好
         const urlParams = new URLSearchParams(window.location.search);
@@ -4391,7 +4428,7 @@ class App {
         const id = current?.id;
         const entries = DataService.chapterEntries(AppState.currentChapter);
         const index = id == null ? 0 : entries.findIndex(e => String(e.id) === String(id));
-        const saved = await this.ensureSavedBeforeLeavingQuestion();
+        const saved = await this.ensureSavedBeforeLeavingQuestion({ stopAI: false });
         if (!saved || token !== AppState.modeSwitchToken) {
             if (token === AppState.modeSwitchToken) AppState.modeSwitchTarget = null;
             return;
@@ -5587,7 +5624,7 @@ document.getElementById('btn-dl').addEventListener('click', function () {
     }
 
     // 切题前的保存先行：批注/AI 草稿/服务端队列清空后才渲染下一题；失败留在当前题。
-    static async ensureSavedBeforeLeavingQuestion() {
+    static async ensureSavedBeforeLeavingQuestion({ stopAI = true } = {}) {
         const question = AppState.questions[AppState.currentQuestionIndex];
         try {
             const input = document.getElementById('ai-input');
@@ -5598,7 +5635,7 @@ document.getElementById('btn-dl').addEventListener('click', function () {
             toast(`未切换题目：${error.message || '保存失败，请重试'}`);
             return false;
         }
-        this.abortAIStream();
+        if (stopAI) this.abortAIStream();
         return true;
     }
 
@@ -5774,7 +5811,8 @@ document.getElementById('btn-dl').addEventListener('click', function () {
 
         if (!isOpen) {
             if (!AppState.aiProfiles) AIService.loadProfiles();
-            UIRenderer.renderAIPanel();
+            if (!panel.querySelector('#ai-input')) UIRenderer.renderAIPanel();
+            else window.DaguanAIPanelLayout?.update();
         }
     }
 
@@ -5815,6 +5853,7 @@ document.getElementById('btn-dl').addEventListener('click', function () {
         const send = document.getElementById('ai-send-btn');
         if (stop) stop.hidden = !busy;
         if (send) send.disabled = busy;
+        window.DaguanAIReading?.fitInput();
     }
 
     static async stopAIStream() {
@@ -5849,6 +5888,7 @@ document.getElementById('btn-dl').addEventListener('click', function () {
             return;
         }
 
+        messagesEl.querySelector('.ai-empty')?.remove();
         const userMsg = document.createElement('div');
         userMsg.className = 'ai-message user';
         userMsg.innerHTML = `<div class="ai-message-bubble">${escapeHtml(content)}</div>`;
@@ -5862,6 +5902,9 @@ document.getElementById('btn-dl').addEventListener('click', function () {
         messagesEl.scrollTop = messagesEl.scrollHeight;
 
         input.value = '';
+        window.DaguanAIReading?.fitInput();
+        window.DaguanAIReading?.toLatest();
+        window.DaguanAIReading?.refreshSections();
         StorageService.saveAIDraft(question.id, '');
         const questionId = String(question.id);
 
@@ -5870,6 +5913,7 @@ document.getElementById('btn-dl').addEventListener('click', function () {
         AppState.aiRunId = '';
         this.aiBusyUi(true);
         let answer = '';
+        let paintTimer = 0;
         try {
             const includePrivate = document.getElementById('ai-include-private-new')?.checked === true;
             const profile = AIService.activeProfile();
@@ -5879,13 +5923,12 @@ document.getElementById('btn-dl').addEventListener('click', function () {
             const reader = response.body?.getReader();
             const decoder = new TextDecoder();
             let buffer = '';
-            let paintTimer = 0;
             const paint = () => {
                 paintTimer = 0;
                 if (!responseEl || !responseEl.isConnected) return;
-                responseEl.textContent = answer || '正在思考…';
-                const nearBottom = messagesEl.scrollHeight - messagesEl.scrollTop - messagesEl.clientHeight < 100;
-                if (nearBottom) messagesEl.scrollTop = messagesEl.scrollHeight;
+                const paintContent = () => { responseEl.textContent = answer || '正在思考…'; };
+                if (window.DaguanAIReading) window.DaguanAIReading.paintMessages(responseEl.closest('.ai-panel'), paintContent);
+                else paintContent();
             };
             while (reader) {
                 const { done, value } = await reader.read();
@@ -5903,9 +5946,13 @@ document.getElementById('btn-dl').addEventListener('click', function () {
             if (String(AppState.questions[AppState.currentQuestionIndex]?.id) !== questionId) return;
             if (responseEl) {
                 responseEl.removeAttribute('id');
-                responseEl.innerHTML = renderMarkdown(answer);
+                const finish = () => { responseEl.innerHTML = renderMarkdown(answer); };
+                if (window.DaguanAIReading) window.DaguanAIReading.paintMessages(responseEl.closest('.ai-panel'), finish);
+                else finish();
+                window.DaguanAIReading?.refreshSections();
             }
         } catch (error) {
+            if (paintTimer) clearTimeout(paintTimer);
             if (String(AppState.questions[AppState.currentQuestionIndex]?.id) !== questionId) return;
             const aborted = error?.name === 'AbortError';
             if (responseEl) {
@@ -5923,6 +5970,8 @@ document.getElementById('btn-dl').addEventListener('click', function () {
                 }
             }
         } finally {
+            if (paintTimer) clearTimeout(paintTimer);
+            window.DaguanAIReading?.refreshSections();
             if (AppState.aiAbort === controller) AppState.aiAbort = null;
             AppState.aiRunId = '';
             this.aiBusyUi(false);
@@ -6163,20 +6212,30 @@ document.getElementById('btn-dl').addEventListener('click', function () {
 
     static handleResize() {
         const width = window.innerWidth;
-        AppState.ui.navExpanded = width >= 1280;
-        if (width >= 1024 && AppState.ui.navOpen) this.toggleNav();
+        if (width >= 1024) AppState.ui.navOpen = false;
+        this.syncNav();
     }
 
     static toggleNav() {
-        AppState.ui.navOpen = !AppState.ui.navOpen;
+        if (window.innerWidth >= 1024) {
+            AppState.ui.navExpanded = !AppState.ui.navExpanded;
+            try { localStorage.setItem('daguan_new_nav_hidden', AppState.ui.navExpanded ? '0' : '1'); } catch {}
+        } else AppState.ui.navOpen = !AppState.ui.navOpen;
+        this.syncNav();
+    }
+
+    static syncNav() {
         const nav = document.getElementById('app-nav');
         const overlay = document.querySelector('body > .nav-overlay');
-
+        const desktop = window.innerWidth >= 1024;
+        const visible = desktop ? AppState.ui.navExpanded : AppState.ui.navOpen;
         if (nav) nav.classList.toggle('open', AppState.ui.navOpen);
+        document.body.classList.toggle('desktop-nav-hidden', desktop && !visible);
         if (overlay) overlay.classList.toggle('open', AppState.ui.navOpen);
         const button = document.getElementById('btn-toggle-nav');
-        button?.setAttribute('aria-expanded', String(AppState.ui.navOpen));
-        button?.setAttribute('aria-label', AppState.ui.navOpen ? '关闭导航' : '打开导航');
+        button?.setAttribute('aria-expanded', String(visible));
+        button?.setAttribute('aria-label', visible ? '收起导航' : '展开导航');
+        window.DaguanAIPanelLayout?.update();
     }
 }
 

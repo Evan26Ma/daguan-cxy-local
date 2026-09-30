@@ -12,9 +12,10 @@ const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 let playwright;try{playwright=createRequire(import.meta.url)(process.env.DAGUAN_PLAYWRIGHT_MODULE||'playwright');}catch{}
 const skip=!playwright && 'Playwright unavailable';
 const question={id:32,type:'single_choice',stem:'自动判题回归题',answer:'B',explanation:'正确答案为 B。',options:[{label:'A',content_md:'错误项'},{label:'B',content_md:'正确项'}],correct_labels:['B']};
+async function unusedPort(){const listener=net.createServer();await new Promise(r=>listener.listen(0,'127.0.0.1',r));const port=listener.address().port;await new Promise(r=>listener.close(r));return port>=12000?port:unusedPort();}
 async function fixture(t){
  const dir=await fs.mkdtemp(path.join(os.tmpdir(),'daguan-choice-'));
- const listener=net.createServer();await new Promise(r=>listener.listen(0,'127.0.0.1',r));const port=listener.address().port;await new Promise(r=>listener.close(r));
+ const port=await unusedPort();
  const service=spawn(process.execPath,[path.join(ROOT,'local-server/server.mjs')],{cwd:ROOT,env:{...process.env,PORT:String(port),DAGUAN_DATA_DIR:path.join(dir,'data'),DAGUAN_OPEN_BROWSER:'0'},windowsHide:true,stdio:['ignore','ignore','ignore','ipc']});
  t.after(async()=>{if(service.exitCode==null){service.send({type:'shutdown'});await Promise.race([once(service,'close'),new Promise(r=>setTimeout(r,3000))]);if(service.exitCode==null)service.kill();}await fs.rm(dir,{recursive:true,force:true});});
  const base=`http://127.0.0.1:${port}`;
