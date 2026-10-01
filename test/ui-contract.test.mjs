@@ -327,14 +327,15 @@ test("AI 学习助手支持鼠标拖拽和键盘调整宽度", () => {
   assert.match(app, /lostpointercapture/);
 });
 
-test("题册编辑风：全书卷衬线、大题号与行宽约束", () => {
+test("清爽学习工具：统一无衬线、题号与阅读宽度约束", () => {
   const tokens = fs.readFileSync(new URL("../web/design-tokens.css", import.meta.url), "utf8");
-  assert.match(tokens, /--font-family-serif:\s*"Songti SC", "SimSun"/);
-  assert.match(tokens, /--question-number-ink:\s*#d5d5c9/);
+  assert.doesNotMatch(tokens, /--font-family-serif|SimSun|Songti/);
+  assert.match(tokens, /--font-family-reading:\s*var\(--font-family-ui\)/);
+  assert.match(tokens, /--learning-reading-rail:\s*820px/);
   assert.match(tokens, /html\[data-theme="official-dark"\]\s*\{[\s\S]*--question-number-ink:/);
-  assert.match(css, /#app\.learning-shell #q-single-num\s*\{[\s\S]*font:\s*400 44px\/1 var\(--font-family-mono\)/);
-  assert.match(css, /#app\.learning-shell \.q-stem,[\s\S]*?#app\.learning-shell #q-expl\s*\{[\s\S]*font-family:\s*var\(--font-family-serif\)/);
-  assert.match(css, /max-width:\s*34em/);
-  assert.match(css, /#app\.learning-shell \.answer-block,[\s\S]*border-left:\s*2px solid var\(--color-brand\)/);
+  assert.match(css, /#app\.learning-shell #q-single-num\s*\{[\s\S]*font:\s*700 22px\/1 var\(--font-family-mono\)/);
+  assert.match(css, /#app\.learning-shell \.q-stem,[\s\S]*?\{[\s\S]*font-family:\s*var\(--font-family-reading\)/);
+  assert.match(css, /#list-mode, #single-mode\s*\{\s*max-width:\s*var\(--learning-reading-rail\)/);
+  assert.doesNotMatch(css, /font-family-serif/);
   assert.doesNotMatch(css, /fonts\.googleapis|@import\s+url\(/);
 });
