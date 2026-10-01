@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>题库 - 大观园</title>
+    <link rel="stylesheet" href="../css/design-system.css">
+    <style>
+        .library-layout {
+            display: flex;
+            height: calc(100vh - var(--topbar-height) - var(--statusbar-height));
+        }
+        
+        .library-sidebar {
+            width: 256px;
+            background: var(--bg-surface);
+            border-right: 1px solid var(--border-default);
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+        
+        .library-main {
+            flex: 1;
+            overflow-y: auto;
+            background: var(--bg-app);
+        }
+        
+        .sidebar-header {
+            padding: var(--spacing-xl) var(--spacing-l);
+            border-bottom: 1px solid var(--border-default);
+        }
+        
+        .sidebar-title {
+            font-size: 16px;
+            line-height: 24px;
+            font-weight: 600;
+            margin-bottom: var(--spacing-s);
+        }
+        
+        .search-box {
+            position: relative;
+            margin-top: var(--spacing-m);
+        }
+        
+        .search-input {
+            width: 100%;
+            height: 36px;
+            padding: 0 var(--spacing-l) 0 36px;
+            border: 1px solid var(--border-control);
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: var(--brand-orange);
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 10px;
+            top: 8px;
+            color: var(--text-secondary);
+        }
+        
+        .category-tree {
+            padding: var(--spacing-s) 0;
+        }
+        
+        .category-item {
+            display: flex;
+            align-items: center;
+            padding: var(--spacing-s) var(--spacing-l);
+            cursor: pointer;
+            font-size: 14px;
+            line-height: 22px;
+            color: var(--text-primary);
+            transition: background 120ms ease;
+        }
+        
+        .category-item:hover {
+            background: var(--bg-nav);
+        }
+        
+        .category-item.active {
+            background: var(--brand-light-bg);
+            color: var(--brand-text-on-white);
+            font-weight: 600;
+        }
+        
+        .category-item.parent {
+            font-weight: 600;
+        }
+        
+        .category-item.child {
+            padding-left: 32px;
+        }
+        
+        .category-item.grandchild {
+            padding-left: 48px;
+            font-size: 13px;
+        }
+        
+        .content-header {
+            background: var(--bg-surface);
+            padding: var(--spacing-xl) var(--spacing-2xl);
+            border-bottom: 1px solid var(--border-default);
+        }
+        
+        .breadcrumb {
+            font-size: 13px;
+            line-height: 20px;
+            color: var(--text-secondary);
+            margin-bottom: var(--spacing-s);
+        }
+        
+        .content-title {
+            font-size: 24px;
+            line-height: 34px;
+            font-weight: 600;
+            margin-bottom: var(--spacing-l);
+        }
+        
+        .toolbar {
+            display: flex;
+            gap: var(--spacing-m);
+            align-items: center;
+        }
+        
+        .filter-drawer {
+            position: fixed;
+            right: -400px;
+            top: var(--topbar-height);
+            bottom: var(--statusbar-height);
+            width: 400px;
+            background: var(--bg-surface);
+            box-shadow: -4px 0 24px rgba(0, 0, 0, 0.12);
+            z-index: 100;
+            transition: right 200ms ease;
+            overflow-y: auto;
+        }
+        
+        .filter-drawer.open {
+            right: 0;
+        }
+        
+        .filter-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 99;
+        }
+        
+        .filter-overlay.open {
+            display: block;
+        }
+        
+        .filter-header {
+            padding: var(--spacing-xl);
+            border-bottom: 1px solid var(--border-default);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .filter-title {
+            font-size: 18px;
+            line-height: 28px;
+            font-weight: 600;
+        }
+        
+        .filter-content {
+            padding: var(--spacing-xl);
+        }
+        
+        .filter-section {
+            margin-bottom: var(--spacing-2xl);
+        }
+        
+        .filter-section-title {
+            font-size: 14px;
+            line-height: 22px;
+            font-weight: 600;
+            margin-bottom: var(--spacing-m);
+        }
+        
+        .filter-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--spacing-s);
+        }
+        
+        .chip {
+            padding: 6px 16px;
+            border: 1px solid var(--border-control);
+            border-radius: 20px;
+            font-size: 13px;
+            line-height: 20px;
+            cursor: pointer;
+            transition: all 120ms ease;
+            background: var(--bg-surface);
+        }
+        
+        .chip:hover {
+            border-color: var(--brand-orange);
+        }
+        
+        .chip.selected {
+            background: var(--brand-light-bg);
+            border-color: var(--brand-orange);
+            color: var(--brand-text-on-white);
+        }
+        
+        .filter-footer {
+            position: sticky;
+            bottom: 0;
+            background: var(--bg-surface);
+            border-top: 1px solid var(--border-default);
+            padding: var(--spacing-l) var(--spacing-xl);
+            display: flex;
+            gap: var(--spacing-m);
+        }
+        
+        .question-list {
+            padding: var(--spacing-xl) var(--spacing-2xl);
+        }
+        
+        .question-card {
+            background: var(--bg-surface);
+            border-radius: var(--radius-panel);
+            padding: var(--spacing-xl);
+            margin-bottom: var(--spacing-l);
+            cursor: pointer;
+            transition: all 120ms ease;
+            border: 2px solid transparent;
+        }
+        
+        .question-card:hover {
+            border-color: var(--brand-orange);
+        }
+        
+        .question-meta {
+            display: flex;
+            gap: var(--spacing-m);
+            margin-bottom: var(--spacing-m);
+            font-size: 13px;
+            line-height: 20px;
+            color: var(--text-secondary);
+        }
+        
+        .question-stem {
+            font-size: 16px;
+            line-height: 28px;
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-m);
+        }
+        
+        .question-tags {
+            display: flex;
+            gap: var(--spacing-s);
+        }
+        
+        .tag {
+            padding: 4px 10px;
+            background: var(--bg-nav);
+            border-radius: 6px;
+            font-size: 12px;
+            line-height: 18px;
+            color: var(--text-secondary);
+        }
+        
+        @media (max-width: 1023px) {
+            .library-sidebar {
+                position: fixed;
+                left: -100%;
+                top: var(--topbar-height);
+                bottom: var(--statusbar-height);
+                z-index: 100;
+                transition: left 200ms ease;
+            }
+            
+            .library-sidebar.open {
+                left: 0;
+            }
+            
+            .filter-drawer {
+                width: 100%;
+                right: -100%;
+            }
+        }
+        
+        @media (max-width: 767px) {
+            .content-header,
+            .question-list {
+                padding: var(--spacing-l);
+            }
+            
+            .toolbar {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- 顶栏 -->
+        <div class="app-topbar">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <button class="btn btn-icon btn-text" id="toggleNav">
+                    <svg class="icon" viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                </button>
+                <div style="width: 32px; height: 32px; background: var(--brand-orange); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #202124; font-weight: 700; font-size: 16px;">( )</div>
+                <span style="font-size: 16px; font-weight: 600;">大观园</span>
+            </div>
+        </div>
+        
+        <div class="app-body">
+            <!-- 导航 -->
+            <nav class="app-nav" id="mainNav">
+                <a href="home.html" class="nav-item">
+                    <svg class="icon nav-icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+                    <span>学习</span>
+                </a>
+                <a href="library.html" class="nav-item active">
+                    <svg class="icon nav-icon" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                    <span>题库</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <svg class="icon nav-icon" viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                    <span>复习</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <svg class="icon nav-icon" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    <span>笔记</span>
+                </a>
+            </nav>
+            
+            <!-- 题库主体 -->
+            <div class="library-layout">
+                <!-- 侧边目录 -->
+                <div class="library-sidebar" id="librarySidebar">
+                    <div class="sidebar-header">
+                        <div class="sidebar-title">题库目录</div>
+                        <div class="search-box">
+                            <svg class="icon search-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                            <input type="text" class="search-input" placeholder="搜索题目..." id="searchInput">
+                        </div>
+                    </div>
+                    <div class="category-tree">
+                        <div class="category-item parent">高等数学</div>
+                        <div class="category-item child">极限</div>
+                        <div class="category-item child">一元微分</div>
+                        <div class="category-item child">一元积分</div>
+                        
+                        <div class="category-item parent active">线性代数</div>
+                        <div class="category-item child">行列式</div>
+                        <div class="category-item child">矩阵</div>
+                        <div class="category-item child active">二次型</div>
+                        <div class="category-item grandchild">可逆变换求变换矩阵</div>
+                        <div class="category-item grandchild">正交变换化标准型</div>
+                        
+                        <div class="category-item parent">概率统计</div>
+                        <div class="category-item child">随机事件</div>
+                        <div class="category-item child">随机变量</div>
+                    </div>
+                </div>
+                
+                <!-- 主内容区 -->
+                <div class="library-main">
+                    <div class="content-header">
+                        <div class="breadcrumb">线性代数 / 二次型</div>
+                        <div class="content-title">二次型 · 可逆变换求变换矩阵</div>
+                        <div class="toolbar">
+                            <button class="btn btn-secondary" id="toggleFilter">
+                                <svg class="icon" viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                                筛选
+                            </button>
+                            <button class="btn btn-text">
+                                <svg class="icon" viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                                排序
+                            </button>
+                            <span style="margin-left: auto; font-size: 13px; color: var(--text-secondary);">共 24 题</span>
+                        </div>
+                    </div>
+                    
+                    <div class="question-list">
+                        <div class="question-card">
+                            <div class="question-meta">
+                                <span>🫚真题同源 150</span>
+                                <span>·</span>
+                                <span>解答题</span>
+                            </div>
+                            <div class="question-stem">
+                                设 A = (2 1 -1; 1 2 1; -1 1 2), B = (1 0 1; 0 1 1; 1 1 2)。(I) 证明 A 与 B 不相似；(II) 求可逆矩阵 C，使得 C^T A C = B。
+                            </div>
+                            <div class="question-tags">
+                                <span class="tag">线性代数</span>
+                                <span class="tag">二次型</span>
+                            </div>
+                        </div>
+                        
+                        <div class="question-card">
+                            <div class="question-meta">
+                                <span>25 李永乐六套数一二三第一套</span>
+                                <span>·</span>
+                                <span>解答题</span>
+                            </div>
+                            <div class="question-stem">
+                                已知矩阵 A 与矩阵 B 合同，求数 a 的值，并求可逆矩阵 P，使得 P^T A P = B。
+                            </div>
+                            <div class="question-tags">
+                                <span class="tag">线性代数</span>
+                                <span class="tag">二次型</span>
+                            </div>
+                        </div>
+                        
+                        <div class="question-card">
+                            <div class="question-meta">
+                                <span>900题数二第六章A类 13</span>
+                                <span>·</span>
+                                <span>单选题</span>
+                            </div>
+                            <div class="question-stem">
+                                设二次型 f(x₁,x₂,x₃) 经可逆线性变换可化为二次型 g(y₁,y₂,y₃)，则参数 a, b 的取值范围为（  ）。
+                            </div>
+                            <div class="question-tags">
+                                <span class="tag">线性代数</span>
+                                <span class="tag">二次型</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 筛选抽屉 -->
+        <div class="filter-overlay" id="filterOverlay"></div>
+        <div class="filter-drawer" id="filterDrawer">
+            <div class="filter-header">
+                <span class="filter-title">筛选条件</span>
+                <button class="btn btn-icon btn-text" id="closeFilter">
+                    <svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <div class="filter-content">
+                <div class="filter-section">
+                    <div class="filter-section-title">题型</div>
+                    <div class="filter-chips">
+                        <div class="chip">单选题</div>
+                        <div class="chip selected">解答题</div>
+                        <div class="chip">填空题</div>
+                    </div>
+                </div>
+                
+                <div class="filter-section">
+                    <div class="filter-section-title">来源</div>
+                    <div class="filter-chips">
+                        <div class="chip">真题</div>
+                        <div class="chip">模拟题</div>
+                        <div class="chip">练习题</div>
+                    </div>
+                </div>
+                
+                <div class="filter-section">
+                    <div class="filter-section-title">年份</div>
+                    <div class="filter-chips">
+                        <div class="chip">2024</div>
+                        <div class="chip">2023</div>
+                        <div class="chip">2022</div>
+                        <div class="chip">2021</div>
+                        <div class="chip">更早</div>
+                    </div>
+                </div>
+                
+                <div class="filter-section">
+                    <div class="filter-section-title">讲师</div>
+                    <div class="filter-chips">
+                        <div class="chip">帕拉迪宇</div>
+                        <div class="chip">李艳芳</div>
+                        <div class="chip">没咋了</div>
+                    </div>
+                </div>
+            </div>
+            <div class="filter-footer">
+                <button class="btn btn-secondary" style="flex: 1;">重置</button>
+                <button class="btn btn-primary" style="flex: 2;">应用筛选</button>
+            </div>
+        </div>
+        
+        <!-- 状态栏 -->
+        <div class="app-statusbar">
+            <span>演示数据 · 阶段 1 视觉样板</span>
+        </div>
+    </div>
+    
+    <script>
+        // 筛选抽屉控制
+        const toggleFilter = document.getElementById('toggleFilter');
+        const closeFilter = document.getElementById('closeFilter');
+        const filterDrawer = document.getElementById('filterDrawer');
+        const filterOverlay = document.getElementById('filterOverlay');
+        
+        toggleFilter.addEventListener('click', () => {
+            filterDrawer.classList.add('open');
+            filterOverlay.classList.add('open');
+        });
+        
+        closeFilter.addEventListener('click', () => {
+            filterDrawer.classList.remove('open');
+            filterOverlay.classList.remove('open');
+        });
+        
+        filterOverlay.addEventListener('click', () => {
+            filterDrawer.classList.remove('open');
+            filterOverlay.classList.remove('open');
+        });
+        
+        // 筛选项切换
+        document.querySelectorAll('.chip').forEach(chip => {
+            chip.addEventListener('click', () => {
+                chip.classList.toggle('selected');
+            });
+        });
+        
+        // 导航切换（手机）
+        const toggleNav = document.getElementById('toggleNav');
+        const mainNav = document.getElementById('mainNav');
+        
+        if (toggleNav) {
+            toggleNav.addEventListener('click', () => {
+                mainNav.classList.toggle('open');
+            });
+        }
+        
+        // 侧边栏切换（手机）
+        const librarySidebar = document.getElementById('librarySidebar');
+        if (window.innerWidth <= 1023) {
+            librarySidebar.classList.add('open');
+        }
+    </script>
+</body>
+</html>

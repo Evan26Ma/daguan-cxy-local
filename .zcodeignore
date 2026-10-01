@@ -1,0 +1,65 @@
+_source.tar.gz
+
+# Local/runtime files
+node_modules/
+web/.cache/
+web/data/assets/.download-tmp/
+
+# Local Node console state and credentials
+data/*.json
+data/*.jsonl
+data/ai-history/
+data/cxyonly-backups/
+data/.runtime/
+
+# Generated Windows single-file package
+.build/
+dist/
+out/
+
+# deepseek-idesign（Design Studio 插件）的会话产物目录，非产品代码、不入库
+design/
+
+# Flutter outputs (the Android project has its own ignore rules too)
+android/.dart_tool/
+android/build/
+android/.flutter-plugins
+android/.flutter-plugins-dependencies
+android/.packages
+android/android/.gradle/
+android/android/app/build/
+
+# 标注管线中间产物与本地截图（不入库）
+tools/tagger-out/
+docs/refshots/
+
+# ===== ↑ 以上同步自 .gitignore（「从 .gitignore 同步」只重写以上部分）=====
+.git/
+.hg/
+.svn/
+bower_components/
+jspm_packages/
+__pycache__/
+site-packages/
+venv/
+coverage/
+htmlcov/
+lcov-report/
+cmakefiles/
+cmake-build-*/
+bazel-*/
+pods/
+deriveddata/
+storybook-static/
+playwright-report/
+test-results/
+allure-results/
+allure-report/
+cdk.out/
+*.egg-info/
+*.dist-info/
+eggs/
+pip-wheel-metadata/
+wheels/
+# ----- ↑ 以上为 ZCode 默认排除规则（自定义规则请写在本行下方，不会被同步/恢复改动）-----
+# 自定义规则写在下方（本行提示可删除）

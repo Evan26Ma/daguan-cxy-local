@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>大观园新版 UI 视觉样板</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Segoe UI Variable, Segoe UI, Microsoft YaHei UI, Microsoft YaHei, sans-serif;
+            background: #F5F6F8;
+            color: #202124;
+            line-height: 1.5;
+        }
+        
+        .preview-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 48px 32px;
+        }
+        
+        .preview-header {
+            background: #FFFFFF;
+            padding: 32px;
+            border-radius: 16px;
+            margin-bottom: 32px;
+        }
+        
+        .preview-header h1 {
+            font-size: 30px;
+            line-height: 40px;
+            font-weight: 700;
+            color: #FF6A1A;
+            margin-bottom: 16px;
+        }
+        
+        .preview-header p {
+            font-size: 14px;
+            line-height: 22px;
+            color: #687078;
+        }
+        
+        .preview-nav {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+        }
+        
+        .preview-card {
+            background: #FFFFFF;
+            border-radius: 16px;
+            padding: 24px;
+            text-decoration: none;
+            color: inherit;
+            transition: transform 120ms ease, box-shadow 120ms ease;
+            border: 2px solid transparent;
+        }
+        
+        .preview-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            border-color: #FF6A1A;
+        }
+        
+        .preview-card h2 {
+            font-size: 20px;
+            line-height: 30px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .preview-card p {
+            font-size: 14px;
+            line-height: 22px;
+            color: #687078;
+        }
+        
+        .preview-badge {
+            display: inline-block;
+            background: #FFF0E6;
+            color: #B83D00;
+            font-size: 12px;
+            line-height: 18px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            margin-top: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="preview-container">
+        <div class="preview-header">
+            <h1>大观园新版 UI 视觉样板</h1>
+            <p>阶段 1 交付物 - 独立的视觉样板，用于验证设计系统和页面布局</p>
+            <p style="margin-top: 8px; color: #BA3543;">⚠️ 此为设计预览，非完整功能实现</p>
+        </div>
+        
+        <div class="preview-nav">
+            <a href="pages/home.html" class="preview-card">
+                <h2>首页样板</h2>
+                <p>鲜橙继续学习区 + 复习摘要 + 近期记录</p>
+                <span class="preview-badge">Home</span>
+            </a>
+            
+            <a href="pages/library.html" class="preview-card">
+                <h2>题库样板</h2>
+                <p>256px 目录 + 章节列表 + 搜索与筛选</p>
+                <span class="preview-badge">Library</span>
+            </a>
+            
+            <a href="pages/question.html" class="preview-card">
+                <h2>做题样板</h2>
+                <p>选择题、长解析题、图片题 + 切题导航</p>
+                <span class="preview-badge">Question</span>
+            </a>
+            
+            <a href="pages/question-with-ai.html" class="preview-card">
+                <h2>AI 展开样板</h2>
+                <p>桌面并排 400px + 手机全屏 + 演示对话</p>
+                <span class="preview-badge">AI Panel</span>
+            </a>
+            
+            <a href="pages/mobile-nav.html" class="preview-card">
+                <h2>手机导航样板</h2>
+                <p>抽屉式导航 + 选项后自动关闭</p>
+                <span class="preview-badge">Mobile</span>
+            </a>
+        </div>
+    </div>
+</body>
+</html>
