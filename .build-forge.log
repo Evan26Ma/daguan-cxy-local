@@ -1,0 +1,47 @@
+
+> daguan-math-local@1.0.3 package:desktop:windows
+> electron-forge make --platform win32 --arch x64
+
+[33m❯[39m Checking your system
+[33m❯[39m Checking package manager version
+[32m✔[39m Found npm@11.12.1
+[32m✔[39m Checking your system
+[?25h[33m❯[39m Loading configuration
+[32m✔[39m Loading configuration
+[33m❯[39m Resolving make targets
+› Making for the following targets: 
+[32m✔[39m Resolving make targets
+[33m❯[39m Running package command
+[33m❯[39m Preparing to package application
+[32m✔[39m Preparing to package application
+[33m❯[39m Running packaging hooks
+[33m❯[39m Running generateAssets hook
+[32m✔[39m Running generateAssets hook
+[33m❯[39m Running prePackage hook
+[32m✔[39m Running prePackage hook
+[32m✔[39m Running packaging hooks
+[33m❯[39m Packaging application
+› Determining targets...
+[33m❯[39m Packaging for x64 on win32
+[33m❯[39m Copying files
+[33m❯[39m Preparing native dependencies
+[33m❯[39m Finalizing package
+
+[32m✔[39m Copying files
+[32m✔[39m Preparing native dependencies
+[32m✔[39m Finalizing package
+[32m✔[39m Packaging for x64 on win32
+[32m✔[39m Packaging application
+[33m❯[39m Running postPackage hook
+[32m✔[39m Running postPackage hook
+[32m✔[39m Running package command
+[33m❯[39m Running preMake hook
+[32m✔[39m Running preMake hook
+[33m❯[39m Making distributables
+[33m❯[39m Making a squirrel distributable for win32/x64
+[32m✔[39m Making a squirrel distributable for win32/x64
+[32m✔[39m Making distributables
+[33m❯[39m Running postMake hook
+› Artifacts available at: F:\AI\daguan-desktop-v1.0.3\out\make
+[32m✔[39m Running postMake hook
+[?25h
