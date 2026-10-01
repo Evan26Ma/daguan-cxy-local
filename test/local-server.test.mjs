@@ -104,6 +104,32 @@ test("Node 客户端可登录、读取掌握状态并调用 CSRF", async () => {
   await fs.rm(root, { recursive: true, force: true });
 });
 
+test("最近学习位置按官网契约上报并归一读回", async () => {
+  const { root, store } = await tempStore();
+  await store.writeIntegration({ format: "daguan-cxyonly-integration", version: 1, base_url: "https://www.cxyonly.fans", token: "secret-token" });
+  const calls = [];
+  const mockFetch = async (url, options = {}) => {
+    calls.push({ url, options });
+    if (url.endsWith("/auth/csrf")) return new Response(JSON.stringify({ code: 0, data: { csrf_token: "csrf-1" } }), { status: 200 });
+    if (url.endsWith("/api/questions/user/last_study") && options.method === "POST") {
+      return new Response(JSON.stringify({ has_record: true, category_id: 139, last_page: 1, last_question_id: 472, updated_at: "2026-10-01T11:05:32Z" }), { status: 200 });
+    }
+    if (url.endsWith("/api/questions/user/last_study")) {
+      return new Response(JSON.stringify({ has_record: true, category_id: 1111, category_name: "高等数学 / 级数 / 幂级数", last_page: 2, last_question_id: 8912, updated_at: "2026-09-28T20:05:39+08:00" }), { status: 200 });
+    }
+    return new Response(JSON.stringify({}), { status: 200 });
+  };
+  const client = new CxyonlyClient({ store, fetchImpl: mockFetch, baseUrl: "https://www.cxyonly.fans" });
+  await client.saveLastStudy({ category_id: "139", question_id: "472", mode: "single", updated_at: "2026-10-01T10:50:52.946Z" });
+  const post = calls.find((call) => call.options.method === "POST");
+  assert.deepEqual(JSON.parse(post.options.body), { category_id: 139, last_page: 1, last_question_id: 472 });
+  assert.equal(post.options.headers["X-CSRF-Token"], "csrf-1");
+  const read = await client.fetchLastStudy();
+  assert.deepEqual(read, { category_id: "1111", question_id: "8912", last_page: 2, updated_at: "2026-09-28T20:05:39+08:00" });
+  assert.equal(await client.saveLastStudy({ category_id: "0" }), null);
+  await fs.rm(root, { recursive: true, force: true });
+});
+
 test("状态格式化会去重并忽略非法题号", () => {
   const states = normalizeRemoteStates([
     { question_id: 1, mastery: "mastered" },

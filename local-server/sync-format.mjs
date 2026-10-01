@@ -139,6 +139,41 @@ export function pageTotal(payload) {
   return Number.isFinite(value) && value >= 0 ? value : null;
 }
 
+// 官网 POST /api/questions/user/last_study 的契约（取自官网前端 persistLastStudy）：
+//   { category_id, last_page, last_question_id?, chapter_id?, scope? }
+// 其中 category_id 与 last_page 为必填，题号字段名是 last_question_id；
+// 本地 last_study 用的是 question_id 且没有 last_page，直接透传会被官网判为 validation_error。
+export function localLastStudyToRemote(value) {
+  const source = asState(value);
+  const categoryId = Number(source.category_id ?? source.categoryId);
+  if (!Number.isFinite(categoryId) || categoryId <= 0) return null;
+  const questionId = Number(source.last_question_id ?? source.question_id ?? source.questionId);
+  const lastPage = Number(source.last_page ?? source.lastPage);
+  return {
+    category_id: Math.trunc(categoryId),
+    last_page: Number.isFinite(lastPage) && lastPage > 0 ? Math.trunc(lastPage) : 1,
+    ...(Number.isFinite(questionId) && questionId > 0 ? { last_question_id: Math.trunc(questionId) } : {}),
+  };
+}
+
+// 官网读回来的形态是 { has_record, category_id, category_name, category_full_path,
+// last_page, last_question_id, updated_at }，缺 question_id，本地界面无法直接续学，
+// 因此统一归一成 { category_id, question_id, last_page?, updated_at }。
+export function remoteLastStudyToLocal(value) {
+  const source = asState(value);
+  if (source.has_record === false) return null;
+  const categoryId = source.category_id ?? source.categoryId;
+  const questionId = source.last_question_id ?? source.question_id ?? source.questionId;
+  if (categoryId == null || questionId == null) return null;
+  const lastPage = Number(source.last_page ?? source.lastPage);
+  return {
+    category_id: String(categoryId),
+    question_id: String(questionId),
+    ...(Number.isFinite(lastPage) && lastPage > 0 ? { last_page: Math.trunc(lastPage) } : {}),
+    updated_at: source.updated_at || source.updatedAt || null,
+  };
+}
+
 export function localToRemoteDocument(localState) {
   const states = {};
   const progress = localState?.progress && typeof localState.progress === "object" ? localState.progress : {};

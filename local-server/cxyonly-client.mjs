@@ -1,4 +1,8 @@
-import { buildPushPlan, normalizeRemoteStates, pageTotal, remoteStatesDocument, unwrapPageItems } from "./sync-format.mjs";
+import { buildPushPlan, localLastStudyToRemote, normalizeRemoteStates, pageTotal, remoteLastStudyToLocal, remoteStatesDocument, unwrapPageItems } from "./sync-format.mjs";
+
+function unwrapData(payload) {
+  return payload?.data && typeof payload.data === "object" ? payload.data : payload;
+}
 
 const DEFAULT_BASE_URL = "https://www.cxyonly.fans";
 
@@ -179,7 +183,8 @@ export class CxyonlyClient {
   async fetchLastStudy() {
     try {
       const payload = await this.request("/api/questions/user/last_study");
-      return payload?.data || payload;
+      // 官网返回 last_question_id，本地界面要 question_id；这里统一归一成本地形状。
+      return remoteLastStudyToLocal(unwrapData(payload));
     } catch (error) {
       if (error.status === 404) return null;
       throw error;
@@ -187,13 +192,16 @@ export class CxyonlyClient {
   }
 
   async saveLastStudy(value) {
-    if (!value || typeof value !== "object") return null;
+    // 官网必填 category_id + last_page，题号字段名是 last_question_id；
+    // 直接把本地 last_study 透传会得到 422 validation_error。
+    const payload = localLastStudyToRemote(value);
+    if (!payload) return null;
     try {
-      const payload = await this.request("/api/questions/user/last_study", {
+      const response = await this.request("/api/questions/user/last_study", {
         method: "POST",
-        body: JSON.stringify(value),
+        body: JSON.stringify(payload),
       });
-      return payload?.data || payload;
+      return remoteLastStudyToLocal(unwrapData(response)) || payload;
     } catch (error) {
       if (error.status === 404) return null;
       throw error;
