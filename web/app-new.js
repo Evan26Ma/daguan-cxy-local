@@ -5,7 +5,7 @@
 
 // ========== 离线缓存注册（与 app2.js 一致） ==========
 if ("serviceWorker" in navigator && location.protocol !== "file:" && location.protocol !== "https:") {
-    navigator.serviceWorker.register("./service-worker.js?v=140").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=141").catch(() => {});
 }
 
 // ========== 全局状态 ==========
@@ -2159,7 +2159,7 @@ class UIRenderer {
             <div class="filter-section">
                 <h3>讲师</h3>
                 <div class="filter-options" id="filter-lecturers">
-                    ${['帕拉迪宇', '李艳芳', '没咋了'].map(name => checkbox(name, name, AppState.filters.lecturers.includes(name))).join('')}
+                    ${['帕拉迪宇', '李艳芳', '没咋了', '喻老'].map(name => checkbox(name, name, AppState.filters.lecturers.includes(name))).join('')}
                 </div>
             </div>
         `;

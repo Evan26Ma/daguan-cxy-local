@@ -106,9 +106,52 @@
       "teacher": "帕拉迪宇",
       "bvid": "BV1THN36xE41",
       "title": "级数大观"
+    },
+    {
+      "teacher": "喻老",
+      "bvid": "BV1wa411Z7TC",
+      "title": "2003年真题讲解"
+    },
+    {
+      "teacher": "喻老",
+      "bvid": "BV1Ze4y1o7in",
+      "title": "2004年真题讲解"
+    },
+    {
+      "teacher": "喻老",
+      "bvid": "BV1TN4y1F7Jz",
+      "title": "2005年真题讲解"
+    },
+    {
+      "teacher": "喻老",
+      "bvid": "BV1j24y1Z7KH",
+      "title": "2006年真题讲解"
+    },
+    {
+      "teacher": "喻老",
+      "bvid": "BV1514y1Y7CK",
+      "title": "2007年真题讲解"
+    },
+    {
+      "teacher": "喻老",
+      "bvid": "BV1kR4y197it",
+      "title": "2008年真题讲解"
     }
   ],
   "questions": {
+    "144": [
+      {
+        "questionId": "144",
+        "teacher": "喻老",
+        "seriesTitle": "2003年真题讲解",
+        "bvid": "BV1wa411Z7TC",
+        "page": 13,
+        "startSeconds": 0,
+        "title": "2003数三（4）｜设 n 维向量 α=(a,0,·s,0,a)^ᵀ，E 为 n 阶单位…",
+        "subject": "数学三",
+        "year": 2003
+      }
+    ],
     "152": [
       {
         "questionId": "152",
@@ -120,6 +163,19 @@
         "title": "1997数一 解答大题八",
         "subject": "数学一",
         "year": 1997
+      }
+    ],
+    "155": [
+      {
+        "questionId": "155",
+        "teacher": "喻老",
+        "seriesTitle": "2008年真题讲解",
+        "bvid": "BV1kR4y197it",
+        "page": 10,
+        "startSeconds": 0,
+        "title": "2008数一二三（一5、二7、三5）｜设 A 为 n 阶非零矩阵，E 为 n 阶单位矩阵，若 A^3=O…",
+        "subject": "数学一",
+        "year": 2008
       }
     ],
     "157": [
@@ -144,6 +200,19 @@
         "title": "2017 数一 第5题",
         "subject": "数学一",
         "year": 2017
+      }
+    ],
+    "173": [
+      {
+        "questionId": "173",
+        "teacher": "喻老",
+        "seriesTitle": "2005年真题讲解",
+        "bvid": "BV1TN4y1F7Jz",
+        "page": 30,
+        "startSeconds": 94,
+        "title": "2005数三（12）｜设矩阵 A=(a_ij)_3×3 满足 A^*=A^ T，其中 A^…",
+        "subject": "数学三",
+        "year": 2005
       }
     ],
     "189": [
@@ -205,6 +274,19 @@
         "title": "1997数二 第5题（填空5）",
         "subject": "数学二",
         "year": 1997
+      }
+    ],
+    "209": [
+      {
+        "questionId": "209",
+        "teacher": "喻老",
+        "seriesTitle": "2003年真题讲解",
+        "bvid": "BV1wa411Z7TC",
+        "page": 29,
+        "startSeconds": 0,
+        "title": "2003数三（10）｜设 A=pmatrixa&b&b&a&b&b&apmatrix，且…",
+        "subject": "数学三",
+        "year": 2003
       }
     ],
     "219": [
@@ -296,6 +378,45 @@
         "startSeconds": 28.4,
         "title": "A=[[O,u],[vᵀ,0]] 求 Aⁿ，u=(1,2,3)ᵀ、v=(3,2,1)ᵀ；28.4s 起按分块计算。",
         "subject": "数学三"
+      }
+    ],
+    "244": [
+      {
+        "questionId": "244",
+        "teacher": "喻老",
+        "seriesTitle": "2004年真题讲解",
+        "bvid": "BV1Ze4y1o7in",
+        "page": 26,
+        "startSeconds": 1,
+        "title": "2004数一二（一11、二13）｜设 A 是 3 阶方阵，将 A 的第 1 列与第 2 列交换得 B…",
+        "subject": "数学一",
+        "year": 2004
+      }
+    ],
+    "245": [
+      {
+        "questionId": "245",
+        "teacher": "喻老",
+        "seriesTitle": "2005年真题讲解",
+        "bvid": "BV1TN4y1F7Jz",
+        "page": 28,
+        "startSeconds": 1,
+        "title": "2005数一（12）｜设 A 为 n(n≥ 2) 阶可逆矩阵，交换 A 的第 1 行与第…",
+        "subject": "数学一",
+        "year": 2005
+      }
+    ],
+    "247": [
+      {
+        "questionId": "247",
+        "teacher": "喻老",
+        "seriesTitle": "2006年真题讲解",
+        "bvid": "BV1j24y1Z7KH",
+        "page": 25,
+        "startSeconds": 3,
+        "title": "2006数一二三（一12、二14、三13）｜设 A 为 3 阶矩阵，将 A 的第 2 行加到第 1 行得 B，再…",
+        "subject": "数学一",
+        "year": 2006
       }
     ],
     "248": [
@@ -512,6 +633,19 @@
         "year": 1997
       }
     ],
+    "284": [
+      {
+        "questionId": "284",
+        "teacher": "喻老",
+        "seriesTitle": "2004年真题讲解",
+        "bvid": "BV1Ze4y1o7in",
+        "page": 29,
+        "startSeconds": 1,
+        "title": "2004数一二（一12、二14）｜设 A,B 为满足 AB=O 的任意两个非零矩阵，则必有（ ）。",
+        "subject": "数学一",
+        "year": 2004
+      }
+    ],
     "297": [
       {
         "questionId": "297",
@@ -523,6 +657,32 @@
         "title": "2021 数一 第21题",
         "subject": "数学一",
         "year": 2021
+      }
+    ],
+    "305": [
+      {
+        "questionId": "305",
+        "teacher": "喻老",
+        "seriesTitle": "2004年真题讲解",
+        "bvid": "BV1Ze4y1o7in",
+        "page": 31,
+        "startSeconds": 1,
+        "title": "2004数三（12）｜设 n 阶矩阵 A 与 B 等价，则必有（ ）。",
+        "subject": "数学三",
+        "year": 2004
+      }
+    ],
+    "328": [
+      {
+        "questionId": "328",
+        "teacher": "喻老",
+        "seriesTitle": "2003年真题讲解",
+        "bvid": "BV1wa411Z7TC",
+        "page": 15,
+        "startSeconds": 0,
+        "title": "2003数二（5）｜设 α 为三维列向量，α^T 是 α 的转置，若 α α^T = p…",
+        "subject": "数学二",
+        "year": 2003
       }
     ],
     "331": [
@@ -548,6 +708,32 @@
         "startSeconds": 1.1,
         "title": "P101 880题目精讲",
         "subject": "数学二"
+      }
+    ],
+    "347": [
+      {
+        "questionId": "347",
+        "teacher": "喻老",
+        "seriesTitle": "2004年真题讲解",
+        "bvid": "BV1Ze4y1o7in",
+        "page": 50,
+        "startSeconds": 1,
+        "title": "2004数三（20）｜设 α_1=(1,2,0)^ T, α_2=(1,a+2,-3a)^…",
+        "subject": "数学三",
+        "year": 2004
+      }
+    ],
+    "348": [
+      {
+        "questionId": "348",
+        "teacher": "喻老",
+        "seriesTitle": "2005年真题讲解",
+        "bvid": "BV1TN4y1F7Jz",
+        "page": 52,
+        "startSeconds": 0,
+        "title": "2005数二（22）｜确定常数 a，使向量组 α_1=(1,1,a)^ T, α_2=(1…",
+        "subject": "数学二",
+        "year": 2005
       }
     ],
     "350": [
@@ -609,6 +795,19 @@
         "year": 2019
       }
     ],
+    "358": [
+      {
+        "questionId": "358",
+        "teacher": "喻老",
+        "seriesTitle": "2003年真题讲解",
+        "bvid": "BV1wa411Z7TC",
+        "page": 28,
+        "startSeconds": 0,
+        "title": "2003数一二（一10、二12）｜设向量组Ⅰ α_1,α_2,≤dots,α_r 可由向量组Ⅱ β_1…",
+        "subject": "数学一",
+        "year": 2003
+      }
+    ],
     "359": [
       {
         "questionId": "359",
@@ -631,6 +830,45 @@
         "title": "2010 数二 第7题",
         "subject": "数学二",
         "year": 2010
+      }
+    ],
+    "379": [
+      {
+        "questionId": "379",
+        "teacher": "喻老",
+        "seriesTitle": "2003年真题讲解",
+        "bvid": "BV1wa411Z7TC",
+        "page": 32,
+        "startSeconds": 0,
+        "title": "2003数三（11）｜设 α_1, α_2, …, α_s 均为 n 维向量，下列结论不正…",
+        "subject": "数学三",
+        "year": 2003
+      }
+    ],
+    "381": [
+      {
+        "questionId": "381",
+        "teacher": "喻老",
+        "seriesTitle": "2005年真题讲解",
+        "bvid": "BV1TN4y1F7Jz",
+        "page": 26,
+        "startSeconds": 1,
+        "title": "2005数一（11）｜设 λ_1, λ_2 是矩阵 A 的两个不同的特征值，对应的特征向量…",
+        "subject": "数学一",
+        "year": 2005
+      }
+    ],
+    "407": [
+      {
+        "questionId": "407",
+        "teacher": "喻老",
+        "seriesTitle": "2005年真题讲解",
+        "bvid": "BV1TN4y1F7Jz",
+        "page": 11,
+        "startSeconds": 1,
+        "title": "2005数三（4）｜设行向量组 (2,1,1,1),(2,1,a,a),(3,2,1,a…",
+        "subject": "数学三",
+        "year": 2005
       }
     ],
     "408": [
@@ -700,6 +938,32 @@
         "startSeconds": 31.1,
         "title": "α₁=(1,2,3)ᵀ、α₂=(2,−1,1)ᵀ、α₃=(−2,k,4)ᵀ 线性相关求 k；31.1s 起列行列式求解。",
         "subject": "数学三"
+      }
+    ],
+    "417": [
+      {
+        "questionId": "417",
+        "teacher": "喻老",
+        "seriesTitle": "2007年真题讲解",
+        "bvid": "BV1514y1Y7CK",
+        "page": 9,
+        "startSeconds": 0,
+        "title": "2007数一二三（一7、二9、三7）｜设向量组 α_1, α_2, α_3 线性无关，则下列向量组线性相关…",
+        "subject": "数学一",
+        "year": 2007
+      }
+    ],
+    "419": [
+      {
+        "questionId": "419",
+        "teacher": "喻老",
+        "seriesTitle": "2006年真题讲解",
+        "bvid": "BV1j24y1Z7KH",
+        "page": 24,
+        "startSeconds": 1,
+        "title": "2006数一二三（一11、二13、三12）｜设 α_1, α_2, …, α_s 均为 n 维列向量，A 是 m…",
+        "subject": "数学一",
+        "year": 2006
       }
     ],
     "420": [
@@ -818,6 +1082,56 @@
         "startSeconds": 14.4,
         "title": "实对称矩阵特征值 1,2,−1，给出特征向量关系求 k；利用正交性。",
         "subject": "数学三"
+      },
+      {
+        "questionId": "466",
+        "teacher": "喻老",
+        "seriesTitle": "2003年真题讲解",
+        "bvid": "BV1wa411Z7TC",
+        "page": 54,
+        "startSeconds": 0,
+        "title": "2003数三（19）｜已知齐次线性方程组 ≤ft aligned (a_1+b)x_1+a…",
+        "subject": "数学三",
+        "year": 2003
+      }
+    ],
+    "467": [
+      {
+        "questionId": "467",
+        "teacher": "喻老",
+        "seriesTitle": "2004年真题讲解",
+        "bvid": "BV1Ze4y1o7in",
+        "page": 49,
+        "startSeconds": 1,
+        "title": "2004数一（20）｜设有齐次线性方程组 ≤ft aligned (1+a)x_1+x_2…",
+        "subject": "数学一",
+        "year": 2004
+      }
+    ],
+    "468": [
+      {
+        "questionId": "468",
+        "teacher": "喻老",
+        "seriesTitle": "2004年真题讲解",
+        "bvid": "BV1Ze4y1o7in",
+        "page": 55,
+        "startSeconds": 1,
+        "title": "2004数二（22）｜设有齐次线性方程组 ≤ft aligned (1+a)x_1+x_2…",
+        "subject": "数学二",
+        "year": 2004
+      }
+    ],
+    "471": [
+      {
+        "questionId": "471",
+        "teacher": "喻老",
+        "seriesTitle": "2004年真题讲解",
+        "bvid": "BV1Ze4y1o7in",
+        "page": 33,
+        "startSeconds": 0,
+        "title": "2004数三（13）｜设 n 阶矩阵 A 的伴随矩阵 A^* O。若 _1,_2,_3,_…",
+        "subject": "数学三",
+        "year": 2004
       }
     ],
     "472": [
@@ -1008,6 +1322,19 @@
         "subject": "数学三"
       }
     ],
+    "551": [
+      {
+        "questionId": "551",
+        "teacher": "喻老",
+        "seriesTitle": "2007年真题讲解",
+        "bvid": "BV1514y1Y7CK",
+        "page": 37,
+        "startSeconds": 0,
+        "title": "2007数一二三（一21、二23、三21）｜设线性方程组 (I) casesx_1+x_2+x_3=0,_1+2…",
+        "subject": "数学一",
+        "year": 2007
+      }
+    ],
     "561": [
       {
         "questionId": "561",
@@ -1030,6 +1357,19 @@
         "startSeconds": 2610.1,
         "title": "Ax=0 与 Bx=0 同解的充要条件；用解包含关系转为行向量组等价，与选项B一致。",
         "subject": "数学三"
+      }
+    ],
+    "573": [
+      {
+        "questionId": "573",
+        "teacher": "喻老",
+        "seriesTitle": "2003年真题讲解",
+        "bvid": "BV1wa411Z7TC",
+        "page": 30,
+        "startSeconds": 31,
+        "title": "2003数一（11）｜设有齐次线性方程组 Ax=0 和 Bx=0，其中 A、B 均为 m×…",
+        "subject": "数学一",
+        "year": 2003
       }
     ],
     "588": [
@@ -1412,6 +1752,19 @@
         "year": 2020
       }
     ],
+    "705": [
+      {
+        "questionId": "705",
+        "teacher": "喻老",
+        "seriesTitle": "2004年真题讲解",
+        "bvid": "BV1Ze4y1o7in",
+        "page": 51,
+        "startSeconds": 1,
+        "title": "2004数一二（一21、二23）｜设矩阵 A=pmatrix 1&2&-3 -1&4&-3 1&a&5…",
+        "subject": "数学一",
+        "year": 2004
+      }
+    ],
     "719": [
       {
         "questionId": "719",
@@ -1471,6 +1824,32 @@
         "title": "2023 数一 第6题",
         "subject": "数学一",
         "year": 2023
+      }
+    ],
+    "728": [
+      {
+        "questionId": "728",
+        "teacher": "喻老",
+        "seriesTitle": "2003年真题讲解",
+        "bvid": "BV1wa411Z7TC",
+        "page": 59,
+        "startSeconds": 0,
+        "title": "2003数二（21）｜若矩阵 A= pmatrix 2&2&0 8&2&a 0&0&6 p…",
+        "subject": "数学二",
+        "year": 2003
+      }
+    ],
+    "733": [
+      {
+        "questionId": "733",
+        "teacher": "喻老",
+        "seriesTitle": "2004年真题讲解",
+        "bvid": "BV1Ze4y1o7in",
+        "page": 53,
+        "startSeconds": 0,
+        "title": "2004数三（21）｜设 n 阶矩阵 A= pmatrix 1&b&·s&b b&1&·s…",
+        "subject": "数学三",
+        "year": 2004
       }
     ],
     "735": [
@@ -1556,6 +1935,19 @@
         "subject": "数学三"
       }
     ],
+    "768": [
+      {
+        "questionId": "768",
+        "teacher": "喻老",
+        "seriesTitle": "2007年真题讲解",
+        "bvid": "BV1514y1Y7CK",
+        "page": 38,
+        "startSeconds": 0,
+        "title": "2007数一二三（一22、二24、三22）｜设三阶实对称矩阵 A 的特征值为 1,2,-2，且 α_1=(1,-…",
+        "subject": "数学一",
+        "year": 2007
+      }
+    ],
     "770": [
       {
         "questionId": "770",
@@ -1636,6 +2028,19 @@
         "startSeconds": 0.1,
         "title": "f=2x₁x₂+3x₂x₃+4x₁x₃，求可逆变换、标准形、秩与惯性指数；从配方法开始。",
         "subject": "数学三"
+      }
+    ],
+    "799": [
+      {
+        "questionId": "799",
+        "teacher": "喻老",
+        "seriesTitle": "2003年真题讲解",
+        "bvid": "BV1wa411Z7TC",
+        "page": 57,
+        "startSeconds": 0,
+        "title": "2003数三（20）｜设二次型 f(x_1,x_2,x_3)=x^TAx =ax_1^2+…",
+        "subject": "数学三",
+        "year": 2003
       }
     ],
     "800": [
@@ -1885,6 +2290,19 @@
         "subject": "数学三"
       }
     ],
+    "852": [
+      {
+        "questionId": "852",
+        "teacher": "喻老",
+        "seriesTitle": "2005年真题讲解",
+        "bvid": "BV1TN4y1F7Jz",
+        "page": 45,
+        "startSeconds": 0,
+        "title": "2005数一（20）｜已知二次型 f(x_1,x_2,x_3)=(1-a)x_1^2+(1…",
+        "subject": "数学一",
+        "year": 2005
+      }
+    ],
     "853": [
       {
         "questionId": "853",
@@ -1983,6 +2401,32 @@
         "year": 2016
       }
     ],
+    "890": [
+      {
+        "questionId": "890",
+        "teacher": "喻老",
+        "seriesTitle": "2007年真题讲解",
+        "bvid": "BV1514y1Y7CK",
+        "page": 11,
+        "startSeconds": 0,
+        "title": "2007数一二三（一8、二10、三8）｜设 A=pmatrix2&-1&-1-1&2&-1-1&-1&2pm…",
+        "subject": "数学一",
+        "year": 2007
+      }
+    ],
+    "893": [
+      {
+        "questionId": "893",
+        "teacher": "喻老",
+        "seriesTitle": "2008年真题讲解",
+        "bvid": "BV1kR4y197it",
+        "page": 15,
+        "startSeconds": 0,
+        "title": "2008数二三（二8、三6）｜设 A=pmatrix1&22&1pmatrix，与 A 合同的矩阵…",
+        "subject": "数学二",
+        "year": 2008
+      }
+    ],
     "908": [
       {
         "questionId": "908",
@@ -2005,6 +2449,19 @@
         "startSeconds": 0.46,
         "title": "基础填空 1",
         "subject": "数学一"
+      }
+    ],
+    "922": [
+      {
+        "questionId": "922",
+        "teacher": "喻老",
+        "seriesTitle": "2005年真题讲解",
+        "bvid": "BV1TN4y1F7Jz",
+        "page": 50,
+        "startSeconds": 53,
+        "title": "2005数三（21）｜设 D=pmatrix A&C C^ T&B pmatrix 为正定…",
+        "subject": "数学三",
+        "year": 2005
       }
     ],
     "933": [
@@ -2044,6 +2501,32 @@
         "title": "2020 数一 第6题",
         "subject": "数学一",
         "year": 2020
+      }
+    ],
+    "941": [
+      {
+        "questionId": "941",
+        "teacher": "喻老",
+        "seriesTitle": "2003年真题讲解",
+        "bvid": "BV1wa411Z7TC",
+        "page": 55,
+        "startSeconds": 0,
+        "title": "2003数一二（一20、二22）｜已知平面上三条不同直线的方程分别为 l_1:ax+2by+3c=0…",
+        "subject": "数学一",
+        "year": 2003
+      }
+    ],
+    "942": [
+      {
+        "questionId": "942",
+        "teacher": "喻老",
+        "seriesTitle": "2003年真题讲解",
+        "bvid": "BV1wa411Z7TC",
+        "page": 11,
+        "startSeconds": 0,
+        "title": "2003数一（4）｜从 R^2 的基 α_1= pmatrix10pmatrix, α_…",
+        "subject": "数学一",
+        "year": 2003
       }
     ],
     "944": [
@@ -2633,6 +3116,17 @@
         "page": 1,
         "startSeconds": 8331,
         "title": "2003数二(15)：∫x e^{arctan x}/(1+x²)^{3/2}dx"
+      },
+      {
+        "questionId": "1052",
+        "teacher": "喻老",
+        "seriesTitle": "2003年真题讲解",
+        "bvid": "BV1wa411Z7TC",
+        "page": 42,
+        "startSeconds": 1,
+        "title": "2003数二（15）｜计算不定积分 ∫(1+x^2)^3/2 dx.",
+        "subject": "数学二",
+        "year": 2003
       }
     ],
     "1053": [
@@ -3035,6 +3529,19 @@
         "title": "2008数二：∫_0^1 x²arcsin x/√(1-x²)dx"
       }
     ],
+    "1268": [
+      {
+        "questionId": "1268",
+        "teacher": "喻老",
+        "seriesTitle": "2005年真题讲解",
+        "bvid": "BV1TN4y1F7Jz",
+        "page": 8,
+        "startSeconds": 1,
+        "title": "2005数二（3）｜计算 ∫(2-x^2)√(1-x^2)=____。",
+        "subject": "数学二",
+        "year": 2005
+      }
+    ],
     "1283": [
       {
         "questionId": "1283",
@@ -3134,6 +3641,17 @@
         "page": 1,
         "startSeconds": 8063,
         "title": "2004数二(3)：∫_1^{+∞}dx/(x√(x²-1))"
+      },
+      {
+        "questionId": "1289",
+        "teacher": "喻老",
+        "seriesTitle": "2004年真题讲解",
+        "bvid": "BV1Ze4y1o7in",
+        "page": 8,
+        "startSeconds": 1,
+        "title": "2004数二（3）｜计算 ∫/dxx√(x^2-1) =____.",
+        "subject": "数学二",
+        "year": 2004
       }
     ],
     "1290": [
@@ -3345,6 +3863,17 @@
         "startSeconds": 642,
         "title": "一元微分大观 第5题（2006数一二三）",
         "subject": "数学一二三",
+        "year": 2006
+      },
+      {
+        "questionId": "1315",
+        "teacher": "喻老",
+        "seriesTitle": "2006年真题讲解",
+        "bvid": "BV1j24y1Z7KH",
+        "page": 15,
+        "startSeconds": 0,
+        "title": "2006数一二三（一7、二7、三7）｜设函数 y = f(x) 具有二阶导数，且 f'(x) > 0…",
+        "subject": "数学一",
         "year": 2006
       }
     ],
@@ -3731,6 +4260,32 @@
         "title": "一元微分大观 第33题（900数二B类18）"
       }
     ],
+    "1365": [
+      {
+        "questionId": "1365",
+        "teacher": "喻老",
+        "seriesTitle": "2006年真题讲解",
+        "bvid": "BV1j24y1Z7KH",
+        "page": 18,
+        "startSeconds": 0,
+        "title": "2006数三（8）｜设函数 f(x) 在 x=0 处连续，且 lim_h→0f(h^2)…",
+        "subject": "数学三",
+        "year": 2006
+      }
+    ],
+    "1369": [
+      {
+        "questionId": "1369",
+        "teacher": "喻老",
+        "seriesTitle": "2007年真题讲解",
+        "bvid": "BV1514y1Y7CK",
+        "page": 5,
+        "startSeconds": 0,
+        "title": "2007数一二（一4、二4）｜设函数 f(x) 在 x=0 处连续，以下命题错误的选项是（）",
+        "subject": "数学一",
+        "year": 2007
+      }
+    ],
     "1370": [
       {
         "questionId": "1370",
@@ -4109,6 +4664,17 @@
         "title": "一元微分大观 第57题（2005数一二）",
         "subject": "数学一二",
         "year": 2005
+      },
+      {
+        "questionId": "1406",
+        "teacher": "喻老",
+        "seriesTitle": "2005年真题讲解",
+        "bvid": "BV1TN4y1F7Jz",
+        "page": 16,
+        "startSeconds": 1,
+        "title": "2005数一二（一7、二7）｜设函数 f(x)=lim_n→∞[n]1+|x|^3n ，则 f(x…",
+        "subject": "数学一",
+        "year": 2005
       }
     ],
     "1407": [
@@ -4273,6 +4839,17 @@
         "title": "一元微分大观 第65题（2003数三1）",
         "subject": "数学三",
         "year": 2003
+      },
+      {
+        "questionId": "1426",
+        "teacher": "喻老",
+        "seriesTitle": "2003年真题讲解",
+        "bvid": "BV1wa411Z7TC",
+        "page": 4,
+        "startSeconds": 0,
+        "title": "2003数三（1）｜设 f(x)=casesx^λcos1/x,&x00,&x=0cas…",
+        "subject": "数学三",
+        "year": 2003
       }
     ],
     "1427": [
@@ -4369,6 +4946,19 @@
         "title": "一元微分大观 第69题（1990数三；26版660数二）",
         "subject": "数学三",
         "year": 1990
+      }
+    ],
+    "1444": [
+      {
+        "questionId": "1444",
+        "teacher": "喻老",
+        "seriesTitle": "2004年真题讲解",
+        "bvid": "BV1Ze4y1o7in",
+        "page": 39,
+        "startSeconds": 0,
+        "title": "2004数二（16）｜设函数 f(x) 在 (-∞,+∞) 内有定义，在区间 [0,2]…",
+        "subject": "数学二",
+        "year": 2004
       }
     ],
     "1445": [
@@ -4600,6 +5190,19 @@
         "title": "1997数二 第2题（填空2）",
         "subject": "数学二",
         "year": 1997
+      }
+    ],
+    "1469": [
+      {
+        "questionId": "1469",
+        "teacher": "喻老",
+        "seriesTitle": "2006年真题讲解",
+        "bvid": "BV1j24y1Z7KH",
+        "page": 20,
+        "startSeconds": 0,
+        "title": "2006数二（9）｜设函数 g(x) 可微， h(x) = e^1 + g(x) ， h…",
+        "subject": "数学二",
+        "year": 2006
       }
     ],
     "1474": [
@@ -4957,6 +5560,19 @@
         "year": 1997
       }
     ],
+    "1533": [
+      {
+        "questionId": "1533",
+        "teacher": "喻老",
+        "seriesTitle": "2003年真题讲解",
+        "bvid": "BV1wa411Z7TC",
+        "page": 39,
+        "startSeconds": 0,
+        "title": "2003数二（14）｜设函数 y = y(x) 由参数方程 ≤ftaligned x &=…",
+        "subject": "数学二",
+        "year": 2003
+      }
+    ],
     "1534": [
       {
         "questionId": "1534",
@@ -4981,6 +5597,19 @@
         "title": "一元微分大观 第78题（2025数二）",
         "subject": "数学二",
         "year": 2025
+      }
+    ],
+    "1549": [
+      {
+        "questionId": "1549",
+        "teacher": "喻老",
+        "seriesTitle": "2005年真题讲解",
+        "bvid": "BV1TN4y1F7Jz",
+        "page": 2,
+        "startSeconds": 0,
+        "title": "2005数二（1）｜设 y=(1+sin x)^x，则 dy_x=π=____。",
+        "subject": "数学二",
+        "year": 2005
       }
     ],
     "1556": [
@@ -5169,6 +5798,17 @@
         "page": 1,
         "startSeconds": 13568,
         "title": "一元微分大观 第92题（2003数二3）",
+        "subject": "数学二",
+        "year": 2003
+      },
+      {
+        "questionId": "1575",
+        "teacher": "喻老",
+        "seriesTitle": "2003年真题讲解",
+        "bvid": "BV1wa411Z7TC",
+        "page": 9,
+        "startSeconds": 0,
+        "title": "2003数二（3）｜在 y=2^x 的麦克劳林公式中含 x^n 项的系数是 ___",
         "subject": "数学二",
         "year": 2003
       }
@@ -5387,6 +6027,32 @@
         "year": 1991
       }
     ],
+    "1608": [
+      {
+        "questionId": "1608",
+        "teacher": "喻老",
+        "seriesTitle": "2003年真题讲解",
+        "bvid": "BV1wa411Z7TC",
+        "page": 7,
+        "startSeconds": 0,
+        "title": "2003数三（2）｜已知曲线 y = x^3 - 3a^2x + b 与 x 轴相切，则…",
+        "subject": "数学三",
+        "year": 2003
+      }
+    ],
+    "1609": [
+      {
+        "questionId": "1609",
+        "teacher": "喻老",
+        "seriesTitle": "2004年真题讲解",
+        "bvid": "BV1Ze4y1o7in",
+        "page": 1,
+        "startSeconds": 1,
+        "title": "2004数一（1）｜曲线 y=ln x 上与直线 x+y=1 垂直的切线方程为 ____…",
+        "subject": "数学一",
+        "year": 2004
+      }
+    ],
     "1611": [
       {
         "questionId": "1611",
@@ -5398,6 +6064,19 @@
         "title": "2010 数二 第3题",
         "subject": "数学二",
         "year": 2010
+      }
+    ],
+    "1617": [
+      {
+        "questionId": "1617",
+        "teacher": "喻老",
+        "seriesTitle": "2003年真题讲解",
+        "bvid": "BV1wa411Z7TC",
+        "page": 6,
+        "startSeconds": 0,
+        "title": "2003数二（2）｜设函数 y = f(x) 由方程 xy + 2ln x = y^4…",
+        "subject": "数学二",
+        "year": 2003
       }
     ],
     "1619": [
@@ -5437,6 +6116,19 @@
         "title": "1995数二 第2题",
         "subject": "数学二",
         "year": 1995
+      }
+    ],
+    "1626": [
+      {
+        "questionId": "1626",
+        "teacher": "喻老",
+        "seriesTitle": "2005年真题讲解",
+        "bvid": "BV1TN4y1F7Jz",
+        "page": 21,
+        "startSeconds": 1,
+        "title": "2005数二（9）｜设函数 y=y(x) 由参数方程 cases x=t^2+2t, y…",
+        "subject": "数学二",
+        "year": 2005
       }
     ],
     "1628": [
@@ -5657,6 +6349,17 @@
         "title": "一元微分大观 第115题（2007数一二三）",
         "subject": "数学一二三",
         "year": 2007
+      },
+      {
+        "questionId": "1652",
+        "teacher": "喻老",
+        "seriesTitle": "2007年真题讲解",
+        "bvid": "BV1514y1Y7CK",
+        "page": 2,
+        "startSeconds": 2,
+        "title": "2007数一二三（一2、二5、三6）｜曲线 y=1/x+ln(1+e^x) 渐近线的条数为（）.",
+        "subject": "数学一",
+        "year": 2007
       }
     ],
     "1653": [
@@ -5872,6 +6575,32 @@
         "year": 1989
       }
     ],
+    "1688": [
+      {
+        "questionId": "1688",
+        "teacher": "喻老",
+        "seriesTitle": "2005年真题讲解",
+        "bvid": "BV1TN4y1F7Jz",
+        "page": 5,
+        "startSeconds": 0,
+        "title": "2005数二（2）｜曲线 y=/(1+x)^3/2√(x) 的斜渐近线方程为 ____。",
+        "subject": "数学二",
+        "year": 2005
+      }
+    ],
+    "1689": [
+      {
+        "questionId": "1689",
+        "teacher": "喻老",
+        "seriesTitle": "2006年真题讲解",
+        "bvid": "BV1j24y1Z7KH",
+        "page": 2,
+        "startSeconds": 0,
+        "title": "2006数二（1）｜曲线 y=x+4sin x/5x-2cos x 的水平渐近线方程为…",
+        "subject": "数学二",
+        "year": 2006
+      }
+    ],
     "1690": [
       {
         "questionId": "1690",
@@ -6046,6 +6775,17 @@
         "title": "一元微分大观 第131题（2004数一二；26版660；880）",
         "subject": "数学一二",
         "year": 2004
+      },
+      {
+        "questionId": "1724",
+        "teacher": "喻老",
+        "seriesTitle": "2004年真题讲解",
+        "bvid": "BV1Ze4y1o7in",
+        "page": 19,
+        "startSeconds": 1,
+        "title": "2004数一二（一8、二10）｜设函数 f(x) 连续，且 f'(0)≥t0，则存在 ≥t0，使得（…",
+        "subject": "数学一",
+        "year": 2004
       }
     ],
     "1725": [
@@ -6059,6 +6799,19 @@
         "title": "一元微分大观 第132题（2022数二）",
         "subject": "数学二",
         "year": 2022
+      }
+    ],
+    "1735": [
+      {
+        "questionId": "1735",
+        "teacher": "喻老",
+        "seriesTitle": "2003年真题讲解",
+        "bvid": "BV1wa411Z7TC",
+        "page": 20,
+        "startSeconds": 0,
+        "title": "2003数一二（一7、二10）｜设函数 f(x) 在 (-∞,+∞) 内连续，其导函数的图形如图所示…",
+        "subject": "数学一",
+        "year": 2003
       }
     ],
     "1737": [
@@ -6100,6 +6853,19 @@
         "year": 1991
       }
     ],
+    "1742": [
+      {
+        "questionId": "1742",
+        "teacher": "喻老",
+        "seriesTitle": "2004年真题讲解",
+        "bvid": "BV1Ze4y1o7in",
+        "page": 28,
+        "startSeconds": 1,
+        "title": "2004数三（11）｜设 f'(x) 在 [a,b] 上连续，且 f'(a)≥t0、f'(…",
+        "subject": "数学三",
+        "year": 2004
+      }
+    ],
     "1743": [
       {
         "questionId": "1743",
@@ -6111,6 +6877,19 @@
         "title": "2010 数三 第3题",
         "subject": "数学三",
         "year": 2010
+      }
+    ],
+    "1750": [
+      {
+        "questionId": "1750",
+        "teacher": "喻老",
+        "seriesTitle": "2005年真题讲解",
+        "bvid": "BV1TN4y1F7Jz",
+        "page": 25,
+        "startSeconds": 1,
+        "title": "2005数三（10）｜设 f(x)=xsin x+cos x，下列命题中正确的是（ ）。",
+        "subject": "数学三",
+        "year": 2005
       }
     ],
     "1755": [
@@ -6478,6 +7257,19 @@
         "year": 1990
       }
     ],
+    "1832": [
+      {
+        "questionId": "1832",
+        "teacher": "喻老",
+        "seriesTitle": "2004年真题讲解",
+        "bvid": "BV1Ze4y1o7in",
+        "page": 20,
+        "startSeconds": 1,
+        "title": "2004数二三（二8、三9）｜设 f(x)=|x(1-x)|，则（ ）。",
+        "subject": "数学二",
+        "year": 2004
+      }
+    ],
     "1833": [
       {
         "questionId": "1833",
@@ -6548,6 +7340,19 @@
         "page": 1,
         "startSeconds": 19984,
         "title": "一元微分大观 第142题（26版660数二-555）"
+      }
+    ],
+    "1844": [
+      {
+        "questionId": "1844",
+        "teacher": "喻老",
+        "seriesTitle": "2004年真题讲解",
+        "bvid": "BV1Ze4y1o7in",
+        "page": 5,
+        "startSeconds": 1,
+        "title": "2004数二（2）｜设函数 y(x) 由参数方程 cases x=t^3+3t+1, y…",
+        "subject": "数学二",
+        "year": 2004
       }
     ],
     "1847": [
@@ -6667,6 +7472,32 @@
         "year": 1996
       }
     ],
+    "1864": [
+      {
+        "questionId": "1864",
+        "teacher": "喻老",
+        "seriesTitle": "2008年真题讲解",
+        "bvid": "BV1kR4y197it",
+        "page": 1,
+        "startSeconds": 0,
+        "title": "2008数一（1）｜设函数 f(x)=∫2ln(2+t) dt ，则 f'(x) 的零点…",
+        "subject": "数学一",
+        "year": 2008
+      }
+    ],
+    "1865": [
+      {
+        "questionId": "1865",
+        "teacher": "喻老",
+        "seriesTitle": "2008年真题讲解",
+        "bvid": "BV1kR4y197it",
+        "page": 2,
+        "startSeconds": 0,
+        "title": "2008数二（1）｜设函数 f(x)=x^2(x-1)(x-2) ，则 f'(x) 的零…",
+        "subject": "数学二",
+        "year": 2008
+      }
+    ],
     "1866": [
       {
         "questionId": "1866",
@@ -6691,6 +7522,19 @@
         "title": "2017 数二 第19题",
         "subject": "数学二",
         "year": 2017
+      }
+    ],
+    "1879": [
+      {
+        "questionId": "1879",
+        "teacher": "喻老",
+        "seriesTitle": "2005年真题讲解",
+        "bvid": "BV1TN4y1F7Jz",
+        "page": 17,
+        "startSeconds": 0,
+        "title": "2005数三（7）｜当 a 取下列哪个值时，函数 f(x)=2x^3-9x^2+12x-…",
+        "subject": "数学三",
+        "year": 2005
       }
     ],
     "1881": [
@@ -6754,6 +7598,19 @@
         "title": "1997数二 第21题（第八大题 方程根的个数）",
         "subject": "数学二",
         "year": 1997
+      }
+    ],
+    "1897": [
+      {
+        "questionId": "1897",
+        "teacher": "喻老",
+        "seriesTitle": "2003年真题讲解",
+        "bvid": "BV1wa411Z7TC",
+        "page": 47,
+        "startSeconds": 1,
+        "title": "2003数二（17）｜讨论曲线 y=4ln x+k 与 y=4x+ln^4x 的交点个数。",
+        "subject": "数学二",
+        "year": 2003
       }
     ],
     "1898": [
@@ -6943,6 +7800,32 @@
         "title": "1993数二 第4题",
         "subject": "数学二",
         "year": 1993
+      }
+    ],
+    "1947": [
+      {
+        "questionId": "1947",
+        "teacher": "喻老",
+        "seriesTitle": "2004年真题讲解",
+        "bvid": "BV1Ze4y1o7in",
+        "page": 35,
+        "startSeconds": 1,
+        "title": "2004数一二（一15、二19）｜设 e≤t a≤t b≤t e^2，证明 ln^2b-ln^2a≥t…",
+        "subject": "数学一",
+        "year": 2004
+      }
+    ],
+    "1948": [
+      {
+        "questionId": "1948",
+        "teacher": "喻老",
+        "seriesTitle": "2006年真题讲解",
+        "bvid": "BV1j24y1Z7KH",
+        "page": 38,
+        "startSeconds": 0,
+        "title": "2006数二三（二19、三17）｜证明：当 0 ≤t a ≤t b ≤t π 时，b sin b +…",
+        "subject": "数学二",
+        "year": 2006
       }
     ],
     "1949": [
@@ -7897,6 +8780,17 @@
         "title": "多元微分大观 2007数二第7题（可微充分条件）",
         "subject": "数学二",
         "year": 2007
+      },
+      {
+        "questionId": "2175",
+        "teacher": "喻老",
+        "seriesTitle": "2007年真题讲解",
+        "bvid": "BV1514y1Y7CK",
+        "page": 10,
+        "startSeconds": 0,
+        "title": "2007数二（7）｜二元函数 f(x,y) 在点 (0,0) 处可微的一个充分条件是（）",
+        "subject": "数学二",
+        "year": 2007
       }
     ],
     "2176": [
@@ -8381,6 +9275,17 @@
         "page": 1,
         "startSeconds": 7424,
         "title": "多元微分大观 2003数一第9题（重极限判极值）",
+        "subject": "数学一",
+        "year": 2003
+      },
+      {
+        "questionId": "2225",
+        "teacher": "喻老",
+        "seriesTitle": "2003年真题讲解",
+        "bvid": "BV1wa411Z7TC",
+        "page": 25,
+        "startSeconds": 0,
+        "title": "2003数一（9）｜已知函数 f(x,y) 在点 (0,0) 的某个邻域内连续，且 li…",
         "subject": "数学一",
         "year": 2003
       }
@@ -9054,6 +9959,17 @@
         "title": "多元微分大观 2008数三第3题（e^{√(x²+y⁴)}）",
         "subject": "数学三",
         "year": 2008
+      },
+      {
+        "questionId": "2440",
+        "teacher": "喻老",
+        "seriesTitle": "2008年真题讲解",
+        "bvid": "BV1kR4y197it",
+        "page": 7,
+        "startSeconds": 0,
+        "title": "2008数三（3）｜已知 f(x,y)=e^x^2+y^4 ，则（）.",
+        "subject": "数学三",
+        "year": 2008
       }
     ],
     "2441": [
@@ -9067,6 +9983,19 @@
         "title": "多元微分大观 2023数三（ln(y+|x sin y|)）",
         "subject": "数学三",
         "year": 2023
+      }
+    ],
+    "2446": [
+      {
+        "questionId": "2446",
+        "teacher": "喻老",
+        "seriesTitle": "2008年真题讲解",
+        "bvid": "BV1kR4y197it",
+        "page": 27,
+        "startSeconds": 0,
+        "title": "2008数二（13）｜设 z=y/x^x/y , 则 ∂ z/∂ x_(1,2)= ___",
+        "subject": "数学二",
+        "year": 2008
       }
     ],
     "2447": [
@@ -9126,6 +10055,19 @@
         "page": 1,
         "startSeconds": 8918,
         "title": "多元微分大观 1000基础9/880基础选择4（√|xy|分段求偏导）"
+      }
+    ],
+    "2453": [
+      {
+        "questionId": "2453",
+        "teacher": "喻老",
+        "seriesTitle": "2004年真题讲解",
+        "bvid": "BV1Ze4y1o7in",
+        "page": 6,
+        "startSeconds": 1,
+        "title": "2004数三（2）｜函数 f(u,v) 由关系式 f[xg(y),y]=x+g(y) 确…",
+        "subject": "数学三",
+        "year": 2004
       }
     ],
     "2454": [
@@ -9340,6 +10282,19 @@
         "year": 1998
       }
     ],
+    "2488": [
+      {
+        "questionId": "2488",
+        "teacher": "喻老",
+        "seriesTitle": "2005年真题讲解",
+        "bvid": "BV1TN4y1F7Jz",
+        "page": 38,
+        "startSeconds": 1,
+        "title": "2005数三（16）｜设 f(u) 具有二阶连续导数，且 g(x,y)=fy/x+yfx/…",
+        "subject": "数学三",
+        "year": 2005
+      }
+    ],
     "2491": [
       {
         "questionId": "2491",
@@ -9351,6 +10306,19 @@
         "title": "多元微分大观 2000数三（f(xy,x/y)+g(y/x)求z'x）",
         "subject": "数学三",
         "year": 2000
+      }
+    ],
+    "2502": [
+      {
+        "questionId": "2502",
+        "teacher": "喻老",
+        "seriesTitle": "2004年真题讲解",
+        "bvid": "BV1Ze4y1o7in",
+        "page": 52,
+        "startSeconds": 1,
+        "title": "2004数二（21）｜设 z=f(x^2-y^2,e^xy), 其中 f 具有连续二阶偏导…",
+        "subject": "数学二",
+        "year": 2004
       }
     ],
     "2504": [
@@ -9412,6 +10380,19 @@
         "title": "2011 数一 第16题",
         "subject": "数学一",
         "year": 2011
+      }
+    ],
+    "2507": [
+      {
+        "questionId": "2507",
+        "teacher": "喻老",
+        "seriesTitle": "2003年真题讲解",
+        "bvid": "BV1wa411Z7TC",
+        "page": 40,
+        "startSeconds": 1,
+        "title": "2003数三（14）｜设 f(u,v) 具有二阶连续偏导数，且满足 /∂^2f∂ u^2…",
+        "subject": "数学三",
+        "year": 2003
       }
     ],
     "2509": [
@@ -9554,6 +10535,19 @@
         "title": "多元微分大观 900数二A类38（2u''xx+3u''xy+u''yy=0，ξ=x+ay,η=bx+2y）"
       }
     ],
+    "2553": [
+      {
+        "questionId": "2553",
+        "teacher": "喻老",
+        "seriesTitle": "2004年真题讲解",
+        "bvid": "BV1Ze4y1o7in",
+        "page": 11,
+        "startSeconds": 0,
+        "title": "2004数二（4）｜设函数 z=z(x,y) 由方程 z=e^2x-3z+2y 确定，则…",
+        "subject": "数学二",
+        "year": 2004
+      }
+    ],
     "2556": [
       {
         "questionId": "2556",
@@ -9591,6 +10585,19 @@
         "title": "多元微分大观 900数二A类12（f(ye^x/z, ln z)=1抽象隐函数）"
       }
     ],
+    "2575": [
+      {
+        "questionId": "2575",
+        "teacher": "喻老",
+        "seriesTitle": "2008年真题讲解",
+        "bvid": "BV1kR4y197it",
+        "page": 35,
+        "startSeconds": 0,
+        "title": "2008数三（16）｜设 z = z(x, y) 是由方程 x^2 + y^2 - z =…",
+        "subject": "数学三",
+        "year": 2008
+      }
+    ],
     "2577": [
       {
         "questionId": "2577",
@@ -9600,6 +10607,17 @@
         "page": 1,
         "startSeconds": 14753,
         "title": "多元微分大观 2005数一第10题/880基础选择5（隐函数存在定理）",
+        "subject": "数学一",
+        "year": 2005
+      },
+      {
+        "questionId": "2577",
+        "teacher": "喻老",
+        "seriesTitle": "2005年真题讲解",
+        "bvid": "BV1TN4y1F7Jz",
+        "page": 23,
+        "startSeconds": 1,
+        "title": "880 第四章基础选择 5｜设有三元方程 xy - z ln y + e^xz = 1 ，根据隐…",
         "subject": "数学一",
         "year": 2005
       }
@@ -9674,6 +10692,19 @@
         "startSeconds": 63.9,
         "title": "P60 880题目精讲",
         "subject": "数学二"
+      }
+    ],
+    "2613": [
+      {
+        "questionId": "2613",
+        "teacher": "喻老",
+        "seriesTitle": "2005年真题讲解",
+        "bvid": "BV1TN4y1F7Jz",
+        "page": 9,
+        "startSeconds": 0,
+        "title": "2005数三（3）｜设二元函数 z=xe^x+y+(x+1)ln(1+y), 则 dz_…",
+        "subject": "数学三",
+        "year": 2005
       }
     ],
     "2625": [
@@ -9816,6 +10847,19 @@
         "title": "多元微分大观 2017数二第5题（单调性比大小）",
         "subject": "数学二",
         "year": 2017
+      }
+    ],
+    "2667": [
+      {
+        "questionId": "2667",
+        "teacher": "喻老",
+        "seriesTitle": "2003年真题讲解",
+        "bvid": "BV1wa411Z7TC",
+        "page": 24,
+        "startSeconds": 0,
+        "title": "2003数三（8）｜设可微函数 f(x,y) 在点 (x_0,y_0) 取得极小值，则下…",
+        "subject": "数学三",
+        "year": 2003
       }
     ],
     "2670": [
@@ -9964,6 +11008,17 @@
         "title": "多元微分大观 2004数一第19题/880综合解答12（隐函数极值）",
         "subject": "数学一",
         "year": 2004
+      },
+      {
+        "questionId": "2718",
+        "teacher": "喻老",
+        "seriesTitle": "2004年真题讲解",
+        "bvid": "BV1Ze4y1o7in",
+        "page": 47,
+        "startSeconds": 1,
+        "title": "2004数一（19）｜设 z=z(x,y) 是由 x^2-6xy+10y^2-2yz-z^…",
+        "subject": "数学一",
+        "year": 2004
       }
     ],
     "2719": [
@@ -9977,6 +11032,19 @@
         "title": "2016 数二 第17题",
         "subject": "数学二",
         "year": 2016
+      }
+    ],
+    "2731": [
+      {
+        "questionId": "2731",
+        "teacher": "喻老",
+        "seriesTitle": "2006年真题讲解",
+        "bvid": "BV1j24y1Z7KH",
+        "page": 21,
+        "startSeconds": 0,
+        "title": "2006数一二（一10、二12）｜设 f(x,y) 与 φ(x,y) 均为可微函数，且 φ_y^(x…",
+        "subject": "数学一",
+        "year": 2006
       }
     ],
     "2732": [
@@ -10001,6 +11069,17 @@
         "page": 1,
         "startSeconds": 18164,
         "title": "多元微分大观 2008数二第21题/880基础解答8（双约束u=x²+y²+z²）",
+        "subject": "数学二",
+        "year": 2008
+      },
+      {
+        "questionId": "2739",
+        "teacher": "喻老",
+        "seriesTitle": "2008年真题讲解",
+        "bvid": "BV1kR4y197it",
+        "page": 47,
+        "startSeconds": 0,
+        "title": "2008数二（21）｜求函数 u=x^2+y^2+z^2 在约束条件 z=x^2+y^2…",
         "subject": "数学二",
         "year": 2008
       }
@@ -10081,6 +11160,32 @@
         "year": 2014
       }
     ],
+    "2767": [
+      {
+        "questionId": "2767",
+        "teacher": "喻老",
+        "seriesTitle": "2005年真题讲解",
+        "bvid": "BV1TN4y1F7Jz",
+        "page": 46,
+        "startSeconds": 0,
+        "title": "2005数二（20）｜已知函数 z=f(x,y) 的全微分 dz=2x dx-2y dy…",
+        "subject": "数学二",
+        "year": 2005
+      }
+    ],
+    "2768": [
+      {
+        "questionId": "2768",
+        "teacher": "喻老",
+        "seriesTitle": "2007年真题讲解",
+        "bvid": "BV1514y1Y7CK",
+        "page": 27,
+        "startSeconds": 0,
+        "title": "2007数一（17）｜求函数 f(x,y)=x^2+2y^2-x^2y^2 在区域 D=≤…",
+        "subject": "数学一",
+        "year": 2007
+      }
+    ],
     "2780": [
       {
         "questionId": "2780",
@@ -10158,6 +11263,17 @@
         "page": 1,
         "startSeconds": 7790,
         "title": "2006 数三（16）"
+      },
+      {
+        "questionId": "2790",
+        "teacher": "喻老",
+        "seriesTitle": "2006年真题讲解",
+        "bvid": "BV1j24y1Z7KH",
+        "page": 33,
+        "startSeconds": 0,
+        "title": "2006数三（16）｜计算二重积分 _Dy^2-xydxdy，其中D是由直线y=x,y=1…",
+        "subject": "数学三",
+        "year": 2006
       }
     ],
     "2791": [
@@ -10587,6 +11703,17 @@
         "page": 1,
         "startSeconds": 12363,
         "title": ""
+      },
+      {
+        "questionId": "2829",
+        "teacher": "喻老",
+        "seriesTitle": "2003年真题讲解",
+        "bvid": "BV1wa411Z7TC",
+        "page": 43,
+        "startSeconds": 1,
+        "title": "2003数三（15）｜计算二重积分 I=_D e^-(x^2+y^2-π) sin(x^2…",
+        "subject": "数学三",
+        "year": 2003
       }
     ],
     "2830": [
@@ -11170,6 +12297,17 @@
         "page": 1,
         "startSeconds": 15319,
         "title": "二重积分大观 2004数三16（∬(√(x²+y²)+y)）"
+      },
+      {
+        "questionId": "2880",
+        "teacher": "喻老",
+        "seriesTitle": "2004年真题讲解",
+        "bvid": "BV1Ze4y1o7in",
+        "page": 40,
+        "startSeconds": 1,
+        "title": "2004数三（16）｜计算 _D√(x^2+y^2)+y dσ, 其中 D 是由圆 x^2…",
+        "subject": "数学三",
+        "year": 2004
       }
     ],
     "2881": [
@@ -11227,6 +12365,17 @@
         "page": 1,
         "startSeconds": 15518,
         "title": "二重积分大观 2006数一二（∬(1+xy)/(1+x²+y²)）"
+      },
+      {
+        "questionId": "2886",
+        "teacher": "喻老",
+        "seriesTitle": "2006年真题讲解",
+        "bvid": "BV1j24y1Z7KH",
+        "page": 28,
+        "startSeconds": 0,
+        "title": "2006数一二（一15、二17）｜设区域 D=≤ft(x,y) x^2+y^2≤slant1,x≥sl…",
+        "subject": "数学一",
+        "year": 2006
       }
     ],
     "2887": [
@@ -11313,6 +12462,43 @@
         "page": 1,
         "startSeconds": 17772,
         "title": "二重积分大观 2003数三（3）（分段函数f(x)g(y-x)）"
+      },
+      {
+        "questionId": "2897",
+        "teacher": "喻老",
+        "seriesTitle": "2003年真题讲解",
+        "bvid": "BV1wa411Z7TC",
+        "page": 10,
+        "startSeconds": 0,
+        "title": "2003数三（3）｜设 a ≥t 0， f(x) = g(x) = cases a, &…",
+        "subject": "数学三",
+        "year": 2003
+      }
+    ],
+    "2898": [
+      {
+        "questionId": "2898",
+        "teacher": "喻老",
+        "seriesTitle": "2007年真题讲解",
+        "bvid": "BV1514y1Y7CK",
+        "page": 39,
+        "startSeconds": 0,
+        "title": "2007数二三（二22、三18）｜设二元函数 f(x,y)=≤ftaligned&x^2,&|x|+|…",
+        "subject": "数学二",
+        "year": 2007
+      }
+    ],
+    "2906": [
+      {
+        "questionId": "2906",
+        "teacher": "喻老",
+        "seriesTitle": "2005年真题讲解",
+        "bvid": "BV1TN4y1F7Jz",
+        "page": 49,
+        "startSeconds": 1,
+        "title": "2005数二三（二21、三17）｜计算二重积分 I=_D|x^2+y^2-1| dσ, 其中 D=(x…",
+        "subject": "数学二",
+        "year": 2005
       }
     ],
     "2908": [
@@ -11358,6 +12544,19 @@
         "title": "二重积分大观 880综合填空1（|sin(x-y)|）"
       }
     ],
+    "2922": [
+      {
+        "questionId": "2922",
+        "teacher": "喻老",
+        "seriesTitle": "2008年真题讲解",
+        "bvid": "BV1kR4y197it",
+        "page": 39,
+        "startSeconds": 0,
+        "title": "2008数二三（二18、三17）｜计算 _D xy,1 dx dy ，其中 D = (x,y)|0 ≤…",
+        "subject": "数学二",
+        "year": 2008
+      }
+    ],
     "2932": [
       {
         "questionId": "2932",
@@ -11367,6 +12566,17 @@
         "page": 1,
         "startSeconds": 18393,
         "title": "二重积分大观 2007数二三（二8、三4）"
+      },
+      {
+        "questionId": "2932",
+        "teacher": "喻老",
+        "seriesTitle": "2007年真题讲解",
+        "bvid": "BV1514y1Y7CK",
+        "page": 12,
+        "startSeconds": 0,
+        "title": "2007数二三（二8、三4）｜设函数 f(x,y) 连续，则二次积分 ∫ dx ∫ f(x,y)…",
+        "subject": "数学二",
+        "year": 2007
       }
     ],
     "2939": [
@@ -11391,6 +12601,19 @@
         "page": 1,
         "startSeconds": 18422,
         "title": "二重积分大观 25版660数一二三第109（极坐标交换次序）"
+      }
+    ],
+    "2945": [
+      {
+        "questionId": "2945",
+        "teacher": "喻老",
+        "seriesTitle": "2006年真题讲解",
+        "bvid": "BV1j24y1Z7KH",
+        "page": 16,
+        "startSeconds": 0,
+        "title": "2006数一二（一8、二11）｜设 f(x,y) 为连续函数，则 ∫dθ∫f(rcosθ,rsinθ…",
+        "subject": "数学一",
+        "year": 2006
       }
     ],
     "2946": [
@@ -11419,6 +12642,19 @@
         "year": 2014
       }
     ],
+    "2949": [
+      {
+        "questionId": "2949",
+        "teacher": "喻老",
+        "seriesTitle": "2004年真题讲解",
+        "bvid": "BV1Ze4y1o7in",
+        "page": 30,
+        "startSeconds": 1,
+        "title": "2004数二（12）｜设函数 f(u) 连续，区域 D=(x,y) x^2+y^2≤2y…",
+        "subject": "数学二",
+        "year": 2004
+      }
+    ],
     "2953": [
       {
         "questionId": "2953",
@@ -11429,6 +12665,17 @@
         "startSeconds": 0.4,
         "title": "—",
         "subject": "数学一"
+      },
+      {
+        "questionId": "2953",
+        "teacher": "喻老",
+        "seriesTitle": "2005年真题讲解",
+        "bvid": "BV1TN4y1F7Jz",
+        "page": 19,
+        "startSeconds": 0,
+        "title": "2005数三（8）｜设 aligned I_1&=_Dcos√(x^2+y^2) dσ…",
+        "subject": "数学三",
+        "year": 2005
       }
     ],
     "2954": [
@@ -11480,6 +12727,19 @@
         "subject": "数学一"
       }
     ],
+    "2965": [
+      {
+        "questionId": "2965",
+        "teacher": "喻老",
+        "seriesTitle": "2004年真题讲解",
+        "bvid": "BV1Ze4y1o7in",
+        "page": 24,
+        "startSeconds": 0,
+        "title": "2004数一（10）｜设 f(x) 为连续函数， F(t)=∫",
+        "subject": "数学一",
+        "year": 2004
+      }
+    ],
     "2973": [
       {
         "questionId": "2973",
@@ -11502,6 +12762,19 @@
         "page": 1,
         "startSeconds": 18626,
         "title": "二重积分大观 1995数一 / 880基础填空5"
+      }
+    ],
+    "2982": [
+      {
+        "questionId": "2982",
+        "teacher": "喻老",
+        "seriesTitle": "2005年真题讲解",
+        "bvid": "BV1TN4y1F7Jz",
+        "page": 24,
+        "startSeconds": 1,
+        "title": "2005数二（10）｜设区域 D=(x,y) x^2+y^2≤4, x≥0, y≥0, f…",
+        "subject": "数学二",
+        "year": 2005
       }
     ],
     "2984": [
@@ -11857,6 +13130,45 @@
         "title": "莫斯科 1977 年竞赛题"
       }
     ],
+    "3109": [
+      {
+        "questionId": "3109",
+        "teacher": "喻老",
+        "seriesTitle": "2006年真题讲解",
+        "bvid": "BV1j24y1Z7KH",
+        "page": 27,
+        "startSeconds": 0,
+        "title": "2006数一三（一14、三14）｜设随机变量 X 服从正态分布 Nμ_1,σ_1^2，随机变量 Y 服…",
+        "subject": "数学一",
+        "year": 2006
+      }
+    ],
+    "3301": [
+      {
+        "questionId": "3301",
+        "teacher": "喻老",
+        "seriesTitle": "2003年真题讲解",
+        "bvid": "BV1wa411Z7TC",
+        "page": 33,
+        "startSeconds": 0,
+        "title": "2003数一（12）｜设随机变量 X t(n)，其中 n>1。令 Y=1/X^2, 则（…",
+        "subject": "数学一",
+        "year": 2003
+      }
+    ],
+    "3302": [
+      {
+        "questionId": "3302",
+        "teacher": "喻老",
+        "seriesTitle": "2005年真题讲解",
+        "bvid": "BV1TN4y1F7Jz",
+        "page": 31,
+        "startSeconds": 1,
+        "title": "2005数一（14）｜设 X_1, X_2, ·s, X_n (n ≥slant 2) 为…",
+        "subject": "数学一",
+        "year": 2005
+      }
+    ],
     "3356": [
       {
         "questionId": "3356",
@@ -12044,6 +13356,19 @@
         "page": 1,
         "startSeconds": 2831,
         "title": "∫_{a+(b+1)T}^{a+(b+2)T} f dx 取值（26版1000第八章强化2）"
+      }
+    ],
+    "3393": [
+      {
+        "questionId": "3393",
+        "teacher": "喻老",
+        "seriesTitle": "2004年真题讲解",
+        "bvid": "BV1Ze4y1o7in",
+        "page": 18,
+        "startSeconds": 1,
+        "title": "2004数三（7）｜（2004年数学三第7题） 函数 f(x)=|x|sin(x-2)/…",
+        "subject": "数学三",
+        "year": 2004
       }
     ],
     "3400": [
@@ -12319,6 +13644,17 @@
         "title": "幂指函数 ((2+cos x)/3)^x（2004数二15）",
         "subject": "数学二",
         "year": 2004
+      },
+      {
+        "questionId": "3498",
+        "teacher": "喻老",
+        "seriesTitle": "2004年真题讲解",
+        "bvid": "BV1Ze4y1o7in",
+        "page": 36,
+        "startSeconds": 0,
+        "title": "2004数二（15）｜求极限 lim_x→01/x^3 2+cos x/3^x-1 .",
+        "subject": "数学二",
+        "year": 2004
       }
     ],
     "3499": [
@@ -12345,6 +13681,17 @@
         "title": "0比0：(arctan x-sin x)/x³（2007数二11）",
         "subject": "数学二",
         "year": 2007
+      },
+      {
+        "questionId": "3500",
+        "teacher": "喻老",
+        "seriesTitle": "2007年真题讲解",
+        "bvid": "BV1514y1Y7CK",
+        "page": 16,
+        "startSeconds": 0,
+        "title": "2007数二（11）｜求极限 lim_x→0arctan x-sin x/x^3.",
+        "subject": "数学二",
+        "year": 2007
       }
     ],
     "3502": [
@@ -12356,6 +13703,17 @@
         "page": 1,
         "startSeconds": 4064,
         "title": "0比0：(1/x²)ln(sin x/x)（2008数三15）",
+        "subject": "数学三",
+        "year": 2008
+      },
+      {
+        "questionId": "3502",
+        "teacher": "喻老",
+        "seriesTitle": "2008年真题讲解",
+        "bvid": "BV1kR4y197it",
+        "page": 32,
+        "startSeconds": 0,
+        "title": "2008数三（15）｜_x→0/1x^2lnsin x/x",
         "subject": "数学三",
         "year": 2008
       }
@@ -12667,6 +14025,17 @@
         "title": "∞比∞：指数压制幂函数（2007数三11）",
         "subject": "数学三",
         "year": 2007
+      },
+      {
+        "questionId": "3546",
+        "teacher": "喻老",
+        "seriesTitle": "2007年真题讲解",
+        "bvid": "BV1514y1Y7CK",
+        "page": 17,
+        "startSeconds": 0,
+        "title": "2007数三（11）｜_x→+∞/x^3+x^2+12^x+x^3(sin x+cos x…",
+        "subject": "数学三",
+        "year": 2007
       }
     ],
     "3547": [
@@ -12749,6 +14118,19 @@
         "title": "0·∞：x cot 2x（1989数二）",
         "subject": "数学二",
         "year": 1989
+      }
+    ],
+    "3560": [
+      {
+        "questionId": "3560",
+        "teacher": "喻老",
+        "seriesTitle": "2005年真题讲解",
+        "bvid": "BV1TN4y1F7Jz",
+        "page": 3,
+        "startSeconds": 1,
+        "title": "2005数三（1）｜计算极限 lim_x→+∞xsin2x/x^2+1 =____.",
+        "subject": "数学三",
+        "year": 2005
       }
     ],
     "3561": [
@@ -12998,6 +14380,30 @@
         "title": "∞-∞通分：1/sin²x-cos²x/x²（2004数三15）",
         "subject": "数学三",
         "year": 2004
+      },
+      {
+        "questionId": "3590",
+        "teacher": "喻老",
+        "seriesTitle": "2004年真题讲解",
+        "bvid": "BV1Ze4y1o7in",
+        "page": 37,
+        "startSeconds": 0,
+        "title": "2004数三（15）｜求极限 lim_x→0 1/sin^2x-cos^2x/x^2 .",
+        "subject": "数学三",
+        "year": 2004
+      }
+    ],
+    "3591": [
+      {
+        "questionId": "3591",
+        "teacher": "喻老",
+        "seriesTitle": "2005年真题讲解",
+        "bvid": "BV1TN4y1F7Jz",
+        "page": 35,
+        "startSeconds": 0,
+        "title": "2005数三（15）｜求极限 lim_x→0/1+x1-e^-x-1/x.",
+        "subject": "数学三",
+        "year": 2005
       }
     ],
     "3592": [
@@ -13221,6 +14627,19 @@
         "title": "切线交点 ξ_n：lim f(ξ_n)（1998数三）",
         "subject": "数学三",
         "year": 1998
+      }
+    ],
+    "3631": [
+      {
+        "questionId": "3631",
+        "teacher": "喻老",
+        "seriesTitle": "2003年真题讲解",
+        "bvid": "BV1wa411Z7TC",
+        "page": 2,
+        "startSeconds": 0,
+        "title": "2003数一（1）｜计算极限 lim_x→0(cos x)^1/ln(1+x^2).",
+        "subject": "数学一",
+        "year": 2003
       }
     ],
     "3632": [
@@ -13452,6 +14871,17 @@
         "title": "变限积分拆分+换元（2005数二15）",
         "subject": "数学二",
         "year": 2005
+      },
+      {
+        "questionId": "3718",
+        "teacher": "喻老",
+        "seriesTitle": "2005年真题讲解",
+        "bvid": "BV1TN4y1F7Jz",
+        "page": 34,
+        "startSeconds": 0,
+        "title": "2005数二（15）｜设函数 f(x) 连续，且 f(0)0，求极限 lim_x→0 ∫",
+        "subject": "数学二",
+        "year": 2005
       }
     ],
     "3738": [
@@ -13521,6 +14951,32 @@
         "title": "2014 数一 第15题",
         "subject": "数学一",
         "year": 2014
+      }
+    ],
+    "3783": [
+      {
+        "questionId": "3783",
+        "teacher": "喻老",
+        "seriesTitle": "2006年真题讲解",
+        "bvid": "BV1j24y1Z7KH",
+        "page": 30,
+        "startSeconds": 0,
+        "title": "2006数三（15）｜设 f(x,y)=y/1+xy-/1-ysinπ x/yarctan…",
+        "subject": "数学三",
+        "year": 2006
+      }
+    ],
+    "3784": [
+      {
+        "questionId": "3784",
+        "teacher": "喻老",
+        "seriesTitle": "2006年真题讲解",
+        "bvid": "BV1j24y1Z7KH",
+        "page": 3,
+        "startSeconds": 0,
+        "title": "2006数三（1）｜_n→∞n+1/n^-1^n = ____",
+        "subject": "数学三",
+        "year": 2006
       }
     ],
     "3796": [
@@ -13700,6 +15156,19 @@
         "subject": "数学二"
       }
     ],
+    "3893": [
+      {
+        "questionId": "3893",
+        "teacher": "喻老",
+        "seriesTitle": "2004年真题讲解",
+        "bvid": "BV1Ze4y1o7in",
+        "page": 23,
+        "startSeconds": 1,
+        "title": "2004数二（9）｜极限 lim_n→∞ ln[n] 1+1/n^2 1+2/n^2 ·…",
+        "subject": "数学二",
+        "year": 2004
+      }
+    ],
     "3902": [
       {
         "questionId": "3902",
@@ -13867,6 +15336,19 @@
         "subject": "数学二"
       }
     ],
+    "3951": [
+      {
+        "questionId": "3951",
+        "teacher": "喻老",
+        "seriesTitle": "2003年真题讲解",
+        "bvid": "BV1wa411Z7TC",
+        "page": 22,
+        "startSeconds": 0,
+        "title": "2003数一二（一8、二7）｜设数列 a_n、b_n、c_n 均为非负数列，且 lim_n→∞a_…",
+        "subject": "数学一",
+        "year": 2003
+      }
+    ],
     "3953": [
       {
         "questionId": "3953",
@@ -13890,6 +15372,32 @@
         "startSeconds": 3561.8,
         "title": "P2 880题目精讲",
         "subject": "数学二"
+      }
+    ],
+    "3958": [
+      {
+        "questionId": "3958",
+        "teacher": "喻老",
+        "seriesTitle": "2007年真题讲解",
+        "bvid": "BV1514y1Y7CK",
+        "page": 6,
+        "startSeconds": 0,
+        "title": "2007数一二｜设函数 f(x) 在 (0, +∞) 内具有二阶导数，且 f''(x…",
+        "subject": "数学一",
+        "year": 2007
+      }
+    ],
+    "3959": [
+      {
+        "questionId": "3959",
+        "teacher": "喻老",
+        "seriesTitle": "2008年真题讲解",
+        "bvid": "BV1kR4y197it",
+        "page": 8,
+        "startSeconds": 0,
+        "title": "2008数一二（一4、二5）｜设函数 f(x) 在 (-∞, +∞) 内单调有界，x_n 为数列…",
+        "subject": "数学一",
+        "year": 2008
       }
     ],
     "3962": [
@@ -14000,6 +15508,19 @@
         "startSeconds": 1125.7,
         "title": "P27 880题目精讲",
         "subject": "数学二"
+      }
+    ],
+    "4001": [
+      {
+        "questionId": "4001",
+        "teacher": "喻老",
+        "seriesTitle": "2004年真题讲解",
+        "bvid": "BV1Ze4y1o7in",
+        "page": 3,
+        "startSeconds": 1,
+        "title": "2004数三（1）｜若 lim_x→0sin x/e^x-a(cos x-b)=5, 则…",
+        "subject": "数学三",
+        "year": 2004
       }
     ],
     "4002": [
@@ -14214,6 +15735,19 @@
         "year": 1988
       }
     ],
+    "4150": [
+      {
+        "questionId": "4150",
+        "teacher": "喻老",
+        "seriesTitle": "2004年真题讲解",
+        "bvid": "BV1Ze4y1o7in",
+        "page": 2,
+        "startSeconds": 1,
+        "title": "2004数二（1）｜设 f(x)=lim_n→∞(n-1)x/nx^2+1, 则 f(x…",
+        "subject": "数学二",
+        "year": 2004
+      }
+    ],
     "4152": [
       {
         "questionId": "4152",
@@ -14298,6 +15832,32 @@
         "subject": "数学三"
       }
     ],
+    "4182": [
+      {
+        "questionId": "4182",
+        "teacher": "喻老",
+        "seriesTitle": "2005年真题讲解",
+        "bvid": "BV1TN4y1F7Jz",
+        "page": 13,
+        "startSeconds": 1,
+        "title": "2005数二（5）｜当 x→0 时，α(x)=kx^2 与 β(x)=√(1+x x)-…",
+        "subject": "数学二",
+        "year": 2005
+      }
+    ],
+    "4183": [
+      {
+        "questionId": "4183",
+        "teacher": "喻老",
+        "seriesTitle": "2003年真题讲解",
+        "bvid": "BV1wa411Z7TC",
+        "page": 3,
+        "startSeconds": 0,
+        "title": "2003数二（1）｜若 x→0 时，(1-ax^2)^1/4-1 与 xsin x 是等…",
+        "subject": "数学二",
+        "year": 2003
+      }
+    ],
     "4185": [
       {
         "questionId": "4185",
@@ -14355,6 +15915,19 @@
         "title": "2020 数一 第1题",
         "subject": "数学一",
         "year": 2020
+      }
+    ],
+    "4208": [
+      {
+        "questionId": "4208",
+        "teacher": "喻老",
+        "seriesTitle": "2004年真题讲解",
+        "bvid": "BV1Ze4y1o7in",
+        "page": 17,
+        "startSeconds": 1,
+        "title": "2004数一二（一7、二7）｜把 x 0^+ 时的无穷小量 α = ∫ cos t^2 dt, β…",
+        "subject": "数学一",
+        "year": 2004
       }
     ],
     "4210": [
@@ -14629,6 +16202,19 @@
         "year": 1995
       }
     ],
+    "4347": [
+      {
+        "questionId": "4347",
+        "teacher": "喻老",
+        "seriesTitle": "2003年真题讲解",
+        "bvid": "BV1wa411Z7TC",
+        "page": 37,
+        "startSeconds": 0,
+        "title": "2003数三（13）｜设 f(x)=1/π x+1/sinπ x-1/π(1-x) ， x…",
+        "subject": "数学三",
+        "year": 2003
+      }
+    ],
     "4349": [
       {
         "questionId": "4349",
@@ -14652,6 +16238,19 @@
         "title": "1988数二 第1题",
         "subject": "数学二",
         "year": 1988
+      }
+    ],
+    "4353": [
+      {
+        "questionId": "4353",
+        "teacher": "喻老",
+        "seriesTitle": "2008年真题讲解",
+        "bvid": "BV1kR4y197it",
+        "page": 18,
+        "startSeconds": 0,
+        "title": "2008数三（9）｜设函数 f(x)=casesx^2+1, & |x|≤ c 2/|x…",
+        "subject": "数学三",
+        "year": 2008
       }
     ],
     "4354": [
@@ -14763,6 +16362,97 @@
         "title": "1996数二 第3题",
         "subject": "数学二",
         "year": 1996
+      }
+    ],
+    "4380": [
+      {
+        "questionId": "4380",
+        "teacher": "喻老",
+        "seriesTitle": "2003年真题讲解",
+        "bvid": "BV1wa411Z7TC",
+        "page": 36,
+        "startSeconds": 0,
+        "title": "2003数二（13）｜设函数 f(x)= cases ln(1+ax^3)/x- x,&x…",
+        "subject": "数学二",
+        "year": 2003
+      }
+    ],
+    "4381": [
+      {
+        "questionId": "4381",
+        "teacher": "喻老",
+        "seriesTitle": "2003年真题讲解",
+        "bvid": "BV1wa411Z7TC",
+        "page": 21,
+        "startSeconds": 0,
+        "title": "2003数三（7）｜设 f(x) 为不恒等于零的奇函数，且 f'(0) 存在，则函数 g…",
+        "subject": "数学三",
+        "year": 2003
+      }
+    ],
+    "4382": [
+      {
+        "questionId": "4382",
+        "teacher": "喻老",
+        "seriesTitle": "2004年真题讲解",
+        "bvid": "BV1Ze4y1o7in",
+        "page": 21,
+        "startSeconds": 1,
+        "title": "2004数三（8）｜设函数 f(x) 在 (-∞,+∞) 内有定义，且 lim_x→+∞…",
+        "subject": "数学三",
+        "year": 2004
+      }
+    ],
+    "4384": [
+      {
+        "questionId": "4384",
+        "teacher": "喻老",
+        "seriesTitle": "2005年真题讲解",
+        "bvid": "BV1TN4y1F7Jz",
+        "page": 29,
+        "startSeconds": 1,
+        "title": "2005数二（12）｜设函数 f(x)=/1 e^x/x-1-1, 则（ ）。",
+        "subject": "数学二",
+        "year": 2005
+      }
+    ],
+    "4385": [
+      {
+        "questionId": "4385",
+        "teacher": "喻老",
+        "seriesTitle": "2007年真题讲解",
+        "bvid": "BV1514y1Y7CK",
+        "page": 3,
+        "startSeconds": 0,
+        "title": "2007数二（2）｜函数 f(x)=/e^1/x+etan xxe^1/x-e 在 [-…",
+        "subject": "数学二",
+        "year": 2007
+      }
+    ],
+    "4386": [
+      {
+        "questionId": "4386",
+        "teacher": "喻老",
+        "seriesTitle": "2008年真题讲解",
+        "bvid": "BV1kR4y197it",
+        "page": 9,
+        "startSeconds": 0,
+        "title": "2008数二（4）｜设函数 f(x)=ln|x|/|x-1|sin x，则 f(x) 有",
+        "subject": "数学二",
+        "year": 2008
+      }
+    ],
+    "4388": [
+      {
+        "questionId": "4388",
+        "teacher": "喻老",
+        "seriesTitle": "2008年真题讲解",
+        "bvid": "BV1kR4y197it",
+        "page": 3,
+        "startSeconds": 0,
+        "title": "2008数三（1）｜设函数 f(x) 在区间 [-1,1] 上连续，则 x=0 是函数…",
+        "subject": "数学三",
+        "year": 2008
       }
     ],
     "4389": [
@@ -14882,6 +16572,17 @@
         "page": 1,
         "startSeconds": 575,
         "title": "微分方程大观：一阶非齐次通解结构（2006数三10）",
+        "subject": "数学三",
+        "year": 2006
+      },
+      {
+        "questionId": "4421",
+        "teacher": "喻老",
+        "seriesTitle": "2006年真题讲解",
+        "bvid": "BV1j24y1Z7KH",
+        "page": 23,
+        "startSeconds": 0,
+        "title": "2006数三（10）｜设非齐次线性微分方程 y'+P(x)y=Q(x) 有两个不同的特解…",
         "subject": "数学三",
         "year": 2006
       }
@@ -15245,6 +16946,19 @@
         "year": 1991
       }
     ],
+    "4476": [
+      {
+        "questionId": "4476",
+        "teacher": "喻老",
+        "seriesTitle": "2005年真题讲解",
+        "bvid": "BV1TN4y1F7Jz",
+        "page": 6,
+        "startSeconds": 0,
+        "title": "2005数三（2）｜微分方程 xy'+y=0 满足初始条件 y(1)=2 的特解为 __…",
+        "subject": "数学三",
+        "year": 2005
+      }
+    ],
     "4478": [
       {
         "questionId": "4478",
@@ -15472,6 +17186,19 @@
         "year": 1992
       }
     ],
+    "4499": [
+      {
+        "questionId": "4499",
+        "teacher": "喻老",
+        "seriesTitle": "2004年真题讲解",
+        "bvid": "BV1Ze4y1o7in",
+        "page": 14,
+        "startSeconds": 1,
+        "title": "2004数二（5）｜微分方程 (y+x^3) dx-2x dy=0 满足 y|_x=1=…",
+        "subject": "数学二",
+        "year": 2004
+      }
+    ],
     "4500": [
       {
         "questionId": "4500",
@@ -15672,6 +17399,19 @@
         "year": 1995
       }
     ],
+    "4526": [
+      {
+        "questionId": "4526",
+        "teacher": "喻老",
+        "seriesTitle": "2003年真题讲解",
+        "bvid": "BV1wa411Z7TC",
+        "page": 26,
+        "startSeconds": 0,
+        "title": "2003数二（9）｜已知 x/ln x 是微分方程 y'=y/x+φx/y 的解，则 φ…",
+        "subject": "数学二",
+        "year": 2003
+      }
+    ],
     "4527": [
       {
         "questionId": "4527",
@@ -15768,6 +17508,17 @@
         "page": 1,
         "startSeconds": 11925,
         "title": "微分方程大观：2006数二10 通解+特解反求方程",
+        "subject": "数学二",
+        "year": 2006
+      },
+      {
+        "questionId": "4543",
+        "teacher": "喻老",
+        "seriesTitle": "2006年真题讲解",
+        "bvid": "BV1j24y1Z7KH",
+        "page": 22,
+        "startSeconds": 0,
+        "title": "2006数二（10）｜函数 y = C_1 e^x + C_2 e^-2x + x e^x…",
         "subject": "数学二",
         "year": 2006
       }
@@ -15877,6 +17628,19 @@
         "title": "微分方程大观：2000数二 三特解反求三阶方程（26版660同题）",
         "subject": "数学二",
         "year": 2000
+      }
+    ],
+    "4560": [
+      {
+        "questionId": "4560",
+        "teacher": "喻老",
+        "seriesTitle": "2008年真题讲解",
+        "bvid": "BV1kR4y197it",
+        "page": 6,
+        "startSeconds": 0,
+        "title": "2008数一二（一3、二3）｜在下列微分方程中，以 y = C_1 e^x + C_2 cos 2…",
+        "subject": "数学一",
+        "year": 2008
       }
     ],
     "4562": [
@@ -16089,6 +17853,19 @@
         "title": "微分方程大观：900题B7 收敛性多命题判断"
       }
     ],
+    "4628": [
+      {
+        "questionId": "4628",
+        "teacher": "喻老",
+        "seriesTitle": "2003年真题讲解",
+        "bvid": "BV1wa411Z7TC",
+        "page": 48,
+        "startSeconds": 1,
+        "title": "2003数三（17）｜设 F(x)=f(x)g(x)，其中函数 f(x)，g(x) 在 (…",
+        "subject": "数学三",
+        "year": 2003
+      }
+    ],
     "4630": [
       {
         "questionId": "4630",
@@ -16152,6 +17929,19 @@
         "year": 2001
       }
     ],
+    "4654": [
+      {
+        "questionId": "4654",
+        "teacher": "喻老",
+        "seriesTitle": "2006年真题讲解",
+        "bvid": "BV1j24y1Z7KH",
+        "page": 36,
+        "startSeconds": 0,
+        "title": "2006数三（18）｜在 xOy 坐标平面上，连续曲线 L 过点 M(1, 0)，其上任意…",
+        "subject": "数学三",
+        "year": 2006
+      }
+    ],
     "4656": [
       {
         "questionId": "4656",
@@ -16202,6 +17992,32 @@
         "year": 2015
       }
     ],
+    "4685": [
+      {
+        "questionId": "4685",
+        "teacher": "喻老",
+        "seriesTitle": "2005年真题讲解",
+        "bvid": "BV1TN4y1F7Jz",
+        "page": 37,
+        "startSeconds": 0,
+        "title": "2005数二（16）｜如图，C_1 和 C_2 分别是 y=1/2(1+ e^x) 和 y…",
+        "subject": "数学二",
+        "year": 2005
+      }
+    ],
+    "4686": [
+      {
+        "questionId": "4686",
+        "teacher": "喻老",
+        "seriesTitle": "2008年真题讲解",
+        "bvid": "BV1kR4y197it",
+        "page": 42,
+        "startSeconds": 86,
+        "title": "2008数二（19）｜设 f(x) 是区间 [0, +∞) 上具有连续导数的单调增加函数…",
+        "subject": "数学二",
+        "year": 2008
+      }
+    ],
     "4687": [
       {
         "questionId": "4687",
@@ -16226,6 +18042,19 @@
         "title": "1997数一 解答大题四 第2小题",
         "subject": "数学一",
         "year": 1997
+      }
+    ],
+    "4695": [
+      {
+        "questionId": "4695",
+        "teacher": "喻老",
+        "seriesTitle": "2006年真题讲解",
+        "bvid": "BV1j24y1Z7KH",
+        "page": 35,
+        "startSeconds": 0,
+        "title": "2006数一二（一18、二20）｜设函数 f(u) 在 (0, +∞) 内具有二阶导数，且 z = f…",
+        "subject": "数学一",
+        "year": 2006
       }
     ],
     "4714": [
@@ -16277,6 +18106,30 @@
         "title": "2003数二 解答题（平底容器注水）",
         "subject": "数学二",
         "year": 2003
+      },
+      {
+        "questionId": "4728",
+        "teacher": "喻老",
+        "seriesTitle": "2003年真题讲解",
+        "bvid": "BV1wa411Z7TC",
+        "page": 53,
+        "startSeconds": 0,
+        "title": "2003数二（19）｜有一平底容器，其内侧壁由曲线 x=φ(y)（y≥slant0）绕 y…",
+        "subject": "数学二",
+        "year": 2003
+      }
+    ],
+    "4730": [
+      {
+        "questionId": "4730",
+        "teacher": "喻老",
+        "seriesTitle": "2004年真题讲解",
+        "bvid": "BV1Ze4y1o7in",
+        "page": 38,
+        "startSeconds": 0,
+        "title": "2004数一二（一16、二20）｜某种飞机在机场降落时，为了减少滑行距离，在触地的瞬间，飞机尾部张开减…",
+        "subject": "数学一",
+        "year": 2004
       }
     ],
     "5169": [
@@ -16289,6 +18142,19 @@
         "startSeconds": 193.2,
         "title": "P(AB)=0 判断可推出命题；193.2s 起开始排除不能由概率推出的事件关系。",
         "subject": "数学三"
+      }
+    ],
+    "5243": [
+      {
+        "questionId": "5243",
+        "teacher": "喻老",
+        "seriesTitle": "2004年真题讲解",
+        "bvid": "BV1Ze4y1o7in",
+        "page": 32,
+        "startSeconds": 1,
+        "title": "2004数一（13）｜设随机变量 X N(0,1)。对给定的 α，其中 0≤tα≤t1，数…",
+        "subject": "数学一",
+        "year": 2004
       }
     ],
     "5244": [
@@ -16386,6 +18252,19 @@
         "year": 2011
       }
     ],
+    "5268": [
+      {
+        "questionId": "5268",
+        "teacher": "喻老",
+        "seriesTitle": "2006年真题讲解",
+        "bvid": "BV1j24y1Z7KH",
+        "page": 44,
+        "startSeconds": 0,
+        "title": "2006数一（22）｜设随机变量 X 的概率密度为 f_X(x)= cases 1/2…",
+        "subject": "数学一",
+        "year": 2006
+      }
+    ],
     "5269": [
       {
         "questionId": "5269",
@@ -16410,6 +18289,19 @@
         "year": 2021
       }
     ],
+    "5273": [
+      {
+        "questionId": "5273",
+        "teacher": "喻老",
+        "seriesTitle": "2003年真题讲解",
+        "bvid": "BV1wa411Z7TC",
+        "page": 60,
+        "startSeconds": 0,
+        "title": "2003数三（21）｜设随机变量 X 的概率密度为 f(x)= cases 1/3[3]x…",
+        "subject": "数学三",
+        "year": 2003
+      }
+    ],
     "5282": [
       {
         "questionId": "5282",
@@ -16420,6 +18312,19 @@
         "startSeconds": 484.7,
         "title": "独立 X,Y 分别服从题库指定正态分布，判断线性组合选项；484.7s 起验证正态线性组合。",
         "subject": "数学三"
+      }
+    ],
+    "5283": [
+      {
+        "questionId": "5283",
+        "teacher": "喻老",
+        "seriesTitle": "2007年真题讲解",
+        "bvid": "BV1514y1Y7CK",
+        "page": 14,
+        "startSeconds": 0,
+        "title": "2007数一三（一10、三10）｜设随机变量 (X,Y) 服从二维正态分布，且 X 与 Y 不相关，f…",
+        "subject": "数学三",
+        "year": 2007
       }
     ],
     "5284": [
@@ -16507,6 +18412,19 @@
         "year": 2020
       }
     ],
+    "5293": [
+      {
+        "questionId": "5293",
+        "teacher": "喻老",
+        "seriesTitle": "2005年真题讲解",
+        "bvid": "BV1TN4y1F7Jz",
+        "page": 15,
+        "startSeconds": 1,
+        "title": "2005数一三｜设二维随机变量 (X,Y) 的概率分布为 arrayc|ccX Y&…",
+        "subject": "数学一",
+        "year": 2005
+      }
+    ],
     "5294": [
       {
         "questionId": "5294",
@@ -16544,6 +18462,32 @@
         "year": 2009
       }
     ],
+    "5301": [
+      {
+        "questionId": "5301",
+        "teacher": "喻老",
+        "seriesTitle": "2004年真题讲解",
+        "bvid": "BV1Ze4y1o7in",
+        "page": 54,
+        "startSeconds": 1,
+        "title": "2004数一（22）｜设 A,B 为随机事件，且 P(A)=1/4, P(B A)=1/3…",
+        "subject": "数学一",
+        "year": 2004
+      }
+    ],
+    "5306": [
+      {
+        "questionId": "5306",
+        "teacher": "喻老",
+        "seriesTitle": "2008年真题讲解",
+        "bvid": "BV1kR4y197it",
+        "page": 13,
+        "startSeconds": 0,
+        "title": "2008数一三（一7、三7）｜设随机变量 X,Y 独立同分布，且 X 的分布函数为 F(x)，则…",
+        "subject": "数学一",
+        "year": 2008
+      }
+    ],
     "5307": [
       {
         "questionId": "5307",
@@ -16555,6 +18499,32 @@
         "title": "2012 数三 第23题",
         "subject": "数学三",
         "year": 2012
+      }
+    ],
+    "5308": [
+      {
+        "questionId": "5308",
+        "teacher": "喻老",
+        "seriesTitle": "2003年真题讲解",
+        "bvid": "BV1wa411Z7TC",
+        "page": 62,
+        "startSeconds": 0,
+        "title": "2003数三（22）｜设随机变量 X 与 Y 相互独立，其中 X 的概率分布为 PX=1=…",
+        "subject": "数学三",
+        "year": 2003
+      }
+    ],
+    "5309": [
+      {
+        "questionId": "5309",
+        "teacher": "喻老",
+        "seriesTitle": "2008年真题讲解",
+        "bvid": "BV1kR4y197it",
+        "page": 48,
+        "startSeconds": 0,
+        "title": "2008数一（22）｜设随机变量 X 与 Y 相互独立，X 的概率分布为 PX=i=1/3…",
+        "subject": "数学一",
+        "year": 2008
       }
     ],
     "5310": [
@@ -16666,6 +18636,32 @@
         "year": 2014
       }
     ],
+    "5319": [
+      {
+        "questionId": "5319",
+        "teacher": "喻老",
+        "seriesTitle": "2005年真题讲解",
+        "bvid": "BV1TN4y1F7Jz",
+        "page": 51,
+        "startSeconds": 0,
+        "title": "2005数一三｜设二维随机变量 (X,Y) 的概率密度为 f(x,y)= cases…",
+        "subject": "数学三",
+        "year": 2005
+      }
+    ],
+    "5320": [
+      {
+        "questionId": "5320",
+        "teacher": "喻老",
+        "seriesTitle": "2007年真题讲解",
+        "bvid": "BV1514y1Y7CK",
+        "page": 40,
+        "startSeconds": 0,
+        "title": "2007数一三（一23、三23）｜设二维随机变量 (X,Y) 的概率密度为 f(x,y)= cases…",
+        "subject": "数学一",
+        "year": 2007
+      }
+    ],
     "5324": [
       {
         "questionId": "5324",
@@ -16712,6 +18708,19 @@
         "title": "2018 数一 第22题",
         "subject": "数学一",
         "year": 2018
+      }
+    ],
+    "5328": [
+      {
+        "questionId": "5328",
+        "teacher": "喻老",
+        "seriesTitle": "2003年真题讲解",
+        "bvid": "BV1wa411Z7TC",
+        "page": 14,
+        "startSeconds": 0,
+        "title": "2003数一（5）｜设二维随机变量 (X,Y) 的概率密度为 f(x,y)= cases…",
+        "subject": "数学一",
+        "year": 2003
       }
     ],
     "5332": [
@@ -16787,6 +18796,19 @@
         "title": "1997数一 选择第5题",
         "subject": "数学一",
         "year": 1997
+      }
+    ],
+    "5350": [
+      {
+        "questionId": "5350",
+        "teacher": "喻老",
+        "seriesTitle": "2004年真题讲解",
+        "bvid": "BV1Ze4y1o7in",
+        "page": 15,
+        "startSeconds": 0,
+        "title": "2004数一（6）｜设随机变量 X 服从参数为 λ 的指数分布，则 P≤ftX≥t√(D…",
+        "subject": "数学一",
+        "year": 2004
       }
     ],
     "5351": [
@@ -16915,6 +18937,32 @@
         "year": 2009
       }
     ],
+    "5380": [
+      {
+        "questionId": "5380",
+        "teacher": "喻老",
+        "seriesTitle": "2004年真题讲解",
+        "bvid": "BV1Ze4y1o7in",
+        "page": 34,
+        "startSeconds": 1,
+        "title": "2004数一（14）｜设随机变量 X_1,X_2,≤dots,X_n，其中 n≥t1，独立…",
+        "subject": "数学一",
+        "year": 2004
+      }
+    ],
+    "5381": [
+      {
+        "questionId": "5381",
+        "teacher": "喻老",
+        "seriesTitle": "2005年真题讲解",
+        "bvid": "BV1TN4y1F7Jz",
+        "page": 53,
+        "startSeconds": 0,
+        "title": "2005数一三｜设 X_1,X_2,·s,X_n (n≥t2) 为来自总体 N(0…",
+        "subject": "数学三",
+        "year": 2005
+      }
+    ],
     "5385": [
       {
         "questionId": "5385",
@@ -16952,6 +19000,19 @@
         "year": 2012
       }
     ],
+    "5389": [
+      {
+        "questionId": "5389",
+        "teacher": "喻老",
+        "seriesTitle": "2003年真题讲解",
+        "bvid": "BV1wa411Z7TC",
+        "page": 16,
+        "startSeconds": 0,
+        "title": "2003数三（5）｜设随机变量 X 和 Y 的相关系数为 0.9。若 Z=X-0.4，则…",
+        "subject": "数学三",
+        "year": 2003
+      }
+    ],
     "5392": [
       {
         "questionId": "5392",
@@ -16977,6 +19038,19 @@
         "subject": "数学三"
       }
     ],
+    "5397": [
+      {
+        "questionId": "5397",
+        "teacher": "喻老",
+        "seriesTitle": "2008年真题讲解",
+        "bvid": "BV1kR4y197it",
+        "page": 14,
+        "startSeconds": 0,
+        "title": "2008数一（8）｜设随机变量 X N(0,1),Y N(1,4)，且相关系数 ρ_XY…",
+        "subject": "数学一",
+        "year": 2008
+      }
+    ],
     "5398": [
       {
         "questionId": "5398",
@@ -16988,6 +19062,19 @@
         "title": "2012 数一 第8题",
         "subject": "数学一",
         "year": 2012
+      }
+    ],
+    "5403": [
+      {
+        "questionId": "5403",
+        "teacher": "喻老",
+        "seriesTitle": "2003年真题讲解",
+        "bvid": "BV1wa411Z7TC",
+        "page": 19,
+        "startSeconds": 0,
+        "title": "2003数三（6）｜设总体 X 服从参数为 2 的指数分布，X_1,X_2,≤dots…",
+        "subject": "数学三",
+        "year": 2003
       }
     ],
     "5408": [
@@ -17037,6 +19124,32 @@
         "title": "2014 数三 第8题",
         "subject": "数学三",
         "year": 2014
+      }
+    ],
+    "5428": [
+      {
+        "questionId": "5428",
+        "teacher": "喻老",
+        "seriesTitle": "2004年真题讲解",
+        "bvid": "BV1Ze4y1o7in",
+        "page": 16,
+        "startSeconds": 1,
+        "title": "2004数三（6）｜设总体 X 服从正态分布 N(μ_1,σ^2)，总体 Y 服从正态分…",
+        "subject": "数学三",
+        "year": 2004
+      }
+    ],
+    "5429": [
+      {
+        "questionId": "5429",
+        "teacher": "喻老",
+        "seriesTitle": "2006年真题讲解",
+        "bvid": "BV1j24y1Z7KH",
+        "page": 14,
+        "startSeconds": 0,
+        "title": "2006数三（6）｜设总体 X 的概率密度为 f(x)=1/2e^-|x|, -∞≤t…",
+        "subject": "数学三",
+        "year": 2006
       }
     ],
     "5431": [
@@ -17152,6 +19265,58 @@
         "year": 2016
       }
     ],
+    "5445": [
+      {
+        "questionId": "5445",
+        "teacher": "喻老",
+        "seriesTitle": "2003年真题讲解",
+        "bvid": "BV1wa411Z7TC",
+        "page": 61,
+        "startSeconds": 0,
+        "title": "2003数一（22）｜设总体 X 的概率密度为 f(x)= cases 2e^-2(x-θ…",
+        "subject": "数学一",
+        "year": 2003
+      }
+    ],
+    "5451": [
+      {
+        "questionId": "5451",
+        "teacher": "喻老",
+        "seriesTitle": "2003年真题讲解",
+        "bvid": "BV1wa411Z7TC",
+        "page": 17,
+        "startSeconds": 0,
+        "title": "2003数一（6）｜已知一批零件的长度 X（单位：cm）服从正态分布 N(μ,1)，从中…",
+        "subject": "数学一",
+        "year": 2003
+      }
+    ],
+    "5452": [
+      {
+        "questionId": "5452",
+        "teacher": "喻老",
+        "seriesTitle": "2005年真题讲解",
+        "bvid": "BV1TN4y1F7Jz",
+        "page": 32,
+        "startSeconds": 1,
+        "title": "2005数三（14）｜设一批零件的长度服从正态分布 N(μ,σ^2)，其中 μ,σ^2 均…",
+        "subject": "数学三",
+        "year": 2005
+      }
+    ],
+    "5459": [
+      {
+        "questionId": "5459",
+        "teacher": "喻老",
+        "seriesTitle": "2007年真题讲解",
+        "bvid": "BV1514y1Y7CK",
+        "page": 41,
+        "startSeconds": 0,
+        "title": "2007数一三（一24、三24）｜设总体 X 的概率密度为 f(x;θ)=cases1/2θ, & 0…",
+        "subject": "数学一",
+        "year": 2007
+      }
+    ],
     "5460": [
       {
         "questionId": "5460",
@@ -17163,6 +19328,19 @@
         "title": "2009数一 第14题",
         "subject": "数学一",
         "year": 2009
+      }
+    ],
+    "5464": [
+      {
+        "questionId": "5464",
+        "teacher": "喻老",
+        "seriesTitle": "2004年真题讲解",
+        "bvid": "BV1Ze4y1o7in",
+        "page": 57,
+        "startSeconds": 1,
+        "title": "2004数三（23）｜设随机变量 X 的分布函数为 F(x;α,β)= cases 1-/…",
+        "subject": "数学三",
+        "year": 2004
       }
     ],
     "5465": [
@@ -17228,6 +19406,32 @@
         "year": 1997
       }
     ],
+    "5471": [
+      {
+        "questionId": "5471",
+        "teacher": "喻老",
+        "seriesTitle": "2004年真题讲解",
+        "bvid": "BV1Ze4y1o7in",
+        "page": 56,
+        "startSeconds": 1,
+        "title": "2004数一（23）｜设总体 X 的分布函数为 F(x;β)= cases 1-1/x^β…",
+        "subject": "数学一",
+        "year": 2004
+      }
+    ],
+    "5472": [
+      {
+        "questionId": "5472",
+        "teacher": "喻老",
+        "seriesTitle": "2006年真题讲解",
+        "bvid": "BV1j24y1Z7KH",
+        "page": 45,
+        "startSeconds": 0,
+        "title": "2006数一三｜设总体 X 的概率密度为 f(x,θ)=casesθ, & 0≤t…",
+        "subject": "数学三",
+        "year": 2006
+      }
+    ],
     "5473": [
       {
         "questionId": "5473",
@@ -17290,6 +19494,32 @@
         "subject": "数学三"
       }
     ],
+    "5482": [
+      {
+        "questionId": "5482",
+        "teacher": "喻老",
+        "seriesTitle": "2003年真题讲解",
+        "bvid": "BV1wa411Z7TC",
+        "page": 34,
+        "startSeconds": 0,
+        "title": "2003数三（12）｜将一枚硬币独立地掷两次，定义事件 A_1=第一次出现正面， A_2=…",
+        "subject": "数学三",
+        "year": 2003
+      }
+    ],
+    "5488": [
+      {
+        "questionId": "5488",
+        "teacher": "喻老",
+        "seriesTitle": "2003年真题讲解",
+        "bvid": "BV1wa411Z7TC",
+        "page": 58,
+        "startSeconds": 0,
+        "title": "2003数一（21）｜已知甲、乙两箱中装有同种产品。甲箱中装有 3 件合格品和 3 件次品…",
+        "subject": "数学一",
+        "year": 2003
+      }
+    ],
     "5495": [
       {
         "questionId": "5495",
@@ -17301,6 +19531,32 @@
         "title": "1997数一 填空第5题",
         "subject": "数学一",
         "year": 1997
+      }
+    ],
+    "5499": [
+      {
+        "questionId": "5499",
+        "teacher": "喻老",
+        "seriesTitle": "2007年真题讲解",
+        "bvid": "BV1514y1Y7CK",
+        "page": 26,
+        "startSeconds": 0,
+        "title": "2007数一三（一16、三16）｜在区间 (0,1) 中随机地取两个数，则这两个数之差的绝对值小于 1…",
+        "subject": "数学一",
+        "year": 2007
+      }
+    ],
+    "5504": [
+      {
+        "questionId": "5504",
+        "teacher": "喻老",
+        "seriesTitle": "2007年真题讲解",
+        "bvid": "BV1514y1Y7CK",
+        "page": 13,
+        "startSeconds": 0,
+        "title": "2007数一三（一9、三9）｜某人向同一目标独立重复射击，每次射击命中目标的概率为 p(0≤t p…",
+        "subject": "数学一",
+        "year": 2007
       }
     ],
     "5513": [
@@ -17491,6 +19747,30 @@
         "startSeconds": 214.4,
         "title": "A²B−A−B=E，指定 3×3 A，求",
         "subject": "数学三"
+      },
+      {
+        "questionId": "5587",
+        "teacher": "喻老",
+        "seriesTitle": "2003年真题讲解",
+        "bvid": "BV1wa411Z7TC",
+        "page": 18,
+        "startSeconds": 0,
+        "title": "2003数二（6）｜设 3 阶方阵 A,B 满足 A^2B-A-B=E，其中 A=pma…",
+        "subject": "数学二",
+        "year": 2003
+      }
+    ],
+    "5588": [
+      {
+        "questionId": "5588",
+        "teacher": "喻老",
+        "seriesTitle": "2004年真题讲解",
+        "bvid": "BV1Ze4y1o7in",
+        "page": 13,
+        "startSeconds": 3,
+        "title": "2004数一二（一5、二6）｜设 A=pmatrix 2&1&0 1&2&0 0&0&1 pmat…",
+        "subject": "数学一",
+        "year": 2004
       }
     ],
     "5594": [
@@ -19360,6 +21640,17 @@
         "page": 1,
         "startSeconds": 8441,
         "title": "2006数二(3)：∫_0^{+∞}x/(1+x²)²dx"
+      },
+      {
+        "questionId": "7096",
+        "teacher": "喻老",
+        "seriesTitle": "2006年真题讲解",
+        "bvid": "BV1j24y1Z7KH",
+        "page": 8,
+        "startSeconds": 0,
+        "title": "2006数二（3）｜计算反常积分： ∫x dx/(1+x^2)^2=____.",
+        "subject": "数学二",
+        "year": 2006
       }
     ],
     "7097": [
@@ -19505,6 +21796,17 @@
         "page": 1,
         "startSeconds": 9399,
         "title": "2006数二(16)：∫arcsin e^x/e^x dx"
+      },
+      {
+        "questionId": "7118",
+        "teacher": "喻老",
+        "seriesTitle": "2006年真题讲解",
+        "bvid": "BV1j24y1Z7KH",
+        "page": 32,
+        "startSeconds": 0,
+        "title": "2006数二（16）｜计算积分： ∫",
+        "subject": "数学二",
+        "year": 2006
       }
     ],
     "7123": [
@@ -19703,6 +22005,19 @@
         "page": 1,
         "startSeconds": 12785,
         "title": ""
+      }
+    ],
+    "7175": [
+      {
+        "questionId": "7175",
+        "teacher": "喻老",
+        "seriesTitle": "2004年真题讲解",
+        "bvid": "BV1Ze4y1o7in",
+        "page": 9,
+        "startSeconds": 1,
+        "title": "2004数三（3）｜设 f(x)= cases xe^x^2,&-1/2≤ x≤t1/2…",
+        "subject": "数学三",
+        "year": 2004
       }
     ],
     "7180": [
@@ -20071,6 +22386,19 @@
         "title": "变限积分函数面积：1994北京竞赛/1000强化18 f(x)=∫₋₁ˣ t|t|dt"
       }
     ],
+    "7250": [
+      {
+        "questionId": "7250",
+        "teacher": "喻老",
+        "seriesTitle": "2006年真题讲解",
+        "bvid": "BV1j24y1Z7KH",
+        "page": 43,
+        "startSeconds": 0,
+        "title": "2006数二（21）｜已知曲线 L 的参数方程为 casesx=t^2+1,=4t-t^2…",
+        "subject": "数学二",
+        "year": 2006
+      }
+    ],
     "7251": [
       {
         "questionId": "7251",
@@ -20152,6 +22480,17 @@
         "page": 2,
         "startSeconds": 3540,
         "title": "极坐标面积：2003数二4/基础严选 对数螺线ρ=e^{aθ}一段弧与极轴围成面积",
+        "subject": "数学二",
+        "year": 2003
+      },
+      {
+        "questionId": "7271",
+        "teacher": "喻老",
+        "seriesTitle": "2003年真题讲解",
+        "bvid": "BV1wa411Z7TC",
+        "page": 12,
+        "startSeconds": 0,
+        "title": "2003数二（4）｜设曲线的极坐标方程为 ρ=e^aθ，其中 a>0。该曲线上与 0≤s…",
         "subject": "数学二",
         "year": 2003
       }
@@ -20446,6 +22785,17 @@
         "title": "体积最值：2007数二18 y=√x·a^{-x/2a} 绕x轴体积V(a)及其最小值",
         "subject": "数学二",
         "year": 2007
+      },
+      {
+        "questionId": "7317",
+        "teacher": "喻老",
+        "seriesTitle": "2007年真题讲解",
+        "bvid": "BV1514y1Y7CK",
+        "page": 31,
+        "startSeconds": 0,
+        "title": "2007数二（18）｜设 D 是位于曲线 y=√(x) a^-x/(2a) (a≥t1,0…",
+        "subject": "数学二",
+        "year": 2007
       }
     ],
     "7318": [
@@ -20544,6 +22894,17 @@
         "title": "切线+旋转体：2003数一13 y=lnx过原点切线围成D面积及绕x=e体积",
         "subject": "数学一",
         "year": 2003
+      },
+      {
+        "questionId": "7333",
+        "teacher": "喻老",
+        "seriesTitle": "2003年真题讲解",
+        "bvid": "BV1wa411Z7TC",
+        "page": 35,
+        "startSeconds": 0,
+        "title": "2003数一（13）｜过坐标原点作曲线 y=ln x 的切线，该切线与曲线 y=ln x…",
+        "subject": "数学一",
+        "year": 2003
       }
     ],
     "7334": [
@@ -20592,6 +22953,19 @@
         "title": "极坐标旋转体：660数二132 心脏线r=1+cosθ与直线r=2/(2sinθ+cosθ)绕极轴体积"
       }
     ],
+    "7344": [
+      {
+        "questionId": "7344",
+        "teacher": "喻老",
+        "seriesTitle": "2003年真题讲解",
+        "bvid": "BV1wa411Z7TC",
+        "page": 52,
+        "startSeconds": 0,
+        "title": "2003数一（19）｜设 A= pmatrix 3&2&2 2&3&2 2&2&3 pma…",
+        "subject": "数学一",
+        "year": 2003
+      }
+    ],
     "7361": [
       {
         "questionId": "7361",
@@ -20602,6 +22976,19 @@
         "startSeconds": 0,
         "title": "基础填空 3",
         "subject": "数学一"
+      }
+    ],
+    "7363": [
+      {
+        "questionId": "7363",
+        "teacher": "喻老",
+        "seriesTitle": "2008年真题讲解",
+        "bvid": "BV1kR4y197it",
+        "page": 26,
+        "startSeconds": 0,
+        "title": "2008数一（13）｜设 A 为 2 阶矩阵，α_1,α_2 为线性无关的 2 维列向量…",
+        "subject": "数学一",
+        "year": 2008
       }
     ],
     "7364": [
@@ -20751,6 +23138,17 @@
         "page": 1,
         "startSeconds": 7430,
         "title": "微分方程大观：2004数二11 特解形式设法定C",
+        "subject": "数学二",
+        "year": 2004
+      },
+      {
+        "questionId": "7604",
+        "teacher": "喻老",
+        "seriesTitle": "2004年真题讲解",
+        "bvid": "BV1Ze4y1o7in",
+        "page": 27,
+        "startSeconds": 0,
+        "title": "2004数二（11）｜微分方程 y''+y=x^2+1+sin x 的特解形式可设为（ ）…",
         "subject": "数学二",
         "year": 2004
       }
@@ -20975,6 +23373,17 @@
         "title": "微分方程大观：2007数二19 y''(x+(y')²)=y'",
         "subject": "数学二",
         "year": 2007
+      },
+      {
+        "questionId": "7648",
+        "teacher": "喻老",
+        "seriesTitle": "2007年真题讲解",
+        "bvid": "BV1514y1Y7CK",
+        "page": 33,
+        "startSeconds": 0,
+        "title": "2007数二（19）｜求微分方程 y''(x+(y')^2)=y' 满足初始条件 y(1)…",
+        "subject": "数学二",
+        "year": 2007
       }
     ],
     "7652": [
@@ -21033,6 +23442,17 @@
         "title": "微分方程大观：2004数一4 欧拉方程（26版1000强化52同题）",
         "subject": "数学一",
         "year": 2004
+      },
+      {
+        "questionId": "7659",
+        "teacher": "喻老",
+        "seriesTitle": "2004年真题讲解",
+        "bvid": "BV1Ze4y1o7in",
+        "page": 10,
+        "startSeconds": 1,
+        "title": "2004数一（4）｜欧拉方程 x^2d^2y/dx^2 +4xdy/dx+2y=0, x…",
+        "subject": "数学一",
+        "year": 2004
       }
     ],
     "7660": [
@@ -21083,6 +23503,17 @@
         "title": "微分方程大观：2003数一17/数二16 反函数代换",
         "subject": "数学一",
         "year": 2003
+      },
+      {
+        "questionId": "7666",
+        "teacher": "喻老",
+        "seriesTitle": "2003年真题讲解",
+        "bvid": "BV1wa411Z7TC",
+        "page": 46,
+        "startSeconds": 1,
+        "title": "2003数一二（一17、二16）｜设函数 y=y(x) 在 (-∞,+∞) 内具有二阶导数，且 y'0…",
+        "subject": "数学一",
+        "year": 2003
       }
     ],
     "7668": [
@@ -21094,6 +23525,17 @@
         "page": 1,
         "startSeconds": 10495,
         "title": "微分方程大观：2005数二18 x=cos t代换",
+        "subject": "数学二",
+        "year": 2005
+      },
+      {
+        "questionId": "7668",
+        "teacher": "喻老",
+        "seriesTitle": "2005年真题讲解",
+        "bvid": "BV1TN4y1F7Jz",
+        "page": 41,
+        "startSeconds": 0,
+        "title": "2005数二（18）｜用变量代换 x=cos t（0≤t t≤tπ）化简微分方程 (1-x…",
         "subject": "数学二",
         "year": 2005
       }
@@ -21240,6 +23682,19 @@
         "title": "幂指函数型一阶方程：900第六章数二C类2 y^x(ln y + xy'/y + 1) = e^{-x}, y(1)=e^{-1}"
       }
     ],
+    "7701": [
+      {
+        "questionId": "7701",
+        "teacher": "喻老",
+        "seriesTitle": "2006年真题讲解",
+        "bvid": "BV1j24y1Z7KH",
+        "page": 26,
+        "startSeconds": 0,
+        "title": "2006数一（13）｜设 A,B 为随机事件，且 P(B)≥t0, P(A B)=1，则必…",
+        "subject": "数学一",
+        "year": 2006
+      }
+    ],
     "7703": [
       {
         "questionId": "7703",
@@ -21373,6 +23828,19 @@
         "year": 2022
       }
     ],
+    "7715": [
+      {
+        "questionId": "7715",
+        "teacher": "喻老",
+        "seriesTitle": "2003年真题讲解",
+        "bvid": "BV1wa411Z7TC",
+        "page": 50,
+        "startSeconds": 0,
+        "title": "2003数二（18）｜位于第一象限的曲线 y=f(x) 过点 2/2,1/2。曲线上任一点…",
+        "subject": "数学二",
+        "year": 2003
+      }
+    ],
     "7716": [
       {
         "questionId": "7716",
@@ -21432,6 +23900,19 @@
         "title": "表面积：1998数二/660数二129/30例10.12 y=√(x-1)过原点切线绕x轴表面积",
         "subject": "数学二",
         "year": 1998
+      }
+    ],
+    "7728": [
+      {
+        "questionId": "7728",
+        "teacher": "喻老",
+        "seriesTitle": "2004年真题讲解",
+        "bvid": "BV1Ze4y1o7in",
+        "page": 45,
+        "startSeconds": 0,
+        "title": "2004数二（18）｜曲线 y=/e^x+e^-x2 与直线 x=0、x=t，其中 t≥t…",
+        "subject": "数学二",
+        "year": 2004
       }
     ],
     "7730": [
@@ -21773,6 +24254,19 @@
         "title": "平地干拉：1999数一/数二 井深30m抓斗+缆绳+污泥漏料变力做功",
         "subject": "数学一、数学二",
         "year": 1999
+      }
+    ],
+    "7769": [
+      {
+        "questionId": "7769",
+        "teacher": "喻老",
+        "seriesTitle": "2003年真题讲解",
+        "bvid": "BV1wa411Z7TC",
+        "page": 44,
+        "startSeconds": 0,
+        "title": "2003数一（16）｜某建筑工程打地基时，需用汽锤将桩打进土层。汽锤每次击打都将克服土层对…",
+        "subject": "数学一",
+        "year": 2003
       }
     ],
     "7770": [
@@ -27028,6 +29522,17 @@
         "title": "级数大观 第14题（2006数一三9/武忠祥强化严选第七章9）",
         "subject": "数学一、数学三",
         "year": 2006
+      },
+      {
+        "questionId": "8705",
+        "teacher": "喻老",
+        "seriesTitle": "2006年真题讲解",
+        "bvid": "BV1j24y1Z7KH",
+        "page": 19,
+        "startSeconds": 0,
+        "title": "🖐️强化严选第七章9｜若级数 Σ_n=1^∞a_n 收敛，则下列结论必成立的是（ ）。",
+        "subject": "数学一",
+        "year": 2006
       }
     ],
     "8706": [
@@ -27087,6 +29592,17 @@
         "title": "级数大观 第19题（2005数三9/武忠祥强化严选第七章11）",
         "subject": "数学三",
         "year": 2005
+      },
+      {
+        "questionId": "8710",
+        "teacher": "喻老",
+        "seriesTitle": "2005年真题讲解",
+        "bvid": "BV1TN4y1F7Jz",
+        "page": 22,
+        "startSeconds": 0,
+        "title": "2005数三（9）｜设 a_n≥t0。若 Σ_n=1^∞a_n 发散，而 Σ_n=1^∞…",
+        "subject": "数学三",
+        "year": 2005
       }
     ],
     "8711": [
@@ -27122,6 +29638,17 @@
         "page": 3,
         "startSeconds": 2883.7,
         "title": "级数大观 第21题（2003数三9）",
+        "subject": "数学三",
+        "year": 2003
+      },
+      {
+        "questionId": "8712",
+        "teacher": "喻老",
+        "seriesTitle": "2003年真题讲解",
+        "bvid": "BV1wa411Z7TC",
+        "page": 27,
+        "startSeconds": 0,
+        "title": "2003数三（9）｜设p_n=a_n+|a_n|/2, q_n=a_n-|a_n|/2…",
         "subject": "数学三",
         "year": 2003
       }
@@ -27264,6 +29791,17 @@
         "title": "级数大观 第6题（2004数一9）",
         "subject": "数学一",
         "year": 2004
+      },
+      {
+        "questionId": "8727",
+        "teacher": "喻老",
+        "seriesTitle": "2004年真题讲解",
+        "bvid": "BV1Ze4y1o7in",
+        "page": 22,
+        "startSeconds": 1,
+        "title": "2004数一（9）｜设 Σ_n=1^∞a_n 为正项级数，下列结论中正确的是（ ）。",
+        "subject": "数学一",
+        "year": 2004
       }
     ],
     "8728": [
@@ -27310,6 +29848,17 @@
         "page": 3,
         "startSeconds": 1679.7,
         "title": "级数大观 第9题（2004数三10/张宇30讲习题16.1）",
+        "subject": "数学三",
+        "year": 2004
+      },
+      {
+        "questionId": "8730",
+        "teacher": "喻老",
+        "seriesTitle": "2004年真题讲解",
+        "bvid": "BV1Ze4y1o7in",
+        "page": 25,
+        "startSeconds": 1,
+        "title": "2004数三（10）｜考查下列命题： ① 若 Σ_n=1^∞(u_2n-1+u_2n) 收…",
         "subject": "数学三",
         "year": 2004
       }
@@ -27533,6 +30082,19 @@
         "title": "级数大观 第43题（2014数一19/张宇30讲例16.10）",
         "subject": "数学一",
         "year": 2014
+      }
+    ],
+    "8761": [
+      {
+        "questionId": "8761",
+        "teacher": "喻老",
+        "seriesTitle": "2004年真题讲解",
+        "bvid": "BV1Ze4y1o7in",
+        "page": 44,
+        "startSeconds": 0,
+        "title": "2004数一（18）｜设 n 为正整数。证明方程 x^n+nx-1=0 存在唯一正实根 x…",
+        "subject": "数学一",
+        "year": 2004
       }
     ],
     "8762": [
@@ -28089,6 +30651,17 @@
         "title": "级数大观 第42题（2008数一11/武忠祥强化严选第七章20）",
         "subject": "数学一",
         "year": 2008
+      },
+      {
+        "questionId": "8821",
+        "teacher": "喻老",
+        "seriesTitle": "2008年真题讲解",
+        "bvid": "BV1kR4y197it",
+        "page": 22,
+        "startSeconds": 0,
+        "title": "2008数一（11）｜已知幂级数 Σ_n=0^∞a_n(x+2)^n 在 x=0 处收敛…",
+        "subject": "数学一",
+        "year": 2008
       }
     ],
     "8823": [
@@ -28546,6 +31119,17 @@
         "title": "级数大观 第12题（2003数三16）",
         "subject": "数学三",
         "year": 2003
+      },
+      {
+        "questionId": "8864",
+        "teacher": "喻老",
+        "seriesTitle": "2003年真题讲解",
+        "bvid": "BV1wa411Z7TC",
+        "page": 45,
+        "startSeconds": 0,
+        "title": "2003数三（16）｜求幂级数 1+Σ_n=1^∞(-1)^n/x^2n2n 在 |x|≤…",
+        "subject": "数学三",
+        "year": 2003
       }
     ],
     "8865": [
@@ -28581,6 +31165,17 @@
         "page": 5,
         "startSeconds": 1870.4,
         "title": "级数大观 第15题（2005数三18/张宇30讲习题16.13）",
+        "subject": "数学三",
+        "year": 2005
+      },
+      {
+        "questionId": "8867",
+        "teacher": "喻老",
+        "seriesTitle": "2005年真题讲解",
+        "bvid": "BV1TN4y1F7Jz",
+        "page": 42,
+        "startSeconds": 0,
+        "title": "2005数三（18）｜求幂级数 Σ_n=1^∞1/2n+1-1x^2n 在区间 (-1,1…",
         "subject": "数学三",
         "year": 2005
       }
@@ -28679,6 +31274,17 @@
         "title": "级数大观 第23题（2005数一16）",
         "subject": "数学一",
         "year": 2005
+      },
+      {
+        "questionId": "8879",
+        "teacher": "喻老",
+        "seriesTitle": "2005年真题讲解",
+        "bvid": "BV1TN4y1F7Jz",
+        "page": 36,
+        "startSeconds": 0,
+        "title": "2005数一（16）｜求幂级数 Σ_n=1^∞(-1)^n-11+1/n(2n-1)x^2…",
+        "subject": "数学一",
+        "year": 2005
       }
     ],
     "8880": [
@@ -28690,6 +31296,17 @@
         "page": 5,
         "startSeconds": 2452.1,
         "title": "级数大观 第22题（2006数三19/武忠祥强化严选第七章32）",
+        "subject": "数学三",
+        "year": 2006
+      },
+      {
+        "questionId": "8880",
+        "teacher": "喻老",
+        "seriesTitle": "2006年真题讲解",
+        "bvid": "BV1j24y1Z7KH",
+        "page": 39,
+        "startSeconds": 0,
+        "title": "🖐️强化严选第七章32｜求幂级数 Σ_n=1^∞/(-1)^n-1x^2n+1n(2n-1)…",
         "subject": "数学三",
         "year": 2006
       }
@@ -28858,6 +31475,19 @@
         "title": "级数大观 第36题（武忠祥强化严选第七章31）"
       }
     ],
+    "8898": [
+      {
+        "questionId": "8898",
+        "teacher": "喻老",
+        "seriesTitle": "2004年真题讲解",
+        "bvid": "BV1Ze4y1o7in",
+        "page": 48,
+        "startSeconds": 1,
+        "title": "2004数三（19）｜设级数 x^4/2·4 +x^6/2·4·6 +x^8/2·4·6·…",
+        "subject": "数学三",
+        "year": 2004
+      }
+    ],
     "8903": [
       {
         "questionId": "8903",
@@ -28906,6 +31536,17 @@
         "page": 5,
         "startSeconds": 5278.8,
         "title": "级数大观 第40题（2007数一20/武忠祥强化严选第七章36）",
+        "subject": "数学一",
+        "year": 2007
+      },
+      {
+        "questionId": "8912",
+        "teacher": "喻老",
+        "seriesTitle": "2007年真题讲解",
+        "bvid": "BV1514y1Y7CK",
+        "page": 34,
+        "startSeconds": 0,
+        "title": "2007数一（20）｜设幂级数 Σ_n=0^∞a_nx^n 在 R 上收敛，其和函数 y(…",
         "subject": "数学一",
         "year": 2007
       }
@@ -29168,6 +31809,17 @@
         "title": "级数大观 第1题（2006数一17）",
         "subject": "数学一",
         "year": 2006
+      },
+      {
+        "questionId": "8967",
+        "teacher": "喻老",
+        "seriesTitle": "2006年真题讲解",
+        "bvid": "BV1j24y1Z7KH",
+        "page": 34,
+        "startSeconds": 0,
+        "title": "2006数一（17）｜将函数 f(x)=x/2+x-x^2 展开成 x 的幂级数，并指出收…",
+        "subject": "数学一",
+        "year": 2006
       }
     ],
     "8968": [
@@ -29179,6 +31831,17 @@
         "page": 6,
         "startSeconds": 239.6,
         "title": "级数大观 第5题（2007数三20）",
+        "subject": "数学三",
+        "year": 2007
+      },
+      {
+        "questionId": "8968",
+        "teacher": "喻老",
+        "seriesTitle": "2007年真题讲解",
+        "bvid": "BV1514y1Y7CK",
+        "page": 36,
+        "startSeconds": 0,
+        "title": "2007数三（20）｜将函数 f(x)=1/x^2-3x-4 展开成 x-1 的幂级数，并…",
         "subject": "数学三",
         "year": 2007
       }
@@ -29446,6 +32109,19 @@
         "title": "2013 数二 第1题",
         "subject": "数学二",
         "year": 2013
+      }
+    ],
+    "10523": [
+      {
+        "questionId": "10523",
+        "teacher": "喻老",
+        "seriesTitle": "2007年真题讲解",
+        "bvid": "BV1514y1Y7CK",
+        "page": 1,
+        "startSeconds": 89,
+        "title": "2007数一二三（一1、二1、三1）｜当 x→0^+ 时，与 √(x) 等价的无穷小量是（）.",
+        "subject": "数学一",
+        "year": 2007
       }
     ],
     "10541": [
@@ -30268,6 +32944,19 @@
         "year": 1997
       }
     ],
+    "10706": [
+      {
+        "questionId": "10706",
+        "teacher": "喻老",
+        "seriesTitle": "2008年真题讲解",
+        "bvid": "BV1kR4y197it",
+        "page": 43,
+        "startSeconds": 0,
+        "title": "2008数三（19）｜设银行存款的年利率为 r=0.05，并依年复利计算，某基金会希望通过…",
+        "subject": "数学三",
+        "year": 2008
+      }
+    ],
     "10720": [
       {
         "questionId": "10720",
@@ -30288,6 +32977,19 @@
         "page": 1,
         "startSeconds": 5076,
         "title": "900 第五章数二 A 类 15"
+      }
+    ],
+    "10724": [
+      {
+        "questionId": "10724",
+        "teacher": "喻老",
+        "seriesTitle": "2003年真题讲解",
+        "bvid": "BV1wa411Z7TC",
+        "page": 8,
+        "startSeconds": 0,
+        "title": "2003数一（3）｜设 x^2=Σ_n=0^∞a_ncos nx (-π≤ x≤π)…",
+        "subject": "数学一",
+        "year": 2003
       }
     ],
     "10748": [
@@ -30334,6 +33036,17 @@
         "page": 6,
         "startSeconds": 2517.1,
         "title": "级数大观 第30题（2003数一14）",
+        "subject": "数学一",
+        "year": 2003
+      },
+      {
+        "questionId": "10752",
+        "teacher": "喻老",
+        "seriesTitle": "2003年真题讲解",
+        "bvid": "BV1wa411Z7TC",
+        "page": 38,
+        "startSeconds": 1,
+        "title": "2003数一（14）｜将函数 f(x)=arctan1-2x/1+2x 展开成 x 的幂级…",
         "subject": "数学一",
         "year": 2003
       }
@@ -30425,6 +33138,97 @@
         "title": "880变式：分母换 e^{x⁴}-1（880第一章基础填空6）"
       }
     ],
+    "10777": [
+      {
+        "questionId": "10777",
+        "teacher": "喻老",
+        "seriesTitle": "2005年真题讲解",
+        "bvid": "BV1TN4y1F7Jz",
+        "page": 48,
+        "startSeconds": 1,
+        "title": "2005数一二｜设 3 阶矩阵 A 的第 1 行为 (a,b,c)，其中 a,b,c…",
+        "subject": "数学一",
+        "year": 2005
+      }
+    ],
+    "10779": [
+      {
+        "questionId": "10779",
+        "teacher": "喻老",
+        "seriesTitle": "2008年真题讲解",
+        "bvid": "BV1kR4y197it",
+        "page": 4,
+        "startSeconds": 0,
+        "title": "2008数一（2）｜函数 f(x,y)=arctanx/y 在点 (0,1) 处的梯度等…",
+        "subject": "数学一",
+        "year": 2008
+      }
+    ],
+    "10781": [
+      {
+        "questionId": "10781",
+        "teacher": "喻老",
+        "seriesTitle": "2008年真题讲解",
+        "bvid": "BV1kR4y197it",
+        "page": 11,
+        "startSeconds": 0,
+        "title": "2008数一（6）｜设 A 为 3 阶实对称矩阵，如果二次曲面方程 pmatrixx&y…",
+        "subject": "数学一",
+        "year": 2008
+      }
+    ],
+    "10782": [
+      {
+        "questionId": "10782",
+        "teacher": "喻老",
+        "seriesTitle": "2008年真题讲解",
+        "bvid": "BV1kR4y197it",
+        "page": 16,
+        "startSeconds": 0,
+        "title": "2008数一（9）｜微分方程 xy'+y=0 满足条件 y(1)=1 的解为 y=___…",
+        "subject": "数学一",
+        "year": 2008
+      }
+    ],
+    "10783": [
+      {
+        "questionId": "10783",
+        "teacher": "喻老",
+        "seriesTitle": "2008年真题讲解",
+        "bvid": "BV1kR4y197it",
+        "page": 19,
+        "startSeconds": 0,
+        "title": "2008数一二（一10、二11）｜曲线 sin(xy)+ln(y-x)=x 在点 (0,1) 处的切线…",
+        "subject": "数学一",
+        "year": 2008
+      }
+    ],
+    "10784": [
+      {
+        "questionId": "10784",
+        "teacher": "喻老",
+        "seriesTitle": "2008年真题讲解",
+        "bvid": "BV1kR4y197it",
+        "page": 24,
+        "startSeconds": 0,
+        "title": "2008数一（12）｜设曲面 是 z=√(4-x^2-y^2) 的上侧，则 _xy dy…",
+        "subject": "数学一",
+        "year": 2008
+      }
+    ],
+    "10786": [
+      {
+        "questionId": "10786",
+        "teacher": "喻老",
+        "seriesTitle": "2008年真题讲解",
+        "bvid": "BV1kR4y197it",
+        "page": 29,
+        "startSeconds": 0,
+        "title": "2008数一（14）｜设随机变量 X 服从参数为 1 的泊松分布，则 PX=E(X^2)=…",
+        "subject": "数学一",
+        "year": 2008
+      }
+    ],
     "10787": [
       {
         "questionId": "10787",
@@ -30436,6 +33240,1161 @@
         "title": "0比0：[sin x-sin(sin x)]sin x/x⁴（2008数一二15）",
         "subject": "数学一、数学二",
         "year": 2008
+      },
+      {
+        "questionId": "10787",
+        "teacher": "喻老",
+        "seriesTitle": "2008年真题讲解",
+        "bvid": "BV1kR4y197it",
+        "page": 31,
+        "startSeconds": 0,
+        "title": "2008数一二（一15、二15）｜求极限 lim_x→0[sin x-sin(sin x)]sin x…",
+        "subject": "数学一",
+        "year": 2008
+      }
+    ],
+    "10788": [
+      {
+        "questionId": "10788",
+        "teacher": "喻老",
+        "seriesTitle": "2008年真题讲解",
+        "bvid": "BV1kR4y197it",
+        "page": 33,
+        "startSeconds": 0,
+        "title": "2008数一（16）｜计算曲线积分 ∫",
+        "subject": "数学一",
+        "year": 2008
+      }
+    ],
+    "10789": [
+      {
+        "questionId": "10789",
+        "teacher": "喻老",
+        "seriesTitle": "2008年真题讲解",
+        "bvid": "BV1kR4y197it",
+        "page": 36,
+        "startSeconds": 0,
+        "title": "2008数一（17）｜已知曲线 C:cases x^2+y^2-2z^2=0, x+y+3…",
+        "subject": "数学一",
+        "year": 2008
+      }
+    ],
+    "10790": [
+      {
+        "questionId": "10790",
+        "teacher": "喻老",
+        "seriesTitle": "2008年真题讲解",
+        "bvid": "BV1kR4y197it",
+        "page": 38,
+        "startSeconds": 0,
+        "title": "2008数一（18）｜设 f(x) 是连续函数。 （1）利用定义证明函数 F(x)=∫",
+        "subject": "数学一",
+        "year": 2008
+      }
+    ],
+    "10791": [
+      {
+        "questionId": "10791",
+        "teacher": "喻老",
+        "seriesTitle": "2008年真题讲解",
+        "bvid": "BV1kR4y197it",
+        "page": 41,
+        "startSeconds": 0,
+        "title": "2008数一（19）｜将函数 f(x)=1-x^2（0≤ x≤π）展开成余弦级数，并求 Σ…",
+        "subject": "数学一",
+        "year": 2008
+      }
+    ],
+    "10792": [
+      {
+        "questionId": "10792",
+        "teacher": "喻老",
+        "seriesTitle": "2008年真题讲解",
+        "bvid": "BV1kR4y197it",
+        "page": 44,
+        "startSeconds": 0,
+        "title": "2008数一（20）｜设 α,β 为 3 维列向量，矩阵 A=αα^T+ββ^T，其中 α…",
+        "subject": "数学一",
+        "year": 2008
+      }
+    ],
+    "10793": [
+      {
+        "questionId": "10793",
+        "teacher": "喻老",
+        "seriesTitle": "2008年真题讲解",
+        "bvid": "BV1kR4y197it",
+        "page": 46,
+        "startSeconds": 136,
+        "title": "2008数一二三（一21、二22、三20）｜设 n 元线性方程组 Ax=b，其中 gathered A= pma…",
+        "subject": "数学一",
+        "year": 2008
+      }
+    ],
+    "10794": [
+      {
+        "questionId": "10794",
+        "teacher": "喻老",
+        "seriesTitle": "2008年真题讲解",
+        "bvid": "BV1kR4y197it",
+        "page": 49,
+        "startSeconds": 0,
+        "title": "2008数一（23）｜设 X_1,X_2,≤dots,X_n 是总体 N(μ,σ^2) 的…",
+        "subject": "数学一",
+        "year": 2008
+      }
+    ],
+    "10796": [
+      {
+        "questionId": "10796",
+        "teacher": "喻老",
+        "seriesTitle": "2008年真题讲解",
+        "bvid": "BV1kR4y197it",
+        "page": 5,
+        "startSeconds": 0,
+        "title": "2008数二三（二2、三2）｜如题图，曲线段的方程为 y=f(x)，函数 f(x) 在区间 [0…",
+        "subject": "数学二",
+        "year": 2008
+      }
+    ],
+    "10798": [
+      {
+        "questionId": "10798",
+        "teacher": "喻老",
+        "seriesTitle": "2008年真题讲解",
+        "bvid": "BV1kR4y197it",
+        "page": 12,
+        "startSeconds": 0,
+        "title": "2008数二三（二6、三4）｜设函数 f 连续，且 F(u,v)=_D_uv/f(x^2+y^2)…",
+        "subject": "数学二",
+        "year": 2008
+      }
+    ],
+    "10799": [
+      {
+        "questionId": "10799",
+        "teacher": "喻老",
+        "seriesTitle": "2008年真题讲解",
+        "bvid": "BV1kR4y197it",
+        "page": 17,
+        "startSeconds": 0,
+        "title": "2008数二（9）｜已知函数 f(x) 连续，且 lim_x→0 /1-cos[xf(x…",
+        "subject": "数学二",
+        "year": 2008
+      }
+    ],
+    "10800": [
+      {
+        "questionId": "10800",
+        "teacher": "喻老",
+        "seriesTitle": "2008年真题讲解",
+        "bvid": "BV1kR4y197it",
+        "page": 20,
+        "startSeconds": 0,
+        "title": "2008数二（10）｜微分方程 (y+x^2e^-x) dx-x dy=0 的通解为 y=…",
+        "subject": "数学二",
+        "year": 2008
+      }
+    ],
+    "10801": [
+      {
+        "questionId": "10801",
+        "teacher": "喻老",
+        "seriesTitle": "2008年真题讲解",
+        "bvid": "BV1kR4y197it",
+        "page": 25,
+        "startSeconds": 0,
+        "title": "2008数二（12）｜曲线 y=(x-5)x^2/3 的拐点坐标为 ____。",
+        "subject": "数学二",
+        "year": 2008
+      }
+    ],
+    "10802": [
+      {
+        "questionId": "10802",
+        "teacher": "喻老",
+        "seriesTitle": "2008年真题讲解",
+        "bvid": "BV1kR4y197it",
+        "page": 27,
+        "startSeconds": 0,
+        "title": "2008数二（13）｜设 z=y/x^x/y，则 ∂ z/∂ x_(1,2) =____.",
+        "subject": "数学二",
+        "year": 2008
+      }
+    ],
+    "10803": [
+      {
+        "questionId": "10803",
+        "teacher": "喻老",
+        "seriesTitle": "2008年真题讲解",
+        "bvid": "BV1kR4y197it",
+        "page": 30,
+        "startSeconds": 0,
+        "title": "2008数二（14）｜设 3 阶矩阵 A 的特征值为 2,3,λ。若行列式 |2A|=-4…",
+        "subject": "数学二",
+        "year": 2008
+      }
+    ],
+    "10804": [
+      {
+        "questionId": "10804",
+        "teacher": "喻老",
+        "seriesTitle": "2008年真题讲解",
+        "bvid": "BV1kR4y197it",
+        "page": 34,
+        "startSeconds": 0,
+        "title": "2008数二（16）｜设函数 y=y(x) 由参数方程 cases x=x(t), y=∫…",
+        "subject": "数学二",
+        "year": 2008
+      }
+    ],
+    "10805": [
+      {
+        "questionId": "10805",
+        "teacher": "喻老",
+        "seriesTitle": "2008年真题讲解",
+        "bvid": "BV1kR4y197it",
+        "page": 37,
+        "startSeconds": 0,
+        "title": "2008数二（17）｜计算 ∫√(1-x^2) dx.",
+        "subject": "数学二",
+        "year": 2008
+      }
+    ],
+    "10808": [
+      {
+        "questionId": "10808",
+        "teacher": "喻老",
+        "seriesTitle": "2008年真题讲解",
+        "bvid": "BV1kR4y197it",
+        "page": 45,
+        "startSeconds": 0,
+        "title": "2008数二（20）｜（1）证明积分中值定理：若函数 f(x) 在闭区间 [a,b] 上连…",
+        "subject": "数学二",
+        "year": 2008
+      }
+    ],
+    "10809": [
+      {
+        "questionId": "10809",
+        "teacher": "喻老",
+        "seriesTitle": "2008年真题讲解",
+        "bvid": "BV1kR4y197it",
+        "page": 50,
+        "startSeconds": 0,
+        "title": "2008数二三（二23、三21）｜设 A 为 3 阶矩阵，α_1,α_2 为 A 的分别属于特征值 -…",
+        "subject": "数学二",
+        "year": 2008
+      }
+    ],
+    "10814": [
+      {
+        "questionId": "10814",
+        "teacher": "喻老",
+        "seriesTitle": "2008年真题讲解",
+        "bvid": "BV1kR4y197it",
+        "page": 21,
+        "startSeconds": 0,
+        "title": "2008数三（10）｜设 fx+1/x=x+x^3/1+x^4, 则 ∫f(x) dx=_…",
+        "subject": "数学三",
+        "year": 2008
+      }
+    ],
+    "10815": [
+      {
+        "questionId": "10815",
+        "teacher": "喻老",
+        "seriesTitle": "2008年真题讲解",
+        "bvid": "BV1kR4y197it",
+        "page": 23,
+        "startSeconds": 0,
+        "title": "2008数三（11）｜设 D=(x,y):x^2+y^2≤1, 则 _D(x^2-y) d…",
+        "subject": "数学三",
+        "year": 2008
+      }
+    ],
+    "10817": [
+      {
+        "questionId": "10817",
+        "teacher": "喻老",
+        "seriesTitle": "2008年真题讲解",
+        "bvid": "BV1kR4y197it",
+        "page": 28,
+        "startSeconds": 0,
+        "title": "2008数三（13）｜设 3 阶矩阵 A 的特征值为 1,2,2，E 为 3 阶单位矩阵…",
+        "subject": "数学三",
+        "year": 2008
+      }
+    ],
+    "10821": [
+      {
+        "questionId": "10821",
+        "teacher": "喻老",
+        "seriesTitle": "2008年真题讲解",
+        "bvid": "BV1kR4y197it",
+        "page": 40,
+        "startSeconds": 27,
+        "title": "2008数三（18）｜设 f(x) 是周期为 2 的连续函数。 （1）证明对任意实数 t…",
+        "subject": "数学三",
+        "year": 2008
+      }
+    ],
+    "10825": [
+      {
+        "questionId": "10825",
+        "teacher": "喻老",
+        "seriesTitle": "2007年真题讲解",
+        "bvid": "BV1514y1Y7CK",
+        "page": 4,
+        "startSeconds": 0,
+        "title": "2007数一二三（一3、二3、三3）｜如题图，连续函数 y=f(x) 在区间 [-3,-2]、[2,3]…",
+        "subject": "数学一",
+        "year": 2007
+      }
+    ],
+    "10827": [
+      {
+        "questionId": "10827",
+        "teacher": "喻老",
+        "seriesTitle": "2007年真题讲解",
+        "bvid": "BV1514y1Y7CK",
+        "page": 8,
+        "startSeconds": 0,
+        "title": "2007数一（6）｜设曲线 L:f(x,y)=1，其中 f(x,y) 具有一阶连续偏导数…",
+        "subject": "数学一",
+        "year": 2007
+      }
+    ],
+    "10829": [
+      {
+        "questionId": "10829",
+        "teacher": "喻老",
+        "seriesTitle": "2007年真题讲解",
+        "bvid": "BV1514y1Y7CK",
+        "page": 15,
+        "startSeconds": 0,
+        "title": "2007数一（11）｜计算 ∫e^1/x dx.",
+        "subject": "数学一",
+        "year": 2007
+      }
+    ],
+    "10830": [
+      {
+        "questionId": "10830",
+        "teacher": "喻老",
+        "seriesTitle": "2007年真题讲解",
+        "bvid": "BV1514y1Y7CK",
+        "page": 18,
+        "startSeconds": 0,
+        "title": "2007数一（12）｜设 f(u,v) 为二元可微函数，z=f(x^y,y^x)，则 ∂…",
+        "subject": "数学一",
+        "year": 2007
+      }
+    ],
+    "10831": [
+      {
+        "questionId": "10831",
+        "teacher": "喻老",
+        "seriesTitle": "2007年真题讲解",
+        "bvid": "BV1514y1Y7CK",
+        "page": 20,
+        "startSeconds": 0,
+        "title": "2007数一二（一13、二14）｜二阶常系数非齐次线性微分方程 y''-4y'+3y=2e^2x 的通…",
+        "subject": "数学一",
+        "year": 2007
+      }
+    ],
+    "10832": [
+      {
+        "questionId": "10832",
+        "teacher": "喻老",
+        "seriesTitle": "2007年真题讲解",
+        "bvid": "BV1514y1Y7CK",
+        "page": 22,
+        "startSeconds": 0,
+        "title": "2007数一（14）｜设曲面 : |x|+|y|+|z|=1, 则 _(x+|y|) dS…",
+        "subject": "数学一",
+        "year": 2007
+      }
+    ],
+    "10833": [
+      {
+        "questionId": "10833",
+        "teacher": "喻老",
+        "seriesTitle": "2007年真题讲解",
+        "bvid": "BV1514y1Y7CK",
+        "page": 24,
+        "startSeconds": 0,
+        "title": "2007数一二三（一15、二16、三15）｜设矩阵 A= pmatrix 0&1&0&0 0&0&1&0 0&0…",
+        "subject": "数学一",
+        "year": 2007
+      }
+    ],
+    "10836": [
+      {
+        "questionId": "10836",
+        "teacher": "喻老",
+        "seriesTitle": "2007年真题讲解",
+        "bvid": "BV1514y1Y7CK",
+        "page": 30,
+        "startSeconds": 0,
+        "title": "2007数一（18）｜计算曲面积分 I=_ dy dz+2zy dz dx+3xy dx…",
+        "subject": "数学一",
+        "year": 2007
+      }
+    ],
+    "10837": [
+      {
+        "questionId": "10837",
+        "teacher": "喻老",
+        "seriesTitle": "2007年真题讲解",
+        "bvid": "BV1514y1Y7CK",
+        "page": 32,
+        "startSeconds": 50,
+        "title": "2007数一二三（一19、二21、三19）｜设函数 f(x),g(x) 在 [a,b] 上连续，在 (a,b)…",
+        "subject": "数学一",
+        "year": 2007
+      }
+    ],
+    "10841": [
+      {
+        "questionId": "10841",
+        "teacher": "喻老",
+        "seriesTitle": "2007年真题讲解",
+        "bvid": "BV1514y1Y7CK",
+        "page": 19,
+        "startSeconds": 0,
+        "title": "2007数二（12）｜曲线 cases x=cos t+cos^2t, y=1+sin t…",
+        "subject": "数学二",
+        "year": 2007
+      }
+    ],
+    "10842": [
+      {
+        "questionId": "10842",
+        "teacher": "喻老",
+        "seriesTitle": "2007年真题讲解",
+        "bvid": "BV1514y1Y7CK",
+        "page": 21,
+        "startSeconds": 0,
+        "title": "2007数二三（二13、三12）｜设函数 y=1/2x+3, 则 y^(n)(0)=____。",
+        "subject": "数学二",
+        "year": 2007
+      }
+    ],
+    "10843": [
+      {
+        "questionId": "10843",
+        "teacher": "喻老",
+        "seriesTitle": "2007年真题讲解",
+        "bvid": "BV1514y1Y7CK",
+        "page": 25,
+        "startSeconds": 0,
+        "title": "2007数二三（二15、三13）｜设 f(u,v) 是二元可微函数， z=fy/x,x/y, 则 x∂…",
+        "subject": "数学二",
+        "year": 2007
+      }
+    ],
+    "10844": [
+      {
+        "questionId": "10844",
+        "teacher": "喻老",
+        "seriesTitle": "2007年真题讲解",
+        "bvid": "BV1514y1Y7CK",
+        "page": 28,
+        "startSeconds": 0,
+        "title": "2007数二（17）｜设 f(x) 是区间 [0,π/4] 上的单调可导函数，且满足 ∫f…",
+        "subject": "数学二",
+        "year": 2007
+      }
+    ],
+    "10845": [
+      {
+        "questionId": "10845",
+        "teacher": "喻老",
+        "seriesTitle": "2007年真题讲解",
+        "bvid": "BV1514y1Y7CK",
+        "page": 35,
+        "startSeconds": 0,
+        "title": "2007数二（20）｜已知函数 f(u) 具有二阶导数，且 f'(0)=1。函数 y=y(…",
+        "subject": "数学二",
+        "year": 2007
+      }
+    ],
+    "10848": [
+      {
+        "questionId": "10848",
+        "teacher": "喻老",
+        "seriesTitle": "2007年真题讲解",
+        "bvid": "BV1514y1Y7CK",
+        "page": 7,
+        "startSeconds": 269,
+        "title": "2007数三（5）｜设某商品的需求函数为 Q=160-2p, 其中 Q,p 分别表示需求…",
+        "subject": "数学三",
+        "year": 2007
+      }
+    ],
+    "10850": [
+      {
+        "questionId": "10850",
+        "teacher": "喻老",
+        "seriesTitle": "2007年真题讲解",
+        "bvid": "BV1514y1Y7CK",
+        "page": 23,
+        "startSeconds": 0,
+        "title": "2007数三（14）｜微分方程 dy/dx =y/x-1/2y/x^3 满足 y_x=1=…",
+        "subject": "数学三",
+        "year": 2007
+      }
+    ],
+    "10851": [
+      {
+        "questionId": "10851",
+        "teacher": "喻老",
+        "seriesTitle": "2007年真题讲解",
+        "bvid": "BV1514y1Y7CK",
+        "page": 29,
+        "startSeconds": 0,
+        "title": "2007数三（17）｜设函数 y=y(x) 由方程 yln y-x+y=0 确定，判断曲线…",
+        "subject": "数学三",
+        "year": 2007
+      }
+    ],
+    "10853": [
+      {
+        "questionId": "10853",
+        "teacher": "喻老",
+        "seriesTitle": "2006年真题讲解",
+        "bvid": "BV1j24y1Z7KH",
+        "page": 1,
+        "startSeconds": 0,
+        "title": "2006数一（1）｜计算极限 lim_x→0xln(1+x)/1-cos x =____…",
+        "subject": "数学一",
+        "year": 2006
+      }
+    ],
+    "10854": [
+      {
+        "questionId": "10854",
+        "teacher": "喻老",
+        "seriesTitle": "2006年真题讲解",
+        "bvid": "BV1j24y1Z7KH",
+        "page": 4,
+        "startSeconds": 0,
+        "title": "2006数一二（一2、二4）｜微分方程 y'=/y(1-x)x 的通解为 ____。",
+        "subject": "数学一",
+        "year": 2006
+      }
+    ],
+    "10855": [
+      {
+        "questionId": "10855",
+        "teacher": "喻老",
+        "seriesTitle": "2006年真题讲解",
+        "bvid": "BV1j24y1Z7KH",
+        "page": 7,
+        "startSeconds": 0,
+        "title": "2006数一（3）｜设 是锥面 z=√(x^2+y^2) 在 0≤ z≤1 部分的下侧…",
+        "subject": "数学一",
+        "year": 2006
+      }
+    ],
+    "10856": [
+      {
+        "questionId": "10856",
+        "teacher": "喻老",
+        "seriesTitle": "2006年真题讲解",
+        "bvid": "BV1j24y1Z7KH",
+        "page": 10,
+        "startSeconds": 0,
+        "title": "2006数一（4）｜点 (2,1,0) 到平面 3x+4y+5z=0 的距离为 d=__…",
+        "subject": "数学一",
+        "year": 2006
+      }
+    ],
+    "10857": [
+      {
+        "questionId": "10857",
+        "teacher": "喻老",
+        "seriesTitle": "2006年真题讲解",
+        "bvid": "BV1j24y1Z7KH",
+        "page": 11,
+        "startSeconds": 0,
+        "title": "2006数一二三（一5、二6、三4）｜设 A=pmatrix2&1-1&2pmatrix, E 为二阶单位…",
+        "subject": "数学一",
+        "year": 2006
+      }
+    ],
+    "10858": [
+      {
+        "questionId": "10858",
+        "teacher": "喻老",
+        "seriesTitle": "2006年真题讲解",
+        "bvid": "BV1j24y1Z7KH",
+        "page": 13,
+        "startSeconds": 0,
+        "title": "2006数一三（一6、三5）｜设随机变量 X,Y 相互独立，且均服从区间 [0,3] 上的均匀分布…",
+        "subject": "数学一",
+        "year": 2006
+      }
+    ],
+    "10864": [
+      {
+        "questionId": "10864",
+        "teacher": "喻老",
+        "seriesTitle": "2006年真题讲解",
+        "bvid": "BV1j24y1Z7KH",
+        "page": 31,
+        "startSeconds": 0,
+        "title": "2006数一二（一16、二18）｜设数列 x_n 满足 aligned 0&≤t x_1≤tπ, x_…",
+        "subject": "数学一",
+        "year": 2006
+      }
+    ],
+    "10867": [
+      {
+        "questionId": "10867",
+        "teacher": "喻老",
+        "seriesTitle": "2006年真题讲解",
+        "bvid": "BV1j24y1Z7KH",
+        "page": 37,
+        "startSeconds": 156,
+        "title": "2006数一（19）｜在上半平面 D=(x,y):y≥t0 内，函数 f(x,y) 具有连…",
+        "subject": "数学一",
+        "year": 2006
+      }
+    ],
+    "10868": [
+      {
+        "questionId": "10868",
+        "teacher": "喻老",
+        "seriesTitle": "2006年真题讲解",
+        "bvid": "BV1j24y1Z7KH",
+        "page": 40,
+        "startSeconds": 0,
+        "title": "2006数一二（一20、二22）｜已知非齐次线性方程组 cases x_1+x_2+x_3+x_4=-…",
+        "subject": "数学一",
+        "year": 2006
+      }
+    ],
+    "10869": [
+      {
+        "questionId": "10869",
+        "teacher": "喻老",
+        "seriesTitle": "2006年真题讲解",
+        "bvid": "BV1j24y1Z7KH",
+        "page": 42,
+        "startSeconds": 0,
+        "title": "2006数一二（一21、二23）｜设三阶实对称矩阵 A 的各行元素之和均为 3。向量 aligned…",
+        "subject": "数学一",
+        "year": 2006
+      }
+    ],
+    "10870": [
+      {
+        "questionId": "10870",
+        "teacher": "喻老",
+        "seriesTitle": "2006年真题讲解",
+        "bvid": "BV1j24y1Z7KH",
+        "page": 45,
+        "startSeconds": 0,
+        "title": "2006数一（23）｜设总体 X 的概率密度为 f(x;θ)= cases θ,&0≤t…",
+        "subject": "数学一",
+        "year": 2006
+      }
+    ],
+    "10872": [
+      {
+        "questionId": "10872",
+        "teacher": "喻老",
+        "seriesTitle": "2006年真题讲解",
+        "bvid": "BV1j24y1Z7KH",
+        "page": 5,
+        "startSeconds": 0,
+        "title": "2006数二（2）｜设函数 f(x)= cases 1/x^3∫ 若 f(x) 在 x=…",
+        "subject": "数学二",
+        "year": 2006
+      }
+    ],
+    "10874": [
+      {
+        "questionId": "10874",
+        "teacher": "喻老",
+        "seriesTitle": "2006年真题讲解",
+        "bvid": "BV1j24y1Z7KH",
+        "page": 12,
+        "startSeconds": 0,
+        "title": "2006数二（5）｜设函数 y=y(x) 由方程 y=1-xe^y 确定，则 y'(0)…",
+        "subject": "数学二",
+        "year": 2006
+      }
+    ],
+    "10875": [
+      {
+        "questionId": "10875",
+        "teacher": "喻老",
+        "seriesTitle": "2006年真题讲解",
+        "bvid": "BV1j24y1Z7KH",
+        "page": 17,
+        "startSeconds": 0,
+        "title": "2006数二（8）｜设 f(x) 是奇函数，除 x=0 外处处连续，且 x=0 是其第一…",
+        "subject": "数学二",
+        "year": 2006
+      }
+    ],
+    "10876": [
+      {
+        "questionId": "10876",
+        "teacher": "喻老",
+        "seriesTitle": "2006年真题讲解",
+        "bvid": "BV1j24y1Z7KH",
+        "page": 29,
+        "startSeconds": 0,
+        "title": "2006数二（15）｜试确定常数 A,B,C 的值，使得当 x→0 时， e^x(1+Bx…",
+        "subject": "数学二",
+        "year": 2006
+      }
+    ],
+    "10879": [
+      {
+        "questionId": "10879",
+        "teacher": "喻老",
+        "seriesTitle": "2006年真题讲解",
+        "bvid": "BV1j24y1Z7KH",
+        "page": 6,
+        "startSeconds": 0,
+        "title": "2006数三（2）｜设函数 f(x) 在 x=2 的某邻域内可导，且 aligned f…",
+        "subject": "数学三",
+        "year": 2006
+      }
+    ],
+    "10880": [
+      {
+        "questionId": "10880",
+        "teacher": "喻老",
+        "seriesTitle": "2006年真题讲解",
+        "bvid": "BV1j24y1Z7KH",
+        "page": 9,
+        "startSeconds": 1,
+        "title": "2006数三（3）｜设函数 f(u) 可微，且 f'(0)=1/2。若 z=f(4x^2…",
+        "subject": "数学三",
+        "year": 2006
+      }
+    ],
+    "10887": [
+      {
+        "questionId": "10887",
+        "teacher": "喻老",
+        "seriesTitle": "2006年真题讲解",
+        "bvid": "BV1j24y1Z7KH",
+        "page": 41,
+        "startSeconds": 0,
+        "title": "2006数三（20）｜设四维向量组 aligned α_1&=(1+a,1,1,1)^T…",
+        "subject": "数学三",
+        "year": 2006
+      }
+    ],
+    "10888": [
+      {
+        "questionId": "10888",
+        "teacher": "喻老",
+        "seriesTitle": "2006年真题讲解",
+        "bvid": "BV1j24y1Z7KH",
+        "page": 42,
+        "startSeconds": 0,
+        "title": "2006数三（21）｜设三阶实对称矩阵 A 的各行元素之和均为 3。向量 aligned…",
+        "subject": "数学三",
+        "year": 2006
+      }
+    ],
+    "10889": [
+      {
+        "questionId": "10889",
+        "teacher": "喻老",
+        "seriesTitle": "2006年真题讲解",
+        "bvid": "BV1j24y1Z7KH",
+        "page": 44,
+        "startSeconds": 0,
+        "title": "2006数三（22）｜设随机变量 X 的概率密度为 f_X(x)= cases 1/2,&…",
+        "subject": "数学三",
+        "year": 2006
+      }
+    ],
+    "10891": [
+      {
+        "questionId": "10891",
+        "teacher": "喻老",
+        "seriesTitle": "2005年真题讲解",
+        "bvid": "BV1TN4y1F7Jz",
+        "page": 1,
+        "startSeconds": 1,
+        "title": "2005数一（1）｜曲线 y=x^2/2x+1 的斜渐近线方程为 ____。",
+        "subject": "数学一",
+        "year": 2005
+      }
+    ],
+    "10892": [
+      {
+        "questionId": "10892",
+        "teacher": "喻老",
+        "seriesTitle": "2005年真题讲解",
+        "bvid": "BV1TN4y1F7Jz",
+        "page": 4,
+        "startSeconds": 1,
+        "title": "2005数一二（一2、二4）｜微分方程 xy'+2y=xln x 满足 y(1)=-1/9 的解为…",
+        "subject": "数学一",
+        "year": 2005
+      }
+    ],
+    "10893": [
+      {
+        "questionId": "10893",
+        "teacher": "喻老",
+        "seriesTitle": "2005年真题讲解",
+        "bvid": "BV1TN4y1F7Jz",
+        "page": 7,
+        "startSeconds": 1,
+        "title": "2005数一（3）｜设函数 u(x,y,z) =1+x^2/6+y^2/12+z^2/1…",
+        "subject": "数学一",
+        "year": 2005
+      }
+    ],
+    "10894": [
+      {
+        "questionId": "10894",
+        "teacher": "喻老",
+        "seriesTitle": "2005年真题讲解",
+        "bvid": "BV1TN4y1F7Jz",
+        "page": 10,
+        "startSeconds": 0,
+        "title": "2005数一（4）｜设 是由锥面 z=√(x^2+y^2) 与半球面 z=√(R^2-x…",
+        "subject": "数学一",
+        "year": 2005
+      }
+    ],
+    "10896": [
+      {
+        "questionId": "10896",
+        "teacher": "喻老",
+        "seriesTitle": "2005年真题讲解",
+        "bvid": "BV1TN4y1F7Jz",
+        "page": 14,
+        "startSeconds": 1,
+        "title": "2005数一（6）｜从数 1,2,3,4 中任取一个数，记为 X；再从 1,2,≤dot…",
+        "subject": "数学一",
+        "year": 2005
+      }
+    ],
+    "10897": [
+      {
+        "questionId": "10897",
+        "teacher": "喻老",
+        "seriesTitle": "2005年真题讲解",
+        "bvid": "BV1TN4y1F7Jz",
+        "page": 18,
+        "startSeconds": 1,
+        "title": "2005数一（8）｜设 F(x) 是连续函数 f(x) 的一个原函数。“M N”表示“M…",
+        "subject": "数学一",
+        "year": 2005
+      }
+    ],
+    "10898": [
+      {
+        "questionId": "10898",
+        "teacher": "喻老",
+        "seriesTitle": "2005年真题讲解",
+        "bvid": "BV1TN4y1F7Jz",
+        "page": 20,
+        "startSeconds": 0,
+        "title": "2005数一（9）｜设 u(x,y) =φ(x+y)+φ(x-y) +∫(t) dt…",
+        "subject": "数学一",
+        "year": 2005
+      }
+    ],
+    "10902": [
+      {
+        "questionId": "10902",
+        "teacher": "喻老",
+        "seriesTitle": "2005年真题讲解",
+        "bvid": "BV1TN4y1F7Jz",
+        "page": 33,
+        "startSeconds": 1,
+        "title": "2005数一（15）｜设 D=(x,y):x^2+y^2≤2, x≥0, y≥0, [1+…",
+        "subject": "数学一",
+        "year": 2005
+      }
+    ],
+    "10904": [
+      {
+        "questionId": "10904",
+        "teacher": "喻老",
+        "seriesTitle": "2005年真题讲解",
+        "bvid": "BV1TN4y1F7Jz",
+        "page": 39,
+        "startSeconds": 1,
+        "title": "2005数一二（一17、二17）｜如图，曲线 C 的方程为 y=f(x)，点 (3,2) 是曲线的一个…",
+        "subject": "数学一",
+        "year": 2005
+      }
+    ],
+    "10905": [
+      {
+        "questionId": "10905",
+        "teacher": "喻老",
+        "seriesTitle": "2005年真题讲解",
+        "bvid": "BV1TN4y1F7Jz",
+        "page": 40,
+        "startSeconds": 0,
+        "title": "2005数一二（一18、二19）｜已知函数 f(x) 在 [0,1] 上连续，在 (0,1) 内可导…",
+        "subject": "数学一",
+        "year": 2005
+      }
+    ],
+    "10906": [
+      {
+        "questionId": "10906",
+        "teacher": "喻老",
+        "seriesTitle": "2005年真题讲解",
+        "bvid": "BV1TN4y1F7Jz",
+        "page": 43,
+        "startSeconds": 61,
+        "title": "2005数一（19）｜设函数 φ(y) 具有连续导数。在围绕原点的任意分段光滑简单闭曲线…",
+        "subject": "数学一",
+        "year": 2005
+      }
+    ],
+    "10909": [
+      {
+        "questionId": "10909",
+        "teacher": "喻老",
+        "seriesTitle": "2005年真题讲解",
+        "bvid": "BV1TN4y1F7Jz",
+        "page": 51,
+        "startSeconds": 0,
+        "title": "2005数一（22）｜设二维随机变量 (X,Y) 的概率密度为 f(x,y)= cases…",
+        "subject": "数学一",
+        "year": 2005
+      }
+    ],
+    "10910": [
+      {
+        "questionId": "10910",
+        "teacher": "喻老",
+        "seriesTitle": "2005年真题讲解",
+        "bvid": "BV1TN4y1F7Jz",
+        "page": 53,
+        "startSeconds": 0,
+        "title": "2005数一（23）｜设 X_1,X_2,≤dots,X_n，其中 n≥t2，为来自总体…",
+        "subject": "数学一",
+        "year": 2005
+      }
+    ],
+    "10911": [
+      {
+        "questionId": "10911",
+        "teacher": "喻老",
+        "seriesTitle": "2005年真题讲解",
+        "bvid": "BV1TN4y1F7Jz",
+        "page": 12,
+        "startSeconds": 1,
+        "title": "2005数二（6）｜设 α_1,α_2,α_3 均为三维列向量，记 A=(α_1,α_2…",
+        "subject": "数学一",
+        "year": 2005
+      }
+    ],
+    "10914": [
+      {
+        "questionId": "10914",
+        "teacher": "喻老",
+        "seriesTitle": "2005年真题讲解",
+        "bvid": "BV1TN4y1F7Jz",
+        "page": 26,
+        "startSeconds": 1,
+        "title": "2005数二（13）｜设 λ_1,λ_2 是矩阵 A 的两个不同的特征值，对应的特征向量分…",
+        "subject": "数学二",
+        "year": 2005
+      }
+    ],
+    "10915": [
+      {
+        "questionId": "10915",
+        "teacher": "喻老",
+        "seriesTitle": "2005年真题讲解",
+        "bvid": "BV1TN4y1F7Jz",
+        "page": 28,
+        "startSeconds": 1,
+        "title": "2005数二（14）｜设 A 为 n 阶可逆矩阵，其中 n≥2。交换 A 的第 1 行与第…",
+        "subject": "数学二",
+        "year": 2005
+      }
+    ],
+    "10916": [
+      {
+        "questionId": "10916",
+        "teacher": "喻老",
+        "seriesTitle": "2005年真题讲解",
+        "bvid": "BV1TN4y1F7Jz",
+        "page": 48,
+        "startSeconds": 1,
+        "title": "2005数二（23）｜已知三阶矩阵 A 的第一行为 (a,b,c)，其中 a,b,c 不全…",
+        "subject": "数学二",
+        "year": 2005
+      }
+    ],
+    "10918": [
+      {
+        "questionId": "10918",
+        "teacher": "喻老",
+        "seriesTitle": "2005年真题讲解",
+        "bvid": "BV1TN4y1F7Jz",
+        "page": 15,
+        "startSeconds": 1,
+        "title": "2005数三（6）｜设二维随机变量 (X,Y) 的概率分布为 arrayc|cc X Y…",
+        "subject": "数学三",
+        "year": 2005
+      }
+    ],
+    "10919": [
+      {
+        "questionId": "10919",
+        "teacher": "喻老",
+        "seriesTitle": "2005年真题讲解",
+        "bvid": "BV1TN4y1F7Jz",
+        "page": 27,
+        "startSeconds": 0,
+        "title": "2005数三（11）｜以下四个命题中，正确的是（ ）。",
+        "subject": "数学三",
+        "year": 2005
+      }
+    ],
+    "10921": [
+      {
+        "questionId": "10921",
+        "teacher": "喻老",
+        "seriesTitle": "2005年真题讲解",
+        "bvid": "BV1TN4y1F7Jz",
+        "page": 44,
+        "startSeconds": 0,
+        "title": "2005数三（19）｜设 f(x),g(x) 在 [0,1] 上的导数连续，且 f(0)=…",
+        "subject": "数学三",
+        "year": 2005
+      }
+    ],
+    "10922": [
+      {
+        "questionId": "10922",
+        "teacher": "喻老",
+        "seriesTitle": "2005年真题讲解",
+        "bvid": "BV1TN4y1F7Jz",
+        "page": 47,
+        "startSeconds": 0,
+        "title": "2005数三（20）｜已知齐次线性方程组 (i)≤ft aligned x_1+2x_2+…",
+        "subject": "数学三",
+        "year": 2005
+      }
+    ],
+    "10925": [
+      {
+        "questionId": "10925",
+        "teacher": "喻老",
+        "seriesTitle": "2004年真题讲解",
+        "bvid": "BV1Ze4y1o7in",
+        "page": 4,
+        "startSeconds": 1,
+        "title": "2004数一（2）｜已知 f'(e^x)=xe^-x, 且 f(1)=0，则 f(x)=…",
+        "subject": "数学一",
+        "year": 2004
+      }
+    ],
+    "10926": [
+      {
+        "questionId": "10926",
+        "teacher": "喻老",
+        "seriesTitle": "2004年真题讲解",
+        "bvid": "BV1Ze4y1o7in",
+        "page": 7,
+        "startSeconds": 1,
+        "title": "2004数一（3）｜设 L 为正向圆周 x^2+y^2=2 在第一象限中的部分，则 ∫",
+        "subject": "数学一",
+        "year": 2004
+      }
+    ],
+    "10927": [
+      {
+        "questionId": "10927",
+        "teacher": "喻老",
+        "seriesTitle": "2004年真题讲解",
+        "bvid": "BV1Ze4y1o7in",
+        "page": 41,
+        "startSeconds": 1,
+        "title": "2004数一（17）｜计算曲面积分 I=_ 2x^3 dy dz +2y^3 dz dx…",
+        "subject": "数学一",
+        "year": 2004
+      }
+    ],
+    "10928": [
+      {
+        "questionId": "10928",
+        "teacher": "喻老",
+        "seriesTitle": "2004年真题讲解",
+        "bvid": "BV1Ze4y1o7in",
+        "page": 42,
+        "startSeconds": 1,
+        "title": "2004数二（17）｜设 f(x)=∫|sin t| dt. (I) 证明 f(x) 是以…",
+        "subject": "数学二",
+        "year": 2004
+      }
+    ],
+    "10929": [
+      {
+        "questionId": "10929",
+        "teacher": "喻老",
+        "seriesTitle": "2004年真题讲解",
+        "bvid": "BV1Ze4y1o7in",
+        "page": 12,
+        "startSeconds": 0,
+        "title": "2004数三（4）｜二次型 f(x_1,x_2,x_3) =(x_1+x_2)^2+(x…",
+        "subject": "数学三",
+        "year": 2004
+      }
+    ],
+    "10932": [
+      {
+        "questionId": "10932",
+        "teacher": "喻老",
+        "seriesTitle": "2004年真题讲解",
+        "bvid": "BV1Ze4y1o7in",
+        "page": 43,
+        "startSeconds": 1,
+        "title": "2004数三（17）｜设 f(x),g(x) 在 [a,b] 上连续，且满足 ∫",
+        "subject": "数学三",
+        "year": 2004
+      }
+    ],
+    "10933": [
+      {
+        "questionId": "10933",
+        "teacher": "喻老",
+        "seriesTitle": "2004年真题讲解",
+        "bvid": "BV1Ze4y1o7in",
+        "page": 46,
+        "startSeconds": 1,
+        "title": "2004数三（18）｜设某商品的需求函数为 Q=100-5P, 其中价格 P(0,20)…",
+        "subject": "数学三",
+        "year": 2004
+      }
+    ],
+    "10934": [
+      {
+        "questionId": "10934",
+        "teacher": "喻老",
+        "seriesTitle": "2004年真题讲解",
+        "bvid": "BV1Ze4y1o7in",
+        "page": 54,
+        "startSeconds": 1,
+        "title": "2004数三（22）｜设 A,B 为两个随机事件，且 P(A)=1/4, P(B A)=1…",
+        "subject": "数学三",
+        "year": 2004
       }
     ],
     "10935": [
@@ -31197,6 +35156,97 @@
         "title": "2010 数三 第19题",
         "subject": "数学三",
         "year": 2010
+      }
+    ],
+    "11058": [
+      {
+        "questionId": "11058",
+        "teacher": "喻老",
+        "seriesTitle": "2003年真题讲解",
+        "bvid": "BV1wa411Z7TC",
+        "page": 5,
+        "startSeconds": 0,
+        "title": "2003数一（2）｜曲面 z=x^2+y^2 与平面 2x+4y-z=0 平行的切平面的…",
+        "subject": "数学一",
+        "year": 2003
+      }
+    ],
+    "11059": [
+      {
+        "questionId": "11059",
+        "teacher": "喻老",
+        "seriesTitle": "2003年真题讲解",
+        "bvid": "BV1wa411Z7TC",
+        "page": 41,
+        "startSeconds": 0,
+        "title": "2003数一（15）｜已知平面区域 D=(x,y) 0≤ x≤π, 0≤ y≤π, L 为…",
+        "subject": "数学一",
+        "year": 2003
+      }
+    ],
+    "11060": [
+      {
+        "questionId": "11060",
+        "teacher": "喻老",
+        "seriesTitle": "2003年真题讲解",
+        "bvid": "BV1wa411Z7TC",
+        "page": 49,
+        "startSeconds": 1,
+        "title": "2003数一（18）｜设函数 f(x) 连续且恒大于零。令 F(t)= /_(t)f(x^…",
+        "subject": "数学一",
+        "year": 2003
+      }
+    ],
+    "11061": [
+      {
+        "questionId": "11061",
+        "teacher": "喻老",
+        "seriesTitle": "2003年真题讲解",
+        "bvid": "BV1wa411Z7TC",
+        "page": 31,
+        "startSeconds": 0,
+        "title": "2003数二（11）｜设 I_1=∫tan x/x dx, I_2=∫x/tan x dx…",
+        "subject": "数学二",
+        "year": 2003
+      }
+    ],
+    "11062": [
+      {
+        "questionId": "11062",
+        "teacher": "喻老",
+        "seriesTitle": "2003年真题讲解",
+        "bvid": "BV1wa411Z7TC",
+        "page": 56,
+        "startSeconds": 0,
+        "title": "2003数二（20）｜设函数 f(x) 在闭区间 [a,b] 上连续，在开区间 (a,b)…",
+        "subject": "数学二",
+        "year": 2003
+      }
+    ],
+    "11063": [
+      {
+        "questionId": "11063",
+        "teacher": "喻老",
+        "seriesTitle": "2003年真题讲解",
+        "bvid": "BV1wa411Z7TC",
+        "page": 23,
+        "startSeconds": 0,
+        "title": "2003数二（8）｜设 a_n=3/2∫x^n-1√(1+x^n) dx, 则极限 li…",
+        "subject": "数学二",
+        "year": 2003
+      }
+    ],
+    "11064": [
+      {
+        "questionId": "11064",
+        "teacher": "喻老",
+        "seriesTitle": "2003年真题讲解",
+        "bvid": "BV1wa411Z7TC",
+        "page": 51,
+        "startSeconds": 0,
+        "title": "2003数三（18）｜设函数 f(x) 在 [0,3] 上连续，在 (0,3) 内可导，且…",
+        "subject": "数学三",
+        "year": 2003
       }
     ],
     "99000015": [

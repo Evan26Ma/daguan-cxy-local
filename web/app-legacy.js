@@ -2,7 +2,7 @@
   "use strict";
 
   if ("serviceWorker" in navigator && location.protocol !== "file:" && location.protocol !== "https:") {
-    navigator.serviceWorker.register("./service-worker.js?v=140").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=141").catch(() => {});
   }
 
   const DATA = "./data";
@@ -1398,10 +1398,12 @@
   }
 
   function indexLectureVideoQuestions(mapping) {
-    const index = { "帕拉迪宇": new Set(), "李艳芳": new Set(), "没咋了": new Set() };
+    const index = {};
     for (const [questionId, entries] of Object.entries(mapping?.questions || {})) {
       for (const entry of Array.isArray(entries) ? entries : []) {
-        if (index[entry?.teacher]) index[entry.teacher].add(String(questionId));
+        const teacher = entry?.teacher;
+        if (!teacher) continue;
+        (index[teacher] ||= new Set()).add(String(questionId));
       }
     }
     return index;
@@ -2187,6 +2189,7 @@
         { name: "帕拉迪宇讲过", count: paradiyuCount },
         { name: "李艳芳讲过", count: countVideoTeacher("李艳芳") },
         { name: "没咋了讲过", count: countVideoTeacher("没咋了") },
+        { name: "喻老讲过", count: countVideoTeacher("喻老") },
       ] });
       const mc = masteryFacetCounts();
       facets.push({ dim: "掌握状态", options: Object.entries(mc).map(([name, count]) => ({ name, count })) });
