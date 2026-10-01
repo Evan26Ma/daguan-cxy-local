@@ -5,7 +5,7 @@
 
 // ========== 离线缓存注册（与 app2.js 一致） ==========
 if ("serviceWorker" in navigator && location.protocol !== "file:") {
-    navigator.serviceWorker.register("./service-worker.js?v=123").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=124").catch(() => {});
 }
 
 // ========== 全局状态 ==========
