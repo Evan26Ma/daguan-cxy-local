@@ -159,10 +159,10 @@ test("新版首页提供使用与双向同步引导，快捷键帮助只保留�
 test("讲解视频映射覆盖四位老师且只保留前端需要的字段", () => {
   const entries = Object.values(lectureVideos.questions).flat();
   const teachers = new Set(entries.map((entry) => entry.teacher));
-  assert.equal(entries.length, 2931);
+  assert.equal(entries.length, 3671);
   assert.deepEqual([...teachers].sort(), ["帕拉迪宇", "李艳芳", "没咋了", "喻老"].sort());
-  assert.equal(Object.keys(lectureVideos.questions).length, 2422);
-  assert.equal(lectureVideos.series.length, 27);
+  assert.equal(Object.keys(lectureVideos.questions).length, 2950);
+  assert.equal(lectureVideos.series.length, 29);
   assert.equal(entries.filter((entry) => entry.teacher === "帕拉迪宇").length, 1240);
   assert.equal(entries.filter((entry) => entry.teacher === "喻老").length, 318);
   for (const [id, videos] of Object.entries(lectureVideos.questions)) {
