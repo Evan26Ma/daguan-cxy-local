@@ -2,7 +2,7 @@
   "use strict";
 
   if ("serviceWorker" in navigator && location.protocol !== "file:" && location.protocol !== "https:") {
-    navigator.serviceWorker.register("./service-worker.js?v=139").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=140").catch(() => {});
   }
 
   const DATA = "./data";
@@ -1398,7 +1398,7 @@
   }
 
   function indexLectureVideoQuestions(mapping) {
-    const index = { "李艳芳": new Set(), "没咋了": new Set() };
+    const index = { "帕拉迪宇": new Set(), "李艳芳": new Set(), "没咋了": new Set() };
     for (const [questionId, entries] of Object.entries(mapping?.questions || {})) {
       for (const entry of Array.isArray(entries) ? entries : []) {
         if (index[entry?.teacher]) index[entry.teacher].add(String(questionId));
@@ -1410,6 +1410,7 @@
   function videoTeacherMatches(id, teacher, annotation) {
     const questionId = String(id);
     if (teacher === "帕拉迪宇讲过") {
+      if (state.videoQuestionIdsByTeacher?.["帕拉迪宇"]?.has(questionId)) return true;
       return annotation?.chapter === "线性代数" && (state.paradiyuVideoQuestionIds || new Set()).has(questionId);
     }
     const teacherName = teacher.replace(/讲过$/, "");
@@ -2177,7 +2178,11 @@
       const facets = (state.bankTags.facets || []).map((x) => x);
       const annotations = state.bankTags.annotations || {};
       const countVideoTeacher = (teacher) => [...(state.videoQuestionIdsByTeacher?.[teacher] || [])].filter((id) => annotations[id]).length;
-      const paradiyuCount = [...(state.paradiyuVideoQuestionIds || [])].filter((id) => annotations[id]?.chapter === "线性代数").length;
+      const paradiyuIds = new Set([...(state.videoQuestionIdsByTeacher?.["帕拉迪宇"] || [])]);
+      for (const id of state.paradiyuVideoQuestionIds || []) {
+        if (annotations[id]?.chapter === "线性代数") paradiyuIds.add(String(id));
+      }
+      const paradiyuCount = [...paradiyuIds].filter((id) => annotations[id]).length;
       facets.push({ dim: "视频讲解", options: [
         { name: "帕拉迪宇讲过", count: paradiyuCount },
         { name: "李艳芳讲过", count: countVideoTeacher("李艳芳") },
