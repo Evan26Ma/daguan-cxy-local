@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>手机导航 - 大观园</title>
+    <link rel="stylesheet" href="../css/design-system.css">
+    <style>
+        body {
+            background: var(--bg-app);
+        }
+        
+        .mobile-container {
+            max-width: 390px;
+            margin: 0 auto;
+            background: var(--bg-surface);
+            min-height: 100vh;
+            position: relative;
+        }
+        
+        .mobile-topbar {
+            height: 56px;
+            background: var(--bg-surface);
+            border-bottom: 1px solid var(--border-default);
+            display: flex;
+            align-items: center;
+            padding: 0 var(--spacing-l);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        
+        .mobile-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .brand-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--brand-orange);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #202124;
+            font-weight: 700;
+            font-size: 16px;
+        }
+        
+        .brand-text {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .mobile-content {
+            padding: var(--spacing-xl) var(--spacing-l);
+        }
+        
+        .demo-section {
+            background: var(--brand-light-bg);
+            padding: var(--spacing-l);
+            border-radius: var(--radius-button);
+            margin-bottom: var(--spacing-xl);
+            text-align: center;
+        }
+        
+        .demo-section h2 {
+            font-size: 18px;
+            line-height: 28px;
+            font-weight: 600;
+            color: var(--brand-text-on-white);
+            margin-bottom: var(--spacing-s);
+        }
+        
+        .demo-section p {
+            font-size: 14px;
+            line-height: 22px;
+            color: var(--text-secondary);
+        }
+        
+        .demo-button {
+            margin-top: var(--spacing-l);
+        }
+        
+        .content-placeholder {
+            background: var(--bg-surface);
+            border: 2px dashed var(--border-default);
+            border-radius: var(--radius-panel);
+            padding: var(--spacing-3xl) var(--spacing-l);
+            text-align: center;
+            color: var(--text-secondary);
+        }
+        
+        /* 导航抽屉 */
+        .nav-drawer {
+            position: fixed;
+            left: -100%;
+            top: 0;
+            bottom: 0;
+            width: 280px;
+            background: var(--bg-nav);
+            z-index: 1000;
+            transition: left 200ms ease;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 4px 0 24px rgba(0, 0, 0, 0);
+        }
+        
+        .nav-drawer.open {
+            left: 0;
+            box-shadow: 4px 0 24px rgba(0, 0, 0, 0.12);
+        }
+        
+        .nav-header {
+            padding: var(--spacing-xl) var(--spacing-l);
+            border-bottom: 1px solid var(--border-default);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .nav-header-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .nav-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: var(--spacing-s) 0;
+        }
+        
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-m);
+            height: 44px;
+            padding: 0 var(--spacing-l);
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 120ms ease;
+        }
+        
+        .nav-item:hover,
+        .nav-item:active {
+            background: rgba(255, 106, 26, 0.08);
+            color: var(--text-primary);
+        }
+        
+        .nav-item.active {
+            background: var(--brand-light-bg);
+            color: var(--brand-text-on-white);
+        }
+        
+        .nav-icon {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+        
+        .nav-footer {
+            padding: var(--spacing-l);
+            border-top: 1px solid var(--border-default);
+        }
+        
+        .nav-footer-item {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-m);
+            padding: var(--spacing-s) 0;
+            font-size: 13px;
+            line-height: 20px;
+            color: var(--text-secondary);
+        }
+        
+        .nav-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            opacity: 0;
+            transition: opacity 200ms ease;
+        }
+        
+        .nav-overlay.open {
+            display: block;
+            opacity: 1;
+        }
+        
+        /* 确保触控目标足够大 */
+        .btn,
+        .nav-item {
+            min-height: 44px;
+            min-width: 44px;
+        }
+        
+        /* 状态指示 */
+        .status-indicator {
+            position: fixed;
+            bottom: var(--spacing-l);
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: #FFFFFF;
+            padding: var(--spacing-m) var(--spacing-xl);
+            border-radius: 20px;
+            font-size: 13px;
+            line-height: 20px;
+            z-index: 2000;
+            display: none;
+        }
+        
+        .status-indicator.show {
+            display: block;
+            animation: fadeInOut 2s ease;
+        }
+        
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0; }
+            10%, 90% { opacity: 1; }
+        }
+        
+        @media (prefers-reduced-motion: reduce) {
+            .nav-drawer,
+            .nav-overlay {
+                transition: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航遮罩 -->
+    <div class="nav-overlay" id="navOverlay" onclick="closeNav()"></div>
+    
+    <!-- 导航抽屉 -->
+    <nav class="nav-drawer" id="navDrawer">
+        <div class="nav-header">
+            <div class="nav-header-brand">
+                <div class="brand-icon">( )</div>
+                <span class="brand-text">大观园</span>
+            </div>
+            <button class="btn btn-icon btn-text" onclick="closeNav()" aria-label="关闭导航">
+                <svg class="icon" viewBox="0 0 24 24">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        </div>
+        
+        <div class="nav-body">
+            <a href="home.html" class="nav-item" onclick="navigateTo('学习'); return false;">
+                <svg class="icon nav-icon" viewBox="0 0 24 24">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                </svg>
+                <span>学习</span>
+            </a>
+            <a href="library.html" class="nav-item active" onclick="navigateTo('题库'); return false;">
+                <svg class="icon nav-icon" viewBox="0 0 24 24">
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                </svg>
+                <span>题库</span>
+            </a>
+            <a href="#" class="nav-item" onclick="navigateTo('复习'); return false;">
+                <svg class="icon nav-icon" viewBox="0 0 24 24">
+                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                </svg>
+                <span>复习</span>
+            </a>
+            <a href="#" class="nav-item" onclick="navigateTo('笔记'); return false;">
+                <svg class="icon nav-icon" viewBox="0 0 24 24">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+                <span>笔记</span>
+            </a>
+            <a href="#" class="nav-item" onclick="navigateTo('学习记录'); return false;">
+                <svg class="icon nav-icon" viewBox="0 0 24 24">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                    <line x1="16" y1="2" x2="16" y2="6"/>
+                    <line x1="8" y1="2" x2="8" y2="6"/>
+                    <line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+                <span>学习记录</span>
+            </a>
+            <a href="#" class="nav-item" onclick="navigateTo('工具'); return false;">
+                <svg class="icon nav-icon" viewBox="0 0 24 24">
+                    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+                </svg>
+                <span>工具</span>
+            </a>
+            <a href="#" class="nav-item" onclick="navigateTo('设置'); return false;">
+                <svg class="icon nav-icon" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="3"/>
+                    <path d="M12 1v6m0 6v10M1 12h6m6 0h10"/>
+                </svg>
+                <span>设置</span>
+            </a>
+        </div>
+        
+        <div class="nav-footer">
+            <div class="nav-footer-item">
+                <svg class="icon" style="width: 16px; height: 16px;" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                </svg>
+                <span>版本 2.0 演示</span>
+            </div>
+            <div class="nav-footer-item">
+                <svg class="icon" style="width: 16px; height: 16px;" viewBox="0 0 24 24">
+                    <path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"/>
+                    <line x1="16" y1="8" x2="2" y2="22"/>
+                    <line x1="17.5" y1="15" x2="9" y2="15"/>
+                </svg>
+                <span>离线可用</span>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- 主容器 -->
+    <div class="mobile-container">
+        <div class="mobile-topbar">
+            <button class="btn btn-icon btn-text" onclick="openNav()" aria-label="打开导航">
+                <svg class="icon" viewBox="0 0 24 24">
+                    <line x1="3" y1="12" x2="21" y2="12"/>
+                    <line x1="3" y1="6" x2="21" y2="6"/>
+                    <line x1="3" y1="18" x2="21" y2="18"/>
+                </svg>
+            </button>
+            <div class="mobile-brand">
+                <div class="brand-icon">( )</div>
+                <span class="brand-text">大观园</span>
+            </div>
+            <button class="btn btn-icon btn-text" aria-label="搜索">
+                <svg class="icon" viewBox="0 0 24 24">
+                    <circle cx="11" cy="11" r="8"/>
+                    <path d="m21 21-4.35-4.35"/>
+                </svg>
+            </button>
+        </div>
+        
+        <div class="mobile-content">
+            <div class="demo-section">
+                <h2>手机导航演示</h2>
+                <p>点击左上角菜单按钮打开导航抽屉</p>
+                <p style="margin-top: 8px;">选择任意导航项后，抽屉将自动关闭</p>
+                <button class="btn btn-primary demo-button" onclick="openNav()">
+                    <svg class="icon" style="width: 16px; height: 16px;" viewBox="0 0 24 24">
+                        <line x1="3" y1="12" x2="21" y2="12"/>
+                        <line x1="3" y1="6" x2="21" y2="6"/>
+                        <line x1="3" y1="18" x2="21" y2="18"/>
+                    </svg>
+                    打开导航
+                </button>
+            </div>
+            
+            <div class="content-placeholder">
+                <svg class="icon" style="width: 48px; height: 48px; margin-bottom: 16px; color: var(--text-secondary);" viewBox="0 0 24 24">
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                </svg>
+                <p style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">题库内容区</p>
+                <p style="font-size: 14px;">阶段 1 视觉样板</p>
+            </div>
+            
+            <div style="margin-top: var(--spacing-xl); padding: var(--spacing-l); background: var(--bg-nav); border-radius: var(--radius-button);">
+                <h3 style="font-size: 14px; font-weight: 600; margin-bottom: var(--spacing-m);">交互说明</h3>
+                <ul style="font-size: 13px; line-height: 24px; color: var(--text-secondary); padding-left: 20px;">
+                    <li>触控目标最小 44×44px</li>
+                    <li>点击导航项后自动关闭</li>
+                    <li>点击遮罩关闭导航</li>
+                    <li>支持 reduced-motion</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 状态指示器 -->
+    <div class="status-indicator" id="statusIndicator"></div>
+    
+    <script>
+        function openNav() {
+            document.getElementById('navDrawer').classList.add('open');
+            document.getElementById('navOverlay').classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeNav() {
+            document.getElementById('navDrawer').classList.remove('open');
+            document.getElementById('navOverlay').classList.remove('open');
+            document.body.style.overflow = '';
+        }
+        
+        function navigateTo(pageName) {
+            // 显示状态指示
+            const indicator = document.getElementById('statusIndicator');
+            indicator.textContent = `导航至：${pageName}`;
+            indicator.classList.add('show');
+            
+            // 关闭导航抽屉
+            closeNav();
+            
+            // 2秒后隐藏状态指示
+            setTimeout(() => {
+                indicator.classList.remove('show');
+            }, 2000);
+        }
+        
+        // 键盘支持
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeNav();
+            }
+        });
+        
+        // 焦点陷阱（当导航打开时，焦点应该限制在导航内）
+        const navDrawer = document.getElementById('navDrawer');
+        navDrawer.addEventListener('keydown', (e) => {
+            if (!navDrawer.classList.contains('open')) return;
+            
+            const focusableElements = navDrawer.querySelectorAll('button, a');
+            const firstElement = focusableElements[0];
+            const lastElement = focusableElements[focusableElements.length - 1];
+            
+            if (e.key === 'Tab') {
+                if (e.shiftKey && document.activeElement === firstElement) {
+                    e.preventDefault();
+                    lastElement.focus();
+                } else if (!e.shiftKey && document.activeElement === lastElement) {
+                    e.preventDefault();
+                    firstElement.focus();
+                }
+            }
+        });
+    </script>
+</body>
+</html>

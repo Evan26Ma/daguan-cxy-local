@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>做题（AI 展开）- 大观园</title>
+    <link rel="stylesheet" href="../css/design-system.css">
+    <link rel="stylesheet" href="../../vendor/katex.min.css">
+    <style>
+        .question-layout {
+            display: flex;
+            height: calc(100vh - var(--topbar-height) - var(--statusbar-height));
+        }
+        
+        .question-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            min-width: 520px;
+        }
+        
+        .question-header {
+            background: var(--bg-surface);
+            border-bottom: 1px solid var(--border-default);
+            padding: var(--spacing-l) var(--spacing-2xl);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        
+        .breadcrumb-nav {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-s);
+            font-size: 13px;
+            line-height: 20px;
+            color: var(--text-secondary);
+        }
+        
+        .question-sequence {
+            font-size: 14px;
+            line-height: 22px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .question-content {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+        
+        .question-wrapper {
+            max-width: 760px;
+            margin: 0 auto;
+            padding: var(--spacing-2xl) 40px 120px 40px;
+        }
+        
+        .question-meta-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-xl);
+            padding-bottom: var(--spacing-l);
+            border-bottom: 1px solid var(--border-default);
+        }
+        
+        .question-source {
+            font-size: 13px;
+            line-height: 20px;
+            color: var(--text-secondary);
+        }
+        
+        .question-actions {
+            display: flex;
+            gap: var(--spacing-m);
+        }
+        
+        .action-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            line-height: 20px;
+            color: var(--text-secondary);
+            transition: all 120ms ease;
+        }
+        
+        .action-btn:hover {
+            background: var(--bg-nav);
+            color: var(--text-primary);
+        }
+        
+        .action-btn.active {
+            color: var(--brand-orange);
+            background: var(--brand-light-bg);
+        }
+        
+        .question-stem {
+            font-size: 18px;
+            line-height: 32px;
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .question-options {
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .option-item {
+            display: flex;
+            align-items: flex-start;
+            gap: var(--spacing-m);
+            padding: var(--spacing-l);
+            margin-bottom: var(--spacing-s);
+            border: 2px solid var(--border-default);
+            border-radius: var(--radius-button);
+            cursor: pointer;
+            transition: all 120ms ease;
+        }
+        
+        .option-item:hover {
+            border-color: var(--border-control);
+            background: var(--bg-nav);
+        }
+        
+        .option-item.selected {
+            background: var(--brand-light-bg);
+            border-color: var(--brand-orange);
+        }
+        
+        .option-label {
+            flex-shrink: 0;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: var(--bg-nav);
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+        
+        .option-item.selected .option-label {
+            background: var(--brand-orange);
+            color: var(--text-on-brand);
+        }
+        
+        .option-content {
+            flex: 1;
+            font-size: 16px;
+            line-height: 28px;
+        }
+        
+        .question-footer {
+            position: sticky;
+            bottom: 0;
+            background: var(--bg-surface);
+            border-top: 1px solid var(--border-default);
+            padding: var(--spacing-l) var(--spacing-2xl);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .footer-nav {
+            display: flex;
+            gap: var(--spacing-m);
+        }
+        
+        .footer-status {
+            display: flex;
+            gap: var(--spacing-m);
+        }
+        
+        .mastery-btn {
+            padding: 8px 16px;
+            border: 2px solid var(--border-control);
+            border-radius: var(--radius-button);
+            background: var(--bg-surface);
+            cursor: pointer;
+            font-size: 14px;
+            line-height: 20px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            transition: all 120ms ease;
+        }
+        
+        .mastery-btn.active {
+            background: var(--success);
+            border-color: var(--success);
+            color: #FFFFFF;
+        }
+        
+        /* AI 面板 */
+        .ai-panel {
+            width: 400px;
+            background: var(--bg-surface);
+            border-left: 1px solid var(--border-default);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+        
+        .ai-header {
+            padding: var(--spacing-l) var(--spacing-xl);
+            border-bottom: 1px solid var(--border-default);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .ai-title {
+            font-size: 16px;
+            line-height: 24px;
+            font-weight: 600;
+        }
+        
+        .ai-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: var(--spacing-xl);
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-l);
+        }
+        
+        .ai-message {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-s);
+        }
+        
+        .ai-message.user {
+            align-items: flex-end;
+        }
+        
+        .ai-message-bubble {
+            max-width: 85%;
+            padding: var(--spacing-m) var(--spacing-l);
+            border-radius: 12px;
+            font-size: 14px;
+            line-height: 22px;
+        }
+        
+        .ai-message.user .ai-message-bubble {
+            background: var(--bg-nav);
+            color: var(--text-primary);
+        }
+        
+        .ai-message.assistant .ai-message-bubble {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-default);
+            color: var(--text-primary);
+        }
+        
+        .ai-message-meta {
+            font-size: 12px;
+            line-height: 18px;
+            color: var(--text-secondary);
+            padding: 0 var(--spacing-m);
+        }
+        
+        .ai-quick-prompts {
+            padding: var(--spacing-l) var(--spacing-xl);
+            border-top: 1px solid var(--border-default);
+            border-bottom: 1px solid var(--border-default);
+        }
+        
+        .prompt-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--spacing-s);
+        }
+        
+        .prompt-chip {
+            padding: 6px 12px;
+            background: var(--bg-nav);
+            border: 1px solid var(--border-default);
+            border-radius: 20px;
+            font-size: 12px;
+            line-height: 18px;
+            cursor: pointer;
+            transition: all 120ms ease;
+        }
+        
+        .prompt-chip:hover {
+            background: var(--brand-light-bg);
+            border-color: var(--brand-orange);
+            color: var(--brand-text-on-white);
+        }
+        
+        .ai-input-area {
+            padding: var(--spacing-xl);
+            border-top: 1px solid var(--border-default);
+        }
+        
+        .ai-model-select {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-s);
+            margin-bottom: var(--spacing-m);
+        }
+        
+        .model-select {
+            padding: 4px 10px;
+            border: 1px solid var(--border-control);
+            border-radius: 6px;
+            font-size: 12px;
+            line-height: 18px;
+            background: var(--bg-surface);
+            color: var(--text-primary);
+            font-family: inherit;
+        }
+        
+        .ai-input-box {
+            position: relative;
+        }
+        
+        .ai-input {
+            width: 100%;
+            min-height: 80px;
+            padding: var(--spacing-m);
+            border: 1px solid var(--border-control);
+            border-radius: var(--radius-button);
+            font-size: 14px;
+            line-height: 22px;
+            font-family: inherit;
+            resize: vertical;
+        }
+        
+        .ai-input:focus {
+            outline: none;
+            border-color: var(--brand-orange);
+        }
+        
+        .ai-send-btn {
+            position: absolute;
+            right: var(--spacing-m);
+            bottom: var(--spacing-m);
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--brand-orange);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 120ms ease;
+        }
+        
+        .ai-send-btn:hover {
+            background: var(--brand-hover);
+        }
+        
+        .ai-send-btn svg {
+            width: 16px;
+            height: 16px;
+            stroke: var(--text-on-brand);
+        }
+        
+        @media (max-width: 1279px) {
+            .question-main {
+                min-width: 480px;
+            }
+        }
+        
+        @media (max-width: 1023px) {
+            .ai-panel {
+                position: fixed;
+                right: 0;
+                top: var(--topbar-height);
+                bottom: var(--statusbar-height);
+                width: 100%;
+                max-width: 480px;
+                z-index: 100;
+                box-shadow: -4px 0 24px rgba(0, 0, 0, 0.12);
+            }
+            
+            .question-main {
+                min-width: 100%;
+            }
+        }
+        
+        @media (max-width: 767px) {
+            .ai-panel {
+                max-width: 100%;
+            }
+            
+            .question-header {
+                padding: var(--spacing-m) var(--spacing-l);
+            }
+            
+            .question-wrapper {
+                padding: var(--spacing-l);
+            }
+            
+            .question-footer {
+                padding: var(--spacing-m) var(--spacing-l);
+                flex-wrap: wrap;
+                gap: var(--spacing-m);
+            }
+            
+            .footer-nav,
+            .footer-status {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .question-stem {
+                font-size: 17px;
+                line-height: 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- 顶栏 -->
+        <div class="app-topbar">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <button class="btn btn-icon btn-text" onclick="history.back()">
+                    <svg class="icon" viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                </button>
+                <span style="font-size: 16px; font-weight: 600;">大观园</span>
+            </div>
+        </div>
+        
+        <div class="app-body">
+            <!-- 导航 -->
+            <nav class="app-nav">
+                <a href="home.html" class="nav-item">
+                    <svg class="icon nav-icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+                    <span>学习</span>
+                </a>
+                <a href="library.html" class="nav-item">
+                    <svg class="icon nav-icon" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                    <span>题库</span>
+                </a>
+            </nav>
+            
+            <!-- 做题与 AI 布局 -->
+            <div class="question-layout">
+                <!-- 题目主区域 -->
+                <div class="question-main">
+                    <div class="question-header">
+                        <div class="breadcrumb-nav">
+                            <span>线性代数</span>
+                            <span>›</span>
+                            <span>二次型</span>
+                        </div>
+                        <div class="question-sequence">第 2 题 / 共 3 题</div>
+                    </div>
+                    
+                    <div class="question-content">
+                        <div class="question-wrapper">
+                            <div class="question-meta-row">
+                                <div class="question-source">900题数二第六章A类 13 · 单选题</div>
+                                <div class="question-actions">
+                                    <button class="action-btn">
+                                        <svg class="icon" style="width: 16px; height: 16px;" viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                                        收藏
+                                    </button>
+                                    <button class="action-btn">
+                                        <svg class="icon" style="width: 16px; height: 16px;" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                        批注
+                                    </button>
+                                    <button class="action-btn active" id="aiToggle">
+                                        <svg class="icon" style="width: 16px; height: 16px;" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                                        AI
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="question-stem">
+                                <p>设二次型 $f(x_1,x_2,x_3)=x_1^2+ax_2^2+x_3^2+2bx_1x_3$ 经可逆线性变换 $x=Py$ 可化为二次型 $g(y_1,y_2,y_3)=-y_1^2-3y_2^2+3y_3^2+8y_2y_3$，则参数 $a,b$ 的取值范围为（ ）。</p>
+                            </div>
+                            
+                            <div class="question-options">
+                                <div class="option-item" onclick="selectOption(this)">
+                                    <div class="option-label">A</div>
+                                    <div class="option-content">$a>0,\ -1<b<1$</div>
+                                </div>
+                                <div class="option-item selected" onclick="selectOption(this)">
+                                    <div class="option-label">B</div>
+                                    <div class="option-content">$a<0,\ -1<b<1$</div>
+                                </div>
+                                <div class="option-item" onclick="selectOption(this)">
+                                    <div class="option-label">C</div>
+                                    <div class="option-content">$a>0,\ b>1$ 或 $b<-1$</div>
+                                </div>
+                                <div class="option-item" onclick="selectOption(this)">
+                                    <div class="option-label">D</div>
+                                    <div class="option-content">$a<0,\ b>1$ 或 $b<-1$</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="question-footer">
+                        <div class="footer-nav">
+                            <button class="btn btn-secondary">
+                                <svg class="icon" style="width: 16px; height: 16px;" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+                                上一题
+                            </button>
+                            <button class="btn btn-primary">显示解析</button>
+                            <button class="btn btn-secondary">
+                                下一题
+                                <svg class="icon" style="width: 16px; height: 16px;" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+                            </button>
+                        </div>
+                        <div class="footer-status">
+                            <button class="mastery-btn">已掌握</button>
+                            <button class="btn btn-text" style="color: var(--error);">标记易错</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- AI 面板 -->
+                <div class="ai-panel" id="aiPanel">
+                    <div class="ai-header">
+                        <span class="ai-title">AI 助手</span>
+                        <button class="btn btn-icon btn-text" onclick="closeAI()">
+                            <svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        </button>
+                    </div>
+                    
+                    <div class="ai-messages" id="aiMessages">
+                        <div class="ai-message assistant">
+                            <div class="ai-message-bubble">
+                                你好！我可以帮你理解这道题目。你可以问我：
+                                <ul style="margin: 8px 0 0 20px; padding: 0;">
+                                    <li>如何判断二次型的惯性指数？</li>
+                                    <li>为什么要考虑特征值？</li>
+                                    <li>这道题的解题思路是什么？</li>
+                                </ul>
+                            </div>
+                            <div class="ai-message-meta">GPT-4</div>
+                        </div>
+                        
+                        <div class="ai-message user">
+                            <div class="ai-message-bubble">
+                                为什么 a 必须小于 0？
+                            </div>
+                        </div>
+                        
+                        <div class="ai-message assistant">
+                            <div class="ai-message-bubble">
+                                <p style="margin-bottom: 12px;">很好的问题！我们来分析一下：</p>
+                                
+                                <p style="margin-bottom: 12px;"><strong>第一步：分析目标二次型的惯性指数</strong></p>
+                                <p style="margin-bottom: 12px;">目标二次型 $g(y_1,y_2,y_3)=-y_1^2-3y_2^2+3y_3^2+8y_2y_3$ 的矩阵为：</p>
+                                <p style="margin-bottom: 12px;">$$G=\begin{pmatrix}-1&0&0\\0&-3&4\\0&4&3\end{pmatrix}$$</p>
+                                
+                                <p style="margin-bottom: 12px;">其中右下 $2\times 2$ 块的特征值为 $5$ 和 $-5$，因此 $g$ 的惯性指数是：<strong>1 个正，2 个负</strong>。</p>
+                                
+                                <p style="margin-bottom: 12px;"><strong>第二步：原二次型必须有相同的惯性指数</strong></p>
+                                <p style="margin-bottom: 12px;">原二次型矩阵为：</p>
+                                <p style="margin-bottom: 12px;">$$F=\begin{pmatrix}1&0&b\\0&a&0\\b&0&1\end{pmatrix}$$</p>
+                                
+                                <p style="margin-bottom: 12px;">$x_1, x_3$ 对应的 $2\times 2$ 块特征值为 $1+b$ 和 $1-b$。要得到 1 正 2 负的惯性指数，我们需要：</p>
+                                <ul style="margin: 8px 0 12px 20px; padding: 0;">
+                                    <li>$a < 0$（提供一个负特征值）</li>
+                                    <li>$|b| > 1$（使得 $1+b$ 和 $1-b$ 一正一负）</li>
+                                </ul>
+                                
+                                <p>这样就能保证总共 1 个正特征值和 2 个负特征值，与目标二次型的惯性指数一致。</p>
+                            </div>
+                            <div class="ai-message-meta">GPT-4 · 生成完成</div>
+                        </div>
+                        
+                        <div class="ai-message user">
+                            <div class="ai-message-bubble">
+                                明白了！那为什么 |b| > 1 能保证一正一负？
+                            </div>
+                        </div>
+                        
+                        <div class="ai-message assistant">
+                            <div class="ai-message-bubble">
+                                <p style="margin-bottom: 12px;">这是因为 $1+b$ 和 $1-b$ 的符号关系：</p>
+                                
+                                <p style="margin-bottom: 12px;"><strong>情况 1：当 $b > 1$ 时</strong></p>
+                                <ul style="margin: 0 0 12px 20px; padding: 0;">
+                                    <li>$1+b > 1+1 = 2 > 0$（正）</li>
+                                    <li>$1-b < 1-1 = 0$（负）</li>
+                                </ul>
+                                
+                                <p style="margin-bottom: 12px;"><strong>情况 2：当 $b < -1$ 时</strong></p>
+                                <ul style="margin: 0 0 12px 20px; padding: 0;">
+                                    <li>$1+b < 1-1 = 0$（负）</li>
+                                    <li>$1-b > 1+1 = 2 > 0$（正）</li>
+                                </ul>
+                                
+                                <p style="margin-bottom: 12px;"><strong>情况 3：当 $-1 < b < 1$ 时</strong></p>
+                                <ul style="margin: 0 0 12px 20px; padding: 0;">
+                                    <li>$1+b > 0$（正）</li>
+                                    <li>$1-b > 0$（正）</li>
+                                </ul>
+                                <p>两个都是正的，不符合要求！</p>
+                                
+                                <p>所以只有 $|b| > 1$ 时，才能得到一正一负的配置。结合 $a < 0$，总共就是 1 正 2 负。</p>
+                            </div>
+                            <div class="ai-message-meta">GPT-4 · 生成完成</div>
+                        </div>
+                    </div>
+                    
+                    <div class="ai-quick-prompts">
+                        <div class="prompt-chips">
+                            <button class="prompt-chip">总体路线</button>
+                            <button class="prompt-chip">逐步推导</button>
+                            <button class="prompt-chip">完整解答</button>
+                        </div>
+                    </div>
+                    
+                    <div class="ai-input-area">
+                        <div class="ai-model-select">
+                            <span style="font-size: 12px; color: var(--text-secondary);">模型：</span>
+                            <select class="model-select">
+                                <option>GPT-4</option>
+                                <option>GPT-3.5</option>
+                                <option>Claude</option>
+                            </select>
+                        </div>
+                        <div class="ai-input-box">
+                            <textarea class="ai-input" placeholder="输入你的问题...（演示数据，不触发真实 API）"></textarea>
+                            <button class="ai-send-btn">
+                                <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 状态栏 -->
+        <div class="app-statusbar">
+            <span>演示数据 · AI 对话为演示内容 · 阶段 1 视觉样板</span>
+        </div>
+    </div>
+    
+    <script src="../../vendor/katex.min.js"></script>
+    <script>
+        // 渲染数学公式
+        document.addEventListener('DOMContentLoaded', () => {
+            renderMath();
+            scrollAIToBottom();
+        });
+        
+        function renderMath() {
+            const elements = document.querySelectorAll('.question-stem, .option-content, .ai-message-bubble');
+            elements.forEach(elem => {
+                // 行内公式
+                elem.innerHTML = elem.innerHTML.replace(/\$([^\$]+)\$/g, (match, p1) => {
+                    try {
+                        return katex.renderToString(p1, { displayMode: false, throwOnError: false });
+                    } catch (e) {
+                        return match;
+                    }
+                });
+                // 行间公式
+                elem.innerHTML = elem.innerHTML.replace(/\$\$([^\$]+)\$\$/g, (match, p1) => {
+                    try {
+                        return katex.renderToString(p1, { displayMode: true, throwOnError: false });
+                    } catch (e) {
+                        return match;
+                    }
+                });
+            });
+        }
+        
+        function selectOption(elem) {
+            const options = elem.parentElement.querySelectorAll('.option-item');
+            options.forEach(opt => opt.classList.remove('selected'));
+            elem.classList.add('selected');
+        }
+        
+        function closeAI() {
+            document.getElementById('aiPanel').style.display = 'none';
+            document.getElementById('aiToggle').classList.remove('active');
+        }
+        
+        function scrollAIToBottom() {
+            const messagesContainer = document.getElementById('aiMessages');
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        // 快捷提示按钮
+        document.querySelectorAll('.prompt-chip').forEach(chip => {
+            chip.addEventListener('click', function() {
+                const textarea = document.querySelector('.ai-input');
+                textarea.value = this.textContent;
+                textarea.focus();
+            });
+        });
+    </script>
+</body>
+</html>

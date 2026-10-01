@@ -1,0 +1,137 @@
+[
+  {
+    "path": "docs/ui-redesign/DEEPSEEK-HANDOFF-RESUME.md",
+    "sha256": "987AF3B8226D97DEA9DAA2A749C1846060F4F58833CFFB08CF97AEAD57082212",
+    "bytes": 2739
+  },
+  {
+    "path": "docs/ui-redesign/DEEPSEEK-HANDOFF.md",
+    "sha256": "081CBF0888D95F30860B315662AB4227AE2ED52089FA0090A2578BCC8CD2EA8D",
+    "bytes": 3874
+  },
+  {
+    "path": "docs/ui-redesign/DSH-DESIGN-HANDOFF.md",
+    "sha256": "E9F2D52F2A63345D09F9F12CFC5092F64A647C99D0D4288CF394D162BB297E20",
+    "bytes": 11960
+  },
+  {
+    "path": "docs/ui-redesign/REMEDIATION-CONTROL.md",
+    "sha256": "529E40AB00441EB532183AC61E2B1F81012076168E903F957ACBE32599715F09",
+    "bytes": 5151
+  },
+  {
+    "path": "docs/ui-redesign/remediation-1-acceptance-2.md",
+    "sha256": "3928C49E4F903AF773ABBF9C75510E1FB65EF77138FD523B74277A0124DA9F36",
+    "bytes": 2941
+  },
+  {
+    "path": "docs/ui-redesign/remediation-1-acceptance-3.md",
+    "sha256": "538A264AB69BD07DEF54F3ED00E165296068E7C87D74C3E11D4E7A2F1B8426DF",
+    "bytes": 3868
+  },
+  {
+    "path": "docs/ui-redesign/remediation-1-acceptance.md",
+    "sha256": "E2A0D7378036AC6F84DED4FAC47C42AED5CA276600B38C335F8E42BA02CF051B",
+    "bytes": 4888
+  },
+  {
+    "path": "docs/ui-redesign/remediation-1-feedback-to-codex.md",
+    "sha256": "304DE80DB69914DED834E9CBDCB41A2D562B674752E52CF096A02871F21DE3F4",
+    "bytes": 8423
+  },
+  {
+    "path": "docs/ui-redesign/remediation-1-report.md",
+    "sha256": "657818A00FA7953E072BBEFCC7DC4F6B9ABDF2A1827667DB88271DB1DEE699AF",
+    "bytes": 27384
+  },
+  {
+    "path": "docs/ui-redesign/remediation-2-acceptance.md",
+    "sha256": "CA3F8E306C88AC36FCC76895AC70644B1177C1626F9FB54E2C38CA2EC00B643E",
+    "bytes": 4999
+  },
+  {
+    "path": "docs/ui-redesign/stage-1-acceptance-guide.md",
+    "sha256": "812C13BD12B109BBC75A0F8F320D255931FE91EE1AD4DB90D8567D45CD96C4A0",
+    "bytes": 4298
+  },
+  {
+    "path": "docs/ui-redesign/stage-1-acceptance.md",
+    "sha256": "F3A37321461243EF3979BCBFD583B806702585EB62A5FDA94DF5CB997B57B924",
+    "bytes": 12717
+  },
+  {
+    "path": "docs/ui-redesign/stage-1-report.md",
+    "sha256": "D528DB707D98356E6BA26540F5F86417E33D17AC713E6270EA8DE038E636FEA8",
+    "bytes": 11515
+  },
+  {
+    "path": "docs/ui-redesign/stage-2-brief.md",
+    "sha256": "40F0FA8864A5F9F04D433EE3F38A18F4801C37236427D1D9DF0B69C40799B991",
+    "bytes": 10977
+  },
+  {
+    "path": "docs/ui-redesign/stage-2-report.md",
+    "sha256": "34D85A069C29882EF766598BF316BCA10B22FC68F3487D2E8424D8BDA9366165",
+    "bytes": 10047
+  },
+  {
+    "path": "docs/ui-redesign/stage-3-report.md",
+    "sha256": "DC7A292FF545A931EF34686A63D6931BCC19BE298AC9D7E7A133D55E724E7172",
+    "bytes": 4729
+  },
+  {
+    "path": "docs/ui-redesign/stage-4-report.md",
+    "sha256": "3490CFD14B856998D63899D4C62E246256516E003EA637F6C9012D9D400201AA",
+    "bytes": 3833
+  },
+  {
+    "path": "web/index-new-backup.html",
+    "sha256": "7AED1C29FD404CFCF12A17D1F4FABD96031F80BB9B32E56D709DCC8E026B753C",
+    "bytes": 5298
+  },
+  {
+    "path": "web/index-old-backup.html",
+    "sha256": "BA732A1BB0C6A7CA85C0E8221AE51E51ED3E262C5857C5E113A31098721DFA16",
+    "bytes": 66856
+  },
+  {
+    "path": "web/ui-preview/css/design-system.css",
+    "sha256": "2DA8A9A535E4C3CC0F2D491FB6F5D739441D9F64388DEE1DB70D0DE3871C94BD",
+    "bytes": 6547
+  },
+  {
+    "path": "web/ui-preview/generate-screenshots.py",
+    "sha256": "CB517A8201B915F0DEEDFA02C70323FA20491CB88A0FF7811FDBD8AC049727AD",
+    "bytes": 4512
+  },
+  {
+    "path": "web/ui-preview/index.html",
+    "sha256": "BDD05161B2DB3514D2B79BCE5C3C4EC518DE228F8792A2837176D7C118F8C84F",
+    "bytes": 4380
+  },
+  {
+    "path": "web/ui-preview/pages/home.html",
+    "sha256": "59AEAB4645E93AAE35BF3505029A2686B601924B217378BBE6E3063E2F3A3A55",
+    "bytes": 15646
+  },
+  {
+    "path": "web/ui-preview/pages/library.html",
+    "sha256": "96B8438DC97FCAFDD140D2F436F726676B86572C89F1961BE245F36F5CCE8C7C",
+    "bytes": 20817
+  },
+  {
+    "path": "web/ui-preview/pages/mobile-nav.html",
+    "sha256": "36E8988F7889A7A4F2521D4FEA90E254994C7F30E0DC272EE397315A77859250",
+    "bytes": 16318
+  },
+  {
+    "path": "web/ui-preview/pages/question-with-ai.html",
+    "sha256": "13744C0B7FF3E6B4C3A6115C2A2AD91A181B104F0BB9DCD6E718B5B97BAFA3D5",
+    "bytes": 28552
+  },
+  {
+    "path": "web/ui-preview/pages/question.html",
+    "sha256": "F5DD7205896D95B3139BD50DFF255CDD3D4CCE5D674733541ED25CE34A151F60",
+    "bytes": 32411
+  }
+]

@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "total": 6521,
+  "types": {
+    "subjective": 4669,
+    "single_choice": 1848,
+    "multiple_choice": 4
+  },
+  "shards": {
+    "高等数学": {
+      "file": "shards/shard-01.json",
+      "count": 3082
+    },
+    "线性代数": {
+      "file": "shards/shard-02.json",
+      "count": 803
+    },
+    "概率统计": {
+      "file": "shards/shard-03.json",
+      "count": 316
+    },
+    "历年真题": {
+      "file": "shards/shard-04.json",
+      "count": 1776
+    },
+    "模拟哥专区": {
+      "file": "shards/shard-05.json",
+      "count": 544
+    },
+    "未分类": {
+      "file": "shards/shard-06.json",
+      "count": 0
+    }
+  },
+  "asset_count": 1242,
+  "asset_base": "./data/assets/",
+  "synced_at": "2026-09-30T00:50:01.853Z",
+  "source": "https://www.cxyonly.fans/math",
+  "source_total": 6362
+}

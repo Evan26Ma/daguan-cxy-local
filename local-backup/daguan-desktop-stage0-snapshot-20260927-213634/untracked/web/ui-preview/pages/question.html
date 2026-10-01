@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>做题 - 大观园</title>
+    <link rel="stylesheet" href="../css/design-system.css">
+    <link rel="stylesheet" href="../../vendor/katex.min.css">
+    <style>
+        .question-layout {
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - var(--topbar-height) - var(--statusbar-height));
+        }
+        
+        .question-header {
+            background: var(--bg-surface);
+            border-bottom: 1px solid var(--border-default);
+            padding: var(--spacing-l) var(--spacing-2xl);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        
+        .breadcrumb-nav {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-s);
+            font-size: 13px;
+            line-height: 20px;
+            color: var(--text-secondary);
+        }
+        
+        .question-sequence {
+            font-size: 14px;
+            line-height: 22px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .question-content {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+        
+        .question-wrapper {
+            max-width: 760px;
+            margin: 0 auto;
+            padding: var(--spacing-2xl) 40px 120px 40px;
+        }
+        
+        .question-meta-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-xl);
+            padding-bottom: var(--spacing-l);
+            border-bottom: 1px solid var(--border-default);
+        }
+        
+        .question-source {
+            font-size: 13px;
+            line-height: 20px;
+            color: var(--text-secondary);
+        }
+        
+        .question-actions {
+            display: flex;
+            gap: var(--spacing-m);
+        }
+        
+        .action-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            line-height: 20px;
+            color: var(--text-secondary);
+            transition: all 120ms ease;
+        }
+        
+        .action-btn:hover {
+            background: var(--bg-nav);
+            color: var(--text-primary);
+        }
+        
+        .action-btn.active {
+            color: var(--brand-orange);
+        }
+        
+        .question-stem {
+            font-size: 18px;
+            line-height: 32px;
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .question-options {
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .option-item {
+            display: flex;
+            align-items: flex-start;
+            gap: var(--spacing-m);
+            padding: var(--spacing-l);
+            margin-bottom: var(--spacing-s);
+            border: 2px solid var(--border-default);
+            border-radius: var(--radius-button);
+            cursor: pointer;
+            transition: all 120ms ease;
+        }
+        
+        .option-item:hover {
+            border-color: var(--border-control);
+            background: var(--bg-nav);
+        }
+        
+        .option-item.selected {
+            background: var(--brand-light-bg);
+            border-color: var(--brand-orange);
+        }
+        
+        .option-item.correct {
+            background: #F0F9F4;
+            border-color: var(--success);
+        }
+        
+        .option-item.incorrect {
+            background: #FEF3F4;
+            border-color: var(--error);
+        }
+        
+        .option-label {
+            flex-shrink: 0;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: var(--bg-nav);
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+        
+        .option-item.selected .option-label {
+            background: var(--brand-orange);
+            color: var(--text-on-brand);
+        }
+        
+        .option-content {
+            flex: 1;
+            font-size: 16px;
+            line-height: 28px;
+        }
+        
+        .answer-section,
+        .explanation-section {
+            margin-top: var(--spacing-2xl);
+            padding-top: var(--spacing-2xl);
+            border-top: 1px solid var(--border-default);
+        }
+        
+        .section-title {
+            font-size: 16px;
+            line-height: 24px;
+            font-weight: 600;
+            margin-bottom: var(--spacing-l);
+            color: var(--text-primary);
+        }
+        
+        .section-content {
+            font-size: 18px;
+            line-height: 32px;
+            color: var(--text-primary);
+        }
+        
+        .section-content p {
+            margin-bottom: var(--spacing-l);
+        }
+        
+        .katex-display {
+            margin: var(--spacing-l) 0;
+            overflow-x: auto;
+            overflow-y: hidden;
+        }
+        
+        .video-section {
+            margin-top: var(--spacing-xl);
+            padding: var(--spacing-l);
+            background: var(--bg-nav);
+            border-radius: var(--radius-button);
+        }
+        
+        .video-info {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-m);
+            font-size: 14px;
+            line-height: 22px;
+        }
+        
+        .video-link {
+            color: var(--brand-text-on-white);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .video-link:hover {
+            text-decoration: underline;
+        }
+        
+        .question-footer {
+            position: fixed;
+            bottom: var(--statusbar-height);
+            left: var(--nav-expanded);
+            right: 0;
+            background: var(--bg-surface);
+            border-top: 1px solid var(--border-default);
+            padding: var(--spacing-l) var(--spacing-2xl);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+        }
+        
+        .footer-nav {
+            display: flex;
+            gap: var(--spacing-m);
+        }
+        
+        .footer-status {
+            display: flex;
+            gap: var(--spacing-m);
+        }
+        
+        .mastery-btn {
+            padding: 8px 16px;
+            border: 2px solid var(--border-control);
+            border-radius: var(--radius-button);
+            background: var(--bg-surface);
+            cursor: pointer;
+            font-size: 14px;
+            line-height: 20px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            transition: all 120ms ease;
+        }
+        
+        .mastery-btn:hover {
+            border-color: var(--brand-orange);
+            color: var(--text-primary);
+        }
+        
+        .mastery-btn.active {
+            background: var(--success);
+            border-color: var(--success);
+            color: #FFFFFF;
+        }
+        
+        .question-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: var(--radius-button);
+            margin: var(--spacing-l) 0;
+            cursor: zoom-in;
+        }
+        
+        @media (max-width: 1279px) {
+            .question-footer {
+                left: var(--nav-collapsed);
+            }
+        }
+        
+        @media (max-width: 1023px) {
+            .question-footer {
+                left: 0;
+            }
+        }
+        
+        @media (max-width: 767px) {
+            .question-header {
+                padding: var(--spacing-m) var(--spacing-l);
+            }
+            
+            .question-wrapper {
+                padding: var(--spacing-l) var(--spacing-l) 100px var(--spacing-l);
+            }
+            
+            .question-footer {
+                padding: var(--spacing-m) var(--spacing-l);
+                flex-wrap: wrap;
+                gap: var(--spacing-m);
+            }
+            
+            .footer-nav,
+            .footer-status {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .question-stem,
+            .section-content {
+                font-size: 17px;
+                line-height: 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- 顶栏 -->
+        <div class="app-topbar">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <button class="btn btn-icon btn-text" onclick="history.back()">
+                    <svg class="icon" viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                </button>
+                <span style="font-size: 16px; font-weight: 600;">大观园</span>
+            </div>
+        </div>
+        
+        <div class="app-body">
+            <!-- 导航 -->
+            <nav class="app-nav">
+                <a href="home.html" class="nav-item">
+                    <svg class="icon nav-icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+                    <span>学习</span>
+                </a>
+                <a href="library.html" class="nav-item">
+                    <svg class="icon nav-icon" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                    <span>题库</span>
+                </a>
+            </nav>
+            
+            <!-- 做题主体 -->
+            <div class="question-layout">
+                <div class="question-header">
+                    <div class="breadcrumb-nav">
+                        <span>线性代数</span>
+                        <span>›</span>
+                        <span>二次型</span>
+                    </div>
+                    <div class="question-sequence">第 1 题 / 共 3 题</div>
+                </div>
+                
+                <div class="question-content" id="questionContent">
+                    <div class="question-wrapper" id="question1" style="display: block;">
+                        <div class="question-meta-row">
+                            <div class="question-source">🫚真题同源 150 · 解答题</div>
+                            <div class="question-actions">
+                                <button class="action-btn" id="favoriteBtn">
+                                    <svg class="icon" style="width: 16px; height: 16px;" viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                                    收藏
+                                </button>
+                                <button class="action-btn">
+                                    <svg class="icon" style="width: 16px; height: 16px;" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                    批注
+                                </button>
+                                <button class="action-btn">
+                                    <svg class="icon" style="width: 16px; height: 16px;" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                                    AI
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="question-stem">
+                            <p>设 $\mathbf{A} = \begin{pmatrix} 2 & 1 & -1 \\ 1 & 2 & 1 \\ -1 & 1 & 2 \end{pmatrix}$，$\mathbf{B} = \begin{pmatrix} 1 & 0 & 1 \\ 0 & 1 & 1 \\ 1 & 1 & 2 \end{pmatrix}$。</p>
+                            <p>(I) 证明 $\mathbf{A}$ 与 $\mathbf{B}$ 不相似；</p>
+                            <p>(II) 求可逆矩阵 $\mathbf{C}$，使得 $\mathbf{C}^T \mathbf{A} \mathbf{C} = \mathbf{B}$。</p>
+                        </div>
+                        
+                        <div class="answer-section" id="answer1" style="display: none;">
+                            <div class="section-title">答案</div>
+                            <div class="section-content">
+                                <p>$A$ 与 $B$ 不相似。可取</p>
+                                <p>$$C=\begin{pmatrix}\frac{\sqrt2}{2}&-\frac{\sqrt6}{6}&\frac{6+3\sqrt2-\sqrt6}{6}\\0&\frac{\sqrt6}{3}&\frac{\sqrt6-3}{3}\\0&0&1\end{pmatrix}$$</p>
+                                <p>则 $C^TAC=B$。</p>
+                            </div>
+                        </div>
+                        
+                        <div class="explanation-section" id="explanation1" style="display: none;">
+                            <div class="section-title">解析</div>
+                            <div class="section-content">
+                                <p>相似矩阵迹相同，而 $\operatorname{tr}A=6$，$\operatorname{tr}B=4$，故 $A$ 与 $B$ 不相似。对 $A$ 对应二次型配方：</p>
+                                <p>$$x^TAx=2\left(x_1+\frac12x_2-\frac12x_3\right)^2+\frac32(x_2+x_3)^2$$</p>
+                                <p>令</p>
+                                <p>$$P_1=\begin{pmatrix}1&-\frac12&1\\0&1&-1\\0&0&1\end{pmatrix}$$</p>
+                                <p>则 $P_1^TAP_1=\operatorname{diag}\left(2,\frac32,0\right)$。又</p>
+                                <p>$$z^TBz=(z_1+z_3)^2+(z_2+z_3)^2$$</p>
+                                <p>令</p>
+                                <p>$$P_2^{-1}=\begin{pmatrix}1&0&1\\0&1&1\\0&0&1\end{pmatrix}$$</p>
+                                <p>并取</p>
+                                <p>$$D=\operatorname{diag}\left(\frac1{\sqrt2},\sqrt{\frac23},1\right)$$</p>
+                                <p>则 $C=P_1DP_2^{-1}$，乘开即得题示矩阵，直接代回可验 $C^TAC=B$。</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 题目 2: 选择题 -->
+                    <div class="question-wrapper" id="question2" style="display: none;">
+                        <div class="question-meta-row">
+                            <div class="question-source">900题数二第六章A类 13 · 单选题</div>
+                            <div class="question-actions">
+                                <button class="action-btn">
+                                    <svg class="icon" style="width: 16px; height: 16px;" viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                                    收藏
+                                </button>
+                                <button class="action-btn">
+                                    <svg class="icon" style="width: 16px; height: 16px;" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                    批注
+                                </button>
+                                <button class="action-btn">
+                                    <svg class="icon" style="width: 16px; height: 16px;" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                                    AI
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="question-stem">
+                            <p>设二次型 $f(x_1,x_2,x_3)=x_1^2+ax_2^2+x_3^2+2bx_1x_3$ 经可逆线性变换 $x=Py$ 可化为二次型 $g(y_1,y_2,y_3)=-y_1^2-3y_2^2+3y_3^2+8y_2y_3$，则参数 $a,b$ 的取值范围为（ ）。</p>
+                        </div>
+                        
+                        <div class="question-options">
+                            <div class="option-item" onclick="selectOption(this)">
+                                <div class="option-label">A</div>
+                                <div class="option-content">$a>0,\ -1<b<1$</div>
+                            </div>
+                            <div class="option-item" onclick="selectOption(this)">
+                                <div class="option-label">B</div>
+                                <div class="option-content">$a<0,\ -1<b<1$</div>
+                            </div>
+                            <div class="option-item" onclick="selectOption(this)">
+                                <div class="option-label">C</div>
+                                <div class="option-content">$a>0,\ b>1$ 或 $b<-1$</div>
+                            </div>
+                            <div class="option-item" onclick="selectOption(this)">
+                                <div class="option-label">D</div>
+                                <div class="option-content">$a<0,\ b>1$ 或 $b<-1$</div>
+                            </div>
+                        </div>
+                        
+                        <div class="answer-section" id="answer2" style="display: none;">
+                            <div class="section-title">答案</div>
+                            <div class="section-content">
+                                <p>D</p>
+                            </div>
+                        </div>
+                        
+                        <div class="explanation-section" id="explanation2" style="display: none;">
+                            <div class="section-title">解析</div>
+                            <div class="section-content">
+                                <p>目标二次型矩阵为</p>
+                                <p>$$G=\begin{pmatrix}-1&0&0\\0&-3&4\\0&4&3\end{pmatrix}$$</p>
+                                <p>其中二阶块 $\begin{pmatrix}-3&4\\4&3\end{pmatrix}$ 的特征值为 $5,-5$，再加上 $-1$，故 $g$ 的惯性指数为正惯性指数 $1$、负惯性指数 $2$。原二次型矩阵为</p>
+                                <p>$$F=\begin{pmatrix}1&0&b\\0&a&0\\b&0&1\end{pmatrix}$$</p>
+                                <p>其 $x_1,x_3$ 块特征值为 $1+b,1-b$。要得到 $1$ 正 $2$ 负，必须 $a<0$ 且 $|b|>1$，即 $b>1$ 或 $b<-1$。故选 D。</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 题目 3: 图片题 -->
+                    <div class="question-wrapper" id="question3" style="display: none;">
+                        <div class="question-meta-row">
+                            <div class="question-source">1995数二 · 解答题</div>
+                            <div class="question-actions">
+                                <button class="action-btn">
+                                    <svg class="icon" style="width: 16px; height: 16px;" viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                                    收藏
+                                </button>
+                                <button class="action-btn">
+                                    <svg class="icon" style="width: 16px; height: 16px;" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                    批注
+                                </button>
+                                <button class="action-btn">
+                                    <svg class="icon" style="width: 16px; height: 16px;" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                                    AI
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="question-stem">
+                            <p>如图，设曲线 L 的方程为 $y = f(x)$，且 $y'' > 0$，又 MT，MP 分别为该曲线在点 $M(x_{0}, y_{0})$ 处的切线和法线。已知线段 MP 的长度为 $\frac{(1 + y_{0}'^{2})^{\frac{3}{2}}}{y_{0}''}$（其中 $y_{0}' = y'(x_{0})$，$y_{0}'' = y''(x_{0})$），试推导出点 $P(\xi, \eta)$ 的坐标表达式。</p>
+                            
+                            <div style="background: var(--bg-nav); padding: var(--spacing-xl); border-radius: var(--radius-button); text-align: center; margin: var(--spacing-l) 0;">
+                                <svg width="400" height="250" viewBox="0 0 400 250" style="max-width: 100%; height: auto;">
+                                    <defs>
+                                        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                            <polygon points="0 0, 10 3.5, 0 7" fill="#202124" />
+                                        </marker>
+                                    </defs>
+                                    <!-- 坐标轴 -->
+                                    <line x1="50" y1="200" x2="350" y2="200" stroke="#687078" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+                                    <line x1="50" y1="200" x2="50" y2="20" stroke="#687078" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+                                    <!-- 曲线 L -->
+                                    <path d="M 80,180 Q 150,100 250,60" stroke="#FF6A1A" stroke-width="2.5" fill="none"/>
+                                    <!-- 点 M -->
+                                    <circle cx="180" cy="110" r="4" fill="#202124"/>
+                                    <text x="180" y="100" text-anchor="middle" font-size="14" font-weight="600" fill="#202124">M</text>
+                                    <!-- 切线 MT -->
+                                    <line x1="120" y1="150" x2="280" y2="50" stroke="#687078" stroke-width="1.5" stroke-dasharray="5,3"/>
+                                    <text x="290" y="50" font-size="14" fill="#687078">T</text>
+                                    <!-- 法线 MP -->
+                                    <line x1="180" y1="110" x2="220" y2="180" stroke="#202124" stroke-width="2"/>
+                                    <!-- 点 P -->
+                                    <circle cx="220" cy="180" r="4" fill="#202124"/>
+                                    <text x="230" y="185" font-size="14" font-weight="600" fill="#202124">P</text>
+                                    <!-- 曲线标签 -->
+                                    <text x="260" y="70" font-size="14" fill="#FF6A1A" font-weight="600">L: y=f(x)</text>
+                                </svg>
+                                <div style="margin-top: var(--spacing-m); font-size: 13px; color: var(--text-secondary);">
+                                    图：曲线 L 在点 M 处的切线 MT、法线 MP 及点 P 示意图
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="answer-section" id="answer3" style="display: none;">
+                            <div class="section-title">答案</div>
+                            <div class="section-content">
+                                <p>$P\left(x_0-\dfrac{y_0'(1+(y_0')^2)}{y_0''},\ y_0+\dfrac{1+(y_0')^2}{y_0''}\right)$</p>
+                            </div>
+                        </div>
+                        
+                        <div class="explanation-section" id="explanation3" style="display: none;">
+                            <div class="section-title">解析</div>
+                            <div class="section-content">
+                                <p>曲线 $y=f(x)$ 在 $M(x_0,y_0)$ 处的切线方向向量可取 $(1,y_0')$，法线方向向量可取 $(-y_0',1)$，其单位向量为</p>
+                                <p>$$\frac{(-y_0',1)}{\sqrt{1+(y_0')^2}}$$</p>
+                                <p>因 $y_0''>0$，曲线在该点附近向上凹，点 $P$ 位于主法线的凹侧。又已知</p>
+                                <p>$$MP=\frac{(1+(y_0')^2)^{3/2}}{y_0''}$$</p>
+                                <p>所以</p>
+                                <p>$$\overrightarrow{MP}=\frac{(1+(y_0')^2)^{3/2}}{y_0''}\cdot\frac{(-y_0',1)}{\sqrt{1+(y_0')^2}}=\left(-\frac{y_0'(1+(y_0')^2)}{y_0''},\frac{1+(y_0')^2}{y_0''}\right)$$</p>
+                                <p>因此</p>
+                                <p>$$P\left(x_0-\frac{y_0'(1+(y_0')^2)}{y_0''},\ y_0+\frac{1+(y_0')^2}{y_0''}\right)$$</p>
+                            </div>
+                            
+                            <div class="video-section">
+                                <div class="video-info">
+                                    <svg class="icon" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                                    <span style="color: var(--text-secondary);">讲师视频：</span>
+                                    <a href="#" class="video-link">帕拉迪宇 · 一元微分导数应用 · 13:45</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="question-footer">
+                    <div class="footer-nav">
+                        <button class="btn btn-secondary" onclick="prevQuestion()" id="prevBtn">
+                            <svg class="icon" style="width: 16px; height: 16px;" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+                            上一题
+                        </button>
+                        <button class="btn btn-primary" onclick="toggleExplanation()" id="toggleBtn">显示解析</button>
+                        <button class="btn btn-secondary" onclick="nextQuestion()" id="nextBtn">
+                            下一题
+                            <svg class="icon" style="width: 16px; height: 16px;" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+                        </button>
+                    </div>
+                    <div class="footer-status">
+                        <button class="mastery-btn" onclick="toggleMastery(this)">已掌握</button>
+                        <button class="btn btn-text" style="color: var(--error);">标记易错</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 状态栏 -->
+        <div class="app-statusbar">
+            <span>演示数据 · 阶段 1 视觉样板 · 使用真实题目 ID: 840, 845, 1643</span>
+        </div>
+    </div>
+    
+    <script src="../../vendor/katex.min.js"></script>
+    <script>
+        let currentQuestion = 1;
+        let showingExplanation = false;
+        
+        // 渲染数学公式
+        document.addEventListener('DOMContentLoaded', () => {
+            renderMath();
+        });
+        
+        function renderMath() {
+            const elements = document.querySelectorAll('.question-stem, .section-content, .option-content');
+            elements.forEach(elem => {
+                // 行内公式
+                elem.innerHTML = elem.innerHTML.replace(/\$([^\$]+)\$/g, (match, p1) => {
+                    try {
+                        return katex.renderToString(p1, { displayMode: false, throwOnError: false });
+                    } catch (e) {
+                        return match;
+                    }
+                });
+                // 行间公式
+                elem.innerHTML = elem.innerHTML.replace(/\$\$([^\$]+)\$\$/g, (match, p1) => {
+                    try {
+                        return katex.renderToString(p1, { displayMode: true, throwOnError: false });
+                    } catch (e) {
+                        return match;
+                    }
+                });
+            });
+        }
+        
+        function showQuestion(n) {
+            for (let i = 1; i <= 3; i++) {
+                document.getElementById(`question${i}`).style.display = i === n ? 'block' : 'none';
+            }
+            currentQuestion = n;
+            showingExplanation = false;
+            
+            // 更新按钮状态
+            document.getElementById('prevBtn').disabled = n === 1;
+            document.getElementById('nextBtn').disabled = n === 3;
+            document.getElementById('toggleBtn').textContent = '显示解析';
+            
+            // 更新题号
+            document.querySelector('.question-sequence').textContent = `第 ${n} 题 / 共 3 题`;
+            
+            // 隐藏答案解析
+            hideExplanation(n);
+            
+            // 滚动到顶部
+            document.getElementById('questionContent').scrollTop = 0;
+        }
+        
+        function prevQuestion() {
+            if (currentQuestion > 1) {
+                showQuestion(currentQuestion - 1);
+            }
+        }
+        
+        function nextQuestion() {
+            if (currentQuestion < 3) {
+                showQuestion(currentQuestion + 1);
+            }
+        }
+        
+        function toggleExplanation() {
+            showingExplanation = !showingExplanation;
+            const answerEl = document.getElementById(`answer${currentQuestion}`);
+            const explanationEl = document.getElementById(`explanation${currentQuestion}`);
+            const btn = document.getElementById('toggleBtn');
+            
+            if (showingExplanation) {
+                answerEl.style.display = 'block';
+                explanationEl.style.display = 'block';
+                btn.textContent = '收起解析';
+                
+                // 滚动到答案位置
+                setTimeout(() => {
+                    if (answerEl.getBoundingClientRect().top > window.innerHeight) {
+                        answerEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                }, 100);
+            } else {
+                answerEl.style.display = 'none';
+                explanationEl.style.display = 'none';
+                btn.textContent = '显示解析';
+            }
+        }
+        
+        function hideExplanation(n) {
+            document.getElementById(`answer${n}`).style.display = 'none';
+            document.getElementById(`explanation${n}`).style.display = 'none';
+        }
+        
+        function selectOption(elem) {
+            // 移除其他选项的选中状态
+            const options = elem.parentElement.querySelectorAll('.option-item');
+            options.forEach(opt => opt.classList.remove('selected'));
+            // 添加当前选项的选中状态
+            elem.classList.add('selected');
+        }
+        
+        function toggleMastery(btn) {
+            btn.classList.toggle('active');
+            btn.textContent = btn.classList.contains('active') ? '已掌握' : '未掌握';
+        }
+        
+        // 收藏按钮
+        document.getElementById('favoriteBtn').addEventListener('click', function() {
+            this.classList.toggle('active');
+        });
+        
+        // 初始化显示第一题
+        showQuestion(1);
+    </script>
+</body>
+</html>

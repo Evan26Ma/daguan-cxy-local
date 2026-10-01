@@ -1,0 +1,2 @@
+88fd6f54fa795a55f411d4f628fa4c9cea4d3959ef811f12c4f685b230c2ccf8  DaguanMathDesktop-Setup.exe
+70085c06dd767ece2dcb6c65b6c242ada5e087ec8b6f29296db98fc969486816  DaguanMathDesktop-1.0.5-full.nupkg

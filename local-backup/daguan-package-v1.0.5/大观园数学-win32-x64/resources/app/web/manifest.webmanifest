@@ -1,0 +1,10 @@
+{
+  "name": "大观园数学题库本地版",
+  "short_name": "大观园数学",
+  "lang": "zh-CN",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f5f7fa",
+  "theme_color": "#356fe5",
+  "icons": []
+}

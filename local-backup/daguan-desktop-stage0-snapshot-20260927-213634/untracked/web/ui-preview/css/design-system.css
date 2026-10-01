@@ -1,0 +1,335 @@
+/* 大观园新版 UI 设计系统 */
+
+/* === 1. 重置与基础 === */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 16px;
+}
+
+body {
+    font-family: Segoe UI Variable, Segoe UI, Microsoft YaHei UI, Microsoft YaHei, sans-serif;
+    background: #F5F6F8;
+    color: #202124;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* === 2. 色彩变量 === */
+:root {
+    --brand-orange: #FF6A1A;
+    --brand-hover: #F45D0B;
+    --brand-active: #E95305;
+    --brand-light-bg: #FFF0E6;
+    --brand-text-on-white: #B83D00;
+    
+    --bg-app: #F5F6F8;
+    --bg-surface: #FFFFFF;
+    --bg-nav: #F0F2F4;
+    
+    --text-primary: #202124;
+    --text-secondary: #687078;
+    --text-on-brand: #202124;
+    
+    --border-default: #E3E6EA;
+    --border-control: #8A929B;
+    
+    --success: #21734A;
+    --error: #BA3543;
+    --warning: #8A5A10;
+    
+    --spacing-xs: 4px;
+    --spacing-s: 8px;
+    --spacing-m: 12px;
+    --spacing-l: 16px;
+    --spacing-xl: 24px;
+    --spacing-2xl: 32px;
+    --spacing-3xl: 48px;
+    
+    --radius-button: 10px;
+    --radius-panel: 16px;
+    --radius-feature: 20px;
+    
+    --nav-expanded: 208px;
+    --nav-collapsed: 64px;
+    --topbar-height: 56px;
+    --statusbar-height: 28px;
+}
+
+/* === 3. 字体排版 === */
+.text-home-title {
+    font-size: 30px;
+    line-height: 40px;
+    font-weight: 700;
+}
+
+.text-page-title {
+    font-size: 24px;
+    line-height: 34px;
+    font-weight: 600;
+}
+
+.text-section-title {
+    font-size: 20px;
+    line-height: 30px;
+    font-weight: 600;
+}
+
+.text-question-body {
+    font-size: 18px;
+    line-height: 32px;
+    font-weight: 400;
+}
+
+.text-ui-default {
+    font-size: 14px;
+    line-height: 22px;
+    font-weight: 400;
+}
+
+.text-nav-button {
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 600;
+}
+
+.text-meta {
+    font-size: 13px;
+    line-height: 20px;
+    font-weight: 400;
+    color: var(--text-secondary);
+}
+
+.text-helper {
+    font-size: 12px;
+    line-height: 18px;
+    font-weight: 400;
+    color: var(--text-secondary);
+}
+
+/* === 4. 布局容器 === */
+.app-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.app-topbar {
+    height: var(--topbar-height);
+    background: var(--bg-surface);
+    border-bottom: 1px solid var(--border-default);
+    display: flex;
+    align-items: center;
+    padding: 0 var(--spacing-2xl);
+    flex-shrink: 0;
+}
+
+.app-body {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+.app-nav {
+    width: var(--nav-expanded);
+    background: var(--bg-nav);
+    border-right: 1px solid var(--border-default);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+}
+
+.app-nav.collapsed {
+    width: var(--nav-collapsed);
+}
+
+.app-main {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.app-statusbar {
+    height: var(--statusbar-height);
+    background: var(--bg-surface);
+    border-top: 1px solid var(--border-default);
+    display: flex;
+    align-items: center;
+    padding: 0 var(--spacing-2xl);
+    font-size: 12px;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+}
+
+/* === 5. 按钮样式 === */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-s);
+    padding: 10px 20px;
+    border-radius: var(--radius-button);
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 120ms ease;
+    text-decoration: none;
+    user-select: none;
+}
+
+.btn-primary {
+    background: var(--brand-orange);
+    color: var(--text-on-brand);
+}
+
+.btn-primary:hover {
+    background: var(--brand-hover);
+}
+
+.btn-primary:active {
+    background: var(--brand-active);
+}
+
+.btn-secondary {
+    background: var(--bg-surface);
+    color: var(--text-primary);
+    border: 1px solid var(--border-control);
+}
+
+.btn-secondary:hover {
+    background: var(--bg-nav);
+}
+
+.btn-text {
+    background: transparent;
+    color: var(--text-secondary);
+}
+
+.btn-text:hover {
+    background: var(--bg-nav);
+    color: var(--text-primary);
+}
+
+.btn-icon {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+}
+
+/* === 6. 导航项 === */
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-m);
+    height: 44px;
+    padding: 0 var(--spacing-l);
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 120ms ease;
+}
+
+.nav-item:hover {
+    background: rgba(255, 106, 26, 0.08);
+    color: var(--text-primary);
+}
+
+.nav-item.active {
+    background: var(--brand-light-bg);
+    color: var(--brand-text-on-white);
+}
+
+.nav-icon {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+/* === 7. 卡片 === */
+.card {
+    background: var(--bg-surface);
+    border-radius: var(--radius-panel);
+    padding: var(--spacing-xl);
+}
+
+.card-feature {
+    border-radius: var(--radius-feature);
+}
+
+/* === 8. 图标 === */
+.icon {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    stroke-width: 1.75;
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+/* === 9. 响应式断点 === */
+@media (max-width: 1279px) {
+    .app-nav {
+        width: var(--nav-collapsed);
+    }
+}
+
+@media (max-width: 1023px) {
+    .app-nav {
+        position: fixed;
+        left: -100%;
+        top: 0;
+        bottom: 0;
+        width: 280px;
+        z-index: 1000;
+        transition: left 200ms ease;
+    }
+    
+    .app-nav.open {
+        left: 0;
+    }
+    
+    .nav-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+    }
+    
+    .nav-overlay.open {
+        display: block;
+    }
+}
+
+@media (max-width: 767px) {
+    .app-topbar,
+    .app-statusbar {
+        padding: 0 var(--spacing-l);
+    }
+    
+    .text-question-body {
+        font-size: 17px;
+        line-height: 30px;
+    }
+}
+
+/* === 10. 动效 === */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}

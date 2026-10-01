@@ -1,0 +1,88 @@
+.browser-retirement {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647;
+  display: grid;
+  place-items: center;
+  overflow: auto;
+  padding: 24px;
+  background: #f7f4ee;
+  color: #202b2d;
+  font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+}
+
+.browser-retirement__card {
+  width: min(100%, 620px);
+  padding: clamp(28px, 6vw, 52px);
+  border: 1px solid #dfddd5;
+  border-radius: 22px;
+  background: #fff;
+  box-shadow: 0 24px 80px #1a2d2a1c;
+}
+
+.browser-retirement__eyebrow {
+  margin: 0 0 20px;
+  color: #ab4d36;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .08em;
+}
+
+.browser-retirement h1 {
+  margin: 0 0 18px;
+  font-size: clamp(30px, 5vw, 44px);
+  line-height: 1.18;
+}
+
+.browser-retirement p {
+  line-height: 1.7;
+}
+
+.browser-retirement__status {
+  margin: 28px 0;
+  padding: 14px 18px;
+  border-radius: 12px;
+  background: #f0f4ef;
+  color: #315744;
+}
+
+.browser-retirement__status[data-state="pending"] {
+  background: #fff2e4;
+  color: #85512a;
+}
+
+.browser-retirement__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.browser-retirement__actions a,
+.browser-retirement__actions button {
+  padding: 12px 18px;
+  border: 1px solid #b84935;
+  border-radius: 10px;
+  background: #b84935;
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.browser-retirement__actions button {
+  background: #fff;
+  color: #a54030;
+}
+
+.browser-retirement__actions a:focus-visible,
+.browser-retirement__actions button:focus-visible {
+  outline: 3px solid #354f84;
+  outline-offset: 3px;
+}
+
+.browser-retirement__note {
+  margin: 24px 0 0;
+  font-size: 14px;
+  color: #667371;
+}

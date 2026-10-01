@@ -1,0 +1,176 @@
+[
+  {
+    "path": "data\\ai-profiles.json",
+    "sha256": "9BFB77E99819440589254DEDC5FF53FAB2BD91041AEA20E0D12CD57D78353EAB",
+    "bytes": 439,
+    "mtimeUtc": "2026-09-06T14:08:42.3152302Z"
+  },
+  {
+    "path": "data\\cxyonly-integration.json",
+    "sha256": "3286AA87D2EB630E5785325784D2111713B4096FBF6144B590C8AE5D66C73271",
+    "bytes": 795,
+    "mtimeUtc": "2026-09-06T23:06:35.5096406Z"
+  },
+  {
+    "path": "data\\cxyonly-progress.json",
+    "sha256": "9DF021E685DD20681EC3A3A9CD26686E024C298DABC817BE2F95CABE905FA65C",
+    "bytes": 876431,
+    "mtimeUtc": "2026-09-06T23:06:35.5039870Z"
+  },
+  {
+    "path": "data\\state.json",
+    "sha256": "234F9181A7B784FA6F9F464AE8531147AFC02980D84B4A21D3C8902597FDDF57",
+    "bytes": 219465,
+    "mtimeUtc": "2026-09-27T11:43:38.1806496Z"
+  },
+  {
+    "path": "data\\sync-history.jsonl",
+    "sha256": "2B0AE82DC2FC19ABF2088EDA9F8B7ECC9D566BB3BD2443EE7AEBC89AEF6DDEF3",
+    "bytes": 783,
+    "mtimeUtc": "2026-09-06T23:06:35.5133772Z"
+  },
+  {
+    "path": "data\\cxyonly-backups\\cxyonly-before-reconcile-2026-09-06T15-57-50-508Z.json",
+    "sha256": "D38AA2524ED2CEB065A1B8FC30E01CA55493A4C86C6364C0B6C691A43FEAF0F6",
+    "bytes": 951792,
+    "mtimeUtc": "2026-09-06T15:57:50.5167210Z"
+  },
+  {
+    "path": "data\\cxyonly-backups\\cxyonly-before-reconcile-2026-09-06T23-06-09-216Z.json",
+    "sha256": "0A70E791899FC8B647D9B68A124B0326404BD0F899634695F4ADD9A550ACAD42",
+    "bytes": 951792,
+    "mtimeUtc": "2026-09-06T23:06:09.2225970Z"
+  },
+  {
+    "path": "data\\cxyonly-backups\\cxyonly-before-reconcile-preview-2026-09-06T15-57-50-366Z.json",
+    "sha256": "D38AA2524ED2CEB065A1B8FC30E01CA55493A4C86C6364C0B6C691A43FEAF0F6",
+    "bytes": 951792,
+    "mtimeUtc": "2026-09-06T15:57:50.3747784Z"
+  },
+  {
+    "path": "data\\cxyonly-backups\\cxyonly-before-reconcile-preview-2026-09-06T16-58-28-917Z.json",
+    "sha256": "8178CD450DA1A8D44F1FBECE302BC1489D01992B88BF21DB8517752F656A02BE",
+    "bytes": 951792,
+    "mtimeUtc": "2026-09-06T16:58:28.9261617Z"
+  },
+  {
+    "path": "data\\cxyonly-backups\\cxyonly-before-reconcile-preview-2026-09-06T17-23-57-578Z.json",
+    "sha256": "5A75E854913DF884C30A087695A392EDA5E53FE8D382AC8FE6C0BF861484D994",
+    "bytes": 951792,
+    "mtimeUtc": "2026-09-06T17:23:57.5863054Z"
+  },
+  {
+    "path": "data\\cxyonly-backups\\cxyonly-before-reconcile-preview-2026-09-06T17-24-42-587Z.json",
+    "sha256": "BA8E17302F80BFE7690409C167A98C5A487D2AABC6B1BB80A072F9A19EEC1CF4",
+    "bytes": 951792,
+    "mtimeUtc": "2026-09-06T17:24:42.5949481Z"
+  },
+  {
+    "path": "data\\cxyonly-backups\\cxyonly-before-reconcile-preview-2026-09-06T17-25-44-170Z.json",
+    "sha256": "2DF8E365D6CE50334916A079CABF6D1601E229C4B956AFF185DC1319BFE08563",
+    "bytes": 951792,
+    "mtimeUtc": "2026-09-06T17:25:44.1792096Z"
+  },
+  {
+    "path": "data\\cxyonly-backups\\cxyonly-before-reconcile-preview-2026-09-06T17-26-45-460Z.json",
+    "sha256": "E78802E21C50E6673711404346087D70E6E888414AB8957A8A45DD7DE48F7C57",
+    "bytes": 951792,
+    "mtimeUtc": "2026-09-06T17:26:45.4670909Z"
+  },
+  {
+    "path": "data\\cxyonly-backups\\cxyonly-before-reconcile-preview-2026-09-06T17-27-37-724Z.json",
+    "sha256": "CBC59F53750EF91FF7FD0E178924A34A8BA73F79B52F6F5D42285D44D5502617",
+    "bytes": 951792,
+    "mtimeUtc": "2026-09-06T17:27:37.7428981Z"
+  },
+  {
+    "path": "data\\cxyonly-backups\\cxyonly-before-reconcile-preview-2026-09-06T23-05-58-059Z.json",
+    "sha256": "4D52DD4719122A9AD94789EE6396A8A52101950D527E6EE73ACE7B4A4B2B3BD2",
+    "bytes": 951792,
+    "mtimeUtc": "2026-09-06T23:05:58.0652503Z"
+  },
+  {
+    "path": "data\\cxyonly-backups\\cxyonly-before-reconcile-preview-2026-09-06T23-06-06-378Z.json",
+    "sha256": "0A70E791899FC8B647D9B68A124B0326404BD0F899634695F4ADD9A550ACAD42",
+    "bytes": 951792,
+    "mtimeUtc": "2026-09-06T23:06:06.3853229Z"
+  },
+  {
+    "path": "data\\cxyonly-backups\\cxyonly-before-reconcile-preview-2026-09-07T00-30-51-607Z.json",
+    "sha256": "29B7AFD2F8E417443A6EF81649E37537F5E72A8C31CB13D0DCADA84D6601A466",
+    "bytes": 952067,
+    "mtimeUtc": "2026-09-07T00:30:51.6150367Z"
+  },
+  {
+    "path": "data\\cxyonly-backups\\local-state-before-reconcile-2026-09-06T15-57-50-501Z.json",
+    "sha256": "DF35CCA09032542C1C5AD7B2114E03B9EC5F34A4828F2758B373C8F8B93EC8C7",
+    "bytes": 198813,
+    "mtimeUtc": "2026-09-06T15:57:50.5059009Z"
+  },
+  {
+    "path": "data\\cxyonly-backups\\local-state-before-reconcile-2026-09-06T23-06-09-208Z.json",
+    "sha256": "F048C63408BE2DAD911B1FDAF04603BD3543B3545C54132D9A9167C0B82D753E",
+    "bytes": 217895,
+    "mtimeUtc": "2026-09-06T23:06:09.2135133Z"
+  },
+  {
+    "path": "data\\cxyonly-backups\\local-state-before-reconcile-preview-2026-09-06T15-57-50-359Z.json",
+    "sha256": "DF35CCA09032542C1C5AD7B2114E03B9EC5F34A4828F2758B373C8F8B93EC8C7",
+    "bytes": 198813,
+    "mtimeUtc": "2026-09-06T15:57:50.3634539Z"
+  },
+  {
+    "path": "data\\cxyonly-backups\\local-state-before-reconcile-preview-2026-09-06T16-58-28-907Z.json",
+    "sha256": "3BE1FF5ED505DD00F489B77778B4BDBADA9984C2DCE842A2F73980F70F978788",
+    "bytes": 217895,
+    "mtimeUtc": "2026-09-06T16:58:28.9150441Z"
+  },
+  {
+    "path": "data\\cxyonly-backups\\local-state-before-reconcile-preview-2026-09-06T17-23-57-558Z.json",
+    "sha256": "F048C63408BE2DAD911B1FDAF04603BD3543B3545C54132D9A9167C0B82D753E",
+    "bytes": 217895,
+    "mtimeUtc": "2026-09-06T17:23:57.5757887Z"
+  },
+  {
+    "path": "data\\cxyonly-backups\\local-state-before-reconcile-preview-2026-09-06T17-24-42-580Z.json",
+    "sha256": "F048C63408BE2DAD911B1FDAF04603BD3543B3545C54132D9A9167C0B82D753E",
+    "bytes": 217895,
+    "mtimeUtc": "2026-09-06T17:24:42.5841978Z"
+  },
+  {
+    "path": "data\\cxyonly-backups\\local-state-before-reconcile-preview-2026-09-06T17-25-44-162Z.json",
+    "sha256": "F048C63408BE2DAD911B1FDAF04603BD3543B3545C54132D9A9167C0B82D753E",
+    "bytes": 217895,
+    "mtimeUtc": "2026-09-06T17:25:44.1682105Z"
+  },
+  {
+    "path": "data\\cxyonly-backups\\local-state-before-reconcile-preview-2026-09-06T17-26-45-453Z.json",
+    "sha256": "F048C63408BE2DAD911B1FDAF04603BD3543B3545C54132D9A9167C0B82D753E",
+    "bytes": 217895,
+    "mtimeUtc": "2026-09-06T17:26:45.4570501Z"
+  },
+  {
+    "path": "data\\cxyonly-backups\\local-state-before-reconcile-preview-2026-09-06T17-27-37-716Z.json",
+    "sha256": "F048C63408BE2DAD911B1FDAF04603BD3543B3545C54132D9A9167C0B82D753E",
+    "bytes": 217895,
+    "mtimeUtc": "2026-09-06T17:27:37.7214984Z"
+  },
+  {
+    "path": "data\\cxyonly-backups\\local-state-before-reconcile-preview-2026-09-06T23-05-58-052Z.json",
+    "sha256": "F048C63408BE2DAD911B1FDAF04603BD3543B3545C54132D9A9167C0B82D753E",
+    "bytes": 217895,
+    "mtimeUtc": "2026-09-06T23:05:58.0561854Z"
+  },
+  {
+    "path": "data\\cxyonly-backups\\local-state-before-reconcile-preview-2026-09-06T23-06-06-366Z.json",
+    "sha256": "F048C63408BE2DAD911B1FDAF04603BD3543B3545C54132D9A9167C0B82D753E",
+    "bytes": 217895,
+    "mtimeUtc": "2026-09-06T23:06:06.3752406Z"
+  },
+  {
+    "path": "data\\cxyonly-backups\\local-state-before-reconcile-preview-2026-09-07T00-30-51-597Z.json",
+    "sha256": "71610DAA6E012A2B742D106E69A70844C10520736566D018B80CEEDAB86B7CAA",
+    "bytes": 218005,
+    "mtimeUtc": "2026-09-07T00:30:51.6031648Z"
+  }
+]

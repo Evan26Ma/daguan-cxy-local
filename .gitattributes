@@ -1,2 +1,7 @@
 *.cmd text eol=crlf
 *.ps1 text eol=crlf
+
+# Archived local bytes; executable packages and Git bundles use Git LFS.
+local-backup/**/*.exe filter=lfs diff=lfs merge=lfs -text
+local-backup/**/*.nupkg filter=lfs diff=lfs merge=lfs -text
+local-backup/**/*.bundle filter=lfs diff=lfs merge=lfs -text
