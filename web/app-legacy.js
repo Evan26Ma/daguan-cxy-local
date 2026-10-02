@@ -2,7 +2,7 @@
   "use strict";
 
   if ("serviceWorker" in navigator && location.protocol !== "file:" && location.protocol !== "https:") {
-    navigator.serviceWorker.register("./service-worker.js?v=144").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=147").catch(() => {});
   }
 
   const DATA = "./data";
@@ -1275,77 +1275,10 @@
     return src;
   }
 
-  function renderMarkdown(text) {
-    const raw = text || "";
-    const slots = [];
-    const protect = (s) => {
-      s = s.replace(/\$\$([\s\S]+?)\$\$/g, (_, m) => {
-        const i = slots.length;
-        slots.push({ display: true, tex: m });
-        return `%%MATH${i}%%`;
-      });
-      s = s.replace(/\\\[([\s\S]+?)\\\]/g, (_, m) => {
-        const i = slots.length;
-        slots.push({ display: true, tex: m });
-        return `%%MATH${i}%%`;
-      });
-      s = s.replace(/\\\(([\s\S]+?)\\\)/g, (_, m) => {
-        const i = slots.length;
-        slots.push({ display: false, tex: m });
-        return `%%MATH${i}%%`;
-      });
-      s = s.replace(/\$([^\$\n]+?)\$/g, (full, m, offset, whole) => {
-        if (whole[offset - 1] === "$" || whole[offset + full.length] === "$") return full;
-        const i = slots.length;
-        slots.push({ display: false, tex: m });
-        return `%%MATH${i}%%`;
-      });
-      return s;
-    };
+  const safeRender = window.DaguanSafeRender.create({ assetUrl });
+function renderMarkdown(text) { return safeRender.markdown(text); }
 
-    let html;
-    try {
-      const src = protect(raw);
-      html =
-        typeof marked !== "undefined"
-          ? marked.parse(src, { breaks: true })
-          : src.replace(/</g, "&lt;").replace(/\n/g, "<br>");
-      html = html.replace(/%%MATH(\d+)%%/g, (_, idx) => {
-        const item = slots[Number(idx)];
-        if (!item || typeof katex === "undefined") {
-          return item ? (item.display ? `$$${item.tex}$$` : `$${item.tex}$`) : "";
-        }
-        try {
-          return katex.renderToString(item.tex, {
-            displayMode: item.display,
-            throwOnError: false,
-            strict: "ignore",
-          });
-        } catch {
-          return item.display ? `$$${item.tex}$$` : `$${item.tex}$`;
-        }
-      });
-    } catch {
-      html = raw.replace(/</g, "&lt;").replace(/\n/g, "<br>");
-    }
-
-    const div = document.createElement("div");
-    div.innerHTML = html;
-    div.querySelectorAll("img").forEach((img) => {
-      img.src = assetUrl(img.getAttribute("src") || "");
-      img.loading = "lazy";
-      img.decoding = "async";
-      img.alt = img.alt || "题目配图";
-      img.addEventListener("error", () => {
-        if (img.dataset.fallback) return;
-        img.dataset.fallback = "1";
-        img.src = "./assets/missing-image.svg";
-      }, { once: true });
-    });
-    return div.innerHTML;
-  }
-
-  function videoExplanationMarkup(q) {
+function videoExplanationMarkup(q) {
     const categoryPath = String(q?.category_path || "");
     const questionId = String(q?.id ?? "");
     const entries = Array.isArray(state.videoMapping?.questions?.[questionId])
@@ -2258,6 +2191,7 @@
       facets.push({ dim: "视频讲解", options: [
         { name: "帕拉迪宇讲过", count: paradiyuCount },
         { name: "李艳芳讲过", count: countVideoTeacher("李艳芳") },
+        { name: "汤家凤讲过", count: countVideoTeacher("汤家凤") },
         { name: "没咋了讲过", count: countVideoTeacher("没咋了") },
         { name: "喻老讲过", count: countVideoTeacher("喻老") },
       ] });
@@ -4787,19 +4721,6 @@
     return out;
   }
 
-  function sanitizeAiHtml(html) {
-    const wrap = document.createElement("div");
-    wrap.innerHTML = html;
-    wrap.querySelectorAll("script,iframe,object,embed,style,link,form,input,button,textarea,select").forEach((el) => el.remove());
-    wrap.querySelectorAll("*").forEach((el) => {
-      [...el.attributes].forEach((attr) => {
-        if (/^on/i.test(attr.name) || ["href", "src", "xlink:href"].includes(attr.name) && /^(javascript:|data:text\/html|vbscript:)/i.test(attr.value)) el.removeAttribute(attr.name);
-      });
-    });
-    wrap.querySelectorAll("img").forEach((img) => { img.removeAttribute("srcset"); img.loading = "lazy"; img.alt = img.alt || "AI生成图形"; });
-    return wrap.innerHTML;
-  }
-
   function enhanceAiDiagrams(item, content) {
     const matches = [...String(content || "").matchAll(/```daguan-diagram\s*([\s\S]*?)```/gi)].slice(0, 2);
     for (const match of matches) {
@@ -4814,7 +4735,7 @@
         .then((response) => response.ok ? response.json() : Promise.reject(new Error("图形生成失败")))
         .then((result) => {
           const status = figure.querySelector(".ai-diagram-status");
-          if (status) status.innerHTML = sanitizeAiHtml(result.svg || "图形生成失败");
+          if (status) status.innerHTML = safeRender.svg(result.svg || "图形生成失败");
         })
         .catch(() => { const status = figure.querySelector(".ai-diagram-status"); if (status) status.textContent = "图形暂时不可用，文字解答仍然保留。"; });
     }
@@ -4825,7 +4746,7 @@
     item.className = `ai-message ai-message-${role}`;
     const body = document.createElement("div");
     body.className = "ai-message-body md";
-    body.innerHTML = sanitizeAiHtml(renderMarkdown(content || (pending ? "正在思考…" : "")));
+    body.innerHTML = renderMarkdown(content || (pending ? "正在思考…" : ""));
     item.appendChild(body);
     if (role === "assistant" && !pending) enhanceAiDiagrams(item, content);
     if (role === "assistant" && !pending) {
@@ -5128,7 +5049,7 @@
       stream.timer = 0;
       if (stream.disposed || state.aiQuestionId !== questionId || document.visibilityState !== "visible") return;
       const body = pending.querySelector(".ai-message-body");
-      if (body) body.innerHTML = sanitizeAiHtml(renderMarkdown(stream.answer || "正在思考…"));
+      if (body) body.innerHTML = renderMarkdown(stream.answer || "正在思考…");
       els.aiMessages?.scrollTo({ top: els.aiMessages.scrollHeight });
     };
     const schedulePaint = () => {

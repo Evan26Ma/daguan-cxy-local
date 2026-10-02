@@ -5,7 +5,7 @@
 
 // ========== 离线缓存注册（与 app2.js 一致） ==========
 if ("serviceWorker" in navigator && location.protocol !== "file:" && location.protocol !== "https:") {
-    navigator.serviceWorker.register("./service-worker.js?v=144").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=147").catch(() => {});
 }
 
 // ========== 全局状态 ==========
@@ -42,6 +42,8 @@ const AppState = {
     shortcuts: {},
     videoMappings: null,
     paradiyuVideoMapping: null,
+    explanationsV2: null,        // 按需加载的 v2 补写解析：题号 -> 解析对象
+    explanationsV2Meta: null,
     aiProfiles: [],
     aiProfileId: '',
     aiRunId: '',
@@ -202,556 +204,17 @@ function applyAppearanceValues(appearance) {
 }
 
 // ========== 数据层 ==========
-class DataService {
-    // 一次性加载目录、题目映射与分片索引（格式对齐 app2.js 生产逻辑）
-    static async loadAll() {
-        const results = await Promise.all([
-            fetch('./data/manifest.json').then(r => r.ok ? r.json() : null).catch(() => null),
-            fetch('./data/categories.json').then(r => r.ok ? r.json() : null).catch(() => null),
-            fetch('./data/category_questions.json').then(r => r.ok ? r.json() : null).catch(() => null),
-            fetch('./data/id_index.json').then(r => r.ok ? r.json() : null).catch(() => null),
-        ]);
-        const [manifest, categories, catQuestions, idIndex] = results;
+const DataService = window.DaguanNewData.create({ AppState, fetch: (...args) => fetch(...args) });
+const { StorageService, StateSync, PROGRESS_KEY_SHARED, FAVORITES_KEY_SHARED, PendingSync, ANNOTATION_KEY_SHARED, RESTORE_PENDING_KEY, RESTORE_ROLLBACK_KEY, normalizeProgressEntry, readProgressStorage, writeProgressStorage, readPendingSync, pendingAnnotationEntry, pendingQuestionEntry, hasPendingSync, timestampOf } = window.DaguanNewState.create({
+    window, document, localStorage, sessionStorage, fetch: (...args) => fetch(...args), AppState,
+    normalizeFontScale, resolveChapterForQuestion, toast,
+    getAccess: () => PreviewAccess, getRenderer: () => UIRenderer, getApp: () => App,
+});
+const { AIService, AI_COMPOSE_PROMPTS, AIViews, AIController } = window.DaguanNewAI.create({
+    window, document, fetch: (...args) => fetch(...args), location, AppState, StorageService,
+    assetUrl, escapeHtml, renderMarkdown, toast, getAccess: () => PreviewAccess, getRenderer: () => UIRenderer, getApp: () => App,
+});
 
-        AppState.manifest = manifest || { shards: {} };
-        AppState.categories = Array.isArray(categories) ? { categories } : (categories || { categories: [] });
-        AppState.catQuestions = catQuestions || {};
-        AppState.idIndex = idIndex || {};
-
-        this.populateQuestions(AppState.categories.categories);
-        AppState.historyLocationCache = null;
-        return AppState.categories;
-    }
-
-    static async loadCategories() { return this.loadAll(); }
-
-    static shardFileFor(name) {
-        const meta = AppState.manifest && AppState.manifest.shards && AppState.manifest.shards[name];
-        return meta ? `./data/${meta.file}` : null;
-    }
-
-    // 用 category_questions + id_index 填充每章的题目条目 {id, shard}
-    static populateQuestions(nodes) {
-        const populate = node => {
-            const childIds = new Set();
-            (node.children || []).forEach(child => populate(child).forEach(id => childIds.add(id)));
-            const ids = AppState.catQuestions[String(node.id)] || [];
-            node.questions = ids.map(id => ({ id, shard: AppState.idIndex[String(id)] || '未分类' }));
-            node.direct_questions = node.questions.filter(entry => !childIds.has(String(entry.id)));
-            const subtreeIds = new Set(childIds);
-            node.direct_questions.forEach(entry => subtreeIds.add(String(entry.id)));
-            return subtreeIds;
-        };
-        nodes.forEach(populate);
-    }
-
-    static async loadSearchIndex() {
-        try {
-            const response = await fetch('./data/search_index.json');
-            if (!response.ok) throw new Error('Failed to load search index');
-            const data = await response.json();
-            AppState.searchIndex = data;
-            return data;
-        } catch (error) {
-            console.error('Load search index error:', error);
-            return null;
-        }
-    }
-
-    static async loadVideoMappings() {
-        try {
-            const [lecture, paradiyu] = await Promise.all([
-                fetch('./data/lecture-video-mappings.json').then(r => r.ok ? r.json() : null).catch(() => null),
-                fetch('./data/paradiyu-linear-video.json').then(r => r.ok ? r.json() : null).catch(() => null),
-            ]);
-            AppState.videoMappings = lecture || { questions: {} };
-            AppState.paradiyuVideoMapping = paradiyu || { questions: {} };
-            return AppState.videoMappings;
-        } catch (error) {
-            console.warn('Load video mappings error:', error);
-            AppState.videoMappings = { questions: {} };
-            AppState.paradiyuVideoMapping = { questions: {} };
-            return AppState.videoMappings;
-        }
-    }
-
-    // 分片缓存：shard 名 → Map(question.id → question)
-    static shardCache = new Map();
-    static shardInflight = new Map();
-
-    static async ensureShard(name) {
-        if (DataService.shardCache.has(name)) return DataService.shardCache.get(name);
-        if (DataService.shardInflight.has(name)) return DataService.shardInflight.get(name);
-        const file = this.shardFileFor(name);
-        if (!file) throw new Error('未知分片: ' + name);
-        const job = fetch(file)
-            .then(r => { if (!r.ok) throw new Error('分片加载失败: ' + name); return r.json(); })
-            .then(list => {
-                const arr = Array.isArray(list) ? list : (list.questions || []);
-                const map = new Map(arr.map(q => [q.id, q]));
-                DataService.shardCache.set(name, map);
-                return map;
-            });
-        DataService.shardInflight.set(name, job);
-        try { return await job; } finally { DataService.shardInflight.delete(name); }
-    }
-
-    static async loadQuestionsForChapter(chapter) {
-        const entries = chapter.direct_questions || chapter.questions || [];
-        if (!entries.length) return [];
-        const byShard = new Map();
-        entries.forEach(e => {
-            if (!byShard.has(e.shard)) byShard.set(e.shard, []);
-            byShard.get(e.shard).push(e.id);
-        });
-        await Promise.all([...byShard.keys()].map(n => this.ensureShard(n).catch(() => null)));
-        const out = [];
-        for (const e of entries) {
-            const map = DataService.shardCache.get(e.shard);
-            const q = map && (map.get(Number(e.id)) || map.get(String(e.id)));
-            if (q) out.push(q);
-        }
-        return out;
-    }
-
-    static chapterEntries(chapter) {
-        return chapter?.direct_questions || chapter?.questions || [];
-    }
-
-    // 多题阅读只取目标 20 题；深处定位不会先构造前面的题目对象或卡片。
-    static async loadQuestionRange(chapter, start, count = 20) {
-        const entries = this.chapterEntries(chapter);
-        const offset = Math.max(0, Math.min(entries.length, Number(start) || 0));
-        const selected = entries.slice(offset, offset + Math.max(1, Number(count) || 20));
-        if (!selected.length) return [];
-        const byShard = new Set(selected.map(entry => entry.shard));
-        await Promise.all([...byShard].map(name => this.ensureShard(name).catch(() => null)));
-        return selected.map(entry => {
-            const map = DataService.shardCache.get(entry.shard);
-            return map && (map.get(Number(entry.id)) || map.get(String(entry.id)));
-        }).filter(Boolean);
-    }
-
-    static async getQuestion(id) {
-        const name = AppState.idIndex[String(id)];
-        if (!name) return null;
-        try {
-            const map = await this.ensureShard(name);
-            return map.get(Number(id)) || map.get(String(id)) || null;
-        } catch { return null; }
-    }
-}
-
-// ========== 存储层 ==========
-// 进度键 daguan_local_progress_v1 与旧版完全同形：纯映射 {题号: 状态}；
-// 收藏独立存 daguan_local_favorites_v1（数组）。旧版本会话写入过的 {progress, favorites}
-// 包装形状在读取时自动拆包升级，不丢数据。
-const PROGRESS_KEY_SHARED = 'daguan_local_progress_v1';
-const FAVORITES_KEY_SHARED = 'daguan_local_favorites_v1';
-
-function normalizeProgressEntry(value) {
-    if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
-    const legacyForgot = value.mastery === 'forgot';
-    return {
-        ...value,
-        mastery: ['not_started', 'learning', 'mastered'].includes(value.mastery)
-            ? value.mastery
-            : (legacyForgot ? 'learning' : (value.mastery || 'not_started')),
-        error_prone: value.error_prone === true || legacyForgot,
-    };
-}
-
-function readProgressStorage() {
-    let raw = null;
-    try { raw = JSON.parse(localStorage.getItem(PROGRESS_KEY_SHARED) || 'null'); } catch { raw = null; }
-    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return { progress: {}, favorites: null, wrapped: false };
-    if (raw.progress && typeof raw.progress === 'object' && !Array.isArray(raw.progress)) {
-        // 新版本会话写过的包装形状：拆包升级
-        const progress = {};
-        for (const [id, value] of Object.entries(raw.progress)) {
-            const entry = normalizeProgressEntry(value);
-            if (entry) progress[String(id)] = entry;
-        }
-        return { progress, favorites: Array.isArray(raw.favorites) ? raw.favorites.map(String) : [], wrapped: true };
-    }
-    // 旧版形状：纯映射
-    const progress = {};
-    for (const [id, value] of Object.entries(raw)) {
-        const entry = normalizeProgressEntry(value);
-        if (entry) progress[String(id)] = entry;
-    }
-    return { progress, favorites: null, wrapped: false };
-}
-
-function writeProgressStorage(progress, favorites) {
-    // 写旧版同形数据：进度键纯映射；收藏独立键。两版立即可见，不依赖服务端。
-    const normalized = {};
-    for (const [id, value] of Object.entries(progress || {})) {
-        const entry = normalizeProgressEntry(value);
-        if (entry) normalized[String(id)] = entry;
-    }
-    localStorage.setItem(PROGRESS_KEY_SHARED, JSON.stringify(normalized));
-    localStorage.setItem(FAVORITES_KEY_SHARED, JSON.stringify((Array.isArray(favorites) ? favorites : []).map(String)));
-}
-
-// 待同步日志（真实实现与键名定义在 ui-version.js，新旧两版共用同一份）。
-// 记录“本机已写入、服务端未确认”的批注与收藏编辑，使离线、写入失败、刷新与跨版本切换
-// 都不会丢掉刚写入的本地编辑；恢复在线后按 updated_at 取本机最新值安全对账。
-const PendingSync = typeof window !== 'undefined' ? window.DaguanPendingSync || null : null;
-const ANNOTATION_KEY_SHARED = 'daguan_question_annotations_v1';
-
-function readPendingSync() {
-    const empty = { version: 1, annotations: {}, questions: {} };
-    if (!PendingSync) return empty;
-    try {
-        const journal = PendingSync.read();
-        return journal && typeof journal === 'object' ? journal : empty;
-    } catch { return empty; }
-}
-
-function pendingAnnotationEntry(questionId) {
-    return readPendingSync().annotations[String(questionId)] || null;
-}
-
-function pendingQuestionEntry(questionId) {
-    return readPendingSync().questions[String(questionId)] || null;
-}
-
-function hasPendingSync() {
-    if (!PendingSync) return false;
-    try { return !!PendingSync.hasAny(); } catch { return false; }
-}
-
-class StorageService {
-    static getProgress() {
-        const stored = readProgressStorage();
-        let favorites = stored.favorites;
-        if (favorites == null) {
-            try {
-                const separate = JSON.parse(localStorage.getItem(FAVORITES_KEY_SHARED) || 'null');
-                favorites = Array.isArray(separate) ? separate.map(String) : [];
-            } catch { favorites = []; }
-        }
-        if (stored.wrapped) {
-            // 立即把包装形状升级为旧版形状，保证旧版随时读到正确数据
-            try { writeProgressStorage(stored.progress, favorites); } catch {}
-        }
-        return { progress: stored.progress, favorites };
-    }
-
-    static saveProgress(data) {
-        const progress = data && typeof data.progress === 'object' && data.progress ? data.progress : {};
-        const favorites = Array.isArray(data?.favorites) ? data.favorites : [];
-        writeProgressStorage(progress, favorites);
-    }
-
-    static _entry(qid) {
-        const data = this.getProgress();
-        const entry = data.progress[String(qid)] || {};
-        return { data, entry };
-    }
-
-    static _write(data, qid, entry) {
-        entry.updated_at = new Date().toISOString();
-        const key = String(qid);
-        data.progress[key] = entry;
-        const favSet = new Set(data.favorites.map(String));
-        // 旧版可能只在独立收藏键里记录收藏（进度条目内没有 favorite 字段）。
-        // 此时按收藏数组的现有状态保留，避免一次掌握/易错切换把旧版收藏删掉。
-        const favoriteOn = typeof entry.favorite === 'boolean' ? entry.favorite : favSet.has(key);
-        if (favoriteOn) favSet.add(key); else favSet.delete(key);
-        data.favorites = [...favSet].sort((a, b) => Number(a) - Number(b));
-        this.saveProgress(data);
-    }
-
-    static toggleFavorite(qid) {
-        const { data, entry } = this._entry(qid);
-        entry.favorite = !this.isFavorite(qid);
-        this._write(data, qid, entry);
-        return entry.favorite;
-    }
-
-    static toggleMistake(qid) {
-        const { data, entry } = this._entry(qid);
-        entry.error_prone = !entry.error_prone;
-        this._write(data, qid, entry);
-        return entry.error_prone;
-    }
-
-    static toggleMastered(qid) {
-        const current = this._entry(qid).entry.mastery || 'not_started';
-        const next = current === 'mastered' ? 'not_started' : 'mastered';
-        return this.setMastery(qid, next) === 'mastered';
-    }
-
-    static cycleMastery(qid) {
-        const current = this._entry(qid).entry.mastery || 'not_started';
-        const next = current === 'not_started' ? 'learning' : current === 'learning' ? 'mastered' : 'not_started';
-        return this.setMastery(qid, next);
-    }
-
-    static setMastery(qid, mastery) {
-        const { data, entry } = this._entry(qid);
-        entry.mastery = ['not_started', 'learning', 'mastered'].includes(mastery) ? mastery : 'not_started';
-        this._write(data, qid, entry);
-        return entry.mastery;
-    }
-
-    static isFavorite(qid) {
-        const { data, entry } = this._entry(qid);
-        if (entry.favorite === true) return true;
-        if (entry.favorite === false) return false;
-        // 旧版把收藏只写在 daguan_local_favorites_v1 数组里，条目内没有 favorite 字段
-        return data.favorites.map(String).includes(String(qid));
-    }
-
-    static isMistake(qid) {
-        return this._entry(qid).entry.error_prone === true;
-    }
-
-    static isMastered(qid) {
-        return this._entry(qid).entry.mastery === 'mastered';
-    }
-
-    static favoriteCount() {
-        return this.getProgress().favorites.length;
-    }
-
-    static mistakeCount() {
-        const { progress } = this.getProgress();
-        return Object.values(progress).filter(e => e.error_prone === true).length;
-    }
-
-    static unmasteredCount() {
-        const { progress } = this.getProgress();
-        return Object.values(progress).filter(e => e.mastery && e.mastery !== 'mastered').length;
-    }
-
-    // 落盘格式与旧版/服务端对齐：{markdown, updated_at, history:[{markdown, updated_at}]}
-    // 读取时归一化为 {content, lastModified, history} 视图，下游代码不用关心存储字段
-    static getAnnotations() {
-        try {
-            const raw = JSON.parse(localStorage.getItem('daguan_question_annotations_v1') || '{}');
-            const out = {};
-            for (const [qid, entry] of Object.entries(raw)) {
-                if (!entry || typeof entry !== 'object') continue;
-                out[qid] = {
-                    content: typeof entry.markdown === 'string' ? entry.markdown : (typeof entry.content === 'string' ? entry.content : ''),
-                    lastModified: entry.updated_at || entry.lastModified || null,
-                    history: Array.isArray(entry.history) ? entry.history : [],
-                };
-            }
-            return out;
-        } catch { return {}; }
-    }
-
-    static saveAnnotations(annotations) {
-        localStorage.setItem('daguan_question_annotations_v1', JSON.stringify(this.normalizeAnnotationsForStorage(annotations)));
-    }
-
-    // 批注统一为旧版落盘形状 {markdown, updated_at, history:[{markdown, updated_at}]}
-    // （本会话早前版本导出过 {content, lastModified, history} 视图形状，导入时在此兼容）
-    static normalizeAnnotationsForStorage(annotations) {
-        const out = {};
-        const now = new Date().toISOString();
-        for (const [qid, entry] of Object.entries(annotations || {})) {
-            if (!entry || typeof entry !== 'object' || Array.isArray(entry)) continue;
-            const markdown = typeof entry.markdown === 'string' ? entry.markdown : (typeof entry.content === 'string' ? entry.content : '');
-            out[String(qid)] = {
-                markdown,
-                updated_at: entry.updated_at || entry.lastModified || now,
-                history: (Array.isArray(entry.history) ? entry.history : []).map(h => ({
-                    markdown: typeof (h && (h.markdown ?? h.content)) === 'string' ? (h.markdown ?? h.content) : '',
-                    updated_at: (h && (h.updated_at || h.timestamp)) || now,
-                })),
-            };
-        }
-        return out;
-    }
-
-    static readAnnotationsStorage() {
-        try {
-            const raw = JSON.parse(localStorage.getItem('daguan_question_annotations_v1') || '{}');
-            return raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
-        } catch { return {}; }
-    }
-
-    static getAnnotation(questionId) {
-        return this.getAnnotations()[String(questionId)] || { content: '', history: [] };
-    }
-
-    static saveAnnotation(questionId, content) {
-        const annotations = this.getAnnotations();
-        const now = new Date().toISOString();
-        const entry = annotations[String(questionId)] || { content: '', history: [], lastModified: null };
-
-        if (entry.content !== content) {
-            entry.history.unshift({ content: entry.content, timestamp: entry.lastModified || now });
-            if (entry.history.length > 10) entry.history = entry.history.slice(0, 10);
-        }
-        entry.content = content;
-        entry.lastModified = now;
-
-        annotations[String(questionId)] = entry;
-        this.saveAnnotations(annotations);
-        return true;
-    }
-
-    // 学习备忘（旧版全局备忘，键 daguan_local_notes_v1：纯字符串或 {content,...} 对象）
-    static getLocalMemo() {
-        const raw = localStorage.getItem('daguan_local_notes_v1');
-        if (raw == null) return { content: '', savedAt: null, rawObject: null };
-        try {
-            const parsed = JSON.parse(raw);
-            if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
-                return {
-                    content: typeof parsed.content === 'string' ? parsed.content : '',
-                    savedAt: parsed.updated_at || parsed.lastModified || null,
-                    rawObject: parsed
-                };
-            }
-            if (typeof parsed === 'string') return { content: parsed, savedAt: null, rawObject: null };
-        } catch {}
-        // 非 JSON 的纯文本
-        return { content: raw, savedAt: null, rawObject: null };
-    }
-
-    static saveLocalMemo(content) {
-        const memo = this.getLocalMemo();
-        if (memo.rawObject) {
-            memo.rawObject.content = content;
-            memo.rawObject.updated_at = new Date().toISOString();
-            localStorage.setItem('daguan_local_notes_v1', JSON.stringify(memo.rawObject));
-        } else {
-            localStorage.setItem('daguan_local_notes_v1', content);
-        }
-    }
-
-    static getLearningPosition() {
-        try {
-            const data = JSON.parse(localStorage.getItem('daguan_learning_position_v2') || 'null');
-            return data && typeof data === 'object' ? data : null;
-        } catch { return null; }
-    }
-
-    // questionIndex 可为 null（跨版本恢复时按 questionId 在章节队列中定位）。
-    // 同时写 sessionStorage 的旧版形状（同标签页跨版本切换时旧版直接读取恢复同题，离线也可用）。
-    static saveLearningPosition(categoryId, chapterId, questionIndex, questionId = null, mode = 'single') {
-        const payload = {
-            categoryId,
-            chapterId,
-            questionIndex: Number.isInteger(questionIndex) ? questionIndex : null,
-            questionId: questionId == null ? null : String(questionId),
-            mode: mode === 'multi' ? 'multi' : 'single',
-            timestamp: new Date().toISOString()
-        };
-        localStorage.setItem('daguan_learning_position_v2', JSON.stringify(payload));
-        try {
-            sessionStorage.setItem('daguan_learning_position_v2', JSON.stringify({
-                view: 'browse',
-                cat: chapterId,
-                question: questionId == null ? null : String(questionId),
-                index: Number.isInteger(questionIndex) ? questionIndex : 0,
-                mode: mode === 'multi' ? 'multi' : 'single',
-            }));
-        } catch { /* 隐私模式等场景忽略 */ }
-    }
-
-    static getAIPreferences() {
-        // 与旧版共享 daguan_ai_preferences_v1：档案选择存 profileId，API Key 一律保存在本地服务端档案里。
-        try {
-            const data = JSON.parse(localStorage.getItem('daguan_ai_preferences_v1') || 'null');
-            return data && typeof data === 'object' && !Array.isArray(data) ? data : {};
-        } catch { return {}; }
-    }
-
-    static saveAIPreferences(prefs) {
-        localStorage.setItem('daguan_ai_preferences_v1', JSON.stringify(prefs && typeof prefs === 'object' ? prefs : {}));
-    }
-
-    static saveAIPreference(field, value) {
-        const prefs = this.getAIPreferences();
-        if (value == null || value === '') delete prefs[field];
-        else prefs[field] = value;
-        this.saveAIPreferences(prefs);
-        return prefs;
-    }
-
-    static getAIDraft(questionId) {
-        const key = (window.DaguanVersions && DaguanVersions.draftKey) ? DaguanVersions.draftKey(questionId) : `daguan_ai_draft_v1:${questionId}`;
-        return localStorage.getItem(key) || '';
-    }
-
-    static saveAIDraft(questionId, content) {
-        const key = (window.DaguanVersions && DaguanVersions.draftKey) ? DaguanVersions.draftKey(questionId) : `daguan_ai_draft_v1:${questionId}`;
-        if (content) {
-            localStorage.setItem(key, content);
-        } else {
-            localStorage.removeItem(key);
-        }
-    }
-
-    // 新版旧键（daguan_ai_draft_<id>、daguan_ui_appearance_new）迁移到共享模块的键。
-    // 只填空白目标键、不覆盖已有偏好；可重复执行。
-    static migrateLegacyKeys() {
-        let migrated = 0;
-        try {
-            const draftPrefix = (window.DaguanVersions && DaguanVersions.draftKey) ? DaguanVersions.draftKey('') : 'daguan_ai_draft_v1:';
-            for (let i = localStorage.length - 1; i >= 0; i--) {
-                const key = localStorage.key(i);
-                const match = /^daguan_ai_draft_(.+)$/.exec(key || '');
-                if (!match || match[1].startsWith('v1:')) continue;
-                const target = `${draftPrefix}${match[1]}`;
-                if (localStorage.getItem(target) == null) {
-                    localStorage.setItem(target, localStorage.getItem(key));
-                    migrated += 1;
-                }
-            }
-        } catch {}
-        try {
-            const appearanceKey = (window.DaguanVersions && DaguanVersions.appearanceKey) || 'daguan_ui_appearance_new_v1';
-            const current = localStorage.getItem(appearanceKey);
-            const blank = current == null || current === '' || current === '{}';
-            const legacy = localStorage.getItem('daguan_ui_appearance_new');
-            if (blank && legacy != null) {
-                const parsed = JSON.parse(legacy);
-                if (parsed && typeof parsed === 'object' && Object.keys(parsed).length) {
-                    localStorage.setItem(appearanceKey, legacy);
-                    migrated += 1;
-                }
-            }
-        } catch {}
-        return migrated;
-    }
-
-    static getUIAppearance() {
-        const key = (window.DaguanVersions && DaguanVersions.appearanceKey) || 'daguan_ui_appearance_new_v1';
-        let data = {};
-        try {
-            data = JSON.parse(localStorage.getItem(key) || '{}');
-        } catch { data = {}; }
-        const defaults = { theme: 'path-red', brand: '#C83F32', app: '#F7F3EA', reading: '#FFFEFA', accent: '#9A7746', reduceMotion: false, fontScale: 1 };
-        const appearance = data && typeof data === 'object' && !Array.isArray(data) ? { ...defaults, ...data } : defaults;
-        appearance.fontScale = normalizeFontScale(appearance.fontScale);
-        return appearance;
-    }
-
-    static saveUIAppearance(appearance) {
-        const key = (window.DaguanVersions && DaguanVersions.appearanceKey) || 'daguan_ui_appearance_new_v1';
-        const data = appearance && typeof appearance === 'object' ? appearance : {};
-        localStorage.setItem(key, JSON.stringify({ ...data, fontScale: normalizeFontScale(data.fontScale) }));
-    }
-
-    static getVersionPreference() {
-        try { return localStorage.getItem('daguan_ui_version_v1') === 'old' ? 'old' : 'new'; } catch { return 'new'; }
-    }
-
-    static saveVersionPreference(version) {
-        try { localStorage.setItem('daguan_ui_version_v1', version === 'old' ? 'old' : 'new'); } catch {}
-    }
-}
-
-// ========== 预览权限（与旧版 /api/access 契约一致） ==========
 const PreviewAccess = {
     mode: false,
     unlocked: true,
@@ -826,550 +289,6 @@ const PreviewAccess = {
 };
 
 // ========== 服务端状态同步（协议与旧版 app-legacy.js 完全一致） ==========
-const RESTORE_PENDING_KEY = 'daguan_restore_pending_v1';
-const RESTORE_ROLLBACK_KEY = 'daguan_restore_rollback_v1';
-
-const StateSync = {
-    available: false,
-    hydrated: false,
-    revision: 0,
-    queue: new Map(),
-    timer: 0,
-    syncing: false,
-    lastStudyInFlight: null,
-    lastStudyPending: null,
-    retryTimer: 0,
-    retryAttempts: 0,
-    eventSource: null,
-    eventRefreshTimer: 0,
-
-    mergeProgress(a, b) {
-        const out = { ...(a || {}) };
-        for (const [id, p] of Object.entries(b || {})) {
-            if (!p || typeof p !== 'object') continue;
-            const cur = out[id];
-            if (!cur) out[id] = p;
-            else if (timestampOf(p.updated_at) >= timestampOf(cur.updated_at)) out[id] = { ...cur, ...p };
-        }
-        return out;
-    },
-
-    hasRestorePending() {
-        return localStorage.getItem(RESTORE_PENDING_KEY) != null;
-    },
-    markRestorePending() {
-        localStorage.setItem(RESTORE_PENDING_KEY, String(Date.now()));
-    },
-    clearRestorePending() {
-        localStorage.removeItem(RESTORE_PENDING_KEY);
-    },
-    clearRestoreRollback() {
-        localStorage.removeItem(RESTORE_ROLLBACK_KEY);
-    },
-
-    // ------- 待同步日志：离线/失败编辑的留痕、对账与补写 -------
-
-    // 本机对某题批注的“最新意图”：待同步日志快照与本机存储取 updated_at 新者（本机更新则以本机为准）
-    pendingAnnotationValue(questionId) {
-        const id = String(questionId);
-        const pending = pendingAnnotationEntry(id);
-        const local = StorageService.readAnnotationsStorage()[id] || null;
-        if (local && (!pending || timestampOf(local.updated_at) > timestampOf(pending.updated_at))) {
-            return { markdown: String(local.markdown == null ? '' : local.markdown), updated_at: local.updated_at || null, queued: !!pending };
-        }
-        if (pending) return { markdown: String(pending.markdown == null ? '' : pending.markdown), updated_at: pending.updated_at || null, queued: true };
-        if (local) return { markdown: String(local.markdown == null ? '' : local.markdown), updated_at: local.updated_at || null, queued: false };
-        return null;
-    },
-
-    // 本机对某题逐题状态的“最新意图”：日志 patch 里比本机进度条目更新的字段以日志为准
-    pendingQuestionPatch(questionId) {
-        const id = String(questionId);
-        const pending = pendingQuestionEntry(id);
-        if (!pending) return null;
-        const local = StorageService.getProgress().progress[id] || null;
-        const pendingAt = timestampOf(pending.updated_at);
-        const localAt = timestampOf(local && local.updated_at);
-        const patch = {};
-        for (const [field, value] of Object.entries(pending.patch)) {
-            patch[field] = (local && localAt > pendingAt && field in local) ? local[field] : value;
-        }
-        return patch;
-    },
-
-    // 服务端数据与待同步日志合并（绝不用旧服务端值覆盖待同步的本地编辑）
-    mergeFavorites(remoteFavorites, local, mergedProgress) {
-        const localSet = new Set((local?.favorites || []).map(String));
-        const sortIds = ids => [...ids].sort((a, b) => Number(a) - Number(b));
-        if (!Array.isArray(remoteFavorites)) return sortIds(localSet);
-        const remoteSet = new Set(remoteFavorites.map(String));
-        const journal = readPendingSync().questions;
-        const out = new Set();
-        for (const id of new Set([...remoteSet, ...localSet])) {
-            const patch = journal[id] && journal[id].patch;
-            const entry = mergedProgress[id];
-            let favorite;
-            if (patch && typeof patch.favorite === 'boolean') favorite = patch.favorite;
-            else if (entry && typeof entry.favorite === 'boolean') favorite = entry.favorite;
-            else favorite = remoteSet.has(id) || localSet.has(id);
-            if (favorite) out.add(id);
-        }
-        return sortIds(out);
-    },
-
-    mergeAnnotations(remoteAnnotations, localAnnotations) {
-        const local = localAnnotations || StorageService.readAnnotationsStorage();
-        const journal = readPendingSync().annotations;
-        const out = { ...local };
-        if (!remoteAnnotations || typeof remoteAnnotations !== 'object' || Array.isArray(remoteAnnotations)) return out;
-        for (const [id, value] of Object.entries(remoteAnnotations)) {
-            if (!value || typeof value !== 'object' || Array.isArray(value)) continue;
-            if (Object.prototype.hasOwnProperty.call(journal, id)) continue;
-            const localEntry = local[id];
-            if (localEntry && timestampOf(localEntry.updated_at) > timestampOf(value.updated_at)) continue;
-            out[id] = value;
-        }
-        return out;
-    },
-
-    // 把待同步日志里的本地编辑回填本机存储：即使服务端不可读，刷新后本地编辑也还在
-    localizePending() {
-        const journal = readPendingSync();
-        const annotationIds = Object.keys(journal.annotations);
-        if (annotationIds.length) {
-            const annotations = StorageService.readAnnotationsStorage();
-            for (const id of annotationIds) {
-                const pending = journal.annotations[id];
-                const local = annotations[id];
-                if (local && timestampOf(local.updated_at) >= timestampOf(pending.updated_at)) continue;
-                annotations[id] = {
-                    markdown: pending.markdown,
-                    updated_at: pending.updated_at || new Date().toISOString(),
-                    history: Array.isArray(local?.history) ? local.history : [],
-                };
-            }
-            try { localStorage.setItem(ANNOTATION_KEY_SHARED, JSON.stringify(annotations)); } catch {}
-        }
-        const questionIds = Object.keys(journal.questions);
-        if (questionIds.length) {
-            const local = StorageService.getProgress();
-            const progress = { ...local.progress };
-            const favorites = new Set(local.favorites.map(String));
-            let touched = false;
-            for (const id of questionIds) {
-                const patch = journal.questions[id].patch;
-                if (!patch || !Object.keys(patch).length) continue;
-                progress[id] = { ...(progress[id] || {}), ...patch };
-                if (typeof patch.favorite === 'boolean') {
-                    if (patch.favorite) favorites.add(id);
-                    else favorites.delete(id);
-                }
-                touched = true;
-            }
-            if (touched) {
-                try {
-                    StorageService.saveProgress({ progress, favorites: [...favorites].sort((a, b) => Number(a) - Number(b)) });
-                } catch {}
-            }
-        }
-    },
-
-    // 写入失败/离线后的自动重试只按需安排，并且有次数上限；测试可用 cancelRetry 收尾
-    cancelRetry() {
-        if (this.retryTimer) { clearTimeout(this.retryTimer); this.retryTimer = 0; }
-    },
-
-    scheduleRetry(delay = 8000) {
-        if (this.retryTimer || this.retryAttempts >= 20) return;
-        if (!hasPendingSync()) return;
-        this.retryTimer = setTimeout(() => {
-            this.retryTimer = 0;
-            if (!hasPendingSync()) { this.retryAttempts = 0; return; }
-            this.retryAttempts += 1;
-            this.retryPending();
-        }, delay);
-    },
-
-    // 恢复在线/页面回到前台后的自动补写：先水合（拿到最新 revision），再把待同步编辑补上
-    async retryPending() {
-        if (!PreviewAccess.privateAllowed(false) || !hasPendingSync()) return false;
-        if (!this.available) await this.hydrate();
-        if (!this.available) { this.scheduleRetry(); return false; }
-        return this.flushPending();
-    },
-
-    // 把待同步日志中的编辑逐题补写到服务端（只走逐题接口，绝不整份 PUT 覆盖服务端其它改动）
-    async flushPending() {
-        if (!PreviewAccess.privateAllowed(false)) return false;
-        const journal = readPendingSync();
-        const annotationIds = Object.keys(journal.annotations);
-        const questionIds = Object.keys(journal.questions);
-        if (!annotationIds.length && !questionIds.length) { this.retryAttempts = 0; return true; }
-        if (!this.available) { this.scheduleRetry(); return false; }
-        let ok = true;
-        for (const id of annotationIds) {
-            const value = this.pendingAnnotationValue(id);
-            if (!value) continue;
-            const stamp = value.updated_at || new Date().toISOString();
-            // 先把日志指纹刷新为即将推送的值：成功后按指纹清除，期间再次编辑不会被误清
-            if (PendingSync) PendingSync.queueAnnotation(id, value.markdown, stamp);
-            try { await this.flushAnnotation(id, value.markdown); }
-            catch { ok = false; }
-        }
-        if (questionIds.length) {
-            for (const id of questionIds) {
-                const patch = this.pendingQuestionPatch(id);
-                if (!patch || !Object.keys(patch).length) continue;
-                this.queueQuestion(id, patch);
-            }
-            const flushed = await this.flush();
-            if (!flushed) ok = false;
-        }
-        if (hasPendingSync()) { this.scheduleRetry(); return false; }
-        this.retryAttempts = 0;
-        return ok;
-    },
-
-    async hydrate() {
-        if (!PreviewAccess.privateAllowed(false)) { this.hydrated = true; return this; }
-        // 恢复备份后的待对账保护：先以本地为准推送到服务端；失败时绝不用旧服务端数据覆盖刚恢复的收藏/批注
-        if (this.hasRestorePending()) {
-            const reconciled = await this.reconcileLocalToServer();
-            if (reconciled) {
-                this.clearRestorePending();
-                this.clearRestoreRollback();
-            } else {
-                this.available = false;
-                this.hydrated = true;
-                return this;
-            }
-        }
-        try {
-            const response = await fetch('./api/state', { cache: 'no-store' });
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            const remote = await response.json();
-            const local = StorageService.getProgress();
-            const progress = this.mergeProgress(remote?.progress, local.progress);
-            this.revision = Number(remote?.revision) || 0;
-            // 收藏与批注都不再用服务端值整体覆盖本地：
-            // 待同步（离线/写入失败）的编辑、以及本机 updated_at 更新的编辑一律保留，
-            // 服务端只补上本地确实没有或更旧的部分。
-            const favorites = this.mergeFavorites(remote?.favorites, local, progress);
-            StorageService.saveProgress({ progress, favorites });
-            const annotations = this.mergeAnnotations(remote?.annotations);
-            try { localStorage.setItem(ANNOTATION_KEY_SHARED, JSON.stringify(annotations)); } catch {}
-            if (Array.isArray(remote?.picked)) {
-                localStorage.setItem('daguan_local_picked_v1', JSON.stringify(remote.picked.map(String)));
-            }
-            this.localizePending();
-            this.available = true;
-            this.absorbLastStudy(remote?.last_study || null);
-        } catch {
-            // 服务端不可用（离线/500）：保留本地编辑与待同步状态，绝不因为读不到服务端而丢数据
-            this.available = false;
-            try { this.localizePending(); } catch {}
-            this.scheduleRetry();
-        } finally {
-            this.hydrated = true;
-        }
-        if (this.available && hasPendingSync()) await this.flushPending();
-        return this;
-    },
-
-    connectEvents() {
-        if (location.protocol === 'https:') {
-            if (!this.remotePollTimer) {
-                this.remotePollTimer = setInterval(() => { if (document.visibilityState === 'visible') void this.refreshFromEvent(); }, 5000);
-                window.addEventListener('pagehide', () => clearInterval(this.remotePollTimer), { once: true });
-            }
-            return;
-        }
-        if (this.eventSource || !window.EventSource || !PreviewAccess.privateAllowed(false)) return;
-        const status = document.getElementById('local-service-status');
-        let disconnected = false;
-        this.eventSource = new EventSource('./api/state/events');
-        this.eventSource.onopen = () => {
-            const wasDisconnected = disconnected;
-            if (disconnected && status) {
-                status.textContent = '本地服务已恢复连接，学习记录已同步';
-                status.hidden = false;
-                setTimeout(() => { if (status.textContent === '本地服务已恢复连接，学习记录已同步') status.hidden = true; }, 3500);
-            } else if (status) {
-                status.hidden = true;
-            }
-            disconnected = false;
-            if (wasDisconnected) this.refreshFromEvent();
-        };
-        this.eventSource.onerror = () => {
-            disconnected = true;
-            if (status) {
-                status.textContent = '本地服务连接中断，正在自动重连；未提交批注仍保留在本机。';
-                status.hidden = false;
-            }
-        };
-        this.eventSource.addEventListener('state', event => {
-            let revision = 0;
-            try { revision = Number(JSON.parse(event.data || '{}').revision) || 0; } catch {}
-            if (revision > this.revision) this.refreshFromEvent();
-        });
-        this.eventSource.addEventListener('visit-history', () => { if (AppState.currentView === 'history') void App.showHistory(); });
-        window.addEventListener('pagehide', () => this.eventSource?.close(), { once: true });
-    },
-
-    async refreshFromEvent() {
-        if (!this.hydrated || document.visibilityState !== 'visible') return;
-        if (this.syncing || this.lastStudyInFlight) {
-            if (!this.eventRefreshTimer) this.eventRefreshTimer = setTimeout(() => {
-                this.eventRefreshTimer = 0;
-                this.refreshFromEvent();
-            }, 600);
-            return;
-        }
-        const previousRevision = this.revision;
-        await this.hydrate();
-        if (!this.available || this.revision <= previousRevision) return;
-        try {
-            if (AppState.currentView === 'question' && !AppState.annotationDirty) await UIRenderer.renderQuestion(AppState.currentQuestionIndex);
-            else if (AppState.currentView === 'home') UIRenderer.renderHome();
-            else if (AppState.currentView === 'records') UIRenderer.renderRecords();
-            else if (AppState.currentView === 'library') UIRenderer.renderLibrary(AppState.currentCategory?.id);
-            else if (AppState.currentView === 'notes' && !AppState.memoDirty) UIRenderer.renderNotes();
-        } catch (error) {
-            console.warn('刷新其他窗口的学习记录失败', error);
-        }
-    },
-
-    // 备份恢复对账：以本地当前数据为准整份写入服务端（PUT /api/state，携带 revision；409 重读后重试一次）。
-    // last_study 保留服务端现有值，不因恢复而改变“继续学习”位置。
-    async reconcileLocalToServer() {
-        try {
-            const response = await fetch('./api/state', { cache: 'no-store' });
-            if (!response.ok) return false;
-            const remote = await response.json();
-            this.revision = Number(remote?.revision) || 0;
-            let picked = [];
-            try { picked = JSON.parse(localStorage.getItem('daguan_local_picked_v1') || '[]'); } catch { picked = []; }
-            const payload = {
-                progress: StorageService.getProgress().progress,
-                favorites: StorageService.getProgress().favorites,
-                picked: Array.isArray(picked) ? picked.map(String) : [],
-                annotations: StorageService.readAnnotationsStorage(),
-                last_study: remote?.last_study || null,
-            };
-            for (let attempt = 0; attempt < 2; attempt++) {
-                const put = await fetch('./api/state', {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json', 'If-Match': String(this.revision) },
-                    body: JSON.stringify({ ...payload, revision: this.revision }),
-                    signal: AbortSignal.timeout(15000),
-                });
-                if (put.status === 409 && attempt === 0) {
-                    const reread = await fetch('./api/state', { cache: 'no-store' }).catch(() => null);
-                    if (reread && reread.ok) {
-                        const current = await reread.json();
-                        this.revision = Number(current?.revision) || 0;
-                        continue;
-                    }
-                    return false;
-                }
-                if (!put.ok) return false;
-                const result = await put.json();
-                this.revision = Number(result.revision) || this.revision;
-                this.available = true;
-                return true;
-            }
-            return false;
-        } catch {
-            return false;
-        }
-    },
-
-    // 官网/旧版写入的最近学习位置 → 新版“继续学习”位置（只在新数据时落盘，不覆盖更新的本机位置）
-    absorbLastStudy(lastStudy) {
-        if (!lastStudy || lastStudy.category_id == null || lastStudy.question_id == null) return;
-        const position = StorageService.getLearningPosition();
-        const remoteAt = timestampOf(lastStudy.updated_at);
-        const localAt = timestampOf(position?.timestamp);
-        if (position && position.questionId === String(lastStudy.question_id)) return;
-        if (position && localAt >= remoteAt) return;
-        const resolved = resolveChapterForQuestion(lastStudy.category_id, lastStudy.question_id);
-        if (!resolved) return;
-        StorageService.saveLearningPosition(resolved.top.id, resolved.leaf.id, null, String(lastStudy.question_id));
-    },
-
-    queueQuestion(questionId, patch) {
-        const key = String(questionId);
-        this.queue.set(key, { ...(this.queue.get(key) || {}), ...patch });
-        // 本机已写入、服务端尚未确认 → 记入待同步日志：离线、失败、刷新、跨版本都不会丢
-        if (PendingSync) {
-            try { PendingSync.queueQuestion(key, patch); } catch {}
-        }
-        if (this.available && this.hydrated) {
-            if (this.timer) clearTimeout(this.timer);
-            this.timer = setTimeout(() => { this.flush(); }, 350);
-        } else {
-            this.scheduleRetry();
-        }
-    },
-
-    // 服务端确认写入后才清除待同步状态；期间被改成别的值则继续挂着待同步
-    confirmQuestion(questionId, patch) {
-        if (!PendingSync) return;
-        try { PendingSync.clearQuestion(String(questionId), patch); } catch {}
-    },
-
-    confirmAnnotation(questionId, markdown) {
-        if (!PendingSync) return;
-        try { PendingSync.clearAnnotation(String(questionId), markdown); } catch {}
-    },
-
-    async flush(timeoutMs = 10000) {
-        if (this.timer) { clearTimeout(this.timer); this.timer = 0; }
-        if (!this.available || this.syncing || !this.queue.size) return true;
-        this.syncing = true;
-        const entries = [...this.queue.entries()];
-        this.queue.clear();
-        const requeue = () => { for (const [id, patch] of entries) this.queue.set(id, { ...patch, ...(this.queue.get(id) || {}) }); };
-        try {
-            for (const [id, patch] of entries) {
-                const response = await fetch(`./api/state/questions/${encodeURIComponent(id)}`, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json', 'If-Match': String(this.revision) },
-                    body: JSON.stringify({ ...patch, revision: this.revision, updated_at: new Date().toISOString() }),
-                    signal: AbortSignal.timeout(timeoutMs),
-                });
-                if (response.status === 409) {
-                    const conflict = await response.json().catch(() => ({}));
-                    if (conflict?.current) {
-                        this.revision = Number(conflict.current.revision) || this.revision;
-                        // 冲突时合并服务端进度，但保留本机未写入的编辑（新值 updated_at 更新者胜出）。
-                        const local = StorageService.getProgress();
-                        StorageService.saveProgress({
-                            progress: this.mergeProgress(conflict.current.progress || {}, local.progress),
-                            favorites: this.mergeFavorites(conflict.current.favorites, local, local.progress),
-                        });
-                    }
-                    requeue();
-                    return false;
-                }
-                if (!response.ok) throw new Error(`状态写入失败（HTTP ${response.status}）`);
-                const result = await response.json();
-                this.revision = Number(result.revision) || this.revision;
-                this.confirmQuestion(id, patch);
-            }
-            this.choiceSyncWarning = false;
-            return true;
-        } catch {
-            requeue();
-            if (!this.choiceSyncWarning && entries.some(([, patch]) => 'last_ok' in patch)) {
-                this.choiceSyncWarning = true;
-                toast('作答状态尚未同步，已保留在本机，将自动重试');
-            }
-            return false;
-        } finally {
-            this.syncing = false;
-            if (this.queue.size && !this.timer) this.timer = setTimeout(() => { this.flush(); }, 900);
-        }
-    },
-
-    async flushAnnotation(questionId, markdown) {
-        if (!this.available || !PreviewAccess.privateAllowed(false)) return;
-        for (let attempt = 0; attempt < 2; attempt++) {
-            const response = await fetch(`./api/state/questions/${encodeURIComponent(questionId)}/annotation`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json', 'If-Match': String(this.revision) },
-                body: JSON.stringify({ markdown, revision: this.revision }),
-                signal: AbortSignal.timeout(10000),
-            });
-            if (response.status === 409 && attempt === 0) {
-                const conflict = await response.json().catch(() => ({}));
-                if (conflict?.current) this.revision = Number(conflict.current.revision) || this.revision;
-                continue;
-            }
-            if (!response.ok) throw new Error(`批注保存失败（HTTP ${response.status}）`);
-            const result = await response.json();
-            this.revision = Number(result.revision) || this.revision;
-            this.confirmAnnotation(questionId, markdown);
-            break;
-        }
-    },
-
-    // 最近学习位置：真实题号 + 章节，携带 revision；409 重新读取后安全重试一次。
-    // 平时失败不阻塞做题（记录待重试），但切换版本前 ensureFlushed 会严格核查。
-    async pushLastStudy(categoryId, questionId, mode = 'single') {
-        if (!this.available || !PreviewAccess.privateAllowed(false)) return false;
-        if (categoryId == null || questionId == null) return false;
-        const payload = { category_id: String(categoryId), question_id: String(questionId), mode, updated_at: new Date().toISOString() };
-        const run = (async () => {
-            for (let attempt = 0; attempt < 2; attempt++) {
-                const response = await fetch('./api/state/last-study', {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json', 'If-Match': String(this.revision) },
-                    body: JSON.stringify({ ...payload, revision: this.revision }),
-                    signal: AbortSignal.timeout(10000),
-                });
-                if (response.status === 409 && attempt === 0) {
-                    const conflict = await response.json().catch(() => ({}));
-                    if (conflict?.current) {
-                        this.revision = Number(conflict.current.revision) || this.revision;
-                        continue;
-                    }
-                }
-                if (!response.ok) return false;
-                const result = await response.json();
-                this.revision = Number(result.revision) || this.revision;
-                return true;
-            }
-            return false;
-        })();
-        let trackedRun;
-        trackedRun = run.finally(() => { if (this.lastStudyInFlight === trackedRun) this.lastStudyInFlight = null; });
-        this.lastStudyInFlight = trackedRun;
-        let ok = false;
-        try { ok = await trackedRun; } catch { ok = false; }
-        if (ok) this.lastStudyPending = null;
-        else this.lastStudyPending = payload;
-        return ok;
-    },
-
-    // 切换/离开前等待必要的服务端写入完成；位置或队列未落盘时抛错，由调用方留在当前页。
-    async ensureFlushed() {
-        if (this.timer) { clearTimeout(this.timer); this.timer = 0; }
-        if (this.lastStudyInFlight) {
-            // 进行中的学习位置写入必须有明确结果：超时（仍在写）视为未保存，
-            // 交由调用方留在当前页并提示重试，不能静默放行导航。
-            const settled = await Promise.race([
-                this.lastStudyInFlight.then(() => true, () => false),
-                new Promise(resolve => setTimeout(() => resolve('timeout'), 5000)),
-            ]);
-            if (settled === 'timeout' && this.available && PreviewAccess.privateAllowed(false)) {
-                throw new Error('最近学习位置仍在保存，请稍后重试');
-            }
-        }
-        // 学习位置写入未成功：切换前重试一次，仍失败则阻断导航
-        if (this.lastStudyPending && this.available && PreviewAccess.privateAllowed(false)) {
-            const retry = await this.pushLastStudy(this.lastStudyPending.category_id, this.lastStudyPending.question_id, this.lastStudyPending.mode);
-            if (!retry) throw new Error('最近学习位置未能保存，请重试');
-        }
-        if (!this.available) return;
-        const deadline = Date.now() + 10000;
-        while (this.syncing && Date.now() < deadline) await new Promise(resolve => setTimeout(resolve, 50));
-        if (this.queue.size) {
-            const ok = await this.flush();
-            if (!ok || this.queue.size) throw new Error('学习记录仍在保存，请稍后重试');
-        }
-    }
-};
-
-function timestampOf(value) {
-    if (typeof value === 'number' && Number.isFinite(value)) return value;
-    if (typeof value !== 'string' || !value.trim()) return 0;
-    const numeric = Number(value);
-    if (Number.isFinite(numeric)) return numeric;
-    const parsed = Date.parse(value);
-    return Number.isFinite(parsed) ? parsed : 0;
-}
-
 // 把旧版/服务端的 last_study（category_id 可为任意层级 + 真实题号）解析为 {top, leaf}：
 // 优先找包含该题号的叶子章节；题目不存在时退回 categoryId 节点（或其子树第一个叶子）。
 function resolveChapterForQuestion(categoryId, questionId) {
@@ -1440,77 +359,8 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-function renderMarkdown(text) {
-    const raw = text || "";
-    const slots = [];
-    const protect = (s) => {
-        s = s.replace(/\$\$([\s\S]+?)\$\$/g, (_, m) => {
-            const i = slots.length;
-            slots.push({ display: true, tex: m });
-            return `%%MATH${i}%%`;
-        });
-        s = s.replace(/\\\[([\s\S]+?)\\\]/g, (_, m) => {
-            const i = slots.length;
-            slots.push({ display: true, tex: m });
-            return `%%MATH${i}%%`;
-        });
-        s = s.replace(/\\\(([\s\S]+?)\\\)/g, (_, m) => {
-            const i = slots.length;
-            slots.push({ display: false, tex: m });
-            return `%%MATH${i}%%`;
-        });
-        s = s.replace(/\$([^\$\n]+?)\$/g, (full, m, offset, whole) => {
-            if (whole[offset - 1] === "$" || whole[offset + full.length] === "$") return full;
-            const i = slots.length;
-            slots.push({ display: false, tex: m });
-            return `%%MATH${i}%%`;
-        });
-        return s;
-    };
-
-    let html;
-    try {
-        const src = protect(raw);
-        html = typeof marked !== "undefined"
-            ? marked.parse(src, { breaks: true })
-            : src.replace(/</g, "&lt;").replace(/\n/g, "<br>");
-        html = html.replace(/%%MATH(\d+)%%/g, (_, idx) => {
-            const item = slots[Number(idx)];
-            if (!item || typeof katex === "undefined") {
-                return item ? (item.display ? `$$${item.tex}$$` : `$${item.tex}$`) : "";
-            }
-            try {
-                return katex.renderToString(item.tex, {
-                    displayMode: item.display,
-                    throwOnError: false,
-                    strict: "ignore",
-                });
-            } catch {
-                return item.display ? `$$${item.tex}$$` : `$${item.tex}$`;
-            }
-        });
-    } catch {
-        html = raw.replace(/</g, "&lt;").replace(/\n/g, "<br>");
-    }
-
-    const div = document.createElement("div");
-    div.innerHTML = html;
-    div.querySelectorAll("img").forEach((img) => {
-        img.src = assetUrl(img.getAttribute("src") || "");
-        img.loading = "lazy";
-        img.decoding = "async";
-        img.alt = img.alt || "题目配图";
-        img.tabIndex = 0;
-        img.setAttribute('role', 'button');
-        img.title = '点击放大图片';
-        img.addEventListener("error", () => {
-            if (img.dataset.fallback) return;
-            img.dataset.fallback = "1";
-            img.src = "./assets/missing-image.svg";
-        }, { once: true });
-    });
-    return div.innerHTML;
-}
+const safeRender = window.DaguanSafeRender.create({ assetUrl });
+function renderMarkdown(text) { return safeRender.markdown(text); }
 
 function renderSafeSearchMarkdown(text) {
     const safeText = String(text || '').replace(/!\[[^\]]*\]\([^)]*\)/g, '[图片]').replace(/\[([^\]]+)\]\([^)]*\)/g, '$1');
@@ -2530,8 +1380,10 @@ class UIRenderer {
                 <h3>答案</h3>
                 <div class="answer-content">${renderMarkdown(question.answer || '暂无答案')}</div>
 
+                <div class="explanation-v2" data-explanation-v2="${escapeHtml(String(question.id))}" data-explanation-answer="${escapeHtml(String(question.answer || ''))}" hidden></div>
+
                 ${question.explanation ? `
-                    <div class="explanation-section">
+                    <div class="explanation-section" data-original-explanation>
                         <h3>解析</h3>
                         <div class="explanation-content">${renderMarkdown(question.explanation)}</div>
                     </div>
@@ -2542,6 +1394,91 @@ class UIRenderer {
         `;
 
         return html;
+    }
+
+    // ---------- v2 精讲解析（web/data/explanations-v2.json，按需加载）----------
+    // 安全约定：外层结构由本文件拼装；题目与模型产生的文本一律先过 renderMarkdown
+    // （内部是 DOMPurify + marked + KaTeX）再注入，不直接拼原始字符串。
+    static explanationV2Entry(id) {
+        const table = AppState.explanationsV2;
+        return table ? (table[String(id)] || null) : null;
+    }
+
+    static renderExplanationV2(entry, shownAnswer) {
+        if (!entry) return '';
+        const parts = [];
+        const tags = [];
+        if (entry.origin === 'img') tags.push('扫描题 · 已转写');
+        if (entry.humanReviewed) tags.push('已人工复核');
+        parts.push(`<div class="v2-head"><span class="v2-badge">精讲解析</span>${entry.difficulty ? `<span class="v2-difficulty">${escapeHtml(entry.difficulty)}</span>` : ''}${tags.map(tag => `<span class="v2-tag">${escapeHtml(tag)}</span>`).join('')}</div>`);
+
+        if (entry.conflict) {
+            const reviewed = entry.conflictVerdict === 'original_correct';
+            const body = entry.conflictEvidence || entry.conflictNote || '';
+            parts.push(`<div class="v2-conflict${reviewed ? ' reviewed' : ''}"><strong>${reviewed ? '已复核：题库原答案正确' : '与现有答案不一致'}</strong>${body ? `<div class="v2-conflict-body">${renderMarkdown(body)}</div>` : ''}</div>`);
+        }
+
+        if (entry.hint) parts.push(`<div class="v2-hint"><span class="v2-hint-tag">思路</span><div class="v2-hint-body">${renderMarkdown(entry.hint)}</div></div>`);
+
+        const steps = Array.isArray(entry.steps) ? entry.steps : [];
+        if (steps.length) {
+            parts.push('<ol class="v2-steps">' + steps.map(step => `<li class="v2-step">
+                    ${step.title ? `<div class="v2-step-title">${renderMarkdown(step.title)}</div>` : ''}
+                    ${step.why ? `<div class="v2-why"><span class="v2-why-tag">为什么</span><div class="v2-why-body">${renderMarkdown(step.why)}</div></div>` : ''}
+                    ${step.content ? `<div class="v2-step-body">${renderMarkdown(step.content)}</div>` : ''}
+                </li>`).join('') + '</ol>');
+        }
+
+        // 答案区已经显示过原答案时不重复；文字题两者常常一致，图片题的扫描答案永远不等于转写答案。
+        const finalAnswer = String(entry.answerFinal || '').trim();
+        if (finalAnswer && finalAnswer !== String(shownAnswer || '').trim()) {
+            parts.push(`<div class="v2-answer"><span class="v2-answer-tag">整理后的答案</span><div class="v2-answer-body">${renderMarkdown(entry.answerFinal)}</div></div>`);
+        }
+
+        const options = Array.isArray(entry.optionAnalysis) ? entry.optionAnalysis : [];
+        if (options.length) {
+            parts.push('<div class="v2-sub">选项逐项分析</div><ul class="v2-options">' + options.map(option => {
+                const ok = /^(对|正确|√|true)/i.test(String(option.verdict || ''));
+                return `<li class="v2-option${ok ? ' ok' : ''}"><span class="v2-option-key">${escapeHtml(option.key || '')}</span><span class="v2-option-verdict">${escapeHtml(option.verdict || '')}</span><span class="v2-option-reason">${renderMarkdown(option.reason || '')}</span></li>`;
+            }).join('') + '</ul>');
+        }
+
+        const pitfalls = Array.isArray(entry.pitfalls) ? entry.pitfalls : [];
+        if (pitfalls.length) parts.push('<div class="v2-sub">易错点</div><ul class="v2-pitfalls">' + pitfalls.map(item => `<li>${renderMarkdown(item)}</li>`).join('') + '</ul>');
+
+        const chips = [];
+        (entry.kps || []).forEach(kp => chips.push(`<span class="v2-chip">${escapeHtml(kp)}</span>`));
+        (entry.methods || []).forEach(method => chips.push(`<span class="v2-chip v2-chip-method">${escapeHtml(method)}</span>`));
+        if (chips.length) parts.push(`<div class="v2-sub">考点与方法</div><div class="v2-chips">${chips.join('')}</div>`);
+
+        const details = [];
+        if (entry.stemText) details.push(`<details class="v2-details"><summary>题目文字转写</summary><div>${renderMarkdown(entry.stemText)}</div></details>`);
+        if (entry.explanationText) details.push(`<details class="v2-details"><summary>原始解析文字（扫描图转写）</summary><div>${renderMarkdown(entry.explanationText)}</div></details>`);
+        if (details.length) parts.push(`<div class="v2-details-group">${details.join('')}</div>`);
+
+        return parts.join('');
+    }
+
+    // 惰性填充：只有答案区真正展开时才拉取 v2 数据（约 4.4 MB），拉过一次后常驻内存。
+    static async fillExplanationV2(root) {
+        const host = root || document;
+        const pending = [...host.querySelectorAll('[data-explanation-v2]')]
+            .filter(slot => slot.dataset.explanationV2Filled !== '1');
+        if (!pending.length) return;
+        // 先打标记再 await，避免同一批插槽被并发调用重复拉取。
+        pending.forEach(slot => { slot.dataset.explanationV2Filled = '1'; });
+        try {
+            await DataService.ensureExplanationsV2();
+        } catch { return; }
+        if (!AppState.explanationsV2) return;
+        pending.forEach(slot => {
+            const entry = this.explanationV2Entry(slot.dataset.explanationV2);
+            if (!entry) return;
+            slot.innerHTML = this.renderExplanationV2(entry, slot.dataset.explanationAnswer);
+            slot.hidden = false;
+            const original = slot.closest('.answer-section')?.querySelector('[data-original-explanation]');
+            if (original) original.classList.add('explanation-original');
+        });
     }
 
     static renderVideoLinks(question) {
@@ -2611,129 +1548,10 @@ class UIRenderer {
         }
     }
 
-    static captureAIPanel() {
-        const panel = document.getElementById('ai-panel');
-        return { panel, scrollTop: panel?.querySelector?.('#ai-messages')?.scrollTop || 0 };
-    }
-
-    static restoreAIPanel(snapshot, question) {
-        const panel = snapshot.panel;
-        if (!panel?.dataset?.questionId || panel.dataset.questionId !== String(question?.id)) return false;
-        const placeholder = document.getElementById('ai-panel');
-        if (!placeholder || placeholder === panel) return false;
-        placeholder.replaceWith(panel);
-        panel.classList.toggle('closed', !AppState.ui.aiPanelOpen);
-        panel.querySelector('#ai-messages').scrollTop = snapshot.scrollTop;
-        window.DaguanAIPanelLayout?.update();
-        return true;
-    }
-
-    static renderAIPanel() {
-        const panel = document.getElementById('ai-panel');
-        if (!panel) return;
-        if (AppState.ui.aiPanelOpen) panel.classList.remove('closed');
-
-        const question = AppState.questions[AppState.currentQuestionIndex];
-        panel.dataset.questionId = String(question?.id || '');
-        const draft = question ? StorageService.getAIDraft(question.id) : '';
-        const profiles = AppState.aiProfiles || [];
-        const profileOptions = profiles.length
-            ? profiles.map(item => `<option value="${escapeHtml(item.id)}" ${item.id === AppState.aiProfileId ? 'selected' : ''}>${escapeHtml(item.name)}${item.model ? ` · ${escapeHtml(item.model)}` : ''}</option>`).join('')
-            : '<option value="">未配置 AI</option>';
-
-        panel.innerHTML = `
-            <div class="ai-panel-resize" role="separator" tabindex="0" aria-label="调整 AI 面板宽度" aria-orientation="vertical"></div>
-            <div class="ai-header">
-                <h3>AI 辅助</h3>
-                <div class="ai-header-actions">
-                <button type="button" class="btn btn-text btn-sm" id="ai-expand-btn" aria-pressed="false">展开</button>
-                <button type="button" class="btn btn-text btn-sm" id="ai-settings-btn" aria-expanded="false" aria-controls="ai-panel-settings">设置</button>
-                <button class="btn btn-icon btn-text" onclick="App.toggleAI()" aria-label="关闭 AI 面板">
-                    <svg class="icon" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
-                </button>
-                </div>
-            </div>
-            <div class="ai-panel-settings" id="ai-panel-settings" hidden role="region" aria-label="AI 设置">
-            <div class="ai-profile-row">
-                <label for="ai-profile-select-new">服务</label>
-                <select data-ai-service-control="true" id="ai-profile-select-new" onchange="App.selectAIProfile(this.value)">${profileOptions}</select>
-                <button type="button" class="btn btn-text btn-sm" onclick="App.navigate('settings')">设置</button>
-            </div>
-
-            <label class="ai-streaming-control"><input type="checkbox" id="ai-streaming-new"> 流式回答</label>
-            <label class="ai-privacy-check"><input type="checkbox" id="ai-include-private-new"> 包含我的批注与学习状态</label>
-            </div>
-            <p class="ai-private-status" id="ai-private-status" hidden>已包含批注与学习状态</p>
-            <div class="ai-quick-prompts">
-                <button class="quick-prompt-btn" onclick="App.sendAIPrompt(AI_COMPOSE_PROMPTS.brief)">简短回答</button>
-                <button class="quick-prompt-btn" onclick="App.sendAIPrompt(AI_COMPOSE_PROMPTS.detailed)">详细回答</button>
-                <button class="quick-prompt-btn" onclick="App.sendAIPrompt(AI_COMPOSE_PROMPTS.full)">完整解答</button>
-                <button class="quick-prompt-btn" onclick="App.sendAIPrompt(AI_COMPOSE_PROMPTS.hint)">给我提示</button>
-                <button class="quick-prompt-btn" onclick="App.sendAIPrompt(AI_COMPOSE_PROMPTS.pitfall)">易错点</button>
-                <p class="ai-quick-hint">回答里的每一段都能点：点一下就能追问「这个是怎么来的 / 什么意思 / 什么知识点 / 你有什么想法」。</p>
-            </div>
-
-            <nav class="ai-section-nav" id="ai-section-nav" aria-label="回答段落跳转" hidden></nav>
-            <div class="ai-messages" id="ai-messages"><div class="ai-empty"><strong>先问一个问题</strong><p>题目上下文已经准备好，选择上方提示或直接输入你的疑问。</p></div></div>
-            <div class="ai-reading-actions"><button type="button" class="btn btn-secondary btn-sm" id="ai-latest-btn" hidden>回到最新内容</button></div>
-
-            <div class="ai-input-area">
-                <div class="ai-input-wrapper">
-                    <textarea class="ai-input" id="ai-input"
-                        placeholder="输入你的问题..."
-                        rows="1">${escapeHtml(draft)}</textarea>
-                    <div class="ai-input-actions">
-                        <span class="ai-input-buttons">
-                            <button type="button" class="btn btn-secondary btn-sm" id="ai-stop-btn" hidden onclick="App.stopAIStream()">停止</button>
-                            <button class="btn btn-primary ai-send-btn" id="ai-send-btn" onclick="App.sendAIMessage()">发送</button>
-                        </span>
-                    </div>
-                </div>
-            </div>
-        `;
-
-        window.DaguanAIReading?.bind(panel);
-        window.DaguanAIPanelLayout?.bind(panel);
-        window.DaguanAISettings?.bindStreaming(document.getElementById('ai-streaming-new'), {
-            profile: () => AIService.activeProfile(), busy: () => AppState.aiBusy,
-            allowed: () => PreviewAccess.privateAllowed(), error: message => toast(message),
-            changed: profile => { Object.assign(AIService.activeProfile() || {}, profile); },
-        });
-        document.getElementById('ai-profile-select-new').disabled = AppState.aiBusy;
-        const input = document.getElementById('ai-input');
-        if (input) {
-            input.addEventListener('input', () => {
-                if (question) StorageService.saveAIDraft(question.id, input.value);
-            });
-            input.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); App.sendAIMessage(); }
-            });
-        }
-        App.aiBusyUi(AppState.aiBusy);
-        if (question) this.renderAIHistory(question);
-    }
-
-    static async renderAIHistory(question) {
-        const messagesEl = document.getElementById('ai-messages');
-        if (!messagesEl || !question) return;
-        const profileId = AppState.aiProfileId;
-        const history = await AIService.loadHistory(question);
-        // 用户可能已切题，历史回来时校验仍是当前题
-        const current = AppState.questions[AppState.currentQuestionIndex];
-        if (!current || String(current.id) !== String(question.id) || profileId !== AppState.aiProfileId ||
-            messagesEl !== document.getElementById('ai-messages') || AppState.aiBusy) return;
-        if (!history.length) return;
-        messagesEl.innerHTML = '';
-        for (const message of history) {
-            const msg = document.createElement('div');
-            msg.className = `ai-message ${message.role === 'user' ? 'user' : 'assistant'}`;
-            msg.innerHTML = `<div class="ai-message-bubble">${message.role === 'user' ? escapeHtml(message.content) : renderMarkdown(message.content)}</div>`;
-            messagesEl.appendChild(msg);
-        }
-        messagesEl.scrollTop = messagesEl.scrollHeight;
-        window.DaguanAIReading?.refreshSections();
-        window.DaguanAIReading?.toLatest();
-    }
+    static captureAIPanel(...args) { return AIViews.captureAIPanel.apply(this, args); }
+    static restoreAIPanel(...args) { return AIViews.restoreAIPanel.apply(this, args); }
+    static renderAIPanel(...args) { return AIViews.renderAIPanel.apply(this, args); }
+    static renderAIHistory(...args) { return AIViews.renderAIHistory.apply(this, args); }
 
     static renderAnnotationPanel() {
         const panel = document.getElementById('annotation-panel');
@@ -3455,133 +2273,6 @@ class UIRenderer {
 }
 
 // ========== AI 服务（对接本地中控台 /api/ai/*：profileId + question + prompt，SSE） ==========
-const AI_COMPOSE_PROMPTS = {
-    brief: '请简短回答：先用一句话给出核心结论，再用 2～4 句话说明最关键的一步是怎么来的。只保留考研解题真正需要的内容，不展开完整推导、不重复题干；公式只留最关键的一个，较长公式单独成行。最后可以用一句话点出这道题在考研里属于哪类常考题型。',
-    detailed: '请详细回答这道题，按考研复习的标准展开：## 答案、## 考研视角、## 详细推导、## 得分点与易错点。其中「考研视角」要说明这道题在考研大纲里对应什么知识点、要求到什么层次（了解／理解／掌握）、属于哪类常考题型、卷面上是选择/填空还是解答题以及大致分值。「详细推导」中每一步都要说明本步目标、知识点及其具体定义或公式、适用条件、从题干或前一步哪条信息想到该方法、推导过程与结果。清楚区分题干直接信息、前一步推出的结论和官方解析提供的信息，不能把题干没有给出的信息说成已知。数学公式使用 LaTeX，较长公式单独成行。',
-    full: '请从考研复习的角度给出这道题的完整解答，按以下 Markdown 标题组织：## 答案、## 简短思路、## 详细推导、## 方法与易错点。先明确给出答案，再用简短段落说明解题路线，随后保留详细教学过程。每个关键步骤都应说明本步目标、知识点及其具体定义或公式、适用条件、从哪些题干或前一步信息想到该方法、推导过程与结果；把这些依据自然融入步骤，不机械重复七项标签，不把关键推理合并成一句话。清楚区分题干直接信息、前一步推出的结论和官方解析提供的信息，不能将题干没有给出的信息说成已知。最后总结识别这类题的信息、通用方法和必要的易错提醒，避免重复前文。选择题逐项解释关键判断理由。数学公式使用 LaTeX，较长公式单独成行。',
-    hint: '先不要直接跳到结论，给我一个解题提示。',
-    pitfall: '请指出这道题最容易犯的错误。'
-};
-
-class AIService {
-    // SSE 跨块解析：不完整的行保留到下一块；返回 {events, rest}
-    static parseSseChunk(buffer, text) {
-        let working = String(buffer || '') + String(text || '');
-        const events = [];
-        const rows = working.split(/\r?\n/);
-        const rest = rows.pop() || '';
-        for (const row of rows) {
-            if (!row.startsWith('data:')) continue;
-            const data = row.slice(5).trim();
-            if (!data || data === '[DONE]') continue;
-            try { events.push(JSON.parse(data)); } catch { /* 忽略 keep-alive 碎片 */ }
-        }
-        return { events, rest };
-    }
-
-    static async loadProfiles() {
-        try {
-            const response = await fetch('./api/ai/profiles', { cache: 'no-store' });
-            const data = await response.json();
-            AppState.aiProfiles = Array.isArray(data.profiles) ? data.profiles : [];
-        } catch {
-            AppState.aiProfiles = [];
-        }
-        const preferred = StorageService.getAIPreferences().profileId;
-        AppState.aiProfileId = AppState.aiProfiles.find(item => item.id === preferred)?.id
-            || AppState.aiProfiles.find(item => item.active)?.id
-            || AppState.aiProfiles[0]?.id
-            || '';
-        return AppState.aiProfiles;
-    }
-
-    static activeProfile() {
-        return AppState.aiProfiles?.find(item => item.id === AppState.aiProfileId) || null;
-    }
-
-    static selectProfile(profileId) {
-        AppState.aiProfileId = profileId || '';
-        StorageService.saveAIPreference('profileId', AppState.aiProfileId);
-    }
-
-    // 服务端固定 system 指令负责数学教学约束；客户端只送 prompt + 题目载荷。
-    static async chatStream({ question, prompt, includePrivate = false, images = [], signal }) {
-        if (!AppState.aiProfileId) throw new Error('请先在设置中选择或配置 AI 服务');
-        const response = await fetch('./api/ai/chat', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                profileId: AppState.aiProfileId,
-                question: this.questionPayload(question),
-                prompt: String(prompt || ''),
-                includePrivate: includePrivate === true,
-                images: Array.isArray(images) ? images : [],
-            }),
-            signal,
-        });
-        if (!response.ok) {
-            const error = await response.json().catch(() => ({}));
-            throw new Error(error.error || `AI 请求失败（HTTP ${response.status}）`);
-        }
-        return response;
-    }
-
-    static async stopRun(runId) {
-        if (!runId) return;
-        await fetch(`./api/ai/runs/${encodeURIComponent(runId)}`, { method: 'DELETE' }).catch(() => {});
-    }
-
-    static questionPayload(q) {
-        const progress = StorageService.getProgress().progress[String(q?.id)] || {};
-        const annotation = StorageService.getAnnotation(q?.id).content || '';
-        return {
-            id: q?.id,
-            category_path: q?.category_path || UIRenderer.chapterLabel?.(q) || '',
-            source: q?.source || '',
-            type: q?.type || '',
-            stem: q?.stem || q?.question || '',
-            options: q?.options || [],
-            answer: q?.answer || '',
-            explanation: q?.explanation || '',
-            userAnswer: AppState.answers?.[String(q?.id)] ? [...AppState.answers[String(q?.id)]].join(', ') : '',
-            annotation,
-            mastery: progress.mastery || 'not_started',
-            errorProne: progress.error_prone === true,
-            favorite: StorageService.isFavorite(q?.id),
-        };
-    }
-
-    // 视觉档案才附带题目图片（≤4 张、每张 ≤2MB，dataURL）
-    static async questionImages(q) {
-        if (!q) return [];
-        const source = `${q.stem || q.question || ''}\n${(q.options || []).map(o => o.content_md || '').join('\n')}\n${q.answer || ''}\n${q.explanation || ''}`;
-        const refs = [...source.matchAll(/!\[[^\]]*\]\(([^)]+)\)|<img[^>]+src=["']([^"']+)["']/gi)].map(m => m[1] || m[2]).filter(Boolean).slice(0, 4);
-        const out = [];
-        for (const ref of refs) {
-            try {
-                const response = await fetch(new URL(assetUrl(ref), location.href));
-                if (!response.ok) continue;
-                const blob = await response.blob();
-                if (blob.size > 2 * 1024 * 1024) continue;
-                const data = await new Promise(resolve => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = () => resolve(''); reader.readAsDataURL(blob); });
-                if (data) out.push(data);
-            } catch {}
-        }
-        return out;
-    }
-
-    // 按题隔离的聊天历史（保存在本地中控台，按 profile+question 分键）
-    static async loadHistory(question) {
-        if (!question || !AppState.aiProfileId) return [];
-        try {
-            const response = await fetch(`./api/ai/conversations/${encodeURIComponent(AppState.aiProfileId)}/${encodeURIComponent(String(question.id))}`, { cache: 'no-store' });
-            if (!response.ok) return [];
-            const data = await response.json();
-            return Array.isArray(data.messages) ? data.messages.filter(m => m && (m.role === 'user' || m.role === 'assistant')) : [];
-        } catch { return []; }
-    }
-}
-
 // ========== 应用控制器 ==========
 class App {
     static syncTitlebarInset() {
@@ -4630,6 +3321,7 @@ class App {
         const expanded = button.getAttribute('aria-expanded') !== 'true';
         if (expanded && PreviewAccess.privateAllowed(false)) window.DaguanStudyActivity?.reveal(card.dataset.questionId);
         answer.style.display = expanded ? 'block' : 'none';
+        if (expanded) UIRenderer.fillExplanationV2(card);
         button.setAttribute('aria-expanded', String(expanded)); button.textContent = expanded ? '隐藏答案' : '显示答案';
     }
 
@@ -4934,12 +3626,16 @@ class App {
                 parts.push('<ol class="opts">' + q.options.map(o => `<li>${renderMarkdown(typeof o === 'object' ? (o.content_md || o.content || '') : o)}</li>`).join('') + '</ol>');
             }
             if (withAnswers) parts.push(`<p><strong>答案：</strong>${renderMarkdown(q.answer || '暂无')}</p>`);
-            if (withExpl && q.explanation) parts.push(`<p><strong>解析：</strong>${renderMarkdown(q.explanation)}</p>`);
+            if (withExpl) {
+                const v2 = UIRenderer.explanationV2Entry(q.id);
+                if (v2) parts.push(`<div class="expl"><strong>精讲解析：</strong>${UIRenderer.renderExplanationV2(v2, q.answer)}</div>`);
+                else if (q.explanation) parts.push(`<p><strong>解析：</strong>${renderMarkdown(q.explanation)}</p>`);
+            }
             return `<section class="q">${parts.join('')}</section>`;
         }).join('');
         const doc = `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8"><title>大观园-${escapeHtml(title)}</title>
 <link rel="stylesheet" href="${location.origin}/vendor/katex.min.css">
-<style>body{font-family:Georgia,'Microsoft YaHei',serif;max-width:760px;margin:32px auto;padding:0 16px;color:#202124}h1{font-size:22px}.q{margin:24px 0;padding-bottom:12px;border-bottom:1px solid #e3e6ea}.opts{margin:8px 0 0 1.2em}.katex-display{overflow-x:auto}.toolbar{position:sticky;top:0;background:#fff;padding:10px 0;border-bottom:1px solid #e3e6ea;display:flex;gap:12px;align-items:center}</style>
+<style>body{font-family:Georgia,'Microsoft YaHei',serif;max-width:760px;margin:32px auto;padding:0 16px;color:#202124}h1{font-size:22px}.q{margin:24px 0;padding-bottom:12px;border-bottom:1px solid #e3e6ea}.opts{margin:8px 0 0 1.2em}.katex-display{overflow-x:auto}.toolbar{position:sticky;top:0;background:#fff;padding:10px 0;border-bottom:1px solid #e3e6ea;display:flex;gap:12px;align-items:center}.v2-head{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0}.v2-badge{background:#C83F32;color:#fff;font-size:13px;font-weight:600;padding:2px 10px;border-radius:999px}.v2-difficulty,.v2-tag{font-size:12px;padding:1px 8px;border-radius:999px;border:1px solid #dfe3e8;color:#5f6368}.v2-difficulty{border-color:#C83F32;color:#C83F32}.v2-hint,.v2-answer,.v2-why{padding:10px 12px;margin:10px 0;background:#f6f7f9;border-left:3px solid #C83F32;border-radius:8px}.v2-hint-tag,.v2-why-tag,.v2-answer-tag{font-weight:600;color:#C83F32;margin-right:8px}.v2-steps{list-style:none;counter-reset:v2step;margin:0;padding:0}.v2-step{counter-increment:v2step;padding:0 0 16px 34px;position:relative;border-left:1px solid #dfe3e8;margin-left:12px}.v2-step:last-child{border-left-color:transparent}.v2-step::before{content:counter(v2step);position:absolute;left:-12px;top:-2px;width:24px;height:24px;border-radius:50%;background:#C83F32;color:#fff;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center}.v2-step-title{font-weight:600;margin-bottom:6px}.v2-sub{font-weight:600;color:#5f6368;font-size:14px;margin:14px 0 6px}.v2-options{list-style:none;padding:0;margin:0}.v2-option{display:flex;flex-wrap:wrap;gap:8px;align-items:baseline;padding:6px 0;border-bottom:1px dashed #dfe3e8}.v2-option-key{font-weight:600}.v2-option-verdict{font-size:12px;padding:1px 8px;border-radius:999px;background:#f6f7f9;color:#5f6368}.v2-option.ok .v2-option-verdict{background:rgba(200,63,50,.1);color:#C83F32}.v2-chips{display:flex;flex-wrap:wrap;gap:6px}.v2-chip{font-size:12px;padding:2px 9px;border-radius:999px;background:#f6f7f9;border:1px solid #dfe3e8;color:#5f6368}.v2-conflict{padding:10px 12px;margin:10px 0;border-radius:8px;background:rgba(214,138,0,.1);border-left:3px solid #d68a00}.v2-conflict.reviewed{background:#f6f7f9;border-left-color:#dfe3e8;color:#5f6368}.v2-conflict-body{margin-top:4px;color:#5f6368}.v2-details{border:1px solid #dfe3e8;border-radius:8px;padding:8px 12px;margin:8px 0;font-size:14px}.v2-details>summary{cursor:pointer;color:#5f6368}</style>
 </head><body>
 <div class="toolbar"><button onclick="window.print()">打印 / 另存 PDF</button><button id="btn-dl">下载 HTML 文件</button><span>${questions.length} 题 · ${escapeHtml(title)}</span></div>
 <h1>大观园 · ${escapeHtml(title)}</h1>
@@ -5773,7 +4469,7 @@ document.getElementById('btn-dl').addEventListener('click', function () {
             });
             ChoiceGrading.feedback(root.querySelector('.question-options'), ok);
             const answer = root.querySelector('.answer-section');
-            if (answer) answer.style.display = 'block';
+            if (answer) { answer.style.display = 'block'; UIRenderer.fillExplanationV2(answer); }
             const button = root.querySelector('.expand-answer-btn') || document.getElementById('show-answer-btn');
             if (button) { button.textContent = '隐藏答案'; button.setAttribute('aria-expanded', 'true'); }
             if (!unchanged && PreviewAccess.privateAllowed(false)) {
@@ -5809,6 +4505,7 @@ document.getElementById('btn-dl').addEventListener('click', function () {
         if (answerSection.style.display === 'none') {
             if (PreviewAccess.privateAllowed(false)) window.DaguanStudyActivity?.reveal(AppState.questions[AppState.currentQuestionIndex]?.id);
             answerSection.style.display = 'block';
+            UIRenderer.fillExplanationV2(answerSection);
             btn.textContent = '隐藏答案';
 
             // Only move the question's scroller. scrollIntoView also scrolls
@@ -5944,158 +4641,13 @@ document.getElementById('btn-dl').addEventListener('click', function () {
         }
     }
 
-    static async sendAIPrompt(prompt) {
-        const input = document.getElementById('ai-input');
-        if (input) input.value = prompt;
-        await this.sendAIMessage();
-    }
-
-    static selectAIProfile(profileId) {
-        if (AppState.aiBusy) return;
-        AIService.selectProfile(profileId);
-        const stream = document.getElementById('ai-streaming-new');
-        if (stream) stream.checked = AIService.activeProfile()?.streaming !== false;
-        const question = AppState.questions[AppState.currentQuestionIndex];
-        if (question) UIRenderer.renderAIHistory(question);
-    }
-
-    static aiBusyUi(busy) {
-        AppState.aiBusy = busy;
-        document.querySelectorAll('[data-ai-service-control]').forEach(el => { el.disabled = busy; });
-        document.getElementById('ai-services-settings')?.aiSettings?.syncBusy();
-        const stop = document.getElementById('ai-stop-btn');
-        const send = document.getElementById('ai-send-btn');
-        if (stop) stop.hidden = !busy;
-        if (send) send.disabled = busy;
-        window.DaguanAIReading?.fitInput();
-    }
-
-    static async stopAIStream() {
-        const controller = AppState.aiAbort;
-        if (controller) { try { controller.abort(); } catch {} }
-        if (AppState.aiRunId) await AIService.stopRun(AppState.aiRunId);
-    }
-
-    static abortAIStream() {
-        // 切题/退出时的静默中止：保留草稿，不弹确认
-        const controller = AppState.aiAbort;
-        if (controller) { try { controller.abort(); } catch {} }
-        if (AppState.aiRunId) AIService.stopRun(AppState.aiRunId);
-        AppState.aiAbort = null;
-        AppState.aiRunId = '';
-        AppState.aiBusy = false;
-    }
-
-    static async sendAIMessage() {
-        if (!PreviewAccess.privateAllowed()) return;
-        const input = document.getElementById('ai-input');
-        const messagesEl = document.getElementById('ai-messages');
-        if (!input || !messagesEl || AppState.aiBusy) return;
-
-        const question = AppState.questions[AppState.currentQuestionIndex];
-        const content = input.value.trim();
-        if (!question || !content) return;
-        if (!AppState.aiProfileId) await AIService.loadProfiles();
-        if (!AppState.aiProfileId) {
-            toast('请先在设置中选择或配置 AI 服务');
-            this.navigate('settings');
-            return;
-        }
-
-        messagesEl.querySelector('.ai-empty')?.remove();
-        const userMsg = document.createElement('div');
-        userMsg.className = 'ai-message user';
-        userMsg.innerHTML = `<div class="ai-message-bubble">${escapeHtml(content)}</div>`;
-        messagesEl.appendChild(userMsg);
-
-        const aiMsg = document.createElement('div');
-        aiMsg.className = 'ai-message assistant';
-        aiMsg.innerHTML = '<div class="ai-message-bubble" id="ai-current-response">正在思考…</div>';
-        messagesEl.appendChild(aiMsg);
-        const responseEl = document.getElementById('ai-current-response');
-        messagesEl.scrollTop = messagesEl.scrollHeight;
-
-        input.value = '';
-        window.DaguanAIReading?.fitInput();
-        window.DaguanAIReading?.toLatest();
-        window.DaguanAIReading?.refreshSections();
-        StorageService.saveAIDraft(question.id, '');
-        const questionId = String(question.id);
-
-        const controller = new AbortController();
-        AppState.aiAbort = controller;
-        AppState.aiRunId = '';
-        this.aiBusyUi(true);
-        let answer = '';
-        let paintTimer = 0;
-        try {
-            const includePrivate = document.getElementById('ai-include-private-new')?.checked === true;
-            const profile = AIService.activeProfile();
-            const images = profile?.capabilities?.vision === 'passed' ? await AIService.questionImages(question) : [];
-            const response = await AIService.chatStream({ question, prompt: content, includePrivate, images, signal: controller.signal });
-            AppState.aiRunId = response.headers.get('X-Daguan-Run-Id') || '';
-            const reader = response.body?.getReader();
-            const decoder = new TextDecoder();
-            let buffer = '';
-            const paint = () => {
-                paintTimer = 0;
-                if (!responseEl || !responseEl.isConnected) return;
-                const paintContent = () => { responseEl.textContent = answer || '正在思考…'; };
-                if (window.DaguanAIReading) window.DaguanAIReading.paintMessages(responseEl.closest('.ai-panel'), paintContent);
-                else paintContent();
-            };
-            while (reader) {
-                const { done, value } = await reader.read();
-                if (done) break;
-                buffer += decoder.decode(value, { stream: true });
-                const parsed = AIService.parseSseChunk('', buffer);
-                buffer = parsed.rest;
-                for (const evt of parsed.events) {
-                    if (evt.type === 'started' && evt.runId) AppState.aiRunId = evt.runId;
-                    if (evt.type === 'delta') { answer += evt.content || ''; if (!paintTimer) paintTimer = setTimeout(paint, 120); }
-                    if (evt.type === 'error') throw new Error(evt.error || 'AI 生成失败');
-                }
-            }
-            if (paintTimer) clearTimeout(paintTimer);
-            if (String(AppState.questions[AppState.currentQuestionIndex]?.id) !== questionId) return;
-            if (responseEl) {
-                responseEl.removeAttribute('id');
-                const finish = () => { responseEl.innerHTML = renderMarkdown(answer); };
-                if (window.DaguanAIReading) window.DaguanAIReading.paintMessages(responseEl.closest('.ai-panel'), finish);
-                else finish();
-                window.DaguanAIReading?.refreshSections();
-            }
-        } catch (error) {
-            if (paintTimer) clearTimeout(paintTimer);
-            if (String(AppState.questions[AppState.currentQuestionIndex]?.id) !== questionId) return;
-            const aborted = error?.name === 'AbortError';
-            if (responseEl) {
-                responseEl.removeAttribute('id');
-                responseEl.innerHTML = aborted
-                    ? `<div class="ai-error">已停止生成。${answer ? '<div class="ai-partial">' + renderMarkdown(answer) + '</div>' : ''}</div>`
-                    : `<div class="ai-error"><div>AI 暂时没有完成回答：${escapeHtml(error.message || String(error))}</div><button class="ai-retry-btn" onclick="App.retryAIMessage()">${aborted ? '' : '重试'}</button></div>`;
-                if (!aborted) {
-                    const retryBtn = responseEl.querySelector('.ai-retry-btn');
-                    if (retryBtn) retryBtn.addEventListener('click', () => {
-                        input.value = content;
-                        StorageService.saveAIDraft(question.id, content);
-                        this.sendAIMessage();
-                    });
-                }
-            }
-        } finally {
-            if (paintTimer) clearTimeout(paintTimer);
-            window.DaguanAIReading?.refreshSections();
-            if (AppState.aiAbort === controller) AppState.aiAbort = null;
-            AppState.aiRunId = '';
-            this.aiBusyUi(false);
-        }
-    }
-
-    static retryAIMessage() {
-        const input = document.getElementById('ai-input');
-        if (input && input.value.trim()) this.sendAIMessage();
-    }
+    static sendAIPrompt(...args) { return AIController.sendAIPrompt.apply(this, args); }
+    static selectAIProfile(...args) { return AIController.selectAIProfile.apply(this, args); }
+    static aiBusyUi(...args) { return AIController.aiBusyUi.apply(this, args); }
+    static stopAIStream(...args) { return AIController.stopAIStream.apply(this, args); }
+    static abortAIStream(...args) { return AIController.abortAIStream.apply(this, args); }
+    static sendAIMessage(...args) { return AIController.sendAIMessage.apply(this, args); }
+    static retryAIMessage(...args) { return AIController.retryAIMessage.apply(this, args); }
 
     static switchAnnotationTab(tab) {
         const tabs = document.querySelectorAll('.annotation-tab');
@@ -6119,30 +4671,7 @@ document.getElementById('btn-dl').addEventListener('click', function () {
         const preview = document.getElementById('annotation-preview');
         if (!textarea || !preview) return;
 
-        // 简单的 Markdown 渲染
-        let html = textarea.value
-            .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-            .replace(/\*(.+?)\*/g, '<em>$1</em>')
-            .replace(/`(.+?)`/g, '<code>$1</code>')
-            .replace(/^### (.+)$/gm, '<h3>$1</h3>')
-            .replace(/^## (.+)$/gm, '<h2>$1</h2>')
-            .replace(/^# (.+)$/gm, '<h1>$1</h1>')
-            .replace(/\n\n/g, '</p><p>')
-            .replace(/\n/g, '<br>');
-
-        html = '<p>' + html + '</p>';
-        preview.innerHTML = html;
-
-        // 渲染 KaTeX
-        if (typeof renderMathInElement !== 'undefined') {
-            renderMathInElement(preview, {
-                delimiters: [
-                    {left: '$$', right: '$$', display: true},
-                    {left: '$', right: '$', display: false}
-                ],
-                throwOnError: false
-            });
-        }
+        preview.innerHTML = renderMarkdown(textarea.value);
     }
 
     static async saveAnnotation() {
