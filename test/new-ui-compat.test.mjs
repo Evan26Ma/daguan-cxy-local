@@ -1,3 +1,4 @@
+import { loadNewUiModules } from './new-ui-loader.mjs';
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
@@ -52,6 +53,7 @@ function createContext(initialStorage = {}) {
   vm.createContext(sandbox);
   const root = new URL("../web/", import.meta.url);
   vm.runInContext(fs.readFileSync(new URL("ui-version.js", root), "utf8"), sandbox, { filename: "ui-version.js" });
+  loadNewUiModules(sandbox);
   vm.runInContext(fs.readFileSync(new URL("app-new.js", root), "utf8"), sandbox, { filename: "app-new.js" });
   return { sandbox, storage, session, localStorage, sessionStorage, document, documentListeners, appearanceVariables };
 }
@@ -286,7 +288,7 @@ test("新版预设新增简短回答与详细回答，且都要求考研视角",
   assert.match(prompts.detailed, /大纲[\s\S]*了解／理解／掌握/);
   assert.match(prompts.detailed, /常考题型/);
   assert.match(prompts.full, /考研复习的角度/);
-  const source = fs.readFileSync(new URL("../web/app-new.js", import.meta.url), "utf8");
+  const source = fs.readFileSync(new URL("../web/new-ai.js", import.meta.url), "utf8");
   assert.match(source, /AI_COMPOSE_PROMPTS\.brief\)">简短回答/);
   assert.match(source, /AI_COMPOSE_PROMPTS\.detailed\)">详细回答/);
 });

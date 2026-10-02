@@ -7,6 +7,38 @@ import test from "node:test";
 import forgeConfig from "../forge.config.js";
 import { prepareDesktopPackage } from "../scripts/prepare-desktop-package.mjs";
 
+test('shared sanitizer and extracted modules are bundled and match offline shell references', async () => {
+  const web = new URL('../web/', import.meta.url);
+  const sw = await fs.readFile(new URL('service-worker.js', web), 'utf8');
+  const newer = await fs.readFile(new URL('index.html', web), 'utf8');
+  const legacy = await fs.readFile(new URL('legacy.html', web), 'utf8');
+  for (const file of ['safe-render.js', 'new-data.js', 'new-state.js', 'new-ai.js', 'vendor/purify.min.js', 'vendor/DOMPurify-LICENSE']) {
+    assert.ok((await fs.stat(new URL(file, web))).size > 0);
+    assert.ok(!forgeConfig.packagerConfig.ignore.some(pattern => pattern.test('/web/' + file)), file);
+    if (file.endsWith('LICENSE')) continue;
+    const ref = [...newer.matchAll(/src="([^"]+)"/g)].map(match => match[1]).find(value => value.split('?')[0] === './' + file);
+    assert.ok(ref, file);
+    assert.ok(sw.includes(JSON.stringify(ref)), ref);
+    if (!file.startsWith('new-')) assert.ok(legacy.includes(ref));
+  }
+  for (const html of [newer, legacy]) {
+    for (const [, ref] of html.matchAll(/src="(\.\/app-(?:new|legacy)\.js[^\"]*)"/g)) assert.ok(sw.includes(JSON.stringify(ref)), ref);
+  }
+  const installed = await fs.readFile(new URL('../node_modules/dompurify/dist/purify.min.js', import.meta.url));
+  assert.deepEqual(await fs.readFile(new URL('vendor/purify.min.js', web)), installed);
+});
+
+test('learning journal scripts and styles are shipped in the desktop and offline shell', async () => {
+  const html = await fs.readFile(new URL('../web/index.html', import.meta.url), 'utf8');
+  const sw = await fs.readFile(new URL('../web/service-worker.js', import.meta.url), 'utf8');
+  for (const file of ['study-journal.js', 'study-journal.css', 'study-activity-client.js']) {
+    assert.ok((await fs.stat(new URL('../web/' + file, import.meta.url))).size > 0);
+    assert.ok(!forgeConfig.packagerConfig.ignore.some(pattern => pattern.test('/web/' + file)));
+    const ref = [...html.matchAll(/(?:src|href)="([^"]+)"/g)].map(m => m[1]).find(s => s.split('?')[0] === './' + file);
+    assert.ok(ref, file); assert.ok(sw.includes(JSON.stringify(ref)), ref);
+  }
+});
+
 test("Windows executable and installer both use the bundled Daguan logo", async () => {
   const icon = new URL("../web/assets/landing/local-mark.ico", import.meta.url);
   assert.equal(forgeConfig.packagerConfig.icon, fileURLToPath(icon));

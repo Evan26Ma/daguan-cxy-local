@@ -49,6 +49,8 @@ function json(res, status, value) {
 }
 
 function errorJson(res, error, status = 500) {
+  if (res.writableEnded || res.destroyed) return;
+  if (res.headersSent) { res.end(); return; }
   const code = error?.code === "AUTH_EXPIRED" ? 401 : Number(error?.status) || status;
   json(res, code, { ok: false, code: error?.code || null, error: String(error?.message || error), current: error?.current || undefined });
 }
@@ -407,6 +409,7 @@ async function route(req, res) {
   }
   if (privateApiPath(pathname) && !requirePreviewAccess(req, res)) return;
   if (pathname === "/api/study-activity" && method === "GET") return json(res, 200, await studyActivity.summary({ days: url.searchParams.get('days') || 1, timeZone: url.searchParams.get('timeZone') || 'Asia/Hong_Kong' }));
+  if (pathname === "/api/study-activity/journal" && method === "GET") return json(res, 200, await studyActivity.journal({ end: url.searchParams.get('end') || undefined, timeZone: url.searchParams.get('timeZone') || 'Asia/Hong_Kong' }));
   if (pathname === "/api/study-activity/export" && method === "GET") return json(res, 200, await studyActivity.export());
   if (pathname === "/api/study-activity/events" && method === "POST") {
     const accepted = await studyActivity.append((await body(req)).events);
@@ -462,7 +465,7 @@ async function route(req, res) {
       const entry = { ...(progress[questionId] || {}) };
       const at = incoming.updated_at || nowIso();
       if (incoming.mastery != null) {
-        if (!["not_started", "learning", "mastered", "forgot"].includes(incoming.mastery)) return json(res, 400, { ok: false, error: "掌握状态无效" });
+        if (!["not_started", "learning", "mastered", "forgot"].includes(incoming.mastery)) throw Object.assign(new Error("掌握状态无效"), { status: 400 });
         entry.mastery = incoming.mastery === "forgot" ? "learning" : incoming.mastery;
         if (incoming.mastery === "forgot") entry.error_prone = true;
         entry.mastery_updated_at = at;

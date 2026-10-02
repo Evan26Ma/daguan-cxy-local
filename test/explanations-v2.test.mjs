@@ -94,7 +94,8 @@ test('v2 解析按需加载、只在展开答案时进页面', () => {
   const sw = read('web/service-worker.js');
 
   assert.match(html, /new-data\.js\?v=2/);
-  assert.match(html, /app-new\.js\?v=139/);
+  const entry = html.match(/src="(\.\/app-new\.js\?v=\d+)"/)?.[1];
+  assert.ok(entry); assert.ok(sw.includes(JSON.stringify(entry)));
 
   // 插槽 + 惰性填充必须成对存在，且填充要走 UIRenderer（App 与 UIRenderer 是两个类）。
   assert.match(app, /data-explanation-v2="\$\{escapeHtml\(String\(question\.id\)\)\}"/);

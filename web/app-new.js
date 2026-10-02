@@ -5,7 +5,7 @@
 
 // ========== 离线缓存注册（与 app2.js 一致） ==========
 if ("serviceWorker" in navigator && location.protocol !== "file:" && location.protocol !== "https:") {
-    navigator.serviceWorker.register("./service-worker.js?v=147").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=148").catch(() => {});
 }
 
 // ========== 全局状态 ==========
@@ -1880,62 +1880,17 @@ class UIRenderer {
     }
 
     static renderRecords() {
-        const main = document.getElementById('app-main');
-        const { progress } = StorageService.getProgress();
-        const entries = Object.values(progress || {}).filter(Boolean);
-
-        const mastered = entries.filter(e => e.mastery === 'mastered').length;
-        const mistakes = entries.filter(e => e.error_prone === true).length;
-        const learning = entries.filter(e => e.mastery && e.mastery !== 'mastered').length;
-        const answered = entries.filter(e => e.updated_at).length;
-
-        // 按 updated_at 日期聚合每日作答数
-        const daily = {};
-        entries.forEach(e => {
-            if (!e.updated_at) return;
-            const d = new Date(e.updated_at);
-            if (Number.isNaN(d.getTime())) return;
-            const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-            daily[key] = (daily[key] || 0) + 1;
+        this.studyJournal ||= window.DaguanStudyJournal.create({
+            activity: window.DaguanStudyActivity,
+            locateQuestion: (id, chapter) => App.historyLocation(id, { chapter_id: chapter }) || App.historyLocation(id),
+            openQuestion: (id, chapter) => {
+                const location = App.historyLocation(id, { chapter_id: chapter }) || App.historyLocation(id);
+                return App.openHistoryQuestion(id, location ? { chapter_id: location.leaf.id, category_id: location.top.id } : null);
+            },
+            getQuestion: id => DataService.getQuestion(id), renderMarkdown,
+            showHistory: () => App.navigate('history'), showLibrary: () => App.navigate('library'),
         });
-
-        main.innerHTML = `
-            <div class="home-content">
-                <h1 class="text-page-title" style="margin-bottom: var(--spacing-xl);">学习记录</h1>
-                ${answered > 0 ? `
-                    <div class="records-stats">
-                        <div class="stat-card">
-                            <div class="stat-value">${mastered}</div>
-                            <div class="stat-label">已掌握</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value">${learning}</div>
-                            <div class="stat-label">学习中</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value">${mistakes}</div>
-                            <div class="stat-label">易错题</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value">${answered}</div>
-                            <div class="stat-label">总作答数</div>
-                        </div>
-                    </div>
-                    <div class="card heatmap-card">
-                        <h2 class="text-section-title">作答热力图</h2>
-                        <p class="text-helper heatmap-caption">最近 12 周 · 按本地作答记录统计</p>
-                        ${this.renderHeatmap(daily)}
-                    </div>
-                ` : `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">📈</div>
-                        <h3>还没有学习记录</h3>
-                        <p>完成题目后，这里会展示真实的作答统计与热力图。</p>
-                        <button type="button" class="btn btn-primary" onclick="App.showLibrary()">去题库刷题</button>
-                    </div>
-                `}
-            </div>
-        `;
+        this.studyJournal.mount(document.getElementById('app-main'));
     }
 
     static renderHistory() {
@@ -2651,8 +2606,8 @@ class App {
         if (AppState.currentView === 'history') UIRenderer.renderHistory();
     }
 
-    static async openHistoryQuestion(id) {
-        const entry = AppState.visitHistory.find(item => String(item.question_id) === String(id));
+    static async openHistoryQuestion(id, historyEntry = null) {
+        const entry = historyEntry || AppState.visitHistory.find(item => String(item.question_id) === String(id));
         const location = this.historyLocation(id, entry);
         if (!location) { toast('当前题库中无法定位这道题'); return; }
         const index = DataService.chapterEntries(location.leaf).findIndex(entry => String(entry.id) === String(id));

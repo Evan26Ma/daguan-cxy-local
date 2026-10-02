@@ -105,16 +105,19 @@ test("首屏不阻塞加载题库索引", () => {
 
 test("Service Worker 不预缓存首屏之外的大型索引和字体", () => {
   const sw = fs.readFileSync(new URL("../web/service-worker.js", import.meta.url), "utf8");
-  assert.match(sw, /daguan-shell-v147/);
-  assert.match(app, /service-worker\.js\?v=147/);
-  assert.match(newApp, /service-worker\.js\?v=147/);
+  const version = sw.match(/daguan-shell-v(\d+)/)?.[1];
+  assert.ok(version, 'Service Worker 使用版本化的缓存名');
+  assert.ok(app.includes(`service-worker.js?v=${version}`));
+  assert.ok(newApp.includes(`service-worker.js?v=${version}`));
   assert.match(sw, /"\.\/legacy\.html"/);
   assert.match(sw, /"\.\/legacy\.css\?v=93"/);
-  assert.match(sw, /".\/app-legacy\.js\?v=108"/);
+  const legacyScript = html.match(/src="(\.\/app-legacy\.js\?v=\d+)"/)?.[1];
+  assert.ok(legacyScript); assert.ok(sw.includes(JSON.stringify(legacyScript)));
   assert.match(sw, /"\.\/guides\.css\?v=2"/);
   assert.match(sw, /"\.\/styles-new\.css\?v=122"/);
   assert.match(sw, /"\.\/source-taxonomy\.js\?v=1"/);
-  assert.match(sw, /"\.\/app-new\.js\?v=139"/);
+  const newScript = newHtml.match(/src="(\.\/app-new\.js\?v=\d+)"/)?.[1];
+  assert.ok(newScript); assert.ok(sw.includes(JSON.stringify(newScript)));
   assert.match(sw, /"\.\/assets\/math-mark\.svg"/);
   assert.match(sw, /"\.\/assets\/landing\/local-mark\.png"/);
   assert.doesNotMatch(sw, /data\/(category_questions|id_index|search_index)\.json/);
@@ -137,7 +140,7 @@ test("新版入口承载新版前端并与旧版共享版本选择", () => {
   assert.match(newHtml, /ui-version\.js\?v=106/);
   assert.match(newHtml, /ui-bootstrap\.js\?v=1/);
   assert.match(newHtml, /source-taxonomy\.js\?v=1/);
-  assert.match(newHtml, /app-new\.js\?v=139/);
+  assert.match(newHtml, /app-new\.js\?v=\d+/);
   assert.match(uiBootstrap, /DaguanVersions\.selected\(localStorage\)/);
   assert.match(newHtml, /dlg-preview-access/);
   assert.match(newHtml, /preview-banner/);
@@ -211,7 +214,7 @@ test("界面版本：旧大观承载完整旧版前端", () => {
   assert.match(legacyHtml, /<title>大观园 · 本地刷题<\/title>/);
   assert.match(legacyHtml, /legacy\.css\?v=93/);
   assert.match(legacyHtml, /source-taxonomy\.js\?v=1/);
-  assert.match(legacyHtml, /app-legacy\.js\?v=108/);
+  assert.match(legacyHtml, /app-legacy\.js\?v=\d+/);
   assert.match(legacyHtml, /<header class="topbar learning-shell__topbar">[\s\S]*id="btn-switch-new"/);
   assert.doesNotMatch(legacyHtml, /legacy-version-toggle|practice-version-toggle|data-version-choice/);
   assert.match(legacyApp, /\$\("#btn-switch-new"\)\?\.addEventListener\("click", \(\) => setUiVersion\("new"\)\)/);

@@ -15,6 +15,8 @@ jobs:
   windows-package:
     runs-on: windows-latest
     env:
+      DAGUAN_TEST_TMP: ${{ github.workspace }}/../daguan-test-tmp
+      PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/../daguan-test-tmp/playwright-browsers
       # 以下 SignPath 配置留空时，签名相关步骤会被整体跳过，
       # 发布包照常产出（未签名），本地开发与未申请到证书时都不受影响。
       SIGNPATH_ORGANIZATION_ID: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
@@ -47,6 +49,14 @@ jobs:
           $version = (Get-Content 'dist/DaguanMath-version.txt' -Raw).Trim()
           Write-Host "PE 元数据版本：$version"
           "metadata_version=$version" >> $env:GITHUB_OUTPUT
+
+      - name: Install required test browser
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path $env:DAGUAN_TEST_TMP | Out-Null
+          $env:TEMP = $env:DAGUAN_TEST_TMP
+          $env:TMP = $env:DAGUAN_TEST_TMP
+          npx playwright install chromium
 
       - name: Run tests
         run: npm test

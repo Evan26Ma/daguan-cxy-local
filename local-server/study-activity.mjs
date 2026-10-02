@@ -32,7 +32,7 @@ export function studyDay(at, timeZone = 'Asia/Hong_Kong') {
 }
 const shiftDay = (key, offset) => { const d = new Date(`${key}T12:00:00Z`); d.setUTCDate(d.getUTCDate() + offset); return d.toISOString().slice(0, 10); };
 
-export function summarizeStudy(data, { days = 1, timeZone = 'Asia/Hong_Kong', now = Date.now() } = {}) {
+export function summarizeStudy(data, { days = 1, timeZone = 'Asia/Hong_Kong', now = Date.now(), onStudy } = {}) {
   days = Number(days);
   if (!STUDY_RANGES.includes(days)) throw fail('统计范围无效');
   const today = studyDay(now, timeZone), start = shiftDay(today, 1 - days);
@@ -64,7 +64,11 @@ export function summarizeStudy(data, { days = 1, timeZone = 'Asia/Hong_Kong', no
         if (first && e.correct) range.firstPass.add(id);
       }
     }
-    if (independent && e.correct && q.failed) { allConquered.add(id); if (inRange(day)) range.conquered.add(id); }
+    const conquered = independent && e.correct && q.failed;
+    if (conquered) { allConquered.add(id); if (inRange(day)) range.conquered.add(id); }
+    // The journal and home report share the same classification of learning events.
+    onStudy?.({ event: e, day, isNew: !q.old && q.first === day, conquered,
+      newCount: allNew.size, conqueredCount: allConquered.size });
     if (independent && e.correct) q.failed = false;
     if (e.type === 'answer' && e.reliable && !e.correct) q.failed = true;
     if (e.type === 'answer' && e.reliable) q.attempted = true;
@@ -87,6 +91,54 @@ export function summarizeStudy(data, { days = 1, timeZone = 'Asia/Hong_Kong', no
       currentStreak: streak, longestStreak: longest, bestDay: Math.max(0, ...[...daily.values()].map(s => s.size)),
       newMilestones: [10, 50, 100, 500, 1000].map(target => ({ target, reached: allNew.size >= target })),
       conqueredMilestones: [1, 10, 50, 100].map(target => ({ target, reached: allConquered.size >= target })) } };
+}
+
+export function summarizeJournal(data, { end, timeZone = 'Asia/Hong_Kong', now = Date.now() } = {}) {
+  const today = studyDay(now, timeZone);
+  end ||= today;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(end) || !Number.isFinite(Date.parse(end)) ||
+      new Date(end).toISOString().slice(0, 10) !== end || end > today) throw fail('手账日期无效');
+  const start = shiftDay(end, -6);
+  const daily = Array.from({ length: 7 }, (_, i) => ({ day: shiftDay(start, i), ids: new Set(), fresh: new Set(), fixed: new Set(), groups: [] }));
+  const byDay = new Map(daily.map(d => [d.day, d]));
+  const active = new Set();
+  const badges = [
+    { id: 'start', name: '提笔出发', description: '完成第一次有效练习', target: 1, kind: 'active', earnedOn: null },
+    { id: 'comeback', name: '迎难再来', description: '第一次独立重做答对旧错题', target: 1, kind: 'conquered', earnedOn: null },
+    ...[[50, '积少成多'], [100, '百题成章'], [500, '步履不停'], [1000, '千题留痕']].map(([target, name]) =>
+      ({ id: `new-${target}`, name, description: `累计学习 ${target} 道不同新题`, target, kind: 'new', earnedOn: null })),
+    { id: 'active-7', name: '常来常新', description: '累计在 7 个学习日练习，无需连续', target: 7, kind: 'active', earnedOn: null },
+    { id: 'conquered-10', name: '越过难关', description: '独立重做答对 10 道不同旧错题', target: 10, kind: 'conquered', earnedOn: null },
+  ];
+  let earliest = studyDay(data.started_at, timeZone);
+  const summary = summarizeStudy(data, { days: 7, timeZone, now, onStudy(fact) {
+    const { event: e, day, isNew, conquered, newCount, conqueredCount } = fact;
+    if (day < earliest) earliest = day;
+    active.add(day);
+    for (const badge of badges) {
+      badge.value = badge.kind === 'new' ? newCount : badge.kind === 'conquered' ? conqueredCount : active.size;
+      if (!badge.earnedOn && badge.value >= badge.target) badge.earnedOn = day;
+    }
+    const d = byDay.get(day);
+    if (!d) return;
+    d.ids.add(e.question_id);
+    if (isNew) d.fresh.add(e.question_id);
+    if (conquered) d.fixed.add(e.question_id);
+    let group = d.groups.at(-1);
+    // Contiguous chapter activity is a practice segment, not a claim of time spent.
+    if (!group || group.chapter_id !== e.chapter_id || Date.parse(e.at) - Date.parse(group.last_at) > 30 * 60000) {
+      group = { chapter_id: e.chapter_id, chapter_name: e.chapter_name, at: e.at, last_at: e.at, questions: new Map() };
+      d.groups.push(group);
+    }
+    group.last_at = e.at;
+    const previous = group.questions.get(e.question_id);
+    group.questions.set(e.question_id, { question_id: e.question_id, isNew, conquered: conquered || previous?.conquered || false,
+      result: e.type === 'answer' ? e.reliable ? (e.answer_seen ? '参考答案后作答' : e.correct ? '答对' : '待巩固') : '已作答（未自动判分）' : previous?.result || '已标记学习' });
+  } });
+  return { today, start, end, earliest, timeZone, started_at: data.started_at, achievements: summary.achievements,
+    badges: badges.map(b => ({ ...b, value: b.value || 0 })),
+    daily: daily.map(d => ({ day: d.day, count: d.ids.size, newQuestions: d.fresh.size, reviewed: d.ids.size - d.fresh.size,
+      conquered: d.fixed.size, groups: d.groups.map(g => ({ ...g, questions: [...g.questions.values()] })) })) };
 }
 
 export function createStudyActivity(dataDir, readState) {
@@ -118,6 +170,7 @@ export function createStudyActivity(dataDir, readState) {
     ensure: () => locked(read),
     export: () => locked(read),
     summary: options => locked(async () => summarizeStudy(await read(), options)),
+    journal: options => locked(async () => summarizeJournal(await read(), options)),
     append: input => locked(async () => {
       if (!Array.isArray(input) || input.length > 1000) throw fail('学习事件批次无效');
       const events = input.map(normalizeStudyEvent), data = await read();

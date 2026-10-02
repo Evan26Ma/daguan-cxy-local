@@ -22,14 +22,26 @@ export function createStore(rootDir, dataDirOverride = process.env.DAGUAN_DATA_D
   }
 
   async function readJson(file, fallback) {
-    try { return JSON.parse(await fs.readFile(file, "utf8")); } catch { return fallback; }
+    try { return JSON.parse(await fs.readFile(file, "utf8")); } catch (cause) {
+      if (cause.code === "ENOENT") return fallback;
+      const corrupt = cause instanceof SyntaxError;
+      const error = new Error(`本地文件${corrupt ? "损坏" : "无法读取"}：${path.basename(file)}。原文件已保留，请检查文件或从备份恢复。`, { cause });
+      error.code = corrupt ? "DATA_CORRUPT" : "DATA_READ_FAILED";
+      throw error;
+    }
   }
 
   async function writeJson(file, value, mode = 0o600) {
     await ensure();
+    // Never replace an existing unreadable/corrupt document with defaults.
+    await readJson(file, null);
     const temp = `${file}.tmp-${process.pid}-${Date.now()}`;
-    await fs.writeFile(temp, `${JSON.stringify(value, null, 2)}\n`, { mode });
-    await fs.rename(temp, file);
+    try {
+      await fs.writeFile(temp, `${JSON.stringify(value, null, 2)}\n`, { mode });
+      await fs.rename(temp, file);
+    } finally {
+      await fs.rm(temp, { force: true }).catch(() => {});
+    }
     if (process.platform !== "win32") await fs.chmod(file, mode).catch(() => {});
   }
 

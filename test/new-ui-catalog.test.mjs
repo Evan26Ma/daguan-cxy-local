@@ -1,3 +1,4 @@
+import { loadNewUiModules } from './new-ui-loader.mjs';
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
@@ -60,6 +61,7 @@ function loadNewUI() {
   sandbox.window = sandbox;
   sandbox.globalThis = sandbox;
   vm.createContext(sandbox);
+  loadNewUiModules(sandbox);
   vm.runInContext(fs.readFileSync(new URL("../web/app-new.js", import.meta.url), "utf8"), sandbox, { filename: "app-new.js" });
   sandbox.__elements = elements;
   return sandbox;

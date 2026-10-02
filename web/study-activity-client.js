@@ -97,6 +97,15 @@
       const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       return request(`?days=${days}&timeZone=${encodeURIComponent(timeZone)}`);
     },
+    async journal(end = '') {
+      await flush();
+      const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const response = await fetch(`${endpoint}/journal?end=${encodeURIComponent(end)}&timeZone=${encodeURIComponent(timeZone)}`, {
+        cache: 'no-store', signal: AbortSignal.timeout(10000),
+      });
+      if (!response.ok) throw new Error(response.status === 403 ? '请先解锁个人功能，再查看学习手账' : '学习记录读取失败，请检查本地服务后重试');
+      return response.json();
+    },
     async export() {
       await flush();
       let data;

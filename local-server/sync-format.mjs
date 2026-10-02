@@ -45,11 +45,22 @@ function remoteMasteryToLocal(value) {
   return "not_started";
 }
 
+function parsedTimestamp(value) {
+  if (typeof value !== 'number' && typeof value !== 'string') return null;
+  const text = String(value).trim();
+  if (!text) return null;
+  const numeric = Number(text);
+  const parsed = Number.isFinite(numeric) ? numeric : Date.parse(text);
+  return Number.isFinite(parsed) && Math.abs(parsed) <= 8640000000000000 ? parsed : null;
+}
+
 function timestamp(value) {
-  if (value == null || value === "") return 0;
-  if (typeof value === "number") return Number.isFinite(value) ? value : 0;
-  const parsed = Date.parse(String(value));
-  return Number.isFinite(parsed) ? parsed : 0;
+  return parsedTimestamp(value) ?? 0;
+}
+
+function isoTimestamp(value, fallback) {
+  const at = parsedTimestamp(value);
+  return at == null ? fallback : new Date(at).toISOString();
 }
 
 export function normalizeLocalState(value) {
@@ -194,7 +205,7 @@ export function localToRemoteDocument(localState) {
     states[id] = {
       mastery,
       favorite,
-      updated_at: state.updated_at ? new Date(Number(state.updated_at)).toISOString() : nowIso(),
+      updated_at: isoTimestamp(state.updated_at, nowIso()),
     };
   }
   for (const idValue of favorites) {
@@ -230,7 +241,7 @@ export function localToAndroidDocument(localState) {
     states[id] = {
       mastery,
       favorite,
-      updatedAt: state.updated_at ? new Date(Number(state.updated_at)).toISOString() : null,
+      updatedAt: isoTimestamp(state.updated_at, null),
     };
   }
   for (const id of favorites) {
@@ -469,9 +480,9 @@ export function buildPullMerge(localState, remoteEntries, knownIds = null) {
       continue;
     }
     const cur = local.progress[id] && typeof local.progress[id] === "object" ? local.progress[id] : {};
-    const remoteTime = Date.parse(remote.updated_at || "");
-    const localTime = Number(cur.updated_at || 0);
-    const canUpdateMastery = !Number.isFinite(remoteTime) || !localTime || remoteTime >= localTime;
+    const remoteTime = parsedTimestamp(remote.updated_at);
+    const localTime = parsedTimestamp(cur.updated_at);
+    const canUpdateMastery = localTime == null || (remoteTime != null && remoteTime >= localTime);
     const localMastery = remote.mastery === "not_known" ? "learning" : remote.mastery === "needs_practice" ? "learning" : remote.mastery === "mastered" ? "mastered" : "not_started";
     const remoteAddsErrorFlag = remote.mastery === "not_known" && cur.error_prone !== true;
     if (remote.mastery !== "not_started" && canUpdateMastery && (cur.mastery !== localMastery || remoteAddsErrorFlag)) {
