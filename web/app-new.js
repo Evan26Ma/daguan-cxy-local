@@ -5,7 +5,7 @@
 
 // ========== 离线缓存注册（与 app2.js 一致） ==========
 if ("serviceWorker" in navigator && location.protocol !== "file:" && location.protocol !== "https:") {
-    navigator.serviceWorker.register("./service-worker.js?v=141").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=142").catch(() => {});
 }
 
 // ========== 全局状态 ==========
@@ -2590,9 +2590,12 @@ class UIRenderer {
             </div>
             <p class="ai-private-status" id="ai-private-status" hidden>已包含批注与学习状态</p>
             <div class="ai-quick-prompts">
+                <button class="quick-prompt-btn" onclick="App.sendAIPrompt(AI_COMPOSE_PROMPTS.brief)">简短回答</button>
+                <button class="quick-prompt-btn" onclick="App.sendAIPrompt(AI_COMPOSE_PROMPTS.detailed)">详细回答</button>
                 <button class="quick-prompt-btn" onclick="App.sendAIPrompt(AI_COMPOSE_PROMPTS.full)">完整解答</button>
                 <button class="quick-prompt-btn" onclick="App.sendAIPrompt(AI_COMPOSE_PROMPTS.hint)">给我提示</button>
                 <button class="quick-prompt-btn" onclick="App.sendAIPrompt(AI_COMPOSE_PROMPTS.pitfall)">易错点</button>
+                <p class="ai-quick-hint">回答里的每一段都能点：点一下就能追问「这个是怎么来的 / 什么意思 / 什么知识点 / 你有什么想法」。</p>
             </div>
 
             <nav class="ai-section-nav" id="ai-section-nav" aria-label="回答段落跳转" hidden></nav>
@@ -3378,7 +3381,9 @@ class UIRenderer {
 
 // ========== AI 服务（对接本地中控台 /api/ai/*：profileId + question + prompt，SSE） ==========
 const AI_COMPOSE_PROMPTS = {
-    full: '请给出这道题的完整解答，按以下 Markdown 标题组织：## 答案、## 简短思路、## 详细推导、## 方法与易错点。先明确给出答案，再用简短段落说明解题路线，随后保留详细教学过程。每个关键步骤都应说明本步目标、知识点及其具体定义或公式、适用条件、从哪些题干或前一步信息想到该方法、推导过程与结果；把这些依据自然融入步骤，不机械重复七项标签，不把关键推理合并成一句话。清楚区分题干直接信息、前一步推出的结论和官方解析提供的信息，不能将题干没有给出的信息说成已知。最后总结识别这类题的信息、通用方法和必要的易错提醒，避免重复前文。选择题逐项解释关键判断理由。数学公式使用 LaTeX，较长公式单独成行。',
+    brief: '请简短回答：先用一句话给出核心结论，再用 2～4 句话说明最关键的一步是怎么来的。只保留考研解题真正需要的内容，不展开完整推导、不重复题干；公式只留最关键的一个，较长公式单独成行。最后可以用一句话点出这道题在考研里属于哪类常考题型。',
+    detailed: '请详细回答这道题，按考研复习的标准展开：## 答案、## 考研视角、## 详细推导、## 得分点与易错点。其中「考研视角」要说明这道题在考研大纲里对应什么知识点、要求到什么层次（了解／理解／掌握）、属于哪类常考题型、卷面上是选择/填空还是解答题以及大致分值。「详细推导」中每一步都要说明本步目标、知识点及其具体定义或公式、适用条件、从题干或前一步哪条信息想到该方法、推导过程与结果。清楚区分题干直接信息、前一步推出的结论和官方解析提供的信息，不能把题干没有给出的信息说成已知。数学公式使用 LaTeX，较长公式单独成行。',
+    full: '请从考研复习的角度给出这道题的完整解答，按以下 Markdown 标题组织：## 答案、## 简短思路、## 详细推导、## 方法与易错点。先明确给出答案，再用简短段落说明解题路线，随后保留详细教学过程。每个关键步骤都应说明本步目标、知识点及其具体定义或公式、适用条件、从哪些题干或前一步信息想到该方法、推导过程与结果；把这些依据自然融入步骤，不机械重复七项标签，不把关键推理合并成一句话。清楚区分题干直接信息、前一步推出的结论和官方解析提供的信息，不能将题干没有给出的信息说成已知。最后总结识别这类题的信息、通用方法和必要的易错提醒，避免重复前文。选择题逐项解释关键判断理由。数学公式使用 LaTeX，较长公式单独成行。',
     hint: '先不要直接跳到结论，给我一个解题提示。',
     pitfall: '请指出这道题最容易犯的错误。'
 };

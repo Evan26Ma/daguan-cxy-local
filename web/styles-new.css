@@ -3049,6 +3049,30 @@ html.native-titlebar-content-inset .app-container {
 #ai-panel .ai-panel-resize::after { content: ''; height: 60px; width: 4px; border-radius: 4px; background: var(--border-control); }
 #ai-panel .ai-panel-resize:hover::after, #ai-panel .ai-panel-resize:focus-visible::after { background: var(--brand-orange); }
 #ai-panel :is(button,select,input,textarea):focus-visible { outline: 2px solid var(--brand-orange); outline-offset: 2px; }
+#ai-panel .ai-quick-hint {
+  flex-basis: 100%; margin: 2px 0 0; color: var(--text-secondary);
+  font-size: calc(12px * var(--ui-font-scale, 1)); line-height: 1.5;
+}
+/* 回答段落可点：点开后针对该段追问，不改动聊天 DOM */
+#ai-panel .ai-message.assistant .ai-message-bubble :is(p,li,td,th,blockquote,pre,h1,h2,h3,h4,h5,h6) {
+  cursor: pointer; border-radius: 4px;
+}
+#ai-panel .ai-message.assistant .ai-message-bubble :is(p,li,td,th,blockquote,pre,h1,h2,h3,h4,h5,h6):hover,
+#ai-panel .ai-message.assistant .ai-message-bubble .ai-block-active {
+  background: var(--brand-light-bg); box-shadow: 0 0 0 4px var(--brand-light-bg);
+}
+#ai-panel .ai-block-menu {
+  position: absolute; z-index: 4; display: flex; flex-direction: column; gap: 4px;
+  min-width: 136px; max-width: min(220px, calc(100% - 16px)); padding: 6px;
+  border: 1px solid var(--border-default); border-radius: 8px;
+  background: var(--bg-surface); box-shadow: 0 8px 24px #0002;
+}
+#ai-panel .ai-block-menu button {
+  width: 100%; text-align: left; padding: 6px 10px; border: 1px solid transparent; border-radius: 5px;
+  background: transparent; color: var(--text-primary); font: inherit;
+  font-size: calc(12px * var(--ui-font-scale, 1)); cursor: pointer;
+}
+#ai-panel .ai-block-menu button:hover { border-color: var(--brand-orange); background: var(--brand-light-bg); }
 @media (max-width: 672px) {
   #ai-panel .ai-panel-resize { display: none; }
   #ai-panel .ai-messages { padding: 16px 20px; }

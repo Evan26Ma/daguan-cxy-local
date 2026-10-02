@@ -276,6 +276,32 @@ test("新版完整解答先给答案并保留详细教学，提示模式仍不�
   assert.match(prompts.hint, /不要直接跳到结论/);
 });
 
+test("新版预设新增简短回答与详细回答，且都要求考研视角", () => {
+  const { sandbox } = createContext();
+  const prompts = sandbox.window.AI_COMPOSE_PROMPTS;
+  assert.match(prompts.brief, /请简短回答/);
+  assert.match(prompts.brief, /不展开完整推导/);
+  assert.match(prompts.brief, /考研/);
+  assert.match(prompts.detailed, /## 答案、## 考研视角、## 详细推导、## 得分点与易错点/);
+  assert.match(prompts.detailed, /大纲[\s\S]*了解／理解／掌握/);
+  assert.match(prompts.detailed, /常考题型/);
+  assert.match(prompts.full, /考研复习的角度/);
+  const source = fs.readFileSync(new URL("../web/app-new.js", import.meta.url), "utf8");
+  assert.match(source, /AI_COMPOSE_PROMPTS\.brief\)">简短回答/);
+  assert.match(source, /AI_COMPOSE_PROMPTS\.detailed\)">详细回答/);
+});
+
+test("新版回答每段可点：段落追问提供四个考研向入口", () => {
+  const source = fs.readFileSync(new URL("../web/ai-reading.js", import.meta.url), "utf8");
+  for (const label of ["这个是怎么来的", "什么意思", "什么知识点", "你有什么想法"]) {
+    assert.ok(source.includes(label), `缺少段落追问入口：${label}`);
+  }
+  assert.match(source, /className = 'ai-block-menu'/);
+  assert.match(source, /closest\('\.ai-message\.assistant \.ai-message-bubble'\)/);
+  assert.match(source, /ai-input/);
+  assert.match(source, /sendAIMessage/);
+});
+
 test("AI 请求体对齐本地中控台协议：profileId + question + prompt，无浏览器凭据", async () => {
   const { sandbox } = createContext();
   const { AIService, AppState, StorageService } = sandbox.window;
