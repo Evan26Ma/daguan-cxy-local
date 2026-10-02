@@ -3170,6 +3170,8 @@ body.focus-mode[data-view="browse"] #app.learning-shell .learning-shell__sidebar
 .filter-option input { accent-color: var(--color-brand); }
 .filter-option span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .filter-option small { color: var(--color-foreground-subtle); font-variant-numeric: tabular-nums; }
+.filter-option-sub { padding-left: 1.6rem; background: var(--color-surface-subtle); }
+.filter-option-sub span { font-weight: 500; color: var(--color-foreground-muted); }
 .filter-foot { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-top: .9rem; }
 .filter-count { color: var(--color-foreground-muted); font-size: .84rem; }
 .filter-count strong { color: var(--color-brand); font-size: 1.1rem; }

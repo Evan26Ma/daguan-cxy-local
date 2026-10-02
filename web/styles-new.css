@@ -983,6 +983,35 @@ select:focus-visible {
     user-select: none;
 }
 
+.filter-source-group {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.filter-source-group > .filter-checkbox {
+    font-weight: 600;
+}
+
+.filter-source-books {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-left: calc(var(--spacing-l) + 9px);
+    padding-left: var(--spacing-m);
+    border-left: 1px solid var(--border-default);
+}
+
+.filter-source-books .filter-checkbox {
+    min-height: 30px;
+    padding: 2px var(--spacing-s);
+}
+
+.filter-source-books .filter-checkbox label {
+    font-size: calc(13px * var(--ui-font-scale, 1));
+    color: var(--text-secondary);
+}
+
 .filter-footer {
     padding: var(--spacing-xl);
     border-top: 1px solid var(--border-default);

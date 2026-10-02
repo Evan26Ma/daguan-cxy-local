@@ -5,7 +5,7 @@
 
 // ========== 离线缓存注册（与 app2.js 一致） ==========
 if ("serviceWorker" in navigator && location.protocol !== "file:" && location.protocol !== "https:") {
-    navigator.serviceWorker.register("./service-worker.js?v=142").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=144").catch(() => {});
 }
 
 // ========== 全局状态 ==========
@@ -96,6 +96,36 @@ function sourceGroup(source) {
 function sourceYear(source) {
     const match = String(source || '').match(/(?:19|20)\d{2}/);
     return match ? match[0] : '';
+}
+
+// 题源两级分类（体系 / 书目）由 source-taxonomy.js 提供；脚本没加载时退回上面的粗分桶。
+function sourceTaxonomy() {
+    return (typeof window !== 'undefined' && window.DaguanSourceTaxonomy) || null;
+}
+
+function sourceKeySet(source) {
+    const taxonomy = sourceTaxonomy();
+    if (taxonomy) return taxonomy.keySet(source);
+    return new Set([sourceGroup(source)]);
+}
+
+function sourceMatches(selected, source) {
+    if (!Array.isArray(selected) || selected.length === 0) return true;
+    const keys = sourceKeySet(source);
+    return selected.some(value => keys.has(value));
+}
+
+function sourceLabel(source, limit = 3) {
+    const taxonomy = sourceTaxonomy();
+    if (taxonomy) return taxonomy.describe(source, limit);
+    return sourceGroup(source);
+}
+
+function sourceMetaText(source) {
+    const raw = String(source || '').trim();
+    if (!raw) return '未标注来源';
+    const label = sourceLabel(raw);
+    return label && label !== raw ? `${label} · ${raw}` : raw;
 }
 
 function isRealExamQuestion(question) {
@@ -1961,7 +1991,7 @@ class UIRenderer {
         if (AppState.chapterScope === 'core' && !question?.is_core) return false;
         if (AppState.chapterScope === 'real' && !isRealExamQuestion(question)) return false;
         const filters = AppState.filters || {};
-        if (filters.sources?.length && !filters.sources.includes(sourceGroup(question?.source))) return false;
+        if (filters.sources?.length && !sourceMatches(filters.sources, question?.source)) return false;
         if (filters.years?.length && !filters.years.includes(sourceYear(question?.source))) return false;
         if (filters.types?.length && !filters.types.includes(question?.type)) return false;
         if (filters.lecturers?.length) {
@@ -2077,6 +2107,15 @@ class UIRenderer {
         return (AppState.searchIndex || []).filter(row => ids.has(String(row.id)));
     }
 
+    /**
+     * 搜索与筛选用全库口径：与目录摘要「全库去重 N 题」、以及旧版高级筛选保持一致。
+     * 目录树仍按科目浏览，但一旦启用搜索或筛选，范围就是整库，
+     * 这样筛选面板上的题量计数与实际结果数必然相等。
+     */
+    static libraryFilterRows() {
+        return AppState.searchIndex || [];
+    }
+
     static renderLibraryResults() {
         const category = AppState.currentCategory;
         const content = document.getElementById('library-content');
@@ -2087,11 +2126,11 @@ class UIRenderer {
         if (!filtering) { this.renderDirectoryNode(this.findNodeById(category, AppState.directoryNodeId) || category); return; }
 
         const mapping = AppState.videoMappings?.questions || {};
-        const matches = this.libraryRows().filter(row => {
+        const matches = this.libraryFilterRows().filter(row => {
             const scopeIds = this.scopeQuestionIdsCache.get(AppState.chapterScope);
             if (AppState.chapterScope !== 'all' && !scopeIds?.has(String(row.id))) return false;
             if (query && !App.normalizeSearchText(`${row.id} ${row.stem || ''} ${row.source || ''} ${row.path || ''}`).includes(query)) return false;
-            if (filters.sources.length && !filters.sources.includes(sourceGroup(row.source))) return false;
+            if (filters.sources.length && !sourceMatches(filters.sources, row.source)) return false;
             if (filters.years.length && !filters.years.includes(sourceYear(row.source))) return false;
             if (filters.types.length && !filters.types.includes(row.type)) return false;
             if (filters.lecturers.length) {
@@ -2112,7 +2151,7 @@ class UIRenderer {
             <div class="search-result-list">
                 ${matches.slice(0, AppState.libraryResultLimit).map(row => `
                     <div class="search-result" role="button" tabindex="0" data-question-id="${row.id}">
-                        <span class="search-result-meta">${escapeHtml(row.source || '未标注来源')} · ${questionTypeLabel(row.type)} · 题号 ${row.id}</span>
+                        <span class="search-result-meta">${escapeHtml(sourceMetaText(row.source))} · ${questionTypeLabel(row.type)} · 题号 ${row.id}</span>
                         ${renderSearchResultStem(row.stem || '')}
                     </div>
                 `).join('')}
@@ -2128,25 +2167,61 @@ class UIRenderer {
         });
     }
 
+    /**
+     * 题目来源筛选：优先渲染「体系 → 书目」两级树（source-taxonomy.js），
+     * 分类脚本缺失时退回旧的平铺粗分桶，保证老浏览器/离线壳仍可用。
+     */
+    static sourceFilterMarkup(rows, checkbox) {
+        const selected = AppState.filters.sources || [];
+        const taxonomy = sourceTaxonomy();
+        if (!taxonomy) {
+            const counts = new Map();
+            for (const row of rows) {
+                const group = sourceGroup(row.source);
+                counts.set(group, (counts.get(group) || 0) + 1);
+            }
+            return [...counts].sort((a, b) => b[1] - a[1])
+                .map(([group, count]) => checkbox(group, `${group}（${count}）`, selected.includes(group)))
+                .join('');
+        }
+        const systemCounts = new Map();
+        const bookCounts = new Map();
+        for (const row of rows) {
+            const result = taxonomy.classify(row.source);
+            for (const id of new Set(result.systems)) systemCounts.set(id, (systemCounts.get(id) || 0) + 1);
+            for (const id of new Set(result.books)) bookCounts.set(id, (bookCounts.get(id) || 0) + 1);
+        }
+        const options = taxonomy.options()
+            .map(option => ({ ...option, count: systemCounts.get(option.system.id) || 0 }))
+            .filter(option => option.count > 0)
+            .sort((a, b) => b.count - a.count);
+        return options.map(option => {
+            const head = checkbox(option.key, `${option.system.emoji || ''} ${option.system.label}（${option.count}）`.trim(), selected.includes(option.key));
+            const books = (option.books || [])
+                .map(entry => ({ ...entry, count: bookCounts.get(entry.book.id) || 0 }))
+                .filter(entry => entry.count > 0)
+                .sort((a, b) => b.count - a.count);
+            if (!books.length) return `<div class="filter-source-group">${head}</div>`;
+            return `<div class="filter-source-group">${head}<div class="filter-source-books">${books
+                .map(entry => checkbox(entry.key, `${entry.book.label}（${entry.count}）`, selected.includes(entry.key)))
+                .join('')}</div></div>`;
+        }).join('');
+    }
+
     static renderFilterOptions() {
         const filterContent = document.getElementById('filter-content');
         if (!filterContent) return;
 
-        const rows = this.libraryRows();
-        const counts = new Map();
-        for (const row of rows) {
-            const group = sourceGroup(row.source);
-            counts.set(group, (counts.get(group) || 0) + 1);
-        }
-        const groups = [...counts].sort((a, b) => b[1] - a[1]);
+        const rows = this.libraryFilterRows();
         const years = [...new Set(rows.map(row => sourceYear(row.source)).filter(Boolean))].sort((a, b) => Number(b) - Number(a));
         const types = [...new Set(rows.map(row => row.type).filter(Boolean))];
         const checkbox = (value, label, selected) => `<label class="filter-checkbox"><input type="checkbox" value="${escapeHtml(value)}" ${selected ? 'checked' : ''}><span>${escapeHtml(label)}</span></label>`;
+        const sourceOptions = this.sourceFilterMarkup(rows, checkbox);
 
         filterContent.innerHTML = `
             <div class="filter-section">
                 <h3>题目来源</h3>
-                <div class="filter-options" id="filter-sources">${groups.map(([group, count]) => checkbox(group, `${group}（${count}）`, AppState.filters.sources.includes(group))).join('')}</div>
+                <div class="filter-options" id="filter-sources">${sourceOptions}</div>
             </div>
             <div class="filter-section">
                 <h3>年份</h3>

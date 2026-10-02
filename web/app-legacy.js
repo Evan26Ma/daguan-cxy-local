@@ -2,7 +2,7 @@
   "use strict";
 
   if ("serviceWorker" in navigator && location.protocol !== "file:" && location.protocol !== "https:") {
-    navigator.serviceWorker.register("./service-worker.js?v=142").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=144").catch(() => {});
   }
 
   const DATA = "./data";
@@ -2029,6 +2029,69 @@
     return /历年真题/.test(String(q?.category_path || ""))
       || /(?:19|20)\d{2}\s*(?:年)?\s*(?:数学|数)[一二三]/.test(String(q?.source || ""));
   }
+  function sourceTaxonomy() {
+    return (typeof window !== "undefined" && window.DaguanSourceTaxonomy) || null;
+  }
+  function sourceIndexOf(id) {
+    if (!state.questionSources) return undefined;
+    return state.questionSources.get(String(id));
+  }
+  async function loadQuestionSourceIndex() {
+    if (state.questionSources !== undefined) return state.questionSources;
+    state.questionSources = null;
+    try {
+      const list = state.searchIndex || (await fetchJSON(`${DATA}/search_index.json`));
+      const map = new Map();
+      for (const item of Array.isArray(list) ? list : []) {
+        if (item && item.id !== undefined) map.set(String(item.id), String(item.source || ""));
+      }
+      state.questionSources = map.size ? map : null;
+    } catch {
+      state.questionSources = null;
+    }
+    return state.questionSources;
+  }
+  // 细目（sys:/book:）与旧版粗桶（真题/880题/…）都要能命中：先按原文细目判，再回退旧值。
+  function advSourceMatch(selected, id, A) {
+    const coarse = A ? A.src : null;
+    const taxonomy = sourceTaxonomy();
+    const src = sourceIndexOf(id);
+    if (taxonomy && src !== undefined) {
+      if (taxonomy.matches(selected, src)) return true;
+      return coarse ? selected.includes(coarse) : false;
+    }
+    return selected.includes(coarse);
+  }
+  function buildSourceFacet(annotations) {
+    const taxonomy = sourceTaxonomy();
+    if (!taxonomy || !state.questionSources) return null;
+    const systemCounts = new Map();
+    const bookCounts = new Map();
+    for (const id of Object.keys(annotations || {})) {
+      const src = sourceIndexOf(id);
+      if (src === undefined) continue;
+      let result;
+      try {
+        result = taxonomy.classify(src);
+      } catch {
+        continue;
+      }
+      for (const s of new Set(result.systems || [])) systemCounts.set(s, (systemCounts.get(s) || 0) + 1);
+      for (const b of new Set(result.books || [])) bookCounts.set(b, (bookCounts.get(b) || 0) + 1);
+    }
+    const options = [];
+    for (const group of taxonomy.options()) {
+      const count = systemCounts.get(group.system.id) || 0;
+      if (!count) continue;
+      options.push({ name: group.key, label: `${group.system.emoji ? group.system.emoji + " " : ""}${group.system.label}`, count, depth: 0 });
+      const subs = (group.books || [])
+        .map((entry) => ({ name: entry.key, label: entry.book.label, count: bookCounts.get(entry.book.id) || 0, depth: 1 }))
+        .filter((option) => option.count > 0)
+        .sort((a, b) => b.count - a.count);
+      options.push(...subs);
+    }
+    return options.length ? { dim: "题源", options } : null;
+  }
   function advFilterActive() {
     const f = state.advFilter || {};
     return Object.values(f).some((arr) => (arr || []).length);
@@ -2043,7 +2106,7 @@
     const videoTeachers = f["视频讲解"] || [];
     if (videoTeachers.length && !videoTeachers.some((teacher) => videoTeacherMatches(id, teacher, A))) return false;
     if ((f["快捷入口"] || []).length && !f["快捷入口"].includes(A.src)) return false;
-    if ((f["题源"] || []).length && !f["题源"].includes(A.src)) return false;
+    if ((f["题源"] || []).length && !advSourceMatch(f["题源"], id, A)) return false;
     if ((f["章节"] || []).length && !f["章节"].includes(A.chapter)) return false;
     if ((f["知识点"] || []).length && !(A.kps || []).some((k) => f["知识点"].includes(k))) return false;
     if ((f["题型"] || []).length) {
@@ -2090,9 +2153,9 @@
     box.innerHTML = "";
     for (const o of facet.options) {
       const lab = document.createElement("label");
-      lab.className = "filter-option";
+      lab.className = o.depth ? "filter-option filter-option-sub" : "filter-option";
       const checked = ((state.advFilter || {})[dim] || []).includes(o.name) ? " checked" : "";
-      lab.innerHTML = `<input type="checkbox" data-dim="${dim}" data-name="${o.name}"${checked} /><span>${o.name}</span><small>${o.count}</small>`;
+      lab.innerHTML = `<input type="checkbox" data-dim="${dim}" data-name="${o.name}"${checked} /><span>${o.label || o.name}</span><small>${o.count}</small>`;
       box.appendChild(lab);
     }
   }
@@ -2175,10 +2238,17 @@
     }
     document.querySelectorAll("#btn-adv-filter, #btn-adv-filter-top").forEach((btn) => btn.classList.toggle("active", advFilterActive()));
     window.__fdbg = { hasAnn: !!state.bankTags, keys: state.bankTags ? Object.keys(state.bankTags.annotations || {}).length : -1, facets: state.bankTags ? (state.bankTags.facets || []).length : -1 };
+    await loadQuestionSourceIndex();
     const tabs = $("#filter-tabs");
     if (tabs && !tabs.childElementCount && state.bankTags) {
       const facets = (state.bankTags.facets || []).map((x) => x);
       const annotations = state.bankTags.annotations || {};
+      const sourceFacet = buildSourceFacet(annotations);
+      if (sourceFacet) {
+        const sourceIndex = facets.findIndex((x) => x.dim === "题源");
+        if (sourceIndex >= 0) facets[sourceIndex] = sourceFacet;
+        else facets.push(sourceFacet);
+      }
       const countVideoTeacher = (teacher) => [...(state.videoQuestionIdsByTeacher?.[teacher] || [])].filter((id) => annotations[id]).length;
       const paradiyuIds = new Set([...(state.videoQuestionIdsByTeacher?.["帕拉迪宇"] || [])]);
       for (const id of state.paradiyuVideoQuestionIds || []) {
