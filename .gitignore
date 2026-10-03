@@ -32,3 +32,10 @@ android/android/app/build/
 # 标注管线中间产物与本地截图（不入库）
 tools/tagger-out/
 docs/refshots/
+
+# Local backups, screenshots and disposable UI previews
+_shot/
+work/
+web/ui-preview/
+web/index-*-backup.html
+web/data/*.json.bak*

@@ -13,6 +13,8 @@ export default {
     ignore: [
       /^\/data(?:\/|$)/i,
       /^\/design(?:\/|$)/i,
+      /^\/(?:_shot|work)(?:\/|$)/i,
+      /(?:^|[/\\])[^/\\]+\.bak(?:[^/\\]*)$/i,
       /^\/(?:\.dockerignore|\.gitattributes|\.gitignore|\.zcodeignore)$/i,
       /^\/(?!README\.md$|CHANGELOG\.md$)[^/]+\.md$/i,
       /(?:^|[/\\])\.git(?:[/\\]|$)/i,

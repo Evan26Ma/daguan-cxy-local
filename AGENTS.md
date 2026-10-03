@@ -1,5 +1,7 @@
 # 项目接手指南
 
+开工先读 `F:\AI\AGENTS.md`。项目、缓存、构建和隔离数据放 F 盘；测试临时目录使用 `F:\AI\tmp`，同时设置 `TEMP` 与 `TMP`。
+
 ## 先区分三层
 
 - **运行入口**：Electron 桌面版由 `desktop/electron-main.cjs` 管理窗口、托盘和更新；本地浏览器版由 Node 服务启动并打开系统默认浏览器。两者连接同一用户数据目录。
@@ -15,7 +17,7 @@
 - 题库清单与分片：`web/data/manifest.json`、`web/data/shards/`；修改后运行 `npm run verify`。
 - 常用命令以 `package.json` 为准：`npm ci`、`npm test`、`npm run verify`、`npm start`、`npm run desktop:start`。Windows 打包入口为 `npm run package:desktop:windows`（Electron）和 `npm run package:browser:windows`（本地浏览器版）。
 - 锁、服务启动或跨窗口状态改动后，至少运行 `node --test test/service-instance.test.mjs test/electron-security.test.mjs`；涉及 UI 或下载入口时，再运行对应 `test/*.test.mjs`。
-- 手动启动服务或桌面版做验证时，先将 `DAGUAN_DATA_DIR` 指向新的 `%TEMP%` 子目录；不要把测试记录写入日常用户数据。
+- 手动启动服务或桌面版做验证时，将 `DAGUAN_DATA_DIR` 指向 `F:\AI\tmp` 下本次新建的隔离目录，桌面测试同时隔离浏览器 profile；不要把测试记录写入日常用户数据。
 
 ## 数据与实例锁边界
 
@@ -28,6 +30,9 @@
 开始工作前核对分支、远端和工作树；提交不代表已推送或发布。诊断已安装程序时，核对其实际版本、安装目录和所含代码；工作树修改只有经构建、安装或更新后才会进入应用。公开发行前核对 GitHub 默认分支、tag、Release 资产及校验值，并确认目标远端；升级实测和发布证据见阶段报告，当前公开状态以 GitHub Release 为准。
 
 ## 按需阅读
+
+- 改代码、合并分支或发布版本：先读 `PROJECT_RULES.md`，按其中的数据合并、提交范围与发布检查执行。
+- 新版前端模块或内容渲染：读 `docs/frontend-modules.md`；学习记录口径：读 `docs/study-journal.md`。
 
 - Windows 安装、启动或卸载问题：读 `docs/Windows新手安装与配置.md`。
 - 旧浏览器记录迁移或阶段验收细节：读 `docs/desktop-stage3-report.md`。

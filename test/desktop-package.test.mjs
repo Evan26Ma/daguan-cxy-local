@@ -55,6 +55,9 @@ test("desktop package excludes local records while retaining the bundled questio
   assert.equal(ignored("/AGENTS.md"), true);
   assert.equal(ignored("/draft.md"), true);
   assert.equal(ignored("/.zcodeignore"), true);
+  assert.equal(ignored("/_shot/preview.png"), true);
+  assert.equal(ignored("/work/visualizations/preview.html"), true);
+  assert.equal(ignored("/web/data/lecture-video-mappings.json.bak-title-20261001"), true);
   assert.equal(ignored("/README.md"), false);
   assert.equal(ignored("/web/data/manifest.json"), false);
   assert.equal(ignored("/web/data/shards/questions.json"), false);

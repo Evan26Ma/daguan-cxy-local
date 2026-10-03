@@ -184,6 +184,7 @@ test('精讲解析在真实页面里按需加载并渲染', { skip, timeout: 900
     { id: TEXT_ID, expectOriginTag: false },
     { id: IMAGE_ID, expectOriginTag: true },
   ];
+  await page.evaluate(() => document.documentElement.style.setProperty('--brand-orange', '#125abc'));
   for (const { id, expectOriginTag } of probes) {
     const info = await page.evaluate(async questionId => {
       const question = await DataService.getQuestion(questionId);
@@ -199,6 +200,7 @@ test('精讲解析在真实页面里按需加载并渲染', { skip, timeout: 900
         hidden: slot.hidden,
         text: slot.innerText,
         badge: slot.querySelector('.v2-badge')?.textContent ?? '',
+        badgeColor: getComputedStyle(slot.querySelector('.v2-badge')).backgroundColor,
         steps: slot.querySelectorAll('.v2-step').length,
         whys: slot.querySelectorAll('.v2-why').length,
         katex: slot.querySelectorAll('.katex').length,
@@ -210,6 +212,7 @@ test('精讲解析在真实页面里按需加载并渲染', { skip, timeout: 900
     assert.ok(!info.missing, `#${id} 不在题库中`);
     assert.equal(info.hidden, false, `#${id} 的精讲解析没有显示`);
     assert.equal(info.badge, '精讲解析');
+    assert.equal(info.badgeColor, 'rgb(18, 90, 188)', '精讲解析样式应加载并跟随主题色');
     assert.ok(info.steps >= 2, `#${id} 只渲染出 ${info.steps} 步`);
     assert.equal(info.whys, info.steps, `#${id} 有步骤没有「为什么」`);
     assert.ok(info.katex > 0, `#${id} 公式没有渲染成 KaTeX`);
