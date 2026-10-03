@@ -104,6 +104,38 @@ export function normalizeLocalState(value) {
   };
 }
 
+// Migration imports learning records only; sync queues and seeding metadata belong
+// to this installation. Empty or missing backup fields must never clear them.
+export function mergeMigratedState(currentValue, incomingValue) {
+  const current = normalizeLocalState(currentValue);
+  const incoming = normalizeLocalState(incomingValue);
+  const mergeRecord = (existing, imported) => {
+    if (!imported) return existing;
+    if (!existing) return { ...imported };
+    const importedAt = parsedTimestamp(imported.updated_at || imported.updatedAt);
+    const existingAt = parsedTimestamp(existing.updated_at || existing.updatedAt);
+    return importedAt != null && existingAt != null && importedAt > existingAt
+      ? { ...existing, ...imported } : existing;
+  };
+  const mergeMap = (existing, imported) => {
+    const result = { ...existing };
+    for (const [id, record] of Object.entries(imported)) {
+      if (record && typeof record === 'object' && !Array.isArray(record)) {
+        result[id] = mergeRecord(result[id], record);
+      }
+    }
+    return result;
+  };
+  return {
+    ...current,
+    progress: mergeMap(current.progress, incoming.progress),
+    annotations: mergeMap(current.annotations, incoming.annotations),
+    favorites: [...new Set([...current.favorites, ...incoming.favorites])],
+    picked: [...new Set([...current.picked, ...incoming.picked])],
+    last_study: mergeRecord(current.last_study, incoming.last_study),
+  };
+}
+
 export function normalizeRemoteStates(entries) {
   const source = Array.isArray(entries)
     ? entries

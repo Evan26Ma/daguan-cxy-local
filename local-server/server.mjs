@@ -7,7 +7,7 @@ import { createHmac, randomUUID, timingSafeEqual } from "node:crypto";
 import { createStore } from "./store.mjs";
 import { CxyonlyClient } from "./cxyonly-client.mjs";
 import { refreshCatalog } from "./catalog.mjs";
-import { applyLocalChanges, buildPullMerge, buildReconcilePlan, localToAndroidDocument, normalizeLocalState, nowIso, remoteStatesDocument } from "./sync-format.mjs";
+import { applyLocalChanges, buildPullMerge, buildReconcilePlan, localToAndroidDocument, mergeMigratedState, normalizeLocalState, nowIso, remoteStatesDocument } from "./sync-format.mjs";
 import { createAiService } from "./ai-service.mjs";
 import { acquireServiceInstance, serviceOwnerUrl, SERVICE_API_PROTOCOL, waitForServiceOwner } from "./instance-lock.mjs";
 import { createQuestionBankUpdater } from "./question-bank-updater.mjs";
@@ -525,10 +525,10 @@ async function route(req, res) {
     return json(res, 200, { ok: true, revision: saved.revision, state: saved });
   }
   if (pathname === "/api/state/migrate" && method === "POST") {
-    const incoming = localStateShape(await body(req));
+    const incoming = await body(req);
     const saved = await withLock(async () => {
       const current = await store.readState();
-      const merged = { ...current, ...incoming, revision: current.revision, progress: { ...(current.progress || {}), ...(incoming.progress || {}) }, favorites: [...new Set([...(current.favorites || []), ...(incoming.favorites || [])])], picked: [...new Set([...(current.picked || []), ...(incoming.picked || [])])], updated_at: nowIso() };
+      const merged = mergeMigratedState(current, incoming);
       return writeState(merged, { expectedRevision: current.revision, studyImport: true });
     });
     return json(res, 200, { ok: true, state: saved });
