@@ -396,7 +396,13 @@ test("concurrent launchers serialize recovery of one stale owner without deletin
   const deadline = Date.now() + 10_000;
   let currentOwner;
   while (Date.now() < deadline) {
-    currentOwner = JSON.parse(await fs.readFile(lockPath, "utf8"));
+    try {
+      currentOwner = JSON.parse(await fs.readFile(lockPath, "utf8"));
+    } catch (error) {
+      // Recovery removes the stale lease before exclusively creating its successor.
+      if (error.code !== 'ENOENT' && !(error instanceof SyntaxError)) throw error;
+      currentOwner = null;
+    }
     if (launcherPids.has(currentOwner.pid)) break;
     await new Promise((resolve) => setTimeout(resolve, 25));
   }
