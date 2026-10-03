@@ -1,4 +1,5 @@
 import test from "node:test";
+import vm from "node:vm";
 import forgeConfig from "../forge.config.js";
 import assert from "node:assert/strict";
 import fs from "node:fs";
@@ -7,6 +8,24 @@ import { fileURLToPath } from "node:url";
 import { APP_CONTENT_SECURITY_POLICY, downloadSaveDialogOptions, isTrustedAppUrl, navigationAction, proxyHeaders, resolveWebAsset, shouldStopService, windowPreferences } from "../desktop/policy.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+
+test('desktop random port allocation retries blocked low HTTP ports', async () => {
+  const source = fs.readFileSync(path.join(ROOT, 'desktop/electron-main.cjs'), 'utf8');
+  const helper = source.slice(source.indexOf('async function freeLoopbackPort()'), source.indexOf('async function stopStartupChild'));
+  const ports = [4190, 10080, 12001];
+  const selected = [];
+  const context = vm.createContext({ netNode: { createServer() {
+    const port = ports.shift();
+    selected.push(port);
+    return {
+      once() {}, listen(_port, _host, ready) { ready(); },
+      address() { return { port }; }, close(done) { done(); },
+    };
+  } } });
+  vm.runInContext(helper, context);
+  assert.equal(await vm.runInContext('freeLoopbackPort()', context), 12001);
+  assert.deepEqual(selected, [4190, 10080, 12001]);
+});
 
 test("desktop navigation allows only the stable app origin and sends ordinary web links externally", () => {
   assert.equal(isTrustedAppUrl("daguan://app/index.html"), true);
