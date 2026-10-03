@@ -19,7 +19,8 @@ async function unusedPort() {
   await new Promise((resolve, reject) => listener.once("error", reject).listen(0, "127.0.0.1", resolve));
   const { port } = listener.address();
   await new Promise((resolve, reject) => listener.close((error) => error ? reject(error) : resolve()));
-  return port;
+  // Node/Chromium block several low HTTP ports (including 4190).
+  return port >= 12000 ? port : unusedPort();
 }
 
 async function tempDataDir() {
@@ -53,16 +54,17 @@ function startServer(dataDir, port, launcher) {
 
 async function waitReady(child, port, timeoutMs = 8000) {
   const deadline = Date.now() + timeoutMs;
+  let lastError;
   while (Date.now() < deadline) {
     if (child.exitCode != null) throw new Error(`服务进程提前退出（${child.exitCode}）：${child.outputText()}`);
     try {
       const response = await fetch(`http://127.0.0.1:${port}/api/health`, { signal: AbortSignal.timeout(300) });
       const health = await response.json();
       if (response.ok && health.service === "daguan-local-console") return health;
-    } catch {}
+    } catch (error) { lastError = error; }
     await new Promise((resolve) => setTimeout(resolve, 50));
   }
-  throw new Error(`服务未在期限内启动：${child.outputText()}`);
+  throw new Error(`服务未在期限内启动：${child.outputText()}\n健康检查：${lastError?.message || '未收到有效服务身份'} ${lastError?.cause?.message || ''}`, { cause: lastError });
 }
 
 async function waitClosed(child, timeoutMs = 5000) {

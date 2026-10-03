@@ -39,11 +39,13 @@ function dataDirectory() {
 }
 function serviceEndpoint() { return "http://" + owner.host + ":" + owner.port; }
 async function freeLoopbackPort() {
-  return new Promise((resolve, reject) => {
+  const port = await new Promise((resolve, reject) => {
     const probe = netNode.createServer();
     probe.once("error", reject);
     probe.listen(0, "127.0.0.1", () => { const port = probe.address().port; probe.close((error) => error ? reject(error) : resolve(port)); });
   });
+  // Keep OS-selected ports above Node/Chromium's blocked HTTP service ports.
+  return port >= 12000 ? port : freeLoopbackPort();
 }
 async function stopStartupChild(child) {
   if (child.exitCode !== null || child.signalCode !== null) return;
