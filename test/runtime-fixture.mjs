@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import net from 'node:net';
+import { unusedHttpPort } from './http-fixture.mjs';
 import { spawn } from 'node:child_process';
 import { once } from 'node:events';
 import { fileURLToPath } from 'node:url';
@@ -9,10 +9,7 @@ import { fileURLToPath } from 'node:url';
 export const root = fileURLToPath(new URL('../', import.meta.url));
 export async function serviceFixture(t, { corrupt = false } = {}) {
   const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'daguan-safety-'));
-  const listener = net.createServer();
-  await new Promise(resolve => listener.listen(0, '127.0.0.1', resolve));
-  const port = listener.address().port;
-  await new Promise(resolve => listener.close(resolve));
+  const port = await unusedHttpPort();
   if (corrupt) await fs.writeFile(path.join(dir, 'state.json'), '{broken');
   const child = spawn(process.execPath, ['local-server/server.mjs'], {
     cwd: root, windowsHide: true,

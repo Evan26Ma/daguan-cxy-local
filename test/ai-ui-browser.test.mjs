@@ -1,3 +1,4 @@
+import { listenHttp } from './http-fixture.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import os from 'node:os';
@@ -29,7 +30,7 @@ test('AI 配置真实交互：新增、模型、测试、Key 保留、流式设�
   res.setHeader('Content-Type','application/json');
   if(req.url.endsWith('/models')){res.end(JSON.stringify({data:[{id:'math-model'},{id:'vision-model'}]}));return;}
   let raw='';for await(const chunk of req) raw+=chunk;chatCalls.push(JSON.parse(raw));await new Promise(r=>setTimeout(r,350));res.end(JSON.stringify({choices:[{message:{content:'<think>秘密</think>测试通过'}}]}));
- });await new Promise(r=>upstream.listen(0,'127.0.0.1',r));
+ });await listenHttp(upstream);
  t.after(()=>new Promise(r=>{upstream.closeAllConnections();upstream.close(r);}));
  const browser=await playwright.chromium.launch({headless:true, ...(process.env.DAGUAN_CHROMIUM_EXECUTABLE ? {executablePath:process.env.DAGUAN_CHROMIUM_EXECUTABLE} : {})});t.after(()=>browser.close());
  const page=await browser.newPage({viewport:{width:1280,height:900}});const errors=[];page.on('pageerror',e=>errors.push(e.message));

@@ -3,6 +3,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
+import { listenHttp } from './http-fixture.mjs';
 import { createStore } from "../local-server/store.mjs";
 import { createAiService, validateBaseUrl } from "../local-server/ai-service.mjs";
 
@@ -47,10 +48,10 @@ async function aiFixture(t) {
     }
     res.end('data: [DONE]');
   });
-  await new Promise(resolve=>upstream.listen(0,'127.0.0.1',resolve));
+  await listenHttp(upstream);
   const downstream=http.createServer((req,res)=>service.streamChat(req,res,{profileId:profile.id,question:{id:'q1',stem:'求解'},prompt:'讲解'}).catch(error=>{res.writeHead(400);res.end(error.message)}));
   const profile=await service.upsert({name:'测试服务',baseUrl:`http://127.0.0.1:${upstream.address().port}/v1`,key:'test-only-key'});
-  await new Promise(resolve=>downstream.listen(0,'127.0.0.1',resolve));
+  await listenHttp(downstream);
   t.after(async()=>{upstream.closeAllConnections();downstream.closeAllConnections();await Promise.all([new Promise(r=>upstream.close(r)),new Promise(r=>downstream.close(r))]);await fs.rm(root,{recursive:true,force:true});});
   return {store, service, profile, calls, setMode:value=>{mode=value;}, chat:()=>fetch(`http://127.0.0.1:${downstream.address().port}/chat`)};
 }

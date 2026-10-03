@@ -10,11 +10,12 @@ import test from "node:test";
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
 async function freePort() {
-  return new Promise((resolve, reject) => {
+  const port = await new Promise((resolve, reject) => {
     const probe = net.createServer();
     probe.once("error", reject);
     probe.listen(0, "127.0.0.1", () => { const port = probe.address().port; probe.close((error) => error ? reject(error) : resolve(port)); });
   });
+  return port >= 12000 ? port : freePort();
 }
 
 test("browser package stop endpoint rejects cross-origin requests and shuts down gracefully", async (t) => {

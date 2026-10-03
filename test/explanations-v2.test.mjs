@@ -124,7 +124,7 @@ async function freePort() {
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   const { port } = server.address();
   await new Promise(resolve => server.close(resolve));
-  return port;
+  return port >= 12000 ? port : freePort();
 }
 
 async function fixture(t) {
