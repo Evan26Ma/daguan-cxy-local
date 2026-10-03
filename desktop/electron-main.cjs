@@ -107,6 +107,9 @@ async function connectOrStartService() {
     const existing = await lock.readServiceOwner(dataDir);
     if (existing) {
       const status = lock.serviceOwnerProcessStatus(existing.pid);
+      if (status === "absent" && !(await lock.isServiceOwnerProcessGone(dataDir, existing))) {
+        throw new Error("服务实例锁在进程检查期间已变化；为保护学习记录，请重试启动。");
+      }
       if (status !== "absent") {
         const health = await lock.waitForServiceIdentity(existing);
         if (!health) throw new Error(`服务实例 PID ${existing.pid}、端口 ${existing.port} 健康检查失败；进程状态为${status === "alive" ? "存活" : "不明"}。桌面版无法确认安全交接，请检查该进程；服务运行时切勿删除实例锁。`);

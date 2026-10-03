@@ -8,7 +8,8 @@ param(
 $ErrorActionPreference = "Stop"
 Set-StrictMode -Version 2.0
 $InstallRoot = if ($InstallRootOverride) { [IO.Path]::GetFullPath($InstallRootOverride) } else { Join-Path $env:LOCALAPPDATA "DaguanMathBrowser" }
-$StartMenu = if ($StartMenuRootOverride) { [IO.Path]::GetFullPath($StartMenuRootOverride) } else { Join-Path ([Environment]::GetFolderPath([Environment+SpecialFolder]::Programs)) "大观园数学" }
+$ProgramsRoot = [Environment]::GetFolderPath([Environment+SpecialFolder]::Programs)
+$StartMenu = if ($StartMenuRootOverride) { [IO.Path]::GetFullPath($StartMenuRootOverride) } else { Join-Path $ProgramsRoot "大观园浏览器本地版" }
 $Desktop = if ($DesktopRootOverride) { [IO.Path]::GetFullPath($DesktopRootOverride) } else { [Environment]::GetFolderPath([Environment+SpecialFolder]::DesktopDirectory) }
 $dataDir = if ($DataDirectoryOverride) { [IO.Path]::GetFullPath($DataDirectoryOverride) } else { Join-Path $env:LOCALAPPDATA "DaguanMath\data" }
 $resolvedInstall = [IO.Path]::GetFullPath($InstallRoot).TrimEnd([IO.Path]::DirectorySeparatorChar)
@@ -25,10 +26,10 @@ if ((Test-Path -LiteralPath $lockPath -PathType Leaf) -and (Test-Path -LiteralPa
   } catch { Write-Warning "The browser package service could not be stopped automatically. Close that process before deleting its files. Shared data is preserved."; throw }
 }
 
-foreach ($shortcutName in @("大观园数学.lnk", "停止大观园本地服务.lnk", "卸载大观园浏览器版.lnk")) {
+foreach ($shortcutName in @("大观园浏览器本地版.lnk", "停止浏览器本地服务.lnk", "卸载浏览器本地版.lnk")) {
   Remove-Item -LiteralPath (Join-Path $StartMenu $shortcutName) -Force -ErrorAction SilentlyContinue
 }
-if (Test-Path -LiteralPath $Desktop) { Remove-Item -LiteralPath (Join-Path $Desktop "大观园数学.lnk") -Force -ErrorAction SilentlyContinue }
+if (Test-Path -LiteralPath $Desktop) { Remove-Item -LiteralPath (Join-Path $Desktop "大观园浏览器本地版.lnk") -Force -ErrorAction SilentlyContinue }
 if ((Test-Path -LiteralPath $StartMenu) -and -not (Get-ChildItem -LiteralPath $StartMenu -Force | Select-Object -First 1)) { Remove-Item -LiteralPath $StartMenu -Force }
 
 foreach ($fileName in @("DaguanMath-windows-x64.exe", "bundle.sha256", "LaunchDaguanMath.vbs", "uninstall-browser-package.ps1", "stop-daguan-service.ps1")) {

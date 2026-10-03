@@ -71,6 +71,18 @@ export async function readServiceOwner(dataDir) {
   return validOwner(owner) ? owner : null;
 }
 
+export async function isServiceOwnerProcessGone(dataDir, expectedOwner) {
+  if (!validOwner(expectedOwner)) return false;
+  const lockPath = path.join(path.resolve(dataDir), LOCK_NAME);
+  const matches = owner => validOwner(owner) &&
+    ['version', 'apiProtocol', 'pid', 'instanceId', 'startedAt', 'host', 'port', 'dataDir']
+      .every(key => owner[key] === expectedOwner[key]);
+  const { owner: current } = await readOwner(lockPath);
+  if (!matches(current) || serviceOwnerProcessStatus(current.pid) !== 'absent') return false;
+  // A PID check alone cannot authorize recovery of a lease another launcher replaced.
+  return matches((await readOwner(lockPath)).owner);
+}
+
 export async function acquireServiceInstance(dataDir, { host = "127.0.0.1", port = 8080 } = {}) {
   const resolvedDataDir = path.resolve(dataDir);
   await fs.mkdir(resolvedDataDir, { recursive: true });
@@ -128,6 +140,7 @@ export async function acquireServiceInstance(dataDir, { host = "127.0.0.1", port
             return { acquired: false, owner: null, recovering: true };
           }
         }
+        if ((await readOwner(lockPath)).text !== current.text) return { acquired: false, owner: null, recovering: true };
         await fs.rm(lockPath, { force: true });
       } finally { await releaseRecovery(); }
       continue;

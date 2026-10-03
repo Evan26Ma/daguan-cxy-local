@@ -51,6 +51,9 @@ test("Electron entry registers the stable scheme before readiness and keeps brow
   assert.match(source, /windowPreferences\(PRELOAD\)/);
   assert.match(source, /setWindowOpenHandler/);
   assert.match(source, /will-navigate/);
+  assert.match(source, /waitForServiceIdentity\(existing\)/);
+  assert.match(source, /isServiceOwnerProcessGone\(dataDir, existing\)/);
+  assert.match(source, /status === "absent" && !\(await lock\.isServiceOwnerProcessGone/);
 });
 
 test("second desktop launch reuses and raises the first window before starting a service", () => {

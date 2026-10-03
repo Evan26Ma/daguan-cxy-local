@@ -1,18 +1,18 @@
-大观园数学 Windows 64 位浏览器包
+大观园数学本地浏览器版 Windows x64 服务包
 
 适用范围
 - Windows 10 22H2 或 Windows 11，x64。
-- 不需要另外安装 Node.js；程序会在本机启动服务并打开系统默认浏览器。
+- 不需要另外安装 Node.js；程序会在本机启动服务并打开系统默认浏览器，不会启动 Electron 桌面窗口。
 - 第一次运行可能显示 Windows SmartScreen 未知发布者提示，因为此首版未签名。请先核对 SHA256 校验值。
 
 安装
 1. 下载并解压 DaguanMath-windows-x64.zip。
-2. 双击“安装大观园数学题库.cmd”。安装完成后可从桌面或开始菜单启动。
-3. 开始菜单还提供“停止大观园本地服务”和“卸载大观园浏览器版”。
+2. 双击“安装大观园数学题库.cmd”。安装完成后，桌面和开始菜单会创建“大观园浏览器本地版”快捷方式。
+3. 开始菜单还提供“停止浏览器本地服务”和“卸载浏览器本地版”。
 4. 也可直接运行 DaguanMath-windows-x64.exe，无需安装。程序安装在 %LOCALAPPDATA%\DaguanMathBrowser；共享数据仍放在 %LOCALAPPDATA%\DaguanMath\data。
 
 共享学习记录
-- 桌面版与浏览器版共用当前 Windows 用户的 %LOCALAPPDATA%\DaguanMath\data。
+- Electron 桌面版与本地浏览器版共用当前 Windows 用户的 %LOCALAPPDATA%\DaguanMath\data。
 - 更换旧浏览器数据时，在新版「工具 → 合并旧浏览器记录」中选择备份，先预览、下载并保存目标端备份，再确认合并。
 - 仅迁移进度、收藏、批注与备份中明确带有的学习位置；外观、快捷键、AI 草稿与题目勾选不会迁移。时间无法比较时保留目标端记录。
 
