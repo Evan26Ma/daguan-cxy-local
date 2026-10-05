@@ -360,7 +360,7 @@ test("历史按题号章节和状态组合筛选，失效题目保留", () => {
   assert.deepEqual(Array.from(ui.App.filteredHistory(), row => row.entry.question_id), ["11"]);
 });
 
-test("历史原章节失效时不跳到同题号的新章节，直达原题忽略目录筛选", async () => {
+test("历史原章节失效时不跳到同题号的新章节，直达原题忽略详细筛选但保留题库范围", async () => {
   const ui = loadNewUI();
   const leaf = { id: "new-leaf", name: "新章节", direct_questions: [{ id: 11, shard: "a" }], children: [] };
   ui.AppState.categories = { categories: [{ id: "top", name: "高等数学", children: [leaf] }] };
@@ -372,5 +372,7 @@ test("历史原章节失效时不跳到同题号的新章节，直达原题忽�
   await ui.App.openHistoryQuestion("11");
   assert.equal(call[0], leaf);
   assert.equal(call[2], "11");
-  assert.equal(call[4].ignoreFilters, true);
+  assert.equal(call[4].ignoreDetails, true);
+  assert.equal(call[4].requireTarget, true);
+  assert.ok(!("ignoreFilters" in call[4]), "历史直达不得跳过严选/真题范围");
 });

@@ -5,7 +5,7 @@
 
 // ========== 离线缓存注册（与 app2.js 一致） ==========
 if ("serviceWorker" in navigator && location.protocol !== "file:" && location.protocol !== "https:") {
-    navigator.serviceWorker.register("./service-worker.js?v=149").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=150").catch(() => {});
 }
 
 // ========== 全局状态 ==========
@@ -378,6 +378,19 @@ function renderSearchResultStem(text) {
 class UIRenderer {
     static scopeQuestionIdsCache = new Map();
     static scopeQuestionIdsInflight = new Map();
+    static scopeStorageKey = 'daguan_new_chapter_scope_v1';
+
+    // 范围选择跨会话保留：重启后仍是上次选的「严选 / 真题」，避免静默退回完整题库。
+    static readSavedScope() {
+        try {
+            const value = localStorage.getItem(this.scopeStorageKey);
+            return ['core', 'real'].includes(value) ? value : 'all';
+        } catch { return 'all'; }
+    }
+
+    static saveScope(scope) {
+        try { localStorage.setItem(this.scopeStorageKey, ['core', 'real'].includes(scope) ? scope : 'all'); } catch {}
+    }
 
     static async ensureScopeQuestionIds(scope) {
         if (scope === 'all') return null;
@@ -838,8 +851,18 @@ class UIRenderer {
     }
 
     static chapterScopeMatch(question) {
-        if (AppState.chapterScope === 'core' && !question?.is_core) return false;
-        if (AppState.chapterScope === 'real' && !isRealExamQuestion(question)) return false;
+        return UIRenderer.scopeAllowsQuestion(question) && UIRenderer.detailsMatch(question);
+    }
+
+    // 范围（严选 / 真题）是队列的硬约束，任何入口都不得绕过；
+    // 详细筛选与搜索词是可选条件，「回到某道题」时可单独忽略。
+    static scopeAllowsQuestion(question) {
+        if (AppState.chapterScope === 'core') return question?.is_core === true;
+        if (AppState.chapterScope === 'real') return isRealExamQuestion(question);
+        return true;
+    }
+
+    static detailsMatch(question) {
         const filters = AppState.filters || {};
         if (filters.sources?.length && !sourceMatches(filters.sources, question?.source)) return false;
         if (filters.years?.length && !filters.years.includes(sourceYear(question?.source))) return false;
@@ -857,14 +880,16 @@ class UIRenderer {
         return true;
     }
 
-    static async filteredChapter(chapter, directOnly = false) {
+    // ignoreDetails：只放行范围，忽略来源/年份/题型/讲师与搜索词（用于从历史、搜索回到指定题）。
+    static async filteredChapter(chapter, directOnly = false, { ignoreDetails = false } = {}) {
         const entries = directOnly ? (chapter.direct_questions || []) : (chapter.direct_questions || chapter.questions || []);
         const shell = { ...chapter, direct_questions: entries, children: [] };
-        const hasDetails = Object.values(AppState.filters || {}).some(values => Array.isArray(values) && values.length > 0);
-        const hasQuery = String(AppState.libraryQuery || '').trim().length > 0;
-        if (AppState.chapterScope === 'all' && !hasDetails && !hasQuery) return shell;
+        const hasScope = AppState.chapterScope !== 'all';
+        const hasDetails = !ignoreDetails && Object.values(AppState.filters || {}).some(values => Array.isArray(values) && values.length > 0);
+        const hasQuery = !ignoreDetails && String(AppState.libraryQuery || '').trim().length > 0;
+        if (!hasScope && !hasDetails && !hasQuery) return shell;
         const loaded = await DataService.loadQuestionsForChapter(shell);
-        const acceptedIds = new Set(loaded.filter(question => this.chapterScopeMatch(question)).map(question => String(question.id)));
+        const acceptedIds = new Set(loaded.filter(question => this.scopeAllowsQuestion(question) && (ignoreDetails || this.detailsMatch(question))).map(question => String(question.id)));
         return { ...shell, direct_questions: entries.filter(entry => acceptedIds.has(String(entry.id))) };
     }
 
@@ -2301,6 +2326,21 @@ class App {
         StateSync.connectEvents();
         AIService.loadProfiles();
 
+        // 恢复上次的题库范围（严选 / 真题）：范围是队列硬约束，重启后必须延续，
+        // 否则「继续做题」会在完整题库里漫游。题号表异步补齐，先按题干字段判定。
+        AppState.chapterScope = UIRenderer.readSavedScope();
+        if (AppState.chapterScope !== 'all') {
+            void UIRenderer.ensureScopeQuestionIds(AppState.chapterScope).then(() => {
+                const summary = document.getElementById('catalog-scope-summary');
+                if (summary) summary.textContent = UIRenderer.scopeSummaryText();
+                document.querySelectorAll('[data-chapter-scope]').forEach(button => {
+                    const active = button.dataset.chapterScope === AppState.chapterScope;
+                    button.classList.toggle('active', active);
+                    button.setAttribute('aria-pressed', String(active));
+                });
+            }).catch(() => {});
+        }
+
         // 渲染首页
         this.showHome();
 
@@ -2613,7 +2653,7 @@ class App {
         const index = DataService.chapterEntries(location.leaf).findIndex(entry => String(entry.id) === String(id));
         if (index < 0) { toast('当前章节中没有这道题'); return; }
         AppState.currentCategory = location.top;
-        await this.enterChapterQuestions(location.leaf, index, id, this.preferredQuestionMode(), { ignoreFilters: true });
+        await this.enterChapterQuestions(location.leaf, index, id, this.preferredQuestionMode(), { ignoreDetails: true, requireTarget: true });
     }
 
     static async deleteHistoryQuestion(id) {
@@ -2874,7 +2914,7 @@ class App {
         AppState.currentCategory = resolved.top;
         const index = DataService.chapterEntries(resolved.leaf).findIndex(item => String(item.id) === String(questionId));
         if (index < 0) { toast('题目暂时无法加载'); return; }
-        await this.enterChapterQuestions(resolved.leaf, index, questionId, 'single', { preserveLastStudy: true, ignoreFilters: true });
+        await this.enterChapterQuestions(resolved.leaf, index, questionId, 'single', { preserveLastStudy: true, ignoreDetails: true, requireTarget: true });
     }
 
     static resolveSearchChapter(top, questionId) {
@@ -3037,6 +3077,7 @@ class App {
         }
         if (token !== this.chapterScopeToken) return;
         AppState.chapterScope = scope;
+        UIRenderer.saveScope(scope);
         if (summary) summary.textContent = UIRenderer.scopeSummaryText();
         document.querySelectorAll('[data-chapter-scope]').forEach(button => {
             const active = button.dataset.chapterScope === scope;
@@ -3099,7 +3140,7 @@ class App {
         AppState.currentChapter = node;
         const entries = DataService.chapterEntries(node);
         const index = position.questionId != null ? entries.findIndex(e => String(e.id) === String(position.questionId)) : Number(position.questionIndex) || 0;
-        await this.enterChapterQuestions(node, Math.max(0, index), position.questionId, this.preferredQuestionMode(), { ignoreFilters: true });
+        await this.enterChapterQuestions(node, Math.max(0, index), position.questionId, this.preferredQuestionMode(), { ignoreDetails: true });
     }
 
     static preferredQuestionMode() {
@@ -3107,17 +3148,32 @@ class App {
         catch { return 'single'; }
     }
 
-    static async enterChapterQuestions(chapter, index = 0, questionId = null, mode = 'single', { preserveLastStudy = false, ignoreFilters = false } = {}) {
+    // 统一进入做题页：队列一律经 filteredChapter 过范围；
+    // ignoreDetails 只忽略来源/年份/题型/讲师与搜索词，范围（严选 / 真题）不会被绕过。
+    // requireTarget：入口目标是“回到某一题”（历史、全库搜索），目标题被范围过滤掉时明确拒绝，
+    // 而不是悄悄落在别的题上；继续学习类入口允许回退到范围内最近一题。
+    static async enterChapterQuestions(chapter, index = 0, questionId = null, mode = 'single', { preserveLastStudy = false, ignoreDetails = false, requireTarget = false } = {}) {
         const directOnly = chapter?._directOnly === true;
-        chapter = ignoreFilters
-            ? { ...chapter, direct_questions: directOnly ? (chapter.direct_questions || []) : (chapter.direct_questions || chapter.questions || []), children: [] }
-            : await UIRenderer.filteredChapter(chapter, directOnly);
-        chapter._directOnly = directOnly;
-        const entries = DataService.chapterEntries(chapter);
+        const filtered = await UIRenderer.filteredChapter(chapter, directOnly, { ignoreDetails });
+        filtered._directOnly = directOnly;
+        const entries = DataService.chapterEntries(filtered);
         if (!entries.length) {
             toast('当前题库范围下没有可用题目');
             return;
         }
+        let resolvedIndex = questionId == null ? Number(index) || 0 : entries.findIndex(entry => String(entry.id) === String(questionId));
+        let resolvedId = questionId;
+        if (resolvedIndex < 0) {
+            // 目标题被范围过滤掉：判定它确实存在、只是不在当前范围。
+            const insideChapter = DataService.chapterEntries(chapter).some(entry => String(entry.id) === String(questionId));
+            if (requireTarget && insideChapter && AppState.chapterScope !== 'all') {
+                toast(`题号 ${questionId} 不在当前${AppState.chapterScope === 'core' ? '严选' : '真题'}范围，请切换题库范围`);
+                return;
+            }
+            resolvedIndex = Math.min(Math.max(Number(index) || 0, 0), entries.length - 1);
+            resolvedId = null;
+        }
+        chapter = filtered;
         AppState.currentChapter = chapter;
         AppState.chapterQuestionCount = entries.length;
         AppState.questionMode = mode === 'multi' ? 'multi' : 'single';
@@ -3126,13 +3182,13 @@ class App {
         AppState.temporaryQuestionView = preserveLastStudy;
         try {
             if (AppState.questionMode === 'multi') {
-                const start = Math.floor(index / 20) * 20;
-                await UIRenderer.renderMultiRange(start, questionId ?? entries[index]?.id);
+                const start = Math.floor(resolvedIndex / 20) * 20;
+                await UIRenderer.renderMultiRange(start, entries[resolvedIndex]?.id);
             } else {
                 const questions = await DataService.loadQuestionsForChapter(chapter);
                 if (!questions.length) throw new Error('题目暂时无法加载');
                 AppState.questions = questions; AppState.questionOffset = 0;
-                const resolved = questionId == null ? index : questions.findIndex(q => String(q.id) === String(questionId));
+                const resolved = resolvedId == null ? resolvedIndex : questions.findIndex(q => String(q.id) === String(resolvedId));
                 await UIRenderer.renderQuestion(Math.min(Math.max(resolved, 0), questions.length - 1));
             }
             const selected = AppState.questions[AppState.currentQuestionIndex];
@@ -3374,7 +3430,7 @@ class App {
         const entries = DataService.chapterEntries(chapter);
         let index = Number.isInteger(position.questionIndex) ? position.questionIndex : 0;
         if (position.questionId != null) { const byId = entries.findIndex(e => String(e.id) === String(position.questionId)); if (byId >= 0) index = byId; }
-        await this.enterChapterQuestions(chapter, Math.max(0, Math.min(index, entries.length - 1)), position.questionId, this.preferredQuestionMode(), { ignoreFilters: true });
+        await this.enterChapterQuestions(chapter, Math.max(0, Math.min(index, entries.length - 1)), position.questionId, this.preferredQuestionMode(), { ignoreDetails: true });
     }
 
     static showReview(tab) {
