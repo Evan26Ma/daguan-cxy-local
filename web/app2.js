@@ -2,7 +2,7 @@
   "use strict";
 
   if ("serviceWorker" in navigator && location.protocol !== "file:") {
-    navigator.serviceWorker.register("./service-worker.js?v=121").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=151").catch(() => {});
   }
 
   const DATA = "./data";
@@ -2054,6 +2054,21 @@
         { name: "帕拉迪宇讲过", count: paradiyuCount },
         { name: "李艳芳讲过", count: countVideoTeacher("李艳芳") },
         { name: "没咋了讲过", count: countVideoTeacher("没咋了") },
+        { name: "汤家凤讲过", count: countVideoTeacher("汤家凤") },
+        { name: "喻老讲过", count: countVideoTeacher("喻老") },
+        { name: "拉普拉丝儿讲过", count: countVideoTeacher("拉普拉丝儿") },
+        { name: "一只柠檬讲过", count: countVideoTeacher("一只柠檬") },
+        { name: "姜晓千讲过", count: countVideoTeacher("姜晓千") },
+        { name: "锋哥讲过", count: countVideoTeacher("锋哥") },
+        { name: "夜雨讲过", count: countVideoTeacher("夜雨") },
+        { name: "千羽讲过", count: countVideoTeacher("千羽") },
+        { name: "郭伟讲过", count: countVideoTeacher("郭伟") },
+        { name: "小吴学长讲过", count: countVideoTeacher("小吴学长") },
+        { name: "陈汉讲过", count: countVideoTeacher("陈汉") },
+        { name: "唐祥祥讲过", count: countVideoTeacher("唐祥祥") },
+        { name: "处江湖之远呀讲过", count: countVideoTeacher("处江湖之远呀") },
+        { name: "焦导JLU讲过", count: countVideoTeacher("焦导JLU") },
+        { name: "吃尽天下面讲过", count: countVideoTeacher("吃尽天下面") },
       ] });
       const mc = masteryFacetCounts();
       facets.push({ dim: "掌握状态", options: Object.entries(mc).map(([name, count]) => ({ name, count })) });

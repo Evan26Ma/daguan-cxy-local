@@ -162,16 +162,31 @@ test("新版首页提供使用与双向同步引导，快捷键帮助只保留�
   assert.match(newCss, /\.nav-utility-button\[data-app-action="show-shortcuts"\] kbd[^}]*font-size: calc\(15px \* var\(--ui-font-scale, 1\)\)/);
 });
 
-test("讲解视频映射覆盖全部接入老师且只保留前端需要的字段", () => {
+test("讲解视频映射覆盖所有已接入老师且只保留前端需要的字段", () => {
   const entries = Object.values(lectureVideos.questions).flat();
   const teachers = new Set(entries.map((entry) => entry.teacher));
-  assert.equal(entries.length, 8609);
-  assert.deepEqual([...teachers].sort(), ["帕拉迪宇", "李艳芳", "汤家凤", "没咋了", "喻老", "拉普拉丝儿", "一只柠檬", "千羽", "郭伟", "唐祥祥", "吃尽天下面"].sort());
-  assert.equal(Object.keys(lectureVideos.questions).length, 5044);
-  assert.equal(lectureVideos.series.length, 85);
+  assert.equal(entries.length, 9791);
+  assert.deepEqual([...teachers].sort(), ["汤家凤","没咋了","帕拉迪宇","喻老","拉普拉丝儿","李艳芳","一只柠檬","姜晓千","锋哥","夜雨","千羽","郭伟","小吴学长","陈汉","唐祥祥","处江湖之远呀","焦导JLU","吃尽天下面"].sort());
+  assert.equal(Object.keys(lectureVideos.questions).length, 6034);
+  assert.equal(lectureVideos.series.length, 104);
   assert.equal(entries.filter((entry) => entry.teacher === "帕拉迪宇").length, 1591);
-  assert.equal(entries.filter((entry) => entry.teacher === "汤家凤").length, 2830);
-  assert.equal(entries.filter((entry) => entry.teacher === "喻老").length, 316);
+  assert.equal(entries.filter((entry) => entry.teacher === "汤家凤").length, 3087);
+  assert.equal(entries.filter((entry) => entry.teacher === "喻老").length, 418);
+  assert.equal(entries.filter((entry) => entry.teacher === "没咋了").length, 1101);
+  assert.equal(entries.filter((entry) => entry.teacher === "拉普拉丝儿").length, 96);
+  assert.equal(entries.filter((entry) => entry.teacher === "李艳芳").length, 1916);
+  assert.equal(entries.filter((entry) => entry.teacher === "一只柠檬").length, 434);
+  assert.equal(entries.filter((entry) => entry.teacher === "姜晓千").length, 18);
+  assert.equal(entries.filter((entry) => entry.teacher === "锋哥").length, 90);
+  assert.equal(entries.filter((entry) => entry.teacher === "夜雨").length, 82);
+  assert.equal(entries.filter((entry) => entry.teacher === "千羽").length, 161);
+  assert.equal(entries.filter((entry) => entry.teacher === "郭伟").length, 291);
+  assert.equal(entries.filter((entry) => entry.teacher === "小吴学长").length, 185);
+  assert.equal(entries.filter((entry) => entry.teacher === "陈汉").length, 10);
+  assert.equal(entries.filter((entry) => entry.teacher === "唐祥祥").length, 148);
+  assert.equal(entries.filter((entry) => entry.teacher === "处江湖之远呀").length, 7);
+  assert.equal(entries.filter((entry) => entry.teacher === "焦导JLU").length, 21);
+  assert.equal(entries.filter((entry) => entry.teacher === "吃尽天下面").length, 135);
   for (const [id, videos] of Object.entries(lectureVideos.questions)) {
     // 上游已接入、本地题库尚未同步到的题目（id 11600+）允许暂时缺位；
     // 其余映射必须能落到 id_index，防止写错或死链。
