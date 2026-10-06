@@ -1,0 +1,82 @@
+{
+  "control_repo": "F:\\AI\\zcode-supervisor-tools\\zcode-supervisor\\Lib\\site-packages",
+  "defaults": {
+    "codex_review_mode": "full_diff_and_final_tests",
+    "effort": "max",
+    "max_attempts": 1,
+    "max_auto_retries": 2,
+    "mode": "Auto Edit",
+    "prompt_timeout_ms": 600000,
+    "repair_validation": false,
+    "require_changed_files": true,
+    "result_verbosity": "compact",
+    "retry_delay_ms": 60000,
+    "risk_budget": "low",
+    "task_class": "root-cause",
+    "usage_snapshot_source": "none",
+    "usage_snapshot_timeout_ms": 20000,
+    "validation_timeout_seconds": 60,
+    "workspace_kind": "regular"
+  },
+  "implementation_worker": "zcode",
+  "orchestrator": "codex",
+  "paths": {
+    "packets": ".codex/zcode/packets",
+    "runs": ".codex/zcode/runs",
+    "snapshots": ".codex/zcode/snapshots",
+    "zcode_supervisor": "F:\\AI\\zcode-supervisor-tools\\zcode-supervisor\\Lib\\site-packages\\tools\\zcode_supervisor\\zcode_supervisor.py",
+    "zcodectl": "F:\\AI\\zcode-supervisor-tools\\zcode-supervisor\\Lib\\site-packages\\tools\\zcode_control\\zcodectl.mjs"
+  },
+  "policy": {
+    "acceptance_gates": [
+      "run_json_present",
+      "scope_audit_pass",
+      "validation_pass",
+      "codex_autoreview_clean"
+    ],
+    "ask_user_before": [
+      "destructive",
+      "migration",
+      "credentials",
+      "production_risk"
+    ],
+    "codex_direct_edit_allowed": [
+      "read_only",
+      "trivial",
+      "zcode_unavailable_recovery"
+    ],
+    "codex_owns": [
+      "planning",
+      "orchestration",
+      "audit",
+      "validation",
+      "final_acceptance"
+    ],
+    "never_delegate": [
+      "secret_handling",
+      "destructive_git_ops",
+      "final_acceptance"
+    ],
+    "skip_triggers": [
+      "no-zcode"
+    ],
+    "zcode_owns": [
+      "bounded_implementation"
+    ]
+  },
+  "repo": "F:\\AI\\大观园本地",
+  "routing_mode": "auto",
+  "trigger": "For implementation work in this repo, Codex should plan the task, run auto-route, create a bounded packet, run ZCode, then audit and validate the result. Skip ZCode for read-only answers, trivial one-line edits, or when the user says no-zcode.",
+  "version": 1,
+  "vision": {
+    "mcp_file": ".agents\\mcp.json",
+    "mcp_package": "@z_ai/mcp-server",
+    "service": "zai-mcp-server"
+  },
+  "parallel_pool": {
+    "entrypoint": "scripts/zcode-pool.py",
+    "config": ".codex/zcode-pool.json",
+    "concurrency": 16,
+    "worker_acceptance": "pending_codex_review"
+  }
+}

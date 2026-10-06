@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "concurrency": 16,
+  "max_concurrency": 16,
+  "run_root": "F:/AI/tmp/daguan-zcode-pool",
+  "account_lock_root": "F:/AI/zcode-runtime/pool-locks",
+  "account_concurrency": 16,
+  "provider_cooldown_seconds": 60,
+  "max_repair_rounds": 2,
+  "timeout_ms": 600000,
+  "validation_timeout_seconds": 120,
+  "final_acceptance": "codex_review_and_final_tests"
+}

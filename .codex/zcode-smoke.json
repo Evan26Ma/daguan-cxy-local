@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "source": "F:/AI/大观园本地",
+  "isolation": "fixture",
+  "tasks": [
+    {
+      "id": "entrypoints",
+      "allow_no_change": true,
+      "backend": "auto-route",
+      "input_files": ["package.json"],
+      "allowed_files": ["reports/entrypoints.md"],
+      "objective": "Write reports/entrypoints.md using only package.json. Report the name and version, and the exact scripts.start and scripts.desktop:start commands. Keep all input files unchanged. Use tools to create the report; Codex owns final acceptance.",
+      "validation": "node -e \"const fs=require('fs'); const p=JSON.parse(fs.readFileSync('package.json','utf8')); const s=fs.readFileSync('reports/entrypoints.md','utf8'); for(const v of [p.name,p.version,p.scripts.start,p.scripts['desktop:start']]) if(!s.includes(v)) process.exit(1)\""
+    },
+    {
+      "id": "checks",
+      "allow_no_change": true,
+      "backend": "packet",
+      "input_files": ["package.json"],
+      "allowed_files": ["reports/checks.md"],
+      "objective": "Write reports/checks.md using only package.json. Report the exact scripts.test and scripts.verify commands, and scripts.package:desktop:windows. Keep package.json unchanged. Act only as a bounded implementation worker; Codex owns final acceptance.",
+      "validation": "node -e \"const fs=require('fs'); const p=JSON.parse(fs.readFileSync('package.json','utf8')); const s=fs.readFileSync('reports/checks.md','utf8'); for(const k of ['test','verify','package:desktop:windows']) if(!s.includes(p.scripts[k])) process.exit(1)\""
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "zai-mcp-server": {
+      "args": [
+        "-y",
+        "@z_ai/mcp-server"
+      ],
+      "command": "npx",
+      "type": "stdio"
+    }
+  }
+}
