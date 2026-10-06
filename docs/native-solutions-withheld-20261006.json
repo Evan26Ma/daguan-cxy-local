@@ -1,0 +1,374 @@
+{
+  "scope": "Only source decisions and reasons; no authentication or raw session logs",
+  "total_withheld": 56,
+  "batches": [
+    {
+      "batch": "batch7-wave",
+      "withheld": [
+        {
+          "id": 6752,
+          "first": "reject",
+          "second": "approve",
+          "reason": "题干α1+kα3等与A-D四选项和源图一致；但源详解末尾印有结论(C)，与题库答案A（数学上正确）及源图印答冲突，源资料本身出错，依原源错误规则拒收。 / 题干与A-D选项与PDF逐字同序；详解含充分性与必要性完整，选项空故答案null"
+        },
+        {
+          "id": 6858,
+          "first": "approve",
+          "second": "approve",
+          "reason": "Mechanical gate: Independent reviewers disagree on solution coverage\n+ actual - expected\n\n  [\n+   'f:/ai/tmp/daguan-zcode-pool/20261005-043859-8ef09e6a/image-review-10-078/workspace/visual-fallback10/q6858-p300-i0-x2923.png'\n-   'f:/ai/tmp/daguan-zcode-pool/20261005-043859-8ef09e6a/image-review-10-078/workspace/visual-fallback10/q6858-p301-i1-x2926.png'\n  ]\n"
+        },
+        {
+          "id": 7135,
+          "first": "approve",
+          "second": "needs_review",
+          "reason": "Source stem crop q7135-p79-i0-x693.jpeg (item 190) shows 设 n,m 为正整数, I_{n,m} = ∫_0^1 x^n ln^m x dx 是 with printed labels (A) 定积分且值为 (-1)^n n!/(n+1)^m, (B) 定积分且值为 (-1)^m m!/(n+1)^{m+1}, (C) 反常积分且发散, (D) 反常积分且值为 (-1)^m m!/(n+1)^{m+1} - same statement and same label order as the bank stem/options, and the discriminating options B vs D are reproduced verbatim, so the printed labels do not conflict with correct_labels [B]. The handwritten source answer q7135-p80-i1-x696.png states lim_{x->0+} x^n ln^m x = 0 => 定积分(有限区间, 有界函数) and derives the value twice in order: (i) integration by parts giving I = -(m/(n+1))...= (-1)^m m!/(n+1)^{m+1}, (ii) substitution ln x = t giving the same result, ending = (-1)^m m!/(n+1)^{m+1}; that equals option (B), matching the bank answer B and the bank explanation's substitution x = e^{-t}. Only distractor (C) differs in wording: printed 反常积分且发散 vs bank 瑕积分，且发散 (a narrower synonym of improper integral); this does not alter the label mapping or the graded answer and is reported as a note, not a blocker. Solution image lies on p80 above the p80 next-question heading c) 880 第三章综合解答24-1 (y=547.78). / 题干与源图p79(190题)一致：I_{n,m}=∫₀¹x^nln^m x dx是（ ）；但选项C不符：源印“(C) 反常积分且发散”，银行C为“瑕积分，且发散”（类型条件由反常积分改为瑕积分），A/B/D逐字一致。源解得(−1)^m m!/(n+1)^{m+1}即B，与correct_labels[\\\"B\\\"]一致，C两版皆假，故按字面差异记needs_review。"
+        },
+        {
+          "id": 10716,
+          "first": "approve",
+          "second": "needs_review",
+          "reason": "Stem x1890 prints '求 u = xy + 2xz + 2yz 在条件 xyz = 1 下的最小值.' , identical function and constraint to bank. Source solution is split across two images and is complete in order: x1891 '(11) 解 用拉格朗日乘数法. 令 L = xy + 2xz + 2yz + lambda(xyz - 1), 则', x1892 the system (1)(2)(3)(4), products (5)(6)(7), derivation x=y, y=2z, x=y=cuberoot(2), z=cuberoot(2)/2 and final u = 3*cuberoot(4). Bank answer 3*cuberoot(4) matches; bank's AM-GM explanation is a different but valid and complete method (xy+2xz+2yz >= 3*cuberoot(4x^2y^2z^2) = 3*cuberoot(4), equality xy=2xz=2yz giving x=y=cuberoot(2), z=2^(-2/3) which satisfies xyz=1). Note (not a defect): bank additionally states x,y,z>0, which the source stem line at p268 does not literally print; that qualification is required for the minimum to exist (with xyz=1 and unrestricted signs, x=y=-t, z=1/t^2 makes u = t^2-4/t -> -inf), and the source's own solution uses the positive branch. No statement/answer conflict. / EXACT DIFFERENCE (added condition): source statement image reads '求 u = xy + 2xz + 2yz 在条件 xyz = 1 下的最小值.' — the only condition printed is xyz = 1. Bank stem reads '设 x,y,z>0，且 xyz=1，求 u=xy+2xz+2yz 的最小值。' — it adds the domain restriction x,y,z>0 that the source statement does not print. This is an added condition, which per the review rule must be needs_review rather than auto-approved; no re-solving is used to declare the two statements equivalent. Objective u=xy+2xz+2yz, constraint xyz=1 and the requested quantity (the minimum) are otherwise identical (math_identity true), no options exist on either side and correct_labels is empty (no label conflict). The source statement as printed is also arguably an original-source omission (on {xyz=1} over non-zero reals no minimum exists; the printed solution silently assumes positivity, using x≠0/z≠0 division steps and the positive root x=y=∛2, z=∛2/2), which independently points to needs_review. Coverage: the solution images carry the complete Lagrange-multiplier solution (L=xy+2xz+2yz+λ(xyz−1); system ①②③④; ⑤⑥⑦; x=y, y=2z; substitution into xyz=1; printed final u = ∛2·∛2 + 2·∛2·(∛2/2) + 2·∛2·(∛2/2) = 3∛4) with no missing continuation, and both statement and solution are legibly printed. Recommended resolution: adjudicate whether the explicit x,y,z>0 clause should be kept, dropped, or recorded as an editorial clarification — do not apply the change from this review."
+        },
+        {
+          "id": 10801,
+          "first": "approve",
+          "second": "approve",
+          "reason": "Mechanical gate: Cannot convert undefined or null to object"
+        },
+        {
+          "id": 10817,
+          "first": "approve",
+          "second": "approve",
+          "reason": "Mechanical gate: Cannot convert undefined or null to object"
+        },
+        {
+          "id": 10831,
+          "first": "approve",
+          "second": "approve",
+          "reason": "Mechanical gate: Cannot convert undefined or null to object"
+        },
+        {
+          "id": 10841,
+          "first": "approve",
+          "second": "approve",
+          "reason": "Mechanical gate: Cannot convert undefined or null to object"
+        },
+        {
+          "id": 10854,
+          "first": "approve",
+          "second": "approve",
+          "reason": "Mechanical gate: Cannot convert undefined or null to object"
+        },
+        {
+          "id": 10857,
+          "first": "approve",
+          "second": "approve",
+          "reason": "Mechanical gate: Cannot convert undefined or null to object"
+        },
+        {
+          "id": 10879,
+          "first": "approve",
+          "second": "approve",
+          "reason": "Mechanical gate: Cannot convert undefined or null to object"
+        },
+        {
+          "id": 10887,
+          "first": "approve",
+          "second": "approve",
+          "reason": "Mechanical gate: Cannot convert undefined or null to object"
+        },
+        {
+          "id": 10892,
+          "first": "approve",
+          "second": "approve",
+          "reason": "Mechanical gate: Cannot convert undefined or null to object"
+        },
+        {
+          "id": 11104,
+          "first": "approve",
+          "second": "needs_review",
+          "reason": "p279 题图紧接页内标题 '(a) 1993 数一'（y=272.12，题干图 y=296.71–318.11，下一题标题 y=450.92），题为一般 n 阶：'设 n 阶矩阵 A 的各行元素之和均为零，且 A 的秩为 n−1，则线性方程组 AX=0 的通解为____'。p279 印刷答案与解答：'【答案】X=k(1,1,···,1)^T (k 为任意常数)'；'【解】因为 r(A)=n−1，所以 AX=0 的基础解系含一个线性无关的解向量，又因为 A(1,1,···,1)^T=0，所以 AX=0 的通解为 X=k(1,1,···,1)^T'。题库题干为源题 n=3 特化（三阶、r(A)=2），答案 k(1,1,1)^T 与该题在 n=3 时的结果完全一致，推理解释（行和为零 ⇒ A(1,1,1)^T=0；r(A)=2 ⇒ 基础解系含 3−2=1 个向量）与源印刷解答同一逻辑，数学内容与结论一致。注（非解答错误，供归属判断）：题库 bank_current.source 仍标注 '27张八卷一'，与本次拟绑定的源页 '(a) 1993 数一' 不一致，属来源标签/归属差异；如导入会改变该题 source 归属。 / Exact difference: bound source image reads literally 设 n 阶矩阵 A 的各行元素之和均为零, 且 A 的秩为 n−1, 则线性方程组 AX=0 的通解为____ (general n; printed answer X=k(1,1,…,1)^T), whereas bank stem 11104 reads 已知三阶矩阵 A 的每行元素之和均为 0，且 r(A)=2，则线性方程组 Ax=0 的通解为________ (n fixed to 3; 秩为 n−1 replaced by r(A)=2; 设→已知). The condition and the matrix order were both specialized, i.e. the source statement was adapted rather than reproduced; per the review rule that a changed condition/quantity or an adapted statement must not be auto-approved as equivalent, this stays unapplied. Secondary evidence that this is not a literal binding: bank_current.source declares 27张八卷一 while the packet binds the ID to heading (a) 1993 数一 in 7.线代(1).pdf (category_ids 2516/2517/2519 are 模拟卷/张八), so the bound source text and the bank's declared provenance disagree. The source solution itself is complete and legible (solution_image_files[0]: 因为 r(A)=n−1, AX=0 的基础解系含一个线性无关的解向量; A(1,1,…,1)^T=0; 故 X=k(1,1,…,1)^T, k 为任意常数), so solution_complete and source_quality are true; the blocker is identity/adaptation, not solution coverage. No options or printed choice labels exist for this fill-in (options [], correct_labels []), so there is no label conflict. Both files viewed as actual attachments; next heading (b) 姜晓千基础例题 at p279 y=450.92 is below the solution bbox (y≤430.21)."
+        },
+        {
+          "id": 11347,
+          "first": "needs_review",
+          "second": "needs_review",
+          "reason": "源含三小问(求a、正交变换、解方程)，题库删为单填空仅取求方程的解 / 源题为 (Ⅰ)求a 的值;(Ⅱ)求正交变换 x=Qy 把 f 化成标准形;(Ⅲ)求方程 f(x1,x2,x3)=0 的解。题库仅保留(Ⅲ)并把\"解\"改写为\"通解\"，删除了(Ⅰ)(Ⅱ)两小问，属部分小问匹配。二次型 (1-a)x1²+(1-a)x2²+2x3²+2(1+a)x1x2 与秩为2 与源逐字一致，源解(20)已覆盖(Ⅲ)(解为 C(-1,1,0)^T)，但按规则不自动通过。"
+        },
+        {
+          "id": 11373,
+          "first": "needs_review",
+          "second": "needs_review",
+          "reason": "源为填空求ab值，题库改写为四选项求(a,b)，选项非源文所有 / 源为填空题:当 x→0 时 f(x)=ax+bx²+ln(1+x) 与 g(x)=e^{x²}-cos x 是等价无穷小,则 ab=____(源解结论 ab=-2)。题库改为四选一求 a,b，请求量由 ab 变为 (a,b) 且题型由填空变选择，源无选项，属填空题改多选题，须人工确认；源解 a=-1,b=2 与选项A一致但按规则不自动通过。"
+        },
+        {
+          "id": 11381,
+          "first": "needs_review",
+          "second": "needs_review",
+          "reason": "原题为填空题无选项，题库改编成四选一，选项一致性需人工确认 / 源为填空\"方程组 Ax=0 的基础解系为____\"(印答 α2=(1,1,0)^T, α3=(1,0,1)^T)，题库改为四选一且选项B即该组向量；数学身份一致：源 A 三阶实对称、秩1、λ1=2 对应特征向量 (-1,1,1)^T，题库 r(A)=1 且 (A-2E)α=0 等价。题型由填空改选择、源无选项，须人工确认。"
+        },
+        {
+          "id": 818,
+          "first": "approve",
+          "second": "approve",
+          "reason": "Mechanical gate: Independent reviewers disagree on solution coverage\n+ actual - expected\n\n  [\n    'f:/ai/tmp/daguan-zcode-pool/20261005-055012-909741ab/image-review-15-034/workspace/visual-fallback15/q818-p552-i1-x4364.jpeg',\n    'f:/ai/tmp/daguan-zcode-pool/20261005-055012-909741ab/image-review-15-034/workspace/visual-fallback15/q818-p553-i2-x4366.jpeg',\n-   'f:/ai/tmp/daguan-zcode-pool/20261005-055012-909741ab/image-review-15-034/workspace/visual-fallback15/q818-p554-i3-x4369.png'\n  ]\n"
+        },
+        {
+          "id": 863,
+          "first": "approve",
+          "second": "approve",
+          "reason": "Mechanical gate: Cannot convert undefined or null to object"
+        },
+        {
+          "id": 864,
+          "first": "approve",
+          "second": "approve",
+          "reason": "Mechanical gate: Cannot convert undefined or null to object"
+        },
+        {
+          "id": 865,
+          "first": "approve",
+          "second": "approve",
+          "reason": "Mechanical gate: Cannot convert undefined or null to object"
+        },
+        {
+          "id": 866,
+          "first": "approve",
+          "second": "approve",
+          "reason": "Mechanical gate: Cannot convert undefined or null to object"
+        },
+        {
+          "id": 868,
+          "first": "approve",
+          "second": "approve",
+          "reason": "Mechanical gate: Cannot convert undefined or null to object"
+        },
+        {
+          "id": 874,
+          "first": "approve",
+          "second": "approve",
+          "reason": "Mechanical gate: Cannot convert undefined or null to object"
+        },
+        {
+          "id": 880,
+          "first": "approve",
+          "second": "approve",
+          "reason": "Mechanical gate: Cannot convert undefined or null to object"
+        },
+        {
+          "id": 881,
+          "first": "approve",
+          "second": "approve",
+          "reason": "Mechanical gate: Cannot convert undefined or null to object"
+        },
+        {
+          "id": 901,
+          "first": "approve",
+          "second": "approve",
+          "reason": "Mechanical gate: Cannot convert undefined or null to object"
+        },
+        {
+          "id": 902,
+          "first": "approve",
+          "second": "approve",
+          "reason": "Mechanical gate: Cannot convert undefined or null to object"
+        },
+        {
+          "id": 747,
+          "first": "approve",
+          "second": "approve",
+          "parent": "hold",
+          "reason": "银行附加A*为伴随矩阵、E为单位矩阵定义，PDF题干未印此句，按本批严格声明差异规则暂缓"
+        },
+        {
+          "id": 822,
+          "first": "approve",
+          "second": "approve",
+          "parent": "hold",
+          "reason": "银行二次型交叉项为−4x1x2，PDF题干和解为+4x1x2，符号不一致"
+        },
+        {
+          "id": 2823,
+          "first": "approve",
+          "second": "approve",
+          "parent": "hold",
+          "reason": "银行显式0≤θ≤π/2并用乘积不等式，PDF用倒数界且未印角范围，区域条件改写暂缓"
+        },
+        {
+          "id": 6761,
+          "first": "approve",
+          "second": "approve",
+          "parent": "hold",
+          "reason": "银行 x→∞，PDF x→+∞，极限方向字面差异"
+        },
+        {
+          "id": 6766,
+          "first": "approve",
+          "second": "approve",
+          "parent": "hold",
+          "reason": "银行显式E为3阶单位矩阵，PDF题干未明写"
+        },
+        {
+          "id": 7228,
+          "first": "approve",
+          "second": "approve",
+          "parent": "hold",
+          "reason": "印刷平均值答案与附加手写仅算积分的结尾不一致，禁止父级补因子"
+        },
+        {
+          "id": 7251,
+          "first": "approve",
+          "second": "approve",
+          "parent": "hold",
+          "reason": "银行A/C积分变量dy，PDF相应选项印dx，选项不一致"
+        },
+        {
+          "id": 7317,
+          "first": "approve",
+          "second": "approve",
+          "parent": "hold",
+          "reason": "源解析求导行出现多个印刷缺字方框，完整源质量不足，禁止自行修补"
+        }
+      ],
+      "parent_exclusions": {
+        "747": "银行附加A*为伴随矩阵、E为单位矩阵定义，PDF题干未印此句，按本批严格声明差异规则暂缓",
+        "822": "银行二次型交叉项为−4x1x2，PDF题干和解为+4x1x2，符号不一致",
+        "2823": "银行显式0≤θ≤π/2并用乘积不等式，PDF用倒数界且未印角范围，区域条件改写暂缓",
+        "6761": "银行 x→∞，PDF x→+∞，极限方向字面差异",
+        "6766": "银行显式E为3阶单位矩阵，PDF题干未明写",
+        "7228": "印刷平均值答案与附加手写仅算积分的结尾不一致，禁止父级补因子",
+        "7251": "银行A/C积分变量dy，PDF相应选项印dx，选项不一致",
+        "7317": "源解析求导行出现多个印刷缺字方框，完整源质量不足，禁止自行修补"
+      }
+    },
+    {
+      "batch": "cohort-wave",
+      "withheld": [
+        {
+          "id": 6371,
+          "first": "needs_review",
+          "second": "approve",
+          "reason": "PDF填空11题干与题库完全一致，PDF解答应填-1/2(dx+dy)；但题库答案图片assets/bb09d2…在本机不存在(ENOENT)，答案无法核对，属缺失部件。 / 题干z=z(x,y)由e^{2yz}+x+y²+z=7/4确定、求dz|(1/2,1/2)一致；两侧均无选择项；图1含答案-1/2(dx+dy)及法一法二完整。"
+        },
+        {
+          "id": 7925,
+          "first": "needs_review",
+          "second": "needs_review",
+          "reason": "题干条件被改：原题作\"具有2阶连续偏导数\"，银行写\"二阶偏导数存在\"（连续改存在），\"令\"改\"若\"；微分式3du+4dv、点(1,1)、复合式与答案5一致。 / 题图作'具有2阶连续偏导数'且df|_(1,1)，题库作'二阶偏导数存在'、df(1,1)，条件被改弱；数字3、4及所求一致，答案5含解与注。"
+        },
+        {
+          "id": 11323,
+          "first": "needs_review",
+          "second": "needs_review",
+          "reason": "原题条件为φ有二阶导数、ψ仅有一阶导数，题库改成f、g均有二阶导数，条件被改写；且PDF标2005数一二，题库标27张八卷七。选项A-D及解答选B一致。 / PDF为φ、ψ且φ有二阶导数、ψ仅一阶导数；题库作f,g均具二阶导数，条件被加强改写；ABCD选项与解答选B一致"
+        },
+        {
+          "id": 2171,
+          "first": "approve",
+          "second": "needs_review",
+          "reason": "题面四条性质及A-D选项②⇒③⇒①等与图逐字一致，答案图红笔(A)与bank答案A一致，源仅此一解图。 / 题干四性质及(A)(B)(C)(D)选项与题库完全一致；但PDF仅红字标出答案(A)，无任何推导，无完整解答帧"
+        },
+        {
+          "id": 2220,
+          "first": "needs_review",
+          "second": "needs_review",
+          "reason": "bank题面多出‘f在(0,0)处连续’条件；图题面仅‘设函数f(x,y)满足’该极限式，属添加条件。 / PDF题干仅'设f(x,y)满足'，无'在(0,0)处连续'；题库多出该条件；解答给出-dx+dy两帧完整，无选项"
+        },
+        {
+          "id": 2225,
+          "first": "approve",
+          "second": "approve",
+          "reason": "Mechanical gate: Independent printed labels disagree\n\n'A' !== null\n"
+        },
+        {
+          "id": 2440,
+          "first": "approve",
+          "second": "approve",
+          "reason": "Mechanical gate: Independent printed labels disagree\n\n'B' !== null\n"
+        },
+        {
+          "id": 7983,
+          "first": "approve",
+          "second": "approve",
+          "reason": "Mechanical gate: Independent reviewers disagree on solution coverage\n+ actual - expected\n\n  [\n    'f:/ai/tmp/daguan-native-rematch-20261004/source/visual-fallback20/q7983-p114-i1-x955.png',\n-   'f:/ai/tmp/daguan-native-rematch-20261004/source/visual-fallback20/q7983-p114-i2-x956.png'\n  ]\n"
+        },
+        {
+          "id": 134,
+          "first": "reject",
+          "second": "reject",
+          "reason": "源图为'A=[[1,0,1],[0,2,0],[1,0,1]]求A^n'填空，库题为A^{-1}=[[1,1,1],[1,2,1],[1,1,3]]求(A*)^{-1}，矩阵数字与所求对象全不同，属无关题。 / 题库为设A^{-1}=[[1,1,1],[1,2,1],[1,1,3]]求(A^*)^{-1};原图却是填空题设A=[[1,0,1],[0,2,0],[1,0,1]]求A^n及其解,题目答案全不同,属错配。"
+        },
+        {
+          "id": 229,
+          "first": "reject",
+          "second": "reject",
+          "reason": "图为设A=(1 0 1;0 2 0;1 0 1)求A^n，银行题干却是下三角矩阵(2 0 0;-3 2 0;4 1 2)，题干与答案均不符。 / 图0/图1实为矩阵(1 0 1/0 2 0/1 0 1)求A^n之题与解答，与库中A=(2 0 0/-3 2 0/4 1 2)数字完全不同，非本题。"
+        },
+        {
+          "id": 580,
+          "first": "reject",
+          "second": "reject",
+          "reason": "图为设A=(1 0 1;0 2 0;1 0 1)求A^n，银行题干为(1 1;2 2)A=(2 3;4 6)求A，条件与所求完全不同，来源不符。 / 图0/图1为矩阵[[1,0,1],[0,2,0],[1,0,1]]求A^n题及解，与库中二阶方程(1 1/2 2)A=(2 3/4 6)无关。"
+        },
+        {
+          "id": 581,
+          "first": "reject",
+          "second": "reject",
+          "reason": "图1实为填空'设A=(1 0 1;0 2 0;1 0 1),则A^n=____'，与银行题AX=[[2,1],[3,2]]求A完全不同；图2是A^n=2^{n-1}A解答 / 图0题干为A=(1,0,1;0,2,0;1,0,1)则A^n=填空，图1给出A^n=2^(n-1)A解法；题库581为A(1 2;0 1)=(2 1;3 2)求A，条件与所求全不同，来源标签污染"
+        },
+        {
+          "id": 598,
+          "first": "reject",
+          "second": "reject",
+          "reason": "图1题干是求A^n且矩阵为(1 0 1;0 2 0;1 0 1)，银行题为AB+E=A²+B求B且A含-1，条件与所求均不同 / 图为A=(1,0,1;0,2,0;1,0,1)求A^n填空及解答；题库598为AB+E=A^2+B求B，矩阵与方程条件均不同，无对应解答"
+        },
+        {
+          "id": 847,
+          "first": "reject",
+          "second": "reject",
+          "reason": "图1为填空求A^n，无任何选项；银行题为合同变换矩阵四选一，源中选项及题设全部缺失 / 图为求A^n填空(无选项)，答案矩阵2^(n-1)A；题库847为对角阵合同求变换矩阵P的选择题含A-D项，题干与选项均不同"
+        },
+        {
+          "id": 906,
+          "first": "reject",
+          "second": "reject",
+          "reason": "图为'设A=[[1,0,1],[0,2,0],[1,0,1]]求A^n'填空及解答，与题库2×2相似/合同选择题完全不同，题源应为矩阵基础填空3而非二次型综合选择4。 / 银行为2×2矩阵相似/合同选择题,图为设A=[[1,0,1],[0,2,0],[1,0,1]]求A^n的填空无选项,题干与选项完全不同,错配。"
+        },
+        {
+          "id": 3954,
+          "first": "needs_review",
+          "second": "needs_review",
+          "reason": "题干与A-D选项逐项一致，但仅见红色答案标记(D)，无完整解题过程，解不完整。 / 题干与A-D四选项和图完全一致,但解答区仅有红色(D)标记,无任何解答过程,解答不完整。"
+        },
+        {
+          "id": 5618,
+          "first": "reject",
+          "second": "reject",
+          "reason": "图为A=[[1,0,1],[0,2,0],[1,0,1]]求A^n及其解答，与题库A=[[1,0,1],[2,1,0],[-3,2,-5]]求|[(E-A)*]^{-1}|矩阵与所求全不同 / 源图矩阵为[[1,0,1],[0,2,0],[1,0,1]]且问A^n，题干矩阵为[[1,0,1],[2,1,0],[-3,2,-5]]且问|[(E-A)^*]^{-1}|，完全不同属另一题。"
+        },
+        {
+          "id": 10953,
+          "first": "needs_review",
+          "second": "approve",
+          "reason": "题干及A-D四项与题库逐字一致；图2仅红色答案(D)，无任何推导过程框架，解答缺失 / 题干及A–D选项文字、下标2n/2n+1与3n/3n+1与源图逐字一致，源图另有红字答案(D)，与正确项D相符。"
+        },
+        {
+          "id": 273,
+          "first": "needs_review",
+          "second": "needs_review",
+          "reason": "题干与A-D选项逐字一致（例24即本题）；该图仅为题干加选项，无解题过程，解答缺失 / 题干各矩阵阶数及A–D选项与源图例24逐字一致，但源图仅含题干，无答案或解答帧，解答缺失。"
+        },
+        {
+          "id": 10830,
+          "first": "approve",
+          "second": "approve",
+          "parent": "hold",
+          "reason": "Parent actually viewed original source: answer formula only, no solution process; complete explanation requirement not met."
+        }
+      ],
+      "parent_exclusions": {
+        "10830": "Parent actually viewed original source: answer formula only, no solution process; complete explanation requirement not met."
+      }
+    }
+  ]
+}
