@@ -3318,3 +3318,28 @@ html.native-titlebar-content-inset .app-container {
   #ai-panel .ai-messages { padding: 16px 20px; }
   #ai-panel .ai-header { padding-inline: 16px; }
 }
+
+/* === 原生题解（native solution）=== */
+/* Chromium 只有保留 UA 的 "block math"/"inline math" 显示类型才会做原生 MathML 布局；
+   直接写 display:block/inline 会让 <mtable> 等结构塌陷，故只覆盖 MathML 数学显示类型。 */
+.native-solution math[display="block"] {
+  display: block math;
+  max-width: 100%;
+  overflow-x: auto;
+  margin: 0.6em 0;
+}
+.native-solution math:not([display="block"]) {
+  display: inline math;
+}
+.native-solution img {
+  max-width: 100%;
+  height: auto;
+}
+.native-solution-source {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--muted, #5f6368);
+}
+
+/* Restore MathML cell spacing suppressed by the global padding reset. */
+.native-solution mtd { padding: revert; }

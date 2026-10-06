@@ -5,7 +5,7 @@
 
 // ========== 离线缓存注册（与 app2.js 一致） ==========
 if ("serviceWorker" in navigator && location.protocol !== "file:" && location.protocol !== "https:") {
-    navigator.serviceWorker.register("./service-worker.js?v=151").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=162").catch(() => {});
 }
 
 // ========== 全局状态 ==========
@@ -344,11 +344,20 @@ function toast(message, kind = '') {
 }
 
 // ========== 渲染工具（移植自 app2.js 生产逻辑） ==========
+// 题库资源按内容哈希命名（assets/<sha256>.<ext>）；原生解析图片已外置为同样的文件，
+// 因此这里必须保留真实扩展名，不能一律改写成 .png。
+const ASSET_EXTENSIONS = "png|jpe?g|webp|gif";
+function assetFileName(hash, ext) {
+    return `${hash}.${String(ext || "png").toLowerCase().replace(/^jpg$/, "jpeg")}`;
+}
 function assetUrl(src) {
-    const m = String(src).match(/(?:^|\/)assets\/([0-9a-fA-F]{64})$/);
-    if (m) return `./data/assets/${m[1]}.png`;
+    const m = String(src).match(new RegExp(`(?:^|/)assets/([0-9a-fA-F]{64})(?:\\.(${ASSET_EXTENSIONS}))?$`, "i"));
+    if (m) return `./data/assets/${assetFileName(m[1], m[2])}`;
     if (src.startsWith("assets/")) {
-        return `./data/assets/${src.slice("assets/".length).replace(/\.png$/i, "")}.png`;
+        const name = src.slice("assets/".length);
+        const asset = name.match(new RegExp(`^([0-9a-fA-F]{64})\\.(${ASSET_EXTENSIONS})$`, "i"));
+        if (asset) return `./data/assets/${assetFileName(asset[1], asset[2])}`;
+        return `./data/assets/${name.replace(/\.png$/i, "")}.png`;
     }
     return src;
 }
@@ -361,6 +370,26 @@ function escapeHtml(text) {
 
 const safeRender = window.DaguanSafeRender.create({ assetUrl });
 function renderMarkdown(text) { return safeRender.markdown(text); }
+
+// 原生解析（native_solution）：题库数据里已复核的 MinerU 排版片段。
+// 只走 safeRender.html（raw 清洗），不经过 marked/KaTeX，避免破坏原生 MathML。
+function nativeSolutionFragment(question) {
+    const html = question?.native_solution?.html;
+    return typeof html === 'string' && html.trim() ? html : '';
+}
+
+function nativeSolutionCaption(question) {
+    const source = question?.native_solution?.source || {};
+    const file = String(source.file ?? '').trim();
+    const document = file.endsWith('（原始图片）') ? file : source.document;
+    const detail = [document, source.label].map(value => String(value ?? '').trim()).filter(Boolean).join('/');
+    return detail ? `<p class="native-solution-source">资料解析 · ${escapeHtml(detail)}</p>` : '';
+}
+
+function nativeSolutionBody(question) {
+    const fragment = nativeSolutionFragment(question);
+    return fragment ? `${safeRender.html(fragment)}${nativeSolutionCaption(question)}` : '';
+}
 
 function renderSafeSearchMarkdown(text) {
     const safeText = String(text || '').replace(/!\[[^\]]*\]\([^)]*\)/g, '[图片]').replace(/\[([^\]]+)\]\([^)]*\)/g, '$1');
@@ -1109,7 +1138,7 @@ class UIRenderer {
             <div class="filter-section">
                 <h3>讲师</h3>
                 <div class="filter-options" id="filter-lecturers">
-                    ${['帕拉迪宇', '李艳芳', '没咋了', '喻老'].map(name => checkbox(name, name, AppState.filters.lecturers.includes(name))).join('')}
+                    ${['帕拉迪宇', '李艳芳', '没咋了', '喻老', '拉普拉丝儿'].map(name => checkbox(name, name, AppState.filters.lecturers.includes(name))).join('')}
                 </div>
             </div>
         `;
@@ -1370,6 +1399,7 @@ class UIRenderer {
     }
 
     static renderQuestionContent(question, { multi = false, statusControls = '' } = {}) {
+        const nativeSolution = nativeSolutionFragment(question);
         let html = `<div class="question-stem">${renderMarkdown(question.stem || question.question || '')}</div>`;
 
         if (question.image) {
@@ -1405,14 +1435,22 @@ class UIRenderer {
                 <h3>答案</h3>
                 <div class="answer-content">${renderMarkdown(question.answer || '暂无答案')}</div>
 
-                <div class="explanation-v2" data-explanation-v2="${escapeHtml(String(question.id))}" data-explanation-answer="${escapeHtml(String(question.answer || ''))}" hidden></div>
-
-                ${question.explanation ? `
-                    <div class="explanation-section" data-original-explanation>
+                ${nativeSolution ? `
+                    <div class="explanation-section native-solution" data-native-solution>
                         <h3>解析</h3>
-                        <div class="explanation-content">${renderMarkdown(question.explanation)}</div>
+                        <div class="explanation-content">${safeRender.html(nativeSolution)}</div>
+                        ${nativeSolutionCaption(question)}
                     </div>
-                ` : ''}
+                ` : `
+                    <div class="explanation-v2" data-explanation-v2="${escapeHtml(String(question.id))}" data-explanation-answer="${escapeHtml(String(question.answer || ''))}" hidden></div>
+
+                    ${question.explanation ? `
+                        <div class="explanation-section" data-original-explanation>
+                            <h3>解析</h3>
+                            <div class="explanation-content">${renderMarkdown(question.explanation)}</div>
+                        </div>
+                    ` : ''}
+                `}
 
                 ${this.renderVideoLinks(question)}
             </div>
@@ -1485,6 +1523,7 @@ class UIRenderer {
     }
 
     // 惰性填充：只有答案区真正展开时才拉取 v2 数据（约 4.4 MB），拉过一次后常驻内存。
+    // 原生解析（native_solution）题不渲染 v2 插槽，也就不会触发这次拉取。
     static async fillExplanationV2(root) {
         const host = root || document;
         const pending = [...host.querySelectorAll('[data-explanation-v2]')]
@@ -1497,6 +1536,9 @@ class UIRenderer {
         } catch { return; }
         if (!AppState.explanationsV2) return;
         pending.forEach(slot => {
+            // 等数据期间可能已经切题/重渲染：插槽一旦离开文档就不再写入，
+            // 避免过期的 v2 内容盖到新页面（原生解析）的解析区上。
+            if (!slot.isConnected) return;
             const entry = this.explanationV2Entry(slot.dataset.explanationV2);
             if (!entry) return;
             slot.innerHTML = this.renderExplanationV2(entry, slot.dataset.explanationAnswer);
@@ -2431,10 +2473,13 @@ class App {
             image.alt = '放大的题目图片';
             stage.append(image);
             dialog.append(header, stage);
+            // Keep global search and study shortcuts outside the image modal.
+            // Native Escape/Tab/button handling remains enabled.
+            dialog.addEventListener('keydown', event => event.stopPropagation());
             document.body.append(dialog);
         }
         dialog.querySelector('img').src = source.currentSrc || source.src;
-        dialog.showModal();
+        if (!dialog.open) dialog.showModal();
     }
 
     static showShortcutHelp() {
@@ -3055,8 +3100,8 @@ class App {
 
     static async changeChapterScope(scope) {
         if (!['all', 'core', 'real'].includes(scope)) return;
-        const token = (this.chapterScopeToken || 0) + 1;
-        this.chapterScopeToken = token;
+        const scopeSeq = (this.chapterScopeToken || 0) + 1;
+        this.chapterScopeToken = scopeSeq;
         const summary = document.getElementById('catalog-scope-summary');
         if (scope === AppState.chapterScope) {
             if (summary) summary.textContent = UIRenderer.scopeSummaryText();
@@ -3069,13 +3114,13 @@ class App {
         try {
             await UIRenderer.ensureScopeQuestionIds(scope);
         } catch (error) {
-            if (token === this.chapterScopeToken) {
+            if (scopeSeq === this.chapterScopeToken) {
                 if (summary) summary.textContent = UIRenderer.scopeSummaryText();
                 toast(`题库范围暂时无法加载：${error.message || '请重试'}`);
             }
             return;
         }
-        if (token !== this.chapterScopeToken) return;
+        if (scopeSeq !== this.chapterScopeToken) return;
         AppState.chapterScope = scope;
         UIRenderer.saveScope(scope);
         if (summary) summary.textContent = UIRenderer.scopeSummaryText();
@@ -3207,7 +3252,7 @@ class App {
     static async changeQuestionMode(mode) {
         if (!['single', 'multi'].includes(mode) || !AppState.currentChapter) return;
         if (mode === AppState.questionMode && AppState.modeSwitchTarget == null) return;
-        const token = ++AppState.modeSwitchToken;
+        const modeSequence = ++AppState.modeSwitchToken;
         AppState.modeSwitchTarget = mode;
         if (mode === AppState.questionMode) { AppState.modeSwitchTarget = null; return; }
         const previousMode = AppState.questionMode;
@@ -3216,32 +3261,32 @@ class App {
         const entries = DataService.chapterEntries(AppState.currentChapter);
         const index = id == null ? 0 : entries.findIndex(e => String(e.id) === String(id));
         const saved = await this.ensureSavedBeforeLeavingQuestion({ stopAI: false });
-        if (!saved || token !== AppState.modeSwitchToken) {
-            if (token === AppState.modeSwitchToken) AppState.modeSwitchTarget = null;
+        if (!saved || modeSequence !== AppState.modeSwitchToken) {
+            if (modeSequence === AppState.modeSwitchToken) AppState.modeSwitchTarget = null;
             return;
         }
         AppState.temporaryQuestionView = false;
         try {
             if (mode === 'multi') {
                 AppState.questionMode = 'multi';
-                await UIRenderer.renderMultiRange(Math.floor(Math.max(index, 0) / 20) * 20, id, token);
+                await UIRenderer.renderMultiRange(Math.floor(Math.max(index, 0) / 20) * 20, id, modeSequence);
             } else {
                 const questions = await DataService.loadQuestionsForChapter(AppState.currentChapter);
-                if (token !== AppState.modeSwitchToken) return;
+                if (modeSequence !== AppState.modeSwitchToken) return;
                 if (!questions.length) throw new Error('题目暂时无法加载');
                 AppState.questions = questions; AppState.questionOffset = 0;
                 const targetIndex = id == null ? Math.max(index, 0) : questions.findIndex(q => String(q.id) === String(id));
                 AppState.questionMode = 'single';
                 await UIRenderer.renderQuestion(Math.max(0, targetIndex));
             }
-            if (token !== AppState.modeSwitchToken) return;
+            if (modeSequence !== AppState.modeSwitchToken) return;
             AppState.questionMode = mode;
             AppState.modeSwitchTarget = null;
             localStorage.setItem('daguan_new_question_mode_v1', mode);
             const selected = AppState.questions[AppState.currentQuestionIndex];
             if (selected) StorageService.saveLearningPosition(AppState.currentCategory.id, AppState.currentChapter.id, AppState.questionOffset + AppState.currentQuestionIndex, selected.id, mode);
         } catch (error) {
-            if (token !== AppState.modeSwitchToken) return;
+            if (modeSequence !== AppState.modeSwitchToken) return;
             AppState.questionMode = previousMode;
             AppState.modeSwitchTarget = null;
             toast(`切换模式失败，仍在${previousMode === 'single' ? '单题做题' : '连续做题'}模式：${error.message || '请重试'}`);
@@ -3638,15 +3683,20 @@ class App {
             }
             if (withAnswers) parts.push(`<p><strong>答案：</strong>${renderMarkdown(q.answer || '暂无')}</p>`);
             if (withExpl) {
-                const v2 = UIRenderer.explanationV2Entry(q.id);
-                if (v2) parts.push(`<div class="expl"><strong>精讲解析：</strong>${UIRenderer.renderExplanationV2(v2, q.answer)}</div>`);
-                else if (q.explanation) parts.push(`<p><strong>解析：</strong>${renderMarkdown(q.explanation)}</p>`);
+                // 原生解析优先：命中 native_solution 的题不渲染也不导出 v2 精讲（v2 数据保留不删）。
+                const nativeHtml = nativeSolutionFragment(q);
+                if (nativeHtml) parts.push(`<div class="expl"><strong>解析：</strong><div class="native-solution">${safeRender.html(nativeHtml)}${nativeSolutionCaption(q)}</div></div>`);
+                else {
+                    const v2 = UIRenderer.explanationV2Entry(q.id);
+                    if (v2) parts.push(`<div class="expl"><strong>精讲解析：</strong>${UIRenderer.renderExplanationV2(v2, q.answer)}</div>`);
+                    else if (q.explanation) parts.push(`<p><strong>解析：</strong>${renderMarkdown(q.explanation)}</p>`);
+                }
             }
             return `<section class="q">${parts.join('')}</section>`;
         }).join('');
         const doc = `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8"><title>大观园-${escapeHtml(title)}</title>
 <link rel="stylesheet" href="${location.origin}/vendor/katex.min.css">
-<style>body{font-family:Georgia,'Microsoft YaHei',serif;max-width:760px;margin:32px auto;padding:0 16px;color:#202124}h1{font-size:22px}.q{margin:24px 0;padding-bottom:12px;border-bottom:1px solid #e3e6ea}.opts{margin:8px 0 0 1.2em}.katex-display{overflow-x:auto}.toolbar{position:sticky;top:0;background:#fff;padding:10px 0;border-bottom:1px solid #e3e6ea;display:flex;gap:12px;align-items:center}.v2-head{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0}.v2-badge{background:#C83F32;color:#fff;font-size:13px;font-weight:600;padding:2px 10px;border-radius:999px}.v2-difficulty,.v2-tag{font-size:12px;padding:1px 8px;border-radius:999px;border:1px solid #dfe3e8;color:#5f6368}.v2-difficulty{border-color:#C83F32;color:#C83F32}.v2-hint,.v2-answer,.v2-why{padding:10px 12px;margin:10px 0;background:#f6f7f9;border-left:3px solid #C83F32;border-radius:8px}.v2-hint-tag,.v2-why-tag,.v2-answer-tag{font-weight:600;color:#C83F32;margin-right:8px}.v2-steps{list-style:none;counter-reset:v2step;margin:0;padding:0}.v2-step{counter-increment:v2step;padding:0 0 16px 34px;position:relative;border-left:1px solid #dfe3e8;margin-left:12px}.v2-step:last-child{border-left-color:transparent}.v2-step::before{content:counter(v2step);position:absolute;left:-12px;top:-2px;width:24px;height:24px;border-radius:50%;background:#C83F32;color:#fff;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center}.v2-step-title{font-weight:600;margin-bottom:6px}.v2-sub{font-weight:600;color:#5f6368;font-size:14px;margin:14px 0 6px}.v2-options{list-style:none;padding:0;margin:0}.v2-option{display:flex;flex-wrap:wrap;gap:8px;align-items:baseline;padding:6px 0;border-bottom:1px dashed #dfe3e8}.v2-option-key{font-weight:600}.v2-option-verdict{font-size:12px;padding:1px 8px;border-radius:999px;background:#f6f7f9;color:#5f6368}.v2-option.ok .v2-option-verdict{background:rgba(200,63,50,.1);color:#C83F32}.v2-chips{display:flex;flex-wrap:wrap;gap:6px}.v2-chip{font-size:12px;padding:2px 9px;border-radius:999px;background:#f6f7f9;border:1px solid #dfe3e8;color:#5f6368}.v2-conflict{padding:10px 12px;margin:10px 0;border-radius:8px;background:rgba(214,138,0,.1);border-left:3px solid #d68a00}.v2-conflict.reviewed{background:#f6f7f9;border-left-color:#dfe3e8;color:#5f6368}.v2-conflict-body{margin-top:4px;color:#5f6368}.v2-details{border:1px solid #dfe3e8;border-radius:8px;padding:8px 12px;margin:8px 0;font-size:14px}.v2-details>summary{cursor:pointer;color:#5f6368}</style>
+<style>body{font-family:Georgia,'Microsoft YaHei',serif;max-width:760px;margin:32px auto;padding:0 16px;color:#202124}h1{font-size:22px}.q{margin:24px 0;padding-bottom:12px;border-bottom:1px solid #e3e6ea}.opts{margin:8px 0 0 1.2em}.katex-display{overflow-x:auto}.toolbar{position:sticky;top:0;background:#fff;padding:10px 0;border-bottom:1px solid #e3e6ea;display:flex;gap:12px;align-items:center}.v2-head{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0}.v2-badge{background:#C83F32;color:#fff;font-size:13px;font-weight:600;padding:2px 10px;border-radius:999px}.v2-difficulty,.v2-tag{font-size:12px;padding:1px 8px;border-radius:999px;border:1px solid #dfe3e8;color:#5f6368}.v2-difficulty{border-color:#C83F32;color:#C83F32}.v2-hint,.v2-answer,.v2-why{padding:10px 12px;margin:10px 0;background:#f6f7f9;border-left:3px solid #C83F32;border-radius:8px}.v2-hint-tag,.v2-why-tag,.v2-answer-tag{font-weight:600;color:#C83F32;margin-right:8px}.v2-steps{list-style:none;counter-reset:v2step;margin:0;padding:0}.v2-step{counter-increment:v2step;padding:0 0 16px 34px;position:relative;border-left:1px solid #dfe3e8;margin-left:12px}.v2-step:last-child{border-left-color:transparent}.v2-step::before{content:counter(v2step);position:absolute;left:-12px;top:-2px;width:24px;height:24px;border-radius:50%;background:#C83F32;color:#fff;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center}.v2-step-title{font-weight:600;margin-bottom:6px}.v2-sub{font-weight:600;color:#5f6368;font-size:14px;margin:14px 0 6px}.v2-options{list-style:none;padding:0;margin:0}.v2-option{display:flex;flex-wrap:wrap;gap:8px;align-items:baseline;padding:6px 0;border-bottom:1px dashed #dfe3e8}.v2-option-key{font-weight:600}.v2-option-verdict{font-size:12px;padding:1px 8px;border-radius:999px;background:#f6f7f9;color:#5f6368}.v2-option.ok .v2-option-verdict{background:rgba(200,63,50,.1);color:#C83F32}.v2-chips{display:flex;flex-wrap:wrap;gap:6px}.v2-chip{font-size:12px;padding:2px 9px;border-radius:999px;background:#f6f7f9;border:1px solid #dfe3e8;color:#5f6368}.v2-conflict{padding:10px 12px;margin:10px 0;border-radius:8px;background:rgba(214,138,0,.1);border-left:3px solid #d68a00}.v2-conflict.reviewed{background:#f6f7f9;border-left-color:#dfe3e8;color:#5f6368}.v2-conflict-body{margin-top:4px;color:#5f6368}.v2-details{border:1px solid #dfe3e8;border-radius:8px;padding:8px 12px;margin:8px 0;font-size:14px}.v2-details>summary{cursor:pointer;color:#5f6368}.native-solution math[display="block"]{display:block math;overflow-x:auto;margin:8px 0}.native-solution img{max-width:100%;height:auto}.native-solution-source{margin:6px 0 0;font-size:12px;color:#8a8f96}</style>
 </head><body>
 <div class="toolbar"><button onclick="window.print()">打印 / 另存 PDF</button><button id="btn-dl">下载 HTML 文件</button><span>${questions.length} 题 · ${escapeHtml(title)}</span></div>
 <h1>大观园 · ${escapeHtml(title)}</h1>
@@ -3945,11 +3995,11 @@ document.getElementById('btn-dl').addEventListener('click', function () {
         event.preventDefault();
         if (!PreviewAccess.privateAllowed()) return;
         const username = String(document.getElementById('sync-login-user')?.value || '').trim();
-        const password = String(document.getElementById('sync-login-pass')?.value || '');
+        const pwd = String(document.getElementById('sync-login-pass')?.value || '');
         if (!username) { this.syncResultHtml('<p class="text-helper">请输入登录码或用户名。</p>'); return; }
         this.syncResultHtml('<p class="text-helper">正在保存登录配置…</p>');
         try {
-            const payload = password ? { username, password } : { code: username };
+            const payload = pwd ? { username, password: pwd } : { code: username };
             await this.syncRequest('login', payload);
             this.syncResultHtml('<p class="text-helper">登录配置已保存。请重新「检查状态」。</p>');
             document.getElementById('sync-login-form')?.classList.add('hidden');

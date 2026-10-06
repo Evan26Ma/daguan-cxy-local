@@ -2,7 +2,7 @@
   "use strict";
 
   if ("serviceWorker" in navigator && location.protocol !== "file:" && location.protocol !== "https:") {
-    navigator.serviceWorker.register("./service-worker.js?v=151").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=162").catch(() => {});
   }
 
   const DATA = "./data";
@@ -1254,6 +1254,12 @@
     document.head.appendChild(link);
   }
 
+  // 题库资源按内容哈希命名（assets/<sha256>.<ext>）；原生解析图片已外置成同样的文件，
+  // 这里保留真实扩展名，避免把 .jpeg 误拼成 .png 而 404。
+  const ASSET_EXTENSIONS = "png|jpe?g|webp|gif";
+  function assetFileName(hash, ext) {
+    return `${hash}.${String(ext || "png").toLowerCase().replace(/^jpg$/, "jpeg")}`;
+  }
   function assetUrl(src) {
     if (!src) return src;
     if (src.startsWith("data:")) return src;
@@ -1265,18 +1271,42 @@
       } catch {}
       return "./assets/missing-image.svg";
     }
-    const m = String(src).match(/(?:^|\/)assets\/([0-9a-fA-F]{64})$/);
+    const m = String(src).match(new RegExp(`(?:^|/)assets/([0-9a-fA-F]{64})(?:\\.(${ASSET_EXTENSIONS}))?$`, "i"));
     if (m) {
-      return `./data/assets/${m[1]}.png`;
+      return `./data/assets/${assetFileName(m[1], m[2])}`;
     }
     if (src.startsWith("assets/")) {
-      return `./data/assets/${src.slice("assets/".length).replace(/\.png$/i, "")}.png`;
+      const name = src.slice("assets/".length);
+      const asset = name.match(new RegExp(`^([0-9a-fA-F]{64})\\.(${ASSET_EXTENSIONS})$`, "i"));
+      if (asset) return `./data/assets/${assetFileName(asset[1], asset[2])}`;
+      return `./data/assets/${name.replace(/\.png$/i, "")}.png`;
     }
     return src;
   }
 
   const safeRender = window.DaguanSafeRender.create({ assetUrl });
 function renderMarkdown(text) { return safeRender.markdown(text); }
+
+  // 原生解析（native_solution）：题库数据里已复核的 MinerU 排版片段。
+  // 只走 html 清洗，不经过 marked/KaTeX，避免破坏原生 MathML。
+  function nativeSolutionFragment(question) {
+    const html = question?.native_solution?.html;
+    return typeof html === "string" && html.trim() ? html : "";
+  }
+
+  function nativeSolutionCaption(question) {
+    const source = question?.native_solution?.source || {};
+    const file = String(source.file ?? "").trim();
+    const document = file.endsWith("（原始图片）") ? file : source.document;
+    const detail = [document, source.label].map((value) => String(value ?? "").trim()).filter(Boolean).join("/");
+    return detail ? `<p class="native-solution-source">资料解析 · ${escapeHtml(detail)}</p>` : "";
+  }
+
+  function nativeSolutionBody(question) {
+    const fragment = nativeSolutionFragment(question);
+    if (!fragment) return "";
+    return `${safeRender.html(fragment)}${nativeSolutionCaption(question)}`;
+  }
 
 function videoExplanationMarkup(q) {
     const categoryPath = String(q?.category_path || "");
@@ -2195,17 +2225,17 @@ function videoExplanationMarkup(q) {
         { name: "没咋了讲过", count: countVideoTeacher("没咋了") },
         { name: "喻老讲过", count: countVideoTeacher("喻老") },
         { name: "拉普拉丝儿讲过", count: countVideoTeacher("拉普拉丝儿") },
-        { name: "一只柠檬讲过", count: countVideoTeacher("一只柠檬") },
-        { name: "姜晓千讲过", count: countVideoTeacher("姜晓千") },
-        { name: "锋哥讲过", count: countVideoTeacher("锋哥") },
-        { name: "夜雨讲过", count: countVideoTeacher("夜雨") },
         { name: "千羽讲过", count: countVideoTeacher("千羽") },
         { name: "郭伟讲过", count: countVideoTeacher("郭伟") },
-        { name: "小吴学长讲过", count: countVideoTeacher("小吴学长") },
-        { name: "陈汉讲过", count: countVideoTeacher("陈汉") },
         { name: "唐祥祥讲过", count: countVideoTeacher("唐祥祥") },
+        { name: "锋哥讲过", count: countVideoTeacher("锋哥") },
+        { name: "夜雨讲过", count: countVideoTeacher("夜雨") },
+        { name: "小吴学长讲过", count: countVideoTeacher("小吴学长") },
+        { name: "姜晓千讲过", count: countVideoTeacher("姜晓千") },
+        { name: "陈汉讲过", count: countVideoTeacher("陈汉") },
         { name: "处江湖之远呀讲过", count: countVideoTeacher("处江湖之远呀") },
         { name: "焦导JLU讲过", count: countVideoTeacher("焦导JLU") },
+        { name: "一只柠檬讲过", count: countVideoTeacher("一只柠檬") },
         { name: "吃尽天下面讲过", count: countVideoTeacher("吃尽天下面") },
       ] });
       const mc = masteryFacetCounts();
@@ -2968,6 +2998,7 @@ function videoExplanationMarkup(q) {
     const answerBox = document.createElement("div");
     answerBox.className = "answer-box" + (ui.showAnswer ? "" : " hidden");
     if (ui.showAnswer) {
+      const nativeBody = nativeSolutionBody(q);
       answerBox.innerHTML = `
         <div class="answer-block">
           <h3>答案</h3>
@@ -2975,12 +3006,13 @@ function videoExplanationMarkup(q) {
         </div>
         <div class="answer-block">
           <h3>解析</h3>
-          <div class="md">${renderMarkdown(q.explanation || "（无解析）")}</div>
+          ${nativeBody ? `<div class="native-solution">${nativeBody}</div>` : `<div class="md">${renderMarkdown(q.explanation || "（无解析）")}</div>`}
         </div>
         ${videoExplanationMarkup(q)}`;
     }
 
     li.append(head, path, stem, ...(options ? [options] : []), actions, masteryRow, answerBox);
+    prepareNativeImageZoom(li);
     refreshFavoriteUI();
     return li;
   }
@@ -3116,7 +3148,11 @@ function videoExplanationMarkup(q) {
     els.answerBox.classList.toggle("hidden", !state.showAnswer);
     if (state.showAnswer) {
       els.qAnswer.innerHTML = renderMarkdown(q.answer || "（无答案）");
-      els.qExpl.innerHTML = renderMarkdown(q.explanation || "（无解析）");
+      const nativeBody = nativeSolutionBody(q);
+      els.qExpl.innerHTML = nativeBody
+        ? `<div class="native-solution">${nativeBody}</div>`
+        : renderMarkdown(q.explanation || "（无解析）");
+      prepareNativeImageZoom(els.qExpl);
       const videoLink = document.querySelector("#answer-box .answer-video-block");
       const videoMarkup = videoExplanationMarkup(q);
       if (videoMarkup) {
@@ -4385,7 +4421,10 @@ function videoExplanationMarkup(q) {
     if (withAnswers) {
       key = `<div class="print-key"><div class="print-key-row"><span class="print-lab">答</span><div class="md">${renderMarkdown(q.answer || "（无）")}</div></div>`;
       if (withExpl) {
-        key += `<div class="print-key-row"><span class="print-lab">析</span><div class="md">${renderMarkdown(q.explanation || "（无）")}</div></div>`;
+        const nativeBody = nativeSolutionBody(q);
+        key += nativeBody
+          ? `<div class="print-key-row"><span class="print-lab">析</span><div class="native-solution">${nativeBody}</div></div>`
+          : `<div class="print-key-row"><span class="print-lab">析</span><div class="md">${renderMarkdown(q.explanation || "（无）")}</div></div>`;
       }
       key += `</div>`;
     }
@@ -5170,7 +5209,70 @@ function videoExplanationMarkup(q) {
     $("#ai-services-settings")?.aiSettings?.syncBusy();
   }
 
+  let nativeZoomSource = null;
+  function prepareNativeImageZoom(container) {
+    container.querySelectorAll(".native-solution img").forEach(image => {
+      image.tabIndex = 0;
+      image.setAttribute("role", "button");
+      image.setAttribute("aria-haspopup", "dialog");
+      image.setAttribute("aria-label", `${image.alt || "答案与解析图片"}，放大原图`);
+      image.title = "点击或按 Enter / 空格查看原图";
+    });
+  }
+
+  function openNativeImageZoom(source) {
+    let dialog = document.getElementById("question-image-zoom");
+    if (!dialog) {
+      dialog = document.createElement("dialog");
+      dialog.id = "question-image-zoom";
+      dialog.className = "question-image-zoom";
+      dialog.setAttribute("aria-labelledby", "legacy-image-zoom-title");
+      const header = document.createElement("div");
+      header.className = "image-zoom-header";
+      const title = document.createElement("strong");
+      title.id = "legacy-image-zoom-title";
+      title.textContent = "答案与解析原图";
+      const close = document.createElement("button");
+      close.type = "button";
+      close.className = "btn";
+      close.textContent = "关闭";
+      close.addEventListener("click", () => dialog.close());
+      header.append(title, close);
+      const stage = document.createElement("div");
+      stage.className = "image-zoom-stage";
+      stage.appendChild(document.createElement("img"));
+      dialog.append(header, stage);
+      // Keep study shortcuts (navigation, grading, answer toggles) outside the modal.
+      // Do not preventDefault: Chromium still handles Escape and button activation.
+      dialog.addEventListener("keydown", event => event.stopPropagation());
+      dialog.addEventListener("close", () => {
+        if (nativeZoomSource?.isConnected) nativeZoomSource.focus({ preventScroll: true });
+        nativeZoomSource = null;
+      });
+      document.body.appendChild(dialog);
+    }
+    nativeZoomSource = source;
+    const image = dialog.querySelector("img");
+    image.alt = source.alt || "答案与解析原图";
+    image.src = source.currentSrc || source.src;
+    if (!dialog.open) dialog.showModal();
+  }
+
   function bindUI() {
+    document.addEventListener("click", event => {
+      const image = event.target.closest?.(".native-solution img");
+      if (!image) return;
+      event.preventDefault();
+      openNativeImageZoom(image);
+    });
+    document.addEventListener("keydown", event => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      const image = event.target.closest?.(".native-solution img");
+      if (!image) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      openNativeImageZoom(image);
+    });
     $("#btn-switch-new")?.addEventListener("click", () => setUiVersion("new"));
     $("#preview-access-form")?.addEventListener("submit", unlockPreview);
     $("#btn-preview-lock")?.addEventListener("click", lockPreview);

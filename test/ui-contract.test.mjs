@@ -110,11 +110,12 @@ test("Service Worker 不预缓存首屏之外的大型索引和字体", () => {
   assert.ok(app.includes(`service-worker.js?v=${version}`));
   assert.ok(newApp.includes(`service-worker.js?v=${version}`));
   assert.match(sw, /"\.\/legacy\.html"/);
-  assert.match(sw, /"\.\/legacy\.css\?v=93"/);
+  const legacyStyle = html.match(/href="(\.\/legacy\.css\?v=\d+)"/)?.[1];
+  assert.ok(legacyStyle); assert.ok(sw.includes(JSON.stringify(legacyStyle)));
   const legacyScript = html.match(/src="(\.\/app-legacy\.js\?v=\d+)"/)?.[1];
   assert.ok(legacyScript); assert.ok(sw.includes(JSON.stringify(legacyScript)));
   assert.match(sw, /"\.\/guides\.css\?v=2"/);
-  assert.match(sw, /"\.\/styles-new\.css\?v=123"/);
+  assert.match(sw, /"\.\/styles-new\.css\?v=126"/);
   assert.match(sw, /"\.\/source-taxonomy\.js\?v=1"/);
   const newScript = newHtml.match(/src="(\.\/app-new\.js\?v=\d+)"/)?.[1];
   assert.ok(newScript); assert.ok(sw.includes(JSON.stringify(newScript)));
@@ -136,7 +137,7 @@ test("新版与旧版都监听本地服务状态事件并刷新共享学习记�
 });
 
 test("新版入口承载新版前端并与旧版共享版本选择", () => {
-  assert.match(newHtml, /styles-new\.css\?v=123/);
+  assert.match(newHtml, /styles-new\.css\?v=126/);
   assert.match(newHtml, /ui-version\.js\?v=106/);
   assert.match(newHtml, /ui-bootstrap\.js\?v=1/);
   assert.match(newHtml, /source-taxonomy\.js\?v=1/);
@@ -174,26 +175,21 @@ test("讲解视频映射覆盖所有已接入老师且只保留前端需要的�
   assert.equal(entries.filter((entry) => entry.teacher === "喻老").length, 418);
   assert.equal(entries.filter((entry) => entry.teacher === "没咋了").length, 1101);
   assert.equal(entries.filter((entry) => entry.teacher === "拉普拉丝儿").length, 96);
-  assert.equal(entries.filter((entry) => entry.teacher === "李艳芳").length, 1916);
-  assert.equal(entries.filter((entry) => entry.teacher === "一只柠檬").length, 434);
-  assert.equal(entries.filter((entry) => entry.teacher === "姜晓千").length, 18);
-  assert.equal(entries.filter((entry) => entry.teacher === "锋哥").length, 90);
-  assert.equal(entries.filter((entry) => entry.teacher === "夜雨").length, 82);
   assert.equal(entries.filter((entry) => entry.teacher === "千羽").length, 161);
   assert.equal(entries.filter((entry) => entry.teacher === "郭伟").length, 291);
-  assert.equal(entries.filter((entry) => entry.teacher === "小吴学长").length, 185);
-  assert.equal(entries.filter((entry) => entry.teacher === "陈汉").length, 10);
   assert.equal(entries.filter((entry) => entry.teacher === "唐祥祥").length, 148);
+  assert.equal(entries.filter((entry) => entry.teacher === "李艳芳").length, 1916);
+  assert.equal(entries.filter((entry) => entry.teacher === "吃尽天下面").length, 135);
+  assert.equal(entries.filter((entry) => entry.teacher === "一只柠檬").length, 434);
+  assert.equal(entries.filter((entry) => entry.teacher === "锋哥").length, 90);
+  assert.equal(entries.filter((entry) => entry.teacher === "夜雨").length, 82);
+  assert.equal(entries.filter((entry) => entry.teacher === "小吴学长").length, 185);
+  assert.equal(entries.filter((entry) => entry.teacher === "姜晓千").length, 18);
+  assert.equal(entries.filter((entry) => entry.teacher === "陈汉").length, 10);
   assert.equal(entries.filter((entry) => entry.teacher === "处江湖之远呀").length, 7);
   assert.equal(entries.filter((entry) => entry.teacher === "焦导JLU").length, 21);
-  assert.equal(entries.filter((entry) => entry.teacher === "吃尽天下面").length, 135);
   for (const [id, videos] of Object.entries(lectureVideos.questions)) {
-    // 上游已接入、本地题库尚未同步到的题目（id 11600+）允许暂时缺位；
-    // 其余映射必须能落到 id_index，防止写错或死链。
-    if (!Object.hasOwn(questionIdIndex, id)) {
-      assert.ok(Number(id) >= 11600, `unknown question ID ${id}`);
-      continue;
-    }
+    assert.ok(Object.hasOwn(questionIdIndex, id), `unknown question ID ${id}`);
     assert.ok(Array.isArray(videos) && videos.length > 0);
     for (const entry of videos) {
       assert.ok(Number.isInteger(entry.page) && entry.page > 0);
@@ -210,6 +206,16 @@ test("讲解视频映射覆盖所有已接入老师且只保留前端需要的�
   assert.match(app, /\{ name: "汤家凤讲过"/);
   assert.match(app, /\{ name: "没咋了讲过"/);
   assert.match(app, /\{ name: "喻老讲过"/);
+  assert.match(app, /\{ name: "拉普拉丝儿讲过"/);
+  assert.match(app, /\{ name: "千羽讲过"/);
+  assert.match(app, /\{ name: "郭伟讲过"/);
+  assert.match(app, /\{ name: "唐祥祥讲过"/);
+  const compatibilityApp = fs.readFileSync(new URL("../web/app2.js", import.meta.url), "utf8");
+  assert.match(compatibilityApp, /\{ name: "唐祥祥讲过"/);
+  for (const teacher of teachers) {
+    assert.ok(app.includes(`{ name: "${teacher}讲过"`));
+    assert.ok(compatibilityApp.includes(`{ name: "${teacher}讲过"`));
+  }
   const sw = fs.readFileSync(new URL("../web/service-worker.js", import.meta.url), "utf8");
   assert.doesNotMatch(sw, /data\/lecture-video-mappings\.json/);
   assert.doesNotMatch(sw, /lecture-video-unmatched-audit\.json/);
@@ -232,7 +238,7 @@ test("界面版本：旧大观承载完整旧版前端", () => {
   const legacyCss = fs.readFileSync(new URL("../web/legacy.css", import.meta.url), "utf8");
   const legacyApp = fs.readFileSync(new URL("../web/app-legacy.js", import.meta.url), "utf8");
   assert.match(legacyHtml, /<title>大观园 · 本地刷题<\/title>/);
-  assert.match(legacyHtml, /legacy\.css\?v=93/);
+  assert.match(legacyHtml, /legacy\.css\?v=\d+/);
   assert.match(legacyHtml, /source-taxonomy\.js\?v=1/);
   assert.match(legacyHtml, /app-legacy\.js\?v=\d+/);
   assert.match(legacyHtml, /<header class="topbar learning-shell__topbar">[\s\S]*id="btn-switch-new"/);

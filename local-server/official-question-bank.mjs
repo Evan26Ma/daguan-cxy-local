@@ -3,6 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import { createHash } from "node:crypto";
 import { mergeLocalQuestionBanks } from "../shared/local-question-banks.mjs";
+import { applyNativeSolutions } from "../shared/native-solutions.mjs";
 
 const base = "https://www.cxyonly.fans";
 const pageSize = 200;
@@ -241,15 +242,15 @@ async function downloadAssets(hashes, dataDir, fallbackAssetsDir, signal) {
     }
   }
   if (!needed.length) return 0;
-  const token = process.env.DAGUAN_ASSET_TOKEN;
-  if (!token) return needed.length;
+  const assetAccess = process.env.DAGUAN_ASSET_TOKEN;
+  if (!assetAccess) return needed.length;
   let next = 0;
   await Promise.all(Array.from({ length: 4 }, async () => {
     while (next < needed.length) {
       const hash = needed[next++];
       try {
         const response = await fetch(`${base}/api/v1/question-assets/${hash}`, {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: { Authorization: `Bearer ${assetAccess}` },
           signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(20_000)]) : AbortSignal.timeout(20_000),
         });
         if (!response.ok) continue;
@@ -308,6 +309,7 @@ export async function syncOfficialQuestionBank({ targetDir, overlayDir = targetD
     const overlay = await mergeLocalQuestionBanks(stage, overlayDir);
     const merged = JSON.parse(await fs.readFile(path.join(stage, "manifest.json"), "utf8"));
     if (merged.total !== snapshot.total + overlay.added) throw new Error(`本地题库合并异常：${merged.total}`);
+    const nativeSolutionStats = await applyNativeSolutions(stage, overlayDir);
     await reconcileVideoMappings(stage, overlayDir);
     if (signal?.aborted) throw signal.reason;
     await fs.mkdir(targetDir, { recursive: true });
@@ -318,7 +320,8 @@ export async function syncOfficialQuestionBank({ targetDir, overlayDir = targetD
       await fs.copyFile(path.join(stage, file), target);
     }
     const missingAssets = await downloadAssets(result.hashes, targetDir, fallbackAssetsDir, signal);
-    return { fingerprint, sourceTotal: snapshot.total, total: merged.total, missingAssets };
+    return { fingerprint, sourceTotal: snapshot.total, total: merged.total, missingAssets,
+      native_solution_stats: nativeSolutionStats };
   } finally {
     const resolvedStage = path.resolve(stage);
     if (!resolvedStage.startsWith(path.resolve(os.tmpdir()) + path.sep) ||

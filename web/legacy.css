@@ -3193,3 +3193,58 @@ body.focus-mode[data-view="browse"] #app.learning-shell .learning-shell__sidebar
 #app.learning-shell { min-height: calc(100dvh - var(--desktop-bar-height, 0px)); }
 .learning-shell__sidebar { height: calc(100dvh - var(--desktop-bar-height, 0px)); }
 @media(max-width:672px) { .ai-drawer { top: var(--desktop-bar-height, 0px); } .learning-shell__sidebar { height: 4.25rem; } }
+
+/* === 原生题解（native solution）=== */
+/* Chromium 只有保留 UA 的 "block math"/"inline math" 显示类型才会做原生 MathML 布局；
+   直接写 display:block/inline 会让 <mtable> 等结构塌陷，故只覆盖 MathML 数学显示类型。 */
+.native-solution math[display="block"] {
+  display: block math;
+  max-width: 100%;
+  overflow-x: auto;
+  margin: 0.6em 0;
+}
+.native-solution math:not([display="block"]) {
+  display: inline math;
+}
+.native-solution img {
+  max-width: 100%;
+  height: auto;
+  cursor: zoom-in;
+}
+.native-solution img[role="button"]:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 3px;
+}
+.native-solution-source {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--muted, #5f6368);
+}
+.question-image-zoom {
+  width: min(1100px, calc(100vw - 32px));
+  height: min(900px, calc(100dvh - 32px));
+  max-width: none;
+  max-height: none;
+  margin: auto;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--bg-elev);
+  color: var(--ink);
+  overflow: hidden;
+}
+.question-image-zoom[open] { display: flex; flex-direction: column; }
+.question-image-zoom::backdrop { background: rgba(20, 24, 28, .72); }
+.image-zoom-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 56px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--line);
+  flex: none;
+}
+.image-zoom-header .btn { min-height: 44px; min-width: 44px; }
+.image-zoom-stage { flex: 1; min-height: 0; overflow: auto; padding: 16px; }
+.image-zoom-stage img { display: block; width: max-content; max-width: none; height: auto; margin: 0 auto; }
+@media print { .question-image-zoom { display: none !important; } }

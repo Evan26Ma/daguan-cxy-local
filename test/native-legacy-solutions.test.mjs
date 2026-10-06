@@ -230,7 +230,14 @@ test('legacy 真实章节导航后的原图支持离线点击、键盘放大与�
   await page.waitForSelector('#q-expl .native-solution img');
   const expected = await page.evaluate(() => {
     const h = window.__nativeTest, q = h.state.queue[h.state.index];
-    return [...new DOMParser().parseFromString(q.native_solution.html, 'text/html').querySelectorAll('img')].map(i => i.src);
+    // 原生解析图片已外置为 assets/<sha>.<ext>，渲染时按题库约定映射到 ./data/assets/。
+    // 这里对同样的两类引用（外置资源与历史内嵌 data:）分别给出期望 URL。
+    return [...new DOMParser().parseFromString(q.native_solution.html, 'text/html').querySelectorAll('img')].map(image => {
+      const src = image.getAttribute('src') || '';
+      const asset = src.match(/^(?:\.\/)?assets\/([0-9a-f]{64}\.(?:png|jpe?g|webp|gif))$/i);
+      if (asset) return new URL(`./data/assets/${asset[1].toLowerCase().replace(/\.jpg$/, '.jpeg')}`, location.href).href;
+      return image.src;
+    });
   });
   assert.ok(expected.length > 0, '真实题库样例缺少原 PDF 配图');
   await page.context().setOffline(true);

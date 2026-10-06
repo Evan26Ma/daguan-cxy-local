@@ -187,7 +187,9 @@ test('精讲解析在真实页面里按需加载并渲染', { skip, timeout: 900
   await page.evaluate(() => document.documentElement.style.setProperty('--brand-orange', '#125abc'));
   for (const { id, expectOriginTag } of probes) {
     const info = await page.evaluate(async questionId => {
-      const question = await DataService.getQuestion(questionId);
+      const loaded = await DataService.getQuestion(questionId);
+      const question = loaded && { ...loaded };
+      if (question) delete question.native_solution;
       if (!question) return { missing: true };
       const host = document.createElement('div');
       host.innerHTML = UIRenderer.renderQuestionContent(question, { statusControls: '' });

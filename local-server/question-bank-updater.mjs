@@ -2,6 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { createHash, randomUUID } from "node:crypto";
 import { syncOfficialQuestionBank } from "./official-question-bank.mjs";
+import { NATIVE_SOLUTIONS_FILE } from "../shared/native-solutions.mjs";
 
 const DATA_FILES = ["manifest.json", "lecture-video-mappings.json", "paradiyu-linear-video.json"];
 const REQUIRED_FILES = [...DATA_FILES, "categories.json", "category_questions.json", "id_index.json", "search_index.json"];
@@ -45,6 +46,12 @@ export async function createQuestionBankUpdater({ dataDir, bundledDataDir, enabl
       digest.update(file);
       digest.update(await fs.readFile(path.join(overlayDir, file)));
     }
+    const nativeSolutions = await fs.readFile(path.join(bundledDataDir, NATIVE_SOLUTIONS_FILE))
+      .catch(error => { if (error.code === "ENOENT") return null; throw error; });
+    if (nativeSolutions) {
+      digest.update(NATIVE_SOLUTIONS_FILE);
+      digest.update(nativeSolutions);
+    }
     return digest.digest("hex");
   }
 
@@ -66,6 +73,7 @@ export async function createQuestionBankUpdater({ dataDir, bundledDataDir, enabl
         await fs.rename(stage, path.join(versionsDir, id));
         const pointer = { id, fingerprint: result.fingerprint, bundledHash,
           sourceTotal: result.sourceTotal, total: result.total, missingAssets: result.missingAssets,
+          native_solution_stats: result.native_solution_stats,
           updatedAt: new Date().toISOString() };
         const tempPointer = `${pointerFile}.tmp-${id}`;
         await fs.writeFile(tempPointer, `${JSON.stringify(pointer)}\n`);
@@ -109,6 +117,7 @@ export async function createQuestionBankUpdater({ dataDir, bundledDataDir, enabl
     start, stop, update, dataRoot,
     status: () => ({ enabled: Boolean(enabled), activeId: current?.id || "bundled",
       sourceTotal: current?.sourceTotal || null, total: current?.total || null,
-      missingAssets: current?.missingAssets ?? null, updatedAt: current?.updatedAt || null }),
+      missingAssets: current?.missingAssets ?? null, updatedAt: current?.updatedAt || null,
+      native_solution_stats: current?.native_solution_stats || null }),
   };
 }

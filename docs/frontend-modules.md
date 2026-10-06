@@ -2,7 +2,7 @@
 
 新版继续使用普通 `defer` 脚本，不依赖打包器。入口顺序为公共工具、DOMPurify、`safe-render.js`、`new-data.js`、`new-state.js`、`new-ai.js`，最后加载 `app-new.js`。
 
-- **safe-render**：新旧界面共用。`create({ assetUrl })` 返回 `markdown(text)` 和 `svg(markup)`；缺少清洗库时返回转义文本。Markdown 先清理不可信样式与动作，再插入 `trust: false` 的 KaTeX 结果，最后清洗。SVG 禁止外部引用和动态内容。调用方只能在结果外包裹可信界面模板，不能追加未经转义的内容。
+- **safe-render**：新旧界面共用。`create({ assetUrl })` 返回 `markdown(text)`、`html(markup)` 和 `svg(markup)`；缺少清洗库时返回转义文本。Markdown 先清理不可信样式与动作，再插入 `trust: false` 的 KaTeX 结果，最后清洗。`html` 用于题库原生解析片段：先按 raw 配置清洗（保留 MathML、表格与 data: 图片，去掉脚本、事件、动作属性、内联样式，并连同内容丢弃 `annotation/annotation-xml`），再仅在普通文本节点里识别独立定界的 TeX（`$$...$$`、`$...$`、`\[...\]`、`\(...\)`，跳过已有 `math`/`svg`/KaTeX 与 `code/pre/script/style`），用 `trust:false`、`throwOnError:false`、`strict:'ignore'` 的 KaTeX 渲染后走 final 配置再清洗一次；不把整段原生 HTML 交给 marked/KaTeX，也不改动原生 MathML、表格或图片 URL。SVG 禁止外部引用和动态内容。调用方只能在结果外包裹可信界面模板，不能追加未经转义的内容。
 - **new-data**：`create({ AppState, fetch })` 创建独立的题库读取与分片缓存实例；失败的分片请求释放占位，允许重试。
 - **new-state**：存储格式兼容、批注、草稿、待同步日志、revision、SSE 和恢复对账。工厂显式接收存储、请求和界面回调；`getAccess/getRenderer/getApp` 延迟取得入口对象，避免初始化循环。服务端读取失败保留本机缓存。
 - **new-ai**：档案、上下文、SSE、历史、请求中止及 AI 面板。工厂返回 AIService、AIViews、AIController 和提示词。入口保留原有静态方法作为薄适配层；阅读位置和段落追问继续使用既有模块。

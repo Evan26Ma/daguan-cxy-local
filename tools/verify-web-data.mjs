@@ -50,9 +50,11 @@ for (const meta of Object.values(manifest.shards || {})) {
     ids.add(String(question.id));
     questionCount += 1;
     const text = JSON.stringify(question);
-    for (const match of text.matchAll(/(?:assets\/|question-assets\/)([0-9a-fA-F]{64})(?:\.png)?/g)) {
-      const file = join(data, "assets", `${match[1]}.png`);
-      if (!existsSync(file)) missingAssets.add(match[1]);
+    // 原生解析图片已外置为 assets/<sha256>.<ext>：按引用里的真实扩展名核对文件，
+    // 远程 question-assets/<hash> 仍按历史的 .png 命名查本地缓存。
+    for (const match of text.matchAll(/(?:assets\/|question-assets\/)([0-9a-fA-F]{64})(?:\.(png|jpe?g|webp|gif))?/g)) {
+      const name = `${match[1]}.${(match[2] || "png").toLowerCase().replace(/^jpg$/, "jpeg")}`;
+      if (!existsSync(join(data, "assets", name))) missingAssets.add(name);
     }
   }
 }

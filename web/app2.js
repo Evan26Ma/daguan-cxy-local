@@ -2,7 +2,7 @@
   "use strict";
 
   if ("serviceWorker" in navigator && location.protocol !== "file:") {
-    navigator.serviceWorker.register("./service-worker.js?v=151").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=162").catch(() => {});
   }
 
   const DATA = "./data";
@@ -1150,6 +1150,12 @@
     document.head.appendChild(link);
   }
 
+  // 题库资源按内容哈希命名（assets/<sha256>.<ext>）；原生解析图片已外置成同样的文件，
+  // 这里保留真实扩展名，避免把 .jpeg 误拼成 .png 而 404。
+  const ASSET_EXTENSIONS = "png|jpe?g|webp|gif";
+  function assetFileName(hash, ext) {
+    return `${hash}.${String(ext || "png").toLowerCase().replace(/^jpg$/, "jpeg")}`;
+  }
   function assetUrl(src) {
     if (!src) return src;
     if (src.startsWith("data:")) return src;
@@ -1161,12 +1167,15 @@
       } catch {}
       return "./assets/missing-image.svg";
     }
-    const m = String(src).match(/(?:^|\/)assets\/([0-9a-fA-F]{64})$/);
+    const m = String(src).match(new RegExp(`(?:^|/)assets/([0-9a-fA-F]{64})(?:\\.(${ASSET_EXTENSIONS}))?$`, "i"));
     if (m) {
-      return `./data/assets/${m[1]}.png`;
+      return `./data/assets/${assetFileName(m[1], m[2])}`;
     }
     if (src.startsWith("assets/")) {
-      return `./data/assets/${src.slice("assets/".length).replace(/\.png$/i, "")}.png`;
+      const name = src.slice("assets/".length);
+      const asset = name.match(new RegExp(`^([0-9a-fA-F]{64})\\.(${ASSET_EXTENSIONS})$`, "i"));
+      if (asset) return `./data/assets/${assetFileName(asset[1], asset[2])}`;
+      return `./data/assets/${name.replace(/\.png$/i, "")}.png`;
     }
     return src;
   }
@@ -2054,20 +2063,20 @@
         { name: "帕拉迪宇讲过", count: paradiyuCount },
         { name: "李艳芳讲过", count: countVideoTeacher("李艳芳") },
         { name: "没咋了讲过", count: countVideoTeacher("没咋了") },
+        { name: "唐祥祥讲过", count: countVideoTeacher("唐祥祥") },
+        { name: "锋哥讲过", count: countVideoTeacher("锋哥") },
+        { name: "夜雨讲过", count: countVideoTeacher("夜雨") },
+        { name: "小吴学长讲过", count: countVideoTeacher("小吴学长") },
+        { name: "姜晓千讲过", count: countVideoTeacher("姜晓千") },
+        { name: "陈汉讲过", count: countVideoTeacher("陈汉") },
+        { name: "处江湖之远呀讲过", count: countVideoTeacher("处江湖之远呀") },
+        { name: "焦导JLU讲过", count: countVideoTeacher("焦导JLU") },
+        { name: "一只柠檬讲过", count: countVideoTeacher("一只柠檬") },
         { name: "汤家凤讲过", count: countVideoTeacher("汤家凤") },
         { name: "喻老讲过", count: countVideoTeacher("喻老") },
         { name: "拉普拉丝儿讲过", count: countVideoTeacher("拉普拉丝儿") },
-        { name: "一只柠檬讲过", count: countVideoTeacher("一只柠檬") },
-        { name: "姜晓千讲过", count: countVideoTeacher("姜晓千") },
-        { name: "锋哥讲过", count: countVideoTeacher("锋哥") },
-        { name: "夜雨讲过", count: countVideoTeacher("夜雨") },
         { name: "千羽讲过", count: countVideoTeacher("千羽") },
         { name: "郭伟讲过", count: countVideoTeacher("郭伟") },
-        { name: "小吴学长讲过", count: countVideoTeacher("小吴学长") },
-        { name: "陈汉讲过", count: countVideoTeacher("陈汉") },
-        { name: "唐祥祥讲过", count: countVideoTeacher("唐祥祥") },
-        { name: "处江湖之远呀讲过", count: countVideoTeacher("处江湖之远呀") },
-        { name: "焦导JLU讲过", count: countVideoTeacher("焦导JLU") },
         { name: "吃尽天下面讲过", count: countVideoTeacher("吃尽天下面") },
       ] });
       const mc = masteryFacetCounts();

@@ -360,6 +360,38 @@ test('#129 克隆题带 native_solution 时优先原生解析、不渲染 v2 插
   assert.equal(errors.length, 0, errors.join('\n'));
 });
 
+test('原生解析外置图片：assets/<sha>.jpeg 经 assetUrl 映射到 ./data/assets 并真实加载', { skip, timeout: 90000 }, async t => {
+  const { base } = await fixture(t);
+  const { page, errors } = await openPage(t, base);
+  // 原生解析图片已外置为内容寻址文件；用真实文件验证渲染路径，而不是只看字符串。
+  const names = await fsp.readdir(path.join(ROOT, 'web/data/assets'));
+  const asset = names.filter(name => /^[0-9a-f]{64}\.jpeg$/.test(name)).sort()[0];
+  assert.ok(asset, '缺少外置的 .jpeg 原生解析图片');
+  const hash = asset.split('.')[0];
+  const kept = await page.evaluate(h => window.DaguanSafeRender.create({ assetUrl: value => value }).html(`<img src="assets/${h}.jpeg" alt="配图">`), hash);
+  assert.match(kept, new RegExp(`src="assets/${hash}\\.jpeg"`), '相对 assets 引用被清洗掉了');
+  const info = await page.evaluate(async ([markup, name]) => {
+    const original = await DataService.getQuestion(129);
+    if (!original) return { missing: true };
+    const clone = { ...original, id: 129, native_solution: { html: markup, text: 'native', source: { document: '线代讲义', label: '例3' } } };
+    const host = document.createElement('div');
+    host.innerHTML = UIRenderer.renderQuestionContent(clone, { statusControls: '' });
+    document.getElementById('app-main').appendChild(host);
+    const answer = host.querySelector('.answer-section');
+    if (answer) answer.style.display = 'block';
+    const img = host.querySelector('[data-native-solution] img');
+    if (!img) return { missingImage: true };
+    img.loading = 'eager';
+    try { await img.decode(); } catch {}
+    return { src: img.getAttribute('src'), width: img.naturalWidth, complete: img.complete, name };
+  }, [`<p>原解析</p><img src="assets/${asset}" alt="配图">`, asset]);
+  assert.ok(!info.missing && !info.missingImage, '外置图片未渲染');
+  assert.equal(info.src, `./data/assets/${asset}`, '外置图片未映射到 ./data/assets');
+  assert.equal(info.complete, true, '外置图片未加载完成');
+  assert.ok(info.width > 0, '外置图片尺寸为 0，未真实加载');
+  assert.equal(errors.length, 0, errors.join('\n'));
+});
+
 test('#129 无原生字段时照常加载并渲染 v2；导出对原生题输出净化解析且不再回退 v2', { skip, timeout: 90000 }, async t => {
   const { base } = await fixture(t);
   const { page, errors } = await openPage(t, base);
