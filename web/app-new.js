@@ -5,7 +5,7 @@
 
 // ========== 离线缓存注册（与 app2.js 一致） ==========
 if ("serviceWorker" in navigator && location.protocol !== "file:" && location.protocol !== "https:") {
-    navigator.serviceWorker.register("./service-worker.js?v=163").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=164").catch(() => {});
 }
 
 // ========== 全局状态 ==========
@@ -1144,7 +1144,10 @@ class UIRenderer {
         `;
     }
 
-    static async renderQuestion(questionIndex = 0) {
+    static async renderQuestion(questionIndex = 0, options = {}) {
+        // refresh：跨窗口/跨设备的自动刷新重绘。题目本身没变，跳过学习位置与已读写入，
+        // 避免重绘再触发一轮状态同步（两个窗口会互相踢成循环）。
+        const refresh = options?.refresh === true;
         if (!AppState.questions || AppState.questions.length === 0) return;
 
         if (AppState.questionMode === 'multi' && AppState.currentCategory && AppState.currentChapter) {
@@ -1254,7 +1257,7 @@ class UIRenderer {
         App.refreshShortcutHints(main);
         this.renderKaTeX();
         // 仅在从章节进入做题时记录学习位置；复习/笔记单题跳转不覆盖“继续学习”
-        if (AppState.currentCategory && AppState.currentChapter && !AppState.suspendLastStudy && !AppState.temporaryQuestionView) {
+        if (!refresh && AppState.currentCategory && AppState.currentChapter && !AppState.suspendLastStudy && !AppState.temporaryQuestionView) {
             StorageService.saveLearningPosition(
                 AppState.currentCategory.id,
                 AppState.currentChapter.id,
@@ -1264,7 +1267,7 @@ class UIRenderer {
             );
             StateSync.pushLastStudy(AppState.currentChapter.id, question.id, 'single');
         }
-        if (PreviewAccess.privateAllowed(false) && StorageService.isMastered(question.id) === false) {
+        if (!refresh && PreviewAccess.privateAllowed(false) && StorageService.isMastered(question.id) === false) {
             // 阅读即计 seen：与旧版逐题 PATCH 协议共享进度
             const entry = StorageService.getProgress().progress[String(question.id)] || {};
             if (!entry.seen) {
@@ -1276,6 +1279,54 @@ class UIRenderer {
         }
         // AI 抽屉按题隔离：切题即刷新消息与草稿
         if (!this.restoreAIPanel(aiSnapshot, question) && AppState.ui.aiPanelOpen) this.renderAIPanel();
+    }
+
+    // 自动刷新（new-state.js refreshFromEvent）会对题目视图整块重渲染：答案展开状态只存在 DOM 里，
+    // 不先记录就会把正在阅读的答案收起。刷新前捕获、渲染后恢复，滚动位置一并保留。
+    static captureQuestionViewState() {
+        const container = document.getElementById?.('app-main');
+        if (!container) return null;
+        const openAnswers = [];
+        if (AppState.questionMode === 'multi') {
+            container.querySelectorAll('.multi-question-card').forEach(card => {
+                const section = card.querySelector('.answer-section');
+                if (section && section.style.display === 'block') openAnswers.push(String(card.dataset.questionId || ''));
+            });
+        } else {
+            const section = document.getElementById('answer-section');
+            const question = AppState.questions?.[AppState.currentQuestionIndex];
+            if (section && section.style.display === 'block' && question) openAnswers.push(String(question.id));
+        }
+        const content = container.querySelector('.question-content');
+        return { openAnswers, mainScroll: container.scrollTop || 0, contentScroll: content ? content.scrollTop || 0 : 0 };
+    }
+
+    static restoreQuestionViewState(snapshot) {
+        if (!snapshot) return;
+        const container = document.getElementById?.('app-main');
+        if (!container) return;
+        for (const id of snapshot.openAnswers) {
+            if (!id) continue;
+            let section = null;
+            let button = null;
+            if (AppState.questionMode === 'multi') {
+                const card = [...container.querySelectorAll('.multi-question-card')].find(element => String(element.dataset.questionId) === id);
+                section = card?.querySelector('.answer-section') || null;
+                button = card?.querySelector('.expand-answer-btn') || null;
+            } else {
+                const question = AppState.questions?.[AppState.currentQuestionIndex];
+                if (!question || String(question.id) !== id) continue;
+                section = document.getElementById('answer-section');
+                button = document.getElementById('show-answer-btn');
+            }
+            if (!section) continue;
+            section.style.display = 'block';
+            if (button) { button.textContent = '隐藏答案'; button.setAttribute('aria-expanded', 'true'); }
+            void UIRenderer.fillExplanationV2(section);
+        }
+        const content = container.querySelector('.question-content');
+        if (content) content.scrollTop = snapshot.contentScroll;
+        container.scrollTop = snapshot.mainScroll;
     }
 
     static renderMultiQuestions(activeIndex = AppState.currentQuestionIndex) {

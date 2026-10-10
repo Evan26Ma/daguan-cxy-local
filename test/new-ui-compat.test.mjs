@@ -148,6 +148,29 @@ test("新版在后台错过 SSE 后于重新可见时补读状态，且保留未
   assert.equal(rendered, 0, "未保存批注期间不重绘题目编辑器");
 });
 
+test("远端刷新重绘前后保留阅读状态并按 refresh 选项跳过重复写入", async () => {
+  const { sandbox } = createContext();
+  const { StateSync, AppState, UIRenderer } = sandbox.window;
+  StateSync.hydrated = true;
+  StateSync.available = true;
+  StateSync.revision = 4;
+  AppState.currentView = "question";
+  AppState.annotationDirty = false;
+  AppState.currentQuestionIndex = 0;
+  const snapshot = { openAnswers: ["435"], mainScroll: 0, contentScroll: 240 };
+  const calls = [];
+  UIRenderer.captureQuestionViewState = () => { calls.push("capture"); return snapshot; };
+  // 跨 realm：只记录原始值，避免断言沙箱对象原型
+  UIRenderer.restoreQuestionViewState = state => { calls.push(["restore", (state?.openAnswers || []).join(","), state?.contentScroll]); };
+  UIRenderer.renderQuestion = async (index, options) => { calls.push(["render", index, options?.refresh === true]); };
+  StateSync.hydrate = async () => { StateSync.revision = 5; StateSync.available = true; };
+
+  await StateSync.refreshFromEvent();
+
+  assert.deepEqual(calls, ["capture", ["render", 0, true], ["restore", "435", 240]],
+    "远端刷新必须先记录阅读状态，再以 refresh 选项重绘，最后恢复展开的答案与滚动位置");
+});
+
 test("最近学习位置写入结束后释放 in-flight 状态，允许服务事件刷新", async () => {
   const { sandbox } = createContext();
   const { StateSync } = sandbox.window;

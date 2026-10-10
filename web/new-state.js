@@ -710,7 +710,14 @@ const StateSync = {
         await this.hydrate();
         if (!this.available || this.revision <= previousRevision) return;
         try {
-            if (AppState.currentView === 'question' && !AppState.annotationDirty) await getRenderer().renderQuestion(AppState.currentQuestionIndex);
+            if (AppState.currentView === 'question' && !AppState.annotationDirty) {
+                // 重渲染会重建题目 DOM：先记录展开的答案与滚动位置，渲染后恢复，
+                // 避免远端 revision 增长把正在阅读的答案收起（refresh 选项同时跳过重绘路径上的重复状态写入）。
+                const renderer = getRenderer();
+                const readingState = renderer.captureQuestionViewState?.();
+                await renderer.renderQuestion(AppState.currentQuestionIndex, { refresh: true });
+                renderer.restoreQuestionViewState?.(readingState);
+            }
             else if (AppState.currentView === 'home') getRenderer().renderHome();
             else if (AppState.currentView === 'records') getRenderer().renderRecords();
             else if (AppState.currentView === 'library') getRenderer().renderLibrary(AppState.currentCategory?.id);
