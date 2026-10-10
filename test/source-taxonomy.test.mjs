@@ -42,7 +42,7 @@ test("结构不变量：体系/书目 id 唯一且相互引用成立", () => {
   const systemIds = tax.SYSTEMS.map(s => s.id);
   assert.equal(new Set(systemIds).size, systemIds.length, "体系 id 不应重复");
   assert.ok(systemIds.includes("other"), "必须存在 other 兜底体系");
-  assert.equal(tax.SYSTEMS.length, 17);
+  assert.equal(tax.SYSTEMS.length, 18);
 
   const bookIds = tax.BOOKS.map(b => b.id);
   assert.equal(new Set(bookIds).size, bookIds.length, "书目 id 不应重复");
@@ -59,9 +59,9 @@ test("结构不变量：体系/书目 id 唯一且相互引用成立", () => {
   }
 });
 
-test("options()：17 组两级树，other 组无子项", () => {
+test("options()：18 组两级树，other 组无子项", () => {
   const options = tax.options();
-  assert.equal(options.length, 17);
+  assert.equal(options.length, 18);
   const other = options[options.length - 1];
   assert.equal(other.system.id, "other");
   assert.equal(other.key, "sys:other");
@@ -88,6 +88,7 @@ test("classify：单来源样本", () => {
     ["李永乐 线代辅导讲义", ["liyongle"], ["lyl_line"]],
     ["李正元 例题", ["lizhengyuan"], ["lzy_example"]],
     ["没咋了 概率救命课", ["meizhale"], ["mzl_prob"]],
+    ["你的葫芦概率统计百宝书 第1章 例1.5", ["hulu"], ["hulu_bao"]],
     ["880题", ["t880"], ["b880"]],
     ["660题", ["t660"], ["b660"]],
     ["900题", ["t900"], ["b900"]],

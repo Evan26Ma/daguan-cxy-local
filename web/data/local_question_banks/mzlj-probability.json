@@ -80,10 +80,31 @@
     },
     {
       "id": 99000003,
-      "stem": "【例 3】将一枚硬币独立掷两次,引进事件: $A_{1}=\\left\\{$ 掷第一次出现正面 $\\right\\},A_{2}=\\left\\{$ 掷第二次出现正面 $\\right\\},$ $A_{3}=\\left\\{$ 正、反面各出现一次 $\\right\\},A_{4}=\\left\\{$ 正面出现两次 $\\right\\}$ ,则事件（）\n\nA. $A_{1},A_{2},A_{3}$ 相互独立\nB. $A_{2},A_{3},A_{4}$ 相互独立\nC. $A_{1},A_{2},A_{3}$ 两两独立\nD. $A_{2},A_{3},A_{4}$ 两两独立",
-      "options": [],
-      "answer": "选 C（$A_{1},A_{2},A_{3}$ 两两独立，但不相互独立）。",
-      "explanation": "样本空间 $\\Omega=\\{\\text{正正},\\text{正反},\\text{反正},\\text{反反}\\}$，各点概率 $\\frac{1}{4}$。\n$P(A_{1})=P(A_{2})=P(A_{3})=\\frac{1}{2}$，$P(A_{4})=\\frac{1}{4}$。\n验证 $A_{1},A_{2},A_{3}$ 两两独立：$A_{1}A_{2}=\\{\\text{正正}\\}$，$A_{1}A_{3}=\\{\\text{正反}\\}$，$A_{2}A_{3}=\\{\\text{反正}\\}$，概率均为 $\\frac{1}{4}=\\frac{1}{2}\\times\\frac{1}{2}$，两两独立成立；\n但 $A_{1}A_{2}A_{3}=\\varnothing$，$P=0\\neq\\frac{1}{8}$，故**不**相互独立。\n对 $A_{2},A_{3},A_{4}$：$A_{4}\\subset A_{2}$，$P(A_{2}A_{4})=P(A_{4})=\\frac{1}{4}\\neq\\frac{1}{2}\\times\\frac{1}{4}$，连两两独立都不满足。\n结论：选 C。这是\"两两独立推不出相互独立\"的经典反例。\n\n视频讲解：[没咋了概率救命 #1 · 例 3 · 39:15](https://www.bilibili.com/video/BV1f311BrEoL/?t=2355)",
+      "stem": "【例 3】将一枚硬币独立掷两次,引进事件: $A_{1}=\\left\\{$ 掷第一次出现正面 $\\right\\},A_{2}=\\left\\{$ 掷第二次出现正面 $\\right\\},$ $A_{3}=\\left\\{$ 正、反面各出现一次 $\\right\\},A_{4}=\\left\\{$ 正面出现两次 $\\right\\}$ ,则事件（）",
+      "options": [
+        {
+          "id": "opt-a",
+          "label": "A",
+          "content_md": "$A_{1},A_{2},A_{3}$ 相互独立"
+        },
+        {
+          "id": "opt-b",
+          "label": "B",
+          "content_md": "$A_{2},A_{3},A_{4}$ 相互独立"
+        },
+        {
+          "id": "opt-c",
+          "label": "C",
+          "content_md": "$A_{1},A_{2},A_{3}$ 两两独立"
+        },
+        {
+          "id": "opt-d",
+          "label": "D",
+          "content_md": "$A_{2},A_{3},A_{4}$ 两两独立"
+        }
+      ],
+      "answer": "C",
+      "explanation": "样本空间 $\\Omega=\\{\\text{正正},\\text{正反},\\text{反正},\\text{反反}\\}$，各点概率 $\\frac{1}{4}$。\n$P(A_{1})=P(A_{2})=P(A_{3})=\\frac{1}{2}$，$P(A_{4})=\\frac{1}{4}$。\n验证 $A_{1},A_{2},A_{3}$ 两两独立：$A_{1}A_{2}=\\{\\text{正正}\\}$，$A_{1}A_{3}=\\{\\text{正反}\\}$，$A_{2}A_{3}=\\{\\text{反正}\\}$，概率均为 $\\frac{1}{4}=\\frac{1}{2}\\times\\frac{1}{2}$，两两独立成立；\n但 $A_{1}A_{2}A_{3}=\\varnothing$，$P=0\\neq\\frac{1}{8}$，故**不**相互独立。\n对 $A_{2},A_{3},A_{4}$：$A_{4}\\subset A_{2}$，$P(A_{2}A_{4})=P(A_{4})=\\frac{1}{4}\\neq\\frac{1}{2}\\times\\frac{1}{4}$，连两两独立都不满足。\n结论：选 C。这是\"两两独立推不出相互独立\"的经典反例。\n\n**答案**：（$A_{1},A_{2},A_{3}$ 两两独立，但不相互独立）\n\n视频讲解：[没咋了概率救命 #1 · 例 3 · 39:15](https://www.bilibili.com/video/BV1f311BrEoL/?t=2355)",
       "source": "没咋了概率救命课 第1章 例 3",
       "type": "single_choice",
       "is_core": false,
@@ -93,7 +114,9 @@
       ],
       "category_path": "概率统计 / 没咋了概率论讲义题库 / 第1章 随机事件和概率",
       "serial": 3,
-      "correct_labels": []
+      "correct_labels": [
+        "C"
+      ]
     },
     {
       "id": 99000004,
@@ -165,10 +188,31 @@
     },
     {
       "id": 99000008,
-      "stem": "【例 8】（李六）设随机事件 A, B, C 两两独立, 且三个事件不可能同时发生, 若 $P(A) = P(B) = P(C) = p$ (0 < p < 1), 则正确的是（）\nA. $0 < p \\leq \\frac{1}{2}$ B. $\\frac{1}{2} < p \\leq 1$ C. $p = 1$ D. $\\frac{1}{3} < p \\leq 1$",
-      "options": [],
-      "answer": "选 A（$0<p\\le\\dfrac{1}{2}$）。",
-      "explanation": "设 $P(ABC)=0$（不可能同时发生）。用**原子分解**：把 $\\Omega$ 切成互斥原子，记\n$x_{1},x_{2},x_{3}$ 为\"恰好只发生 $A,B,C$ 一个\"的概率，$x_{12},x_{13},x_{23}$ 为\"恰好发生某两个\"的概率，$x_{123}=0$。\n两两独立给出 $x_{12}=P(AB)=p^{2}$，同理 $x_{13}=x_{23}=p^{2}$。\n由 $P(A)=x_{1}+x_{12}+x_{13}=p$ 得 $x_{1}=p-2p^{2}$，同理 $x_{2}=x_{3}=p-2p^{2}$。\n概率非负要求 $x_{1},x_{12},\\dots\\ge 0$，其中 $x_{1}\\ge 0$ 给出 $p-2p^{2}\\ge 0$，即 $0<p\\le\\frac{1}{2}$。\n（验证 $x_{12}=p^{2}>0$ 自动满足。）故选 A。\n\n视频讲解：[没咋了概率救命 #1 · 例 8 · 1:32:00](https://www.bilibili.com/video/BV1f311BrEoL/?t=5520)",
+      "stem": "【例 8】（李六）设随机事件 A, B, C 两两独立, 且三个事件不可能同时发生, 若 $P(A) = P(B) = P(C) = p$ (0 < p < 1), 则正确的是（）",
+      "options": [
+        {
+          "id": "opt-a",
+          "label": "A",
+          "content_md": "$0 < p \\leq \\frac{1}{2}$"
+        },
+        {
+          "id": "opt-b",
+          "label": "B",
+          "content_md": "$\\frac{1}{2} < p \\leq 1$"
+        },
+        {
+          "id": "opt-c",
+          "label": "C",
+          "content_md": "$p = 1$"
+        },
+        {
+          "id": "opt-d",
+          "label": "D",
+          "content_md": "$\\frac{1}{3} < p \\leq 1$"
+        }
+      ],
+      "answer": "A",
+      "explanation": "设 $P(ABC)=0$（不可能同时发生）。用**原子分解**：把 $\\Omega$ 切成互斥原子，记\n$x_{1},x_{2},x_{3}$ 为\"恰好只发生 $A,B,C$ 一个\"的概率，$x_{12},x_{13},x_{23}$ 为\"恰好发生某两个\"的概率，$x_{123}=0$。\n两两独立给出 $x_{12}=P(AB)=p^{2}$，同理 $x_{13}=x_{23}=p^{2}$。\n由 $P(A)=x_{1}+x_{12}+x_{13}=p$ 得 $x_{1}=p-2p^{2}$，同理 $x_{2}=x_{3}=p-2p^{2}$。\n概率非负要求 $x_{1},x_{12},\\dots\\ge 0$，其中 $x_{1}\\ge 0$ 给出 $p-2p^{2}\\ge 0$，即 $0<p\\le\\frac{1}{2}$。\n（验证 $x_{12}=p^{2}>0$ 自动满足。）故选 A。\n\n**答案**：（$0<p\\le\\dfrac{1}{2}$）\n\n视频讲解：[没咋了概率救命 #1 · 例 8 · 1:32:00](https://www.bilibili.com/video/BV1f311BrEoL/?t=5520)",
       "source": "没咋了概率救命课 第1章 例 8",
       "type": "single_choice",
       "is_core": false,
@@ -178,7 +222,9 @@
       ],
       "category_path": "概率统计 / 没咋了概率论讲义题库 / 第1章 随机事件和概率",
       "serial": 8,
-      "correct_labels": []
+      "correct_labels": [
+        "A"
+      ]
     },
     {
       "id": 99000009,
@@ -318,12 +364,48 @@
     },
     {
       "id": 99000017,
-      "stem": "【例3】设 $X_{1}, X_{2}$ 是任意两个随机变量, 分布函数分别为 $F_{1}(x)$ 和 $F_{2}(x)$ , 则下列命题正确的是 ( )\n\nA. $F_{1}(x) + F_{2}(x)$ 必为某一随机变量的分布函数;\n\nB. $\\frac{1}{3} F_{1}(x) + \\frac{2}{3} F_{2}(x)$ 必为某一随机变量的分布函数;\n\nC. $\\frac{5}{3} F_{1}(x) - \\frac{2}{3} F_{2}(x)$ 必为某一随机变量的分布函数;\n\nD. $F_{1}(x^{2})$ 必为某一随机变量的分布函数;\n\nE. $1 - F_{1}(-x)$ 必为某一随机变量的分布函数;\n\nF. $F_{1}(x)F_{2}(x)$ 必为某一随机变量的分布函数;\n\nG. $\\frac{1}{2} F_{1}(x)F_{2}(x)$ 必为某一随机变量的分布函数.",
-      "options": [],
-      "answer": "选 B、F。",
+      "stem": "【例3】设 $X_{1}, X_{2}$ 是任意两个随机变量, 分布函数分别为 $F_{1}(x)$ 和 $F_{2}(x)$ , 则下列命题正确的是 ( )",
+      "options": [
+        {
+          "id": "opt-a",
+          "label": "A",
+          "content_md": "$F_{1}(x) + F_{2}(x)$ 必为某一随机变量的分布函数;"
+        },
+        {
+          "id": "opt-b",
+          "label": "B",
+          "content_md": "$\\frac{1}{3} F_{1}(x) + \\frac{2}{3} F_{2}(x)$ 必为某一随机变量的分布函数;"
+        },
+        {
+          "id": "opt-c",
+          "label": "C",
+          "content_md": "$\\frac{5}{3} F_{1}(x) - \\frac{2}{3} F_{2}(x)$ 必为某一随机变量的分布函数;"
+        },
+        {
+          "id": "opt-d",
+          "label": "D",
+          "content_md": "$F_{1}(x^{2})$ 必为某一随机变量的分布函数;"
+        },
+        {
+          "id": "opt-e",
+          "label": "E",
+          "content_md": "$1 - F_{1}(-x)$ 必为某一随机变量的分布函数;"
+        },
+        {
+          "id": "opt-f",
+          "label": "F",
+          "content_md": "$F_{1}(x)F_{2}(x)$ 必为某一随机变量的分布函数;"
+        },
+        {
+          "id": "opt-g",
+          "label": "G",
+          "content_md": "$\\frac{1}{2} F_{1}(x)F_{2}(x)$ 必为某一随机变量的分布函数."
+        }
+      ],
+      "answer": "BF",
       "explanation": "逐项用分布函数三要件（单调不减、右连续、两端极限 0 和 1）核查\"是否**必**为分布函数\"：\nA. $F_{1}+F_{2}\\to 2\\neq 1$，✗。\nB. $\\frac{1}{3}F_{1}+\\frac{2}{3}F_{2}$：非负凸组合保持单调性与右连续，极限 $\\frac{1}{3}+\\frac{2}{3}=1$，✓。\nC. $\\frac{5}{3}F_{1}-\\frac{2}{3}F_{2}$：系数一正一负，**不保证单调**（如 $F_{1}$ 集中在 0、$F_{2}$ 集中在 1，中段取值 $\\frac{5}{3}>1$），✗。\nD. $F_{1}(x^{2})$：$x\\to-\\infty$ 时极限为 $F_{1}(+\\infty)=1\\neq 0$，且不单调，✗。\nE. $1-F_{1}(-x)$：单调、极限正确，但**右连续性可能破坏**（正确的应为 $1-F_{1}(-x^{-})$）。反例：$X\\equiv 0$ 时 $1-F_{1}(-x)$ 在 $x=0$ 左连续而非右连续，✗。\nF. $F_{1}F_{2}$：非负、单调不减（两因子都非负不减）、右连续、极限 $0$ 与 $1$，✓（背景：$\\max\\{X_{1},X_{2}\\}$ 的分布）。\nG. $\\frac{1}{2}F_{1}F_{2}\\to\\frac{1}{2}\\neq 1$，✗。\n\n视频讲解：[没咋了概率救命 #2 · 例 3 · 23:10](https://www.bilibili.com/video/BV1F1C7BZEgG/?t=1390)",
       "source": "没咋了概率救命课 第2章 例 3",
-      "type": "single_choice",
+      "type": "multiple_choice",
       "is_core": false,
       "category_id": 9900003,
       "category_ids": [
@@ -331,7 +413,10 @@
       ],
       "category_path": "概率统计 / 没咋了概率论讲义题库 / 第2章 一维随机变量及其分布",
       "serial": 3,
-      "correct_labels": []
+      "correct_labels": [
+        "B",
+        "F"
+      ]
     },
     {
       "id": 99000018,
@@ -369,12 +454,53 @@
     },
     {
       "id": 99000020,
-      "stem": "【例6】设 $X_{1}, X_{2}$ 是任意两个连续型随机变量, 概率密度分别为 $f_{1}(x)$ 和 $f_{2}(x)$ , 则下列命题正确的是.\n\nA. $f_{1}(2x)$ 必为某一随机变量的概率密度\n\nB. $f_{1}(x) + f_{2}(x)$ 必为某一随机变量的概率密度\n\nC. $\\frac{1}{3} f_{1}(x) + \\frac{2}{3} f_{2}(x)$ 必为某一随机变量的概率密度\n\nD. $\\frac{5}{3} f_{1}(x) - \\frac{2}{3} f_{2}(x)$ 必为某一随机变量的概率密度\n\nE. $f_{1}(x)f_{2}(x)$ 必为某一随机变量的概率密度\n\nF. $2f_{1}(x)F_{1}(x)$ 必为某一随机变量的概率密度\n\nG. $\\frac{1}{2}[f_1(x) + f_1(-x)]$ 必为某一随机变量的概率密度\n\nH. $f_{1}(x)F_{1}(x) + f_{2}(x)F_{2}(x)$ 必为某一随机变量的概率密度",
-      "options": [],
-      "answer": "选 C、F、G、H。",
+      "stem": "【例6】设 $X_{1}, X_{2}$ 是任意两个连续型随机变量, 概率密度分别为 $f_{1}(x)$ 和 $f_{2}(x)$ , 则下列命题正确的是.",
+      "options": [
+        {
+          "id": "opt-a",
+          "label": "A",
+          "content_md": "$f_{1}(2x)$ 必为某一随机变量的概率密度"
+        },
+        {
+          "id": "opt-b",
+          "label": "B",
+          "content_md": "$f_{1}(x) + f_{2}(x)$ 必为某一随机变量的概率密度"
+        },
+        {
+          "id": "opt-c",
+          "label": "C",
+          "content_md": "$\\frac{1}{3} f_{1}(x) + \\frac{2}{3} f_{2}(x)$ 必为某一随机变量的概率密度"
+        },
+        {
+          "id": "opt-d",
+          "label": "D",
+          "content_md": "$\\frac{5}{3} f_{1}(x) - \\frac{2}{3} f_{2}(x)$ 必为某一随机变量的概率密度"
+        },
+        {
+          "id": "opt-e",
+          "label": "E",
+          "content_md": "$f_{1}(x)f_{2}(x)$ 必为某一随机变量的概率密度"
+        },
+        {
+          "id": "opt-f",
+          "label": "F",
+          "content_md": "$2f_{1}(x)F_{1}(x)$ 必为某一随机变量的概率密度"
+        },
+        {
+          "id": "opt-g",
+          "label": "G",
+          "content_md": "$\\frac{1}{2}[f_1(x) + f_1(-x)]$ 必为某一随机变量的概率密度"
+        },
+        {
+          "id": "opt-h",
+          "label": "H",
+          "content_md": "$f_{1}(x)F_{1}(x) + f_{2}(x)F_{2}(x)$ 必为某一随机变量的概率密度"
+        }
+      ],
+      "answer": "CFGH",
       "explanation": "概率密度两要件：**非负** 且 **全轴积分为 1**。\nA. $\\displaystyle\\int_{-\\infty}^{+\\infty}f_{1}(2x)\\,dx=\\frac{1}{2}\\neq 1$，✗。\nB. 积分为 $1+1=2\\neq 1$，✗。\nC. 非负且积分为 $\\frac{1}{3}+\\frac{2}{3}=1$，✓。\nD. 系数一正一负，**可能取负值**，✗。\nE. $\\int f_{1}f_{2}\\,dx$ 一般 $\\neq 1$（如 $f_{1}=f_{2}=\\varphi$ 时积分为 $\\frac{1}{2\\sqrt{\\pi}}$），✗。\nF. 凑微分：$2f_{1}F_{1}=(F_{1}^{2})'$，积分为 $F_{1}^{2}\\big|_{-\\infty}^{+\\infty}=1$ 且非负，✓（是 $\\max\\{X_{1},X_{1}'\\}$ 的密度）。\nG. 积分 $\\frac{1}{2}(1+1)=1$ 且非负，✓（对称化密度，必为偶函数）。\nH. $\\displaystyle\\int f_{1}F_{1}dx=\\frac{1}{2}$，$\\displaystyle\\int f_{2}F_{2}dx=\\frac{1}{2}$，合计 1 且非负，✓。\n\n视频讲解：[没咋了概率救命 #2 · 例 6 · 51:10](https://www.bilibili.com/video/BV1F1C7BZEgG/?t=3070)",
       "source": "没咋了概率救命课 第2章 例 6",
-      "type": "single_choice",
+      "type": "multiple_choice",
       "is_core": false,
       "category_id": 9900003,
       "category_ids": [
@@ -382,13 +508,39 @@
       ],
       "category_path": "概率统计 / 没咋了概率论讲义题库 / 第2章 一维随机变量及其分布",
       "serial": 6,
-      "correct_labels": []
+      "correct_labels": [
+        "C",
+        "F",
+        "G",
+        "H"
+      ]
     },
     {
       "id": 99000021,
-      "stem": "【例 7】设连续型随机变量 X 的分布函数为 $F(x)$ ，概率密度为 $f(x)$ ，而且 X 与 -X 有相同的分布函数，则\n() A. $F(x)=F(-x)$ B. $F(x)=-F(-x)$ C. $f(x)=f(-x)$ D. $f(x)=-f(-x)$",
-      "options": [],
-      "answer": "选 C。",
+      "stem": "【例 7】设连续型随机变量 X 的分布函数为 $F(x)$ ，概率密度为 $f(x)$ ，而且 X 与 -X 有相同的分布函数，则\n()",
+      "options": [
+        {
+          "id": "opt-a",
+          "label": "A",
+          "content_md": "$F(x)=F(-x)$"
+        },
+        {
+          "id": "opt-b",
+          "label": "B",
+          "content_md": "$F(x)=-F(-x)$"
+        },
+        {
+          "id": "opt-c",
+          "label": "C",
+          "content_md": "$f(x)=f(-x)$"
+        },
+        {
+          "id": "opt-d",
+          "label": "D",
+          "content_md": "$f(x)=-f(-x)$"
+        }
+      ],
+      "answer": "C",
       "explanation": "$X$ 与 $-X$ 同分布 ⟺ $X$ 关于原点对称。对连续型：\n$$F(x)=P\\{X\\le x\\}=P\\{-X\\le x\\}=P\\{X\\ge -x\\}=1-F(-x),$$\n即 $F(x)+F(-x)=1$。两边求导：$f(x)-f(-x)=0$，得 $f(x)=f(-x)$（密度为偶函数）。故选 C。\n（A、B 与 $F(-\\infty)=0,\\ F(+\\infty)=1$ 矛盾；D 与\"密度非负的偶函数\"矛盾。）\n\n视频讲解：[没咋了概率救命 #2 · 例 7 · 1:01:10](https://www.bilibili.com/video/BV1F1C7BZEgG/?t=3670)",
       "source": "没咋了概率救命课 第2章 例 7",
       "type": "single_choice",
@@ -399,13 +551,36 @@
       ],
       "category_path": "概率统计 / 没咋了概率论讲义题库 / 第2章 一维随机变量及其分布",
       "serial": 7,
-      "correct_labels": []
+      "correct_labels": [
+        "C"
+      ]
     },
     {
       "id": 99000022,
-      "stem": "【例 8】（李艳芳 900 题）设随机变量 X 的概率密度为 $f(x)$ ，则下列说法中正确的是（）\n(A) $\\frac{1}{2}f\\left(\\frac{1}{2}x\\right)$ 是随机变量 $\\frac{X}{2}$ 的概率密度.\n(B) $2f(2x)$ 是随机变量 $\\frac{X}{2}$ 的概率密度.\n(C) $2f\\left(\\frac{1}{2}x\\right)$ 是随机变量 $\\frac{X}{2}$ 的概率密度.\n(D) $\\frac{1}{2}f(2x)$ 是随机变量 $\\frac{X}{2}$ 的概率密度.",
-      "options": [],
-      "answer": "选 B。",
+      "stem": "【例 8】（李艳芳 900 题）设随机变量 X 的概率密度为 $f(x)$ ，则下列说法中正确的是（）",
+      "options": [
+        {
+          "id": "opt-a",
+          "label": "A",
+          "content_md": "$\\frac{1}{2}f\\left(\\frac{1}{2}x\\right)$ 是随机变量 $\\frac{X}{2}$ 的概率密度."
+        },
+        {
+          "id": "opt-b",
+          "label": "B",
+          "content_md": "$2f(2x)$ 是随机变量 $\\frac{X}{2}$ 的概率密度."
+        },
+        {
+          "id": "opt-c",
+          "label": "C",
+          "content_md": "$2f\\left(\\frac{1}{2}x\\right)$ 是随机变量 $\\frac{X}{2}$ 的概率密度."
+        },
+        {
+          "id": "opt-d",
+          "label": "D",
+          "content_md": "$\\frac{1}{2}f(2x)$ 是随机变量 $\\frac{X}{2}$ 的概率密度."
+        }
+      ],
+      "answer": "B",
       "explanation": "设 $Y=\\dfrac{X}{2}$，反解出 $X=2Y$，由单调变换公式 $f_{Y}(y)=f_{X}\\big(x(y)\\big)\\cdot\\Big|\\dfrac{dx}{dy}\\Big|$：\n$$f_{Y}(y)=f(2y)\\cdot(2y)'=2f(2y).$$\n（通法：$Y=aX$ 时 $f_{Y}(y)=\\frac{1}{|a|}f\\!\\left(\\frac{y}{a}\\right)$，这里 $a=\\frac{1}{2}$，得 $2f(2y)$。）\n验证：$\\int 2f(2x)dx=\\int f(u)du=1$ ✓。故 $2f(2x)$ 是 $\\frac{X}{2}$ 的密度，选 B。\n\n视频讲解：[没咋了概率救命 #2 · 例 8 · 1:03:40](https://www.bilibili.com/video/BV1F1C7BZEgG/?t=3820)",
       "source": "没咋了概率救命课 第2章 例 8",
       "type": "single_choice",
@@ -416,7 +591,9 @@
       ],
       "category_path": "概率统计 / 没咋了概率论讲义题库 / 第2章 一维随机变量及其分布",
       "serial": 8,
-      "correct_labels": []
+      "correct_labels": [
+        "B"
+      ]
     },
     {
       "id": 99000023,
@@ -692,9 +869,30 @@
     },
     {
       "id": 99000039,
-      "stem": "【例 25】设随机变量 X 服从正态分布, 其概率密度函数 $f(x)$ 在 x=1 处有驻点, 且 $f(1)=1$ , 则 X 服从分布 ( )\nA. $N(1,1)$ B. $N(1,\\frac{1}{2\\pi})$ C. $N(1,\\frac{1}{\\sqrt{2\\pi}})$ D. $N(0,1)$",
-      "options": [],
-      "answer": "选 B。",
+      "stem": "【例 25】设随机变量 X 服从正态分布, 其概率密度函数 $f(x)$ 在 x=1 处有驻点, 且 $f(1)=1$ , 则 X 服从分布 ( )",
+      "options": [
+        {
+          "id": "opt-a",
+          "label": "A",
+          "content_md": "$N(1,1)$"
+        },
+        {
+          "id": "opt-b",
+          "label": "B",
+          "content_md": "$N(1,\\frac{1}{2\\pi})$"
+        },
+        {
+          "id": "opt-c",
+          "label": "C",
+          "content_md": "$N(1,\\frac{1}{\\sqrt{2\\pi}})$"
+        },
+        {
+          "id": "opt-d",
+          "label": "D",
+          "content_md": "$N(0,1)$"
+        }
+      ],
+      "answer": "B",
       "explanation": "正态密度 $f(x)=\\dfrac{1}{\\sqrt{2\\pi}\\sigma}e^{-\\frac{(x-\\mu)^{2}}{2\\sigma^{2}}}$ 的唯一驻点在 $x=\\mu$（峰顶）。\n由驻点 $x=1$ 得 $\\mu=1$；再由 $f(1)=\\dfrac{1}{\\sqrt{2\\pi}\\sigma}=1$ 得 $\\sigma=\\dfrac{1}{\\sqrt{2\\pi}}$，故\n$$\\sigma^{2}=\\frac{1}{2\\pi},\\qquad X\\sim N\\Big(1,\\,\\frac{1}{2\\pi}\\Big).$$\n选 B。（C 把 $\\sigma$ 与 $\\sigma^{2}$ 混了，是陷阱。）\n\n视频讲解：[没咋了概率救命 #2 · 例 25 · 2:13:00](https://www.bilibili.com/video/BV1F1C7BZEgG/?t=7980)",
       "source": "没咋了概率救命课 第2章 例 25",
       "type": "single_choice",
@@ -705,7 +903,9 @@
       ],
       "category_path": "概率统计 / 没咋了概率论讲义题库 / 第2章 一维随机变量及其分布",
       "serial": 25,
-      "correct_labels": []
+      "correct_labels": [
+        "B"
+      ]
     },
     {
       "id": 99000040,
@@ -811,9 +1011,30 @@
     },
     {
       "id": 99000046,
-      "stem": "【例 32】（1999）假设随机变量 X 服从指数分布,则随机变量 $Y = \\min\\{X, 2\\}$ 的分布函数（）\nA. 是连续函数\nB. 至少有两个间断点\nC. 是阶梯函数\nD. 恰好有一个间断点",
-      "options": [],
-      "answer": "选 D。",
+      "stem": "【例 32】（1999）假设随机变量 X 服从指数分布,则随机变量 $Y = \\min\\{X, 2\\}$ 的分布函数（）",
+      "options": [
+        {
+          "id": "opt-a",
+          "label": "A",
+          "content_md": "是连续函数"
+        },
+        {
+          "id": "opt-b",
+          "label": "B",
+          "content_md": "至少有两个间断点"
+        },
+        {
+          "id": "opt-c",
+          "label": "C",
+          "content_md": "是阶梯函数"
+        },
+        {
+          "id": "opt-d",
+          "label": "D",
+          "content_md": "恰好有一个间断点"
+        }
+      ],
+      "answer": "D",
       "explanation": "$Y=\\min\\{X,2\\}$，分段求分布函数：\n- $y<0$：$F_{Y}(y)=0$；\n- $0\\le y<2$：$F_{Y}(y)=P\\{X\\le y\\}=1-e^{-\\lambda y}$；\n- $y\\ge 2$：$\\min\\{X,2\\}\\le 2$ 恒成立，$F_{Y}(y)=1$。\n在 $y=2$ 处：$F_{Y}(2^{-})=1-e^{-2\\lambda}<1=F_{Y}(2)$，有**一个跳跃间断点**；其余处连续（指数分布函数连续）。\n故 $Y$ 的分布函数**恰好有一个间断点**，选 D。\n\n视频讲解：[没咋了概率救命 #2 · 例 32 · 2:36:30](https://www.bilibili.com/video/BV1F1C7BZEgG/?t=9390)",
       "source": "没咋了概率救命课 第2章 例 32",
       "type": "single_choice",
@@ -824,7 +1045,9 @@
       ],
       "category_path": "概率统计 / 没咋了概率论讲义题库 / 第2章 一维随机变量及其分布",
       "serial": 32,
-      "correct_labels": []
+      "correct_labels": [
+        "D"
+      ]
     },
     {
       "id": 99000047,
@@ -1389,10 +1612,31 @@
     },
     {
       "id": 99000080,
-      "stem": "【例 31】（2025 数一）设 $X_{1}, X_{2}, \\cdots, X_{20}$ 是来自总体 $B(1, 0.1)$ 的简单随机样本，令 $T = \\sum_{i=1}^{20} X_{i}$ ，利用泊松分布近似表示二项分布的方法可得 $P\\{T \\leq 1\\} \\approx (\\quad)$ A. $\\frac{1}{e^{2}}$ B. $\\frac{2}{e^{2}}$ C. $\\frac{3}{e^{2}}$ D. $\\frac{4}{e^{2}}$",
-      "options": [],
-      "answer": "选 C（$\\dfrac{3}{e^{2}}$）。",
-      "explanation": "$T\\sim B(20,\\,0.1)$，泊松近似取 $\\lambda=np=20\\times0.1=2$：\n$$P\\{T\\le 1\\}=P\\{T=0\\}+P\\{T=1\\}\\approx e^{-2}+2e^{-2}=\\frac{3}{e^{2}},$$\n选 C。（泊松定理：$n$ 大 $p$ 小 $np$ 适中时 $B(n,p)\\approx P(np)$。）\n\n视频讲解：[没咋了概率救命 #3 · 例 31 · 3:09:45](https://www.bilibili.com/video/BV1yTCvB2Ehq/?t=11385)",
+      "stem": "【例 31】（2025 数一）设 $X_{1}, X_{2}, \\cdots, X_{20}$ 是来自总体 $B(1, 0.1)$ 的简单随机样本，令 $T = \\sum_{i=1}^{20} X_{i}$ ，利用泊松分布近似表示二项分布的方法可得 $P\\{T \\leq 1\\} \\approx (\\quad)$",
+      "options": [
+        {
+          "id": "opt-a",
+          "label": "A",
+          "content_md": "$\\frac{1}{e^{2}}$"
+        },
+        {
+          "id": "opt-b",
+          "label": "B",
+          "content_md": "$\\frac{2}{e^{2}}$"
+        },
+        {
+          "id": "opt-c",
+          "label": "C",
+          "content_md": "$\\frac{3}{e^{2}}$"
+        },
+        {
+          "id": "opt-d",
+          "label": "D",
+          "content_md": "$\\frac{4}{e^{2}}$"
+        }
+      ],
+      "answer": "C",
+      "explanation": "$T\\sim B(20,\\,0.1)$，泊松近似取 $\\lambda=np=20\\times0.1=2$：\n$$P\\{T\\le 1\\}=P\\{T=0\\}+P\\{T=1\\}\\approx e^{-2}+2e^{-2}=\\frac{3}{e^{2}},$$\n选 C。（泊松定理：$n$ 大 $p$ 小 $np$ 适中时 $B(n,p)\\approx P(np)$。）\n\n**答案**：（$\\dfrac{3}{e^{2}}$）\n\n视频讲解：[没咋了概率救命 #3 · 例 31 · 3:09:45](https://www.bilibili.com/video/BV1yTCvB2Ehq/?t=11385)",
       "source": "没咋了概率救命课 第3章 例 31",
       "type": "single_choice",
       "is_core": false,
@@ -1402,7 +1646,9 @@
       ],
       "category_path": "概率统计 / 没咋了概率论讲义题库 / 第3章 多维随机变量及其分布",
       "serial": 31,
-      "correct_labels": []
+      "correct_labels": [
+        "C"
+      ]
     },
     {
       "id": 99000081,
@@ -1780,9 +2026,30 @@
     },
     {
       "id": 99000103,
-      "stem": "【例 19】（2008）设随机变量 $X \\sim N(0,1)$ , $Y \\sim N(1,4)$ ，且相关系数为 1，则（）\nA. $P\\{Y = -2X - 1\\} = 1$ B. $P\\{Y = 2X - 1\\} = 1$ C. $P\\{Y = -2X + 1\\} = 1$ D. $P\\{Y = 2X + 1\\} = 1$",
-      "options": [],
-      "answer": "选 D。",
+      "stem": "【例 19】（2008）设随机变量 $X \\sim N(0,1)$ , $Y \\sim N(1,4)$ ，且相关系数为 1，则（）",
+      "options": [
+        {
+          "id": "opt-a",
+          "label": "A",
+          "content_md": "$P\\{Y = -2X - 1\\} = 1$"
+        },
+        {
+          "id": "opt-b",
+          "label": "B",
+          "content_md": "$P\\{Y = 2X - 1\\} = 1$"
+        },
+        {
+          "id": "opt-c",
+          "label": "C",
+          "content_md": "$P\\{Y = -2X + 1\\} = 1$"
+        },
+        {
+          "id": "opt-d",
+          "label": "D",
+          "content_md": "$P\\{Y = 2X + 1\\} = 1$"
+        }
+      ],
+      "answer": "D",
       "explanation": "$\\rho_{XY}=1$ 且都服从正态 $\\Rightarrow$ 以概率 1 存在正斜率线性关系 $Y=aX+b$（$a>0$）。\n待定系数：$E(Y)=a\\,E(X)+b\\Rightarrow b=1$；$D(Y)=a^{2}D(X)\\Rightarrow a^{2}=4\\Rightarrow a=2$（取正）。\n故 $P\\{Y=2X+1\\}=1$，选 D。\n（$\\rho=-1$ 才对应 $a<0$；A、C 的斜率为负，B 的截距不对。）\n\n视频讲解：[没咋了概率救命 #4 · 例 19 · 1:22:20](https://www.bilibili.com/video/BV1ThUNBEEne/?t=4940)",
       "source": "没咋了概率救命课 第4章 例 19",
       "type": "single_choice",
@@ -1793,7 +2060,9 @@
       ],
       "category_path": "概率统计 / 没咋了概率论讲义题库 / 第4章 随机变量的数字特征",
       "serial": 19,
-      "correct_labels": []
+      "correct_labels": [
+        "D"
+      ]
     },
     {
       "id": 99000104,
@@ -1831,9 +2100,30 @@
     },
     {
       "id": 99000106,
-      "stem": "【例 22】设 X,Y 均服从正态分布,则下列服从正态分布的是（）\nA. $X + Y$ B. X - Y\nC. $(X, Y)$ D. $2X + 1$",
-      "options": [],
-      "answer": "选 D。",
+      "stem": "【例 22】设 X,Y 均服从正态分布,则下列服从正态分布的是（）",
+      "options": [
+        {
+          "id": "opt-a",
+          "label": "A",
+          "content_md": "$X + Y$"
+        },
+        {
+          "id": "opt-b",
+          "label": "B",
+          "content_md": "X - Y"
+        },
+        {
+          "id": "opt-c",
+          "label": "C",
+          "content_md": "$(X, Y)$"
+        },
+        {
+          "id": "opt-d",
+          "label": "D",
+          "content_md": "$2X + 1$"
+        }
+      ],
+      "answer": "D",
       "explanation": "边缘正态推不出联合正态：$X+Y$、$X-Y$、$(X,Y)$ 是否正态都依赖 $(X,Y)$ 的联合分布（A、B、C 都\"不一定\"）。\n唯一无条件成立的是**单个正态的线性变换**：$2X+1\\sim N(2\\mu+1,\\,4\\sigma^{2})$（$X\\sim N(\\mu,\\sigma^{2})$）。\n故选 D。（$aX+b\\sim N(a\\mu+b,a^{2}\\sigma^{2})$ 与联合分布无关，这是\"降维\"恒成立的结论。）",
       "source": "没咋了概率救命课 第4章 例 22",
       "type": "single_choice",
@@ -1844,13 +2134,36 @@
       ],
       "category_path": "概率统计 / 没咋了概率论讲义题库 / 第4章 随机变量的数字特征",
       "serial": 22,
-      "correct_labels": []
+      "correct_labels": [
+        "D"
+      ]
     },
     {
       "id": 99000107,
-      "stem": "【例 23】设 X,Y 均服从正态分布,且它们不相关,则（）\nA. X,Y 一定相互独立\nB. $(X,Y)$ 服从二维正态\nC. X,Y 未必相互独立\nD. $X+Y$ 服从二维正态",
-      "options": [],
-      "answer": "选 C。",
+      "stem": "【例 23】设 X,Y 均服从正态分布,且它们不相关,则（）",
+      "options": [
+        {
+          "id": "opt-a",
+          "label": "A",
+          "content_md": "X,Y 一定相互独立"
+        },
+        {
+          "id": "opt-b",
+          "label": "B",
+          "content_md": "$(X,Y)$ 服从二维正态"
+        },
+        {
+          "id": "opt-c",
+          "label": "C",
+          "content_md": "X,Y 未必相互独立"
+        },
+        {
+          "id": "opt-d",
+          "label": "D",
+          "content_md": "$X+Y$ 服从二维正态"
+        }
+      ],
+      "answer": "C",
       "explanation": "关键辨析：\"正态 + 不相关 $\\Rightarrow$ 独立\"**必须以二维正态为前提**。题目只说 $X,Y$ 各自服从正态（边缘正态），联合分布未知：\n- 不相关只说明 $Cov=0$，完全可以构造出相关系数为 0 但不独立的联合分布（如 $f(x,y)$ 含 $\\sin x\\sin y$ 修正项的例子，见第 3 章例 13(4)），故 A 错、C 对；\n- 边缘正态推不出 $(X,Y)$ 服从二维正态，B 错；\n- D 表述本身不成立。\n故选 C。",
       "source": "没咋了概率救命课 第4章 例 23",
       "type": "single_choice",
@@ -1861,7 +2174,9 @@
       ],
       "category_path": "概率统计 / 没咋了概率论讲义题库 / 第4章 随机变量的数字特征",
       "serial": 23,
-      "correct_labels": []
+      "correct_labels": [
+        "C"
+      ]
     },
     {
       "id": 99000108,
@@ -2103,9 +2418,30 @@
     },
     {
       "id": 99000122,
-      "stem": "【例 4】设随机变量 $X_{1}, X_{2}, \\cdots, X_{n}, \\cdots$ 相互独立, 它们满足大数定律, 则 $X_{i}$ 的分布可以是 ( )\n\nA. $P\\{X_{i}=m\\}=\\frac{c}{m^{3}}, m=1,2,\\cdots$ B. $X_{i}$ 服从参数为 $\\frac{1}{i}$ 的指数分布.\n\nC. $X_{i}$ 服从参数为 i 的泊松分布\n\nD. $X_{i}$ 的密度函数 $f(x)=\\frac{1}{\\pi(1+x^{2})}$ .",
-      "options": [],
-      "answer": "选 A。",
+      "stem": "【例 4】设随机变量 $X_{1}, X_{2}, \\cdots, X_{n}, \\cdots$ 相互独立, 它们满足大数定律, 则 $X_{i}$ 的分布可以是 ( )",
+      "options": [
+        {
+          "id": "opt-a",
+          "label": "A",
+          "content_md": "$P\\{X_{i}=m\\}=\\frac{c}{m^{3}}, m=1,2,\\cdots$"
+        },
+        {
+          "id": "opt-b",
+          "label": "B",
+          "content_md": "$X_{i}$ 服从参数为 $\\frac{1}{i}$ 的指数分布."
+        },
+        {
+          "id": "opt-c",
+          "label": "C",
+          "content_md": "$X_{i}$ 服从参数为 i 的泊松分布"
+        },
+        {
+          "id": "opt-d",
+          "label": "D",
+          "content_md": "$X_{i}$ 的密度函数 $f(x)=\\frac{1}{\\pi(1+x^{2})}$ ."
+        }
+      ],
+      "answer": "A",
       "explanation": "逐一验证\"大数定律条件\"：\nA. 独立**同分布**，且 $E(X)=c\\displaystyle\\sum_{m}\\frac{1}{m^{2}}<+\\infty$ 有限——满足**辛钦大数定律**（只要求期望存在，不要求方差），✓。\nB. $X_{i}\\sim E\\big(\\tfrac{1}{i}\\big)$：独立但**不同分布**，只能试切比雪夫（马尔可夫）条件：$D(X_{i})=i^{2}$ 无界，$\\dfrac{1}{n^{2}}\\displaystyle\\sum_{i=1}^{n}i^{2}\\to\\infty$，✗。\nC. $X_{i}\\sim P(i)$：$D(X_{i})=i$ 无界，同上 ✗。\nD. 柯西分布期望**不存在**，辛钦用不了，✗。\n故选 A。（辨析：辛钦\" iid + 期望存在\"；切比雪夫\"独立 + 方差一致有界\"。）\n\n视频讲解：[没咋了概率救命 #5 · 例 4 · 9:40](https://www.bilibili.com/video/BV18cUfBqEM3/?t=580)",
       "source": "没咋了概率救命课 第5章 例 4",
       "type": "single_choice",
@@ -2116,13 +2452,36 @@
       ],
       "category_path": "概率统计 / 没咋了概率论讲义题库 / 第5章 数理统计部分",
       "serial": 4,
-      "correct_labels": []
+      "correct_labels": [
+        "A"
+      ]
     },
     {
       "id": 99000123,
-      "stem": "【例 5】设随机变量 $(X_{1},X_{2},\\cdots,X_{n})$ 相互独立, $S_{n}=X_{1}+X_{2}+\\cdots+X_{n}$ ,则根据列维-林德伯格中心极限定理,当n充分大时, $S_{n}$ 近似服从正态分布,只要 $(X_{1},X_{2},\\cdots,X_{n})$ （）.\n\nA.有相同的数学期望    B.有相同的方差\n\nC.服从同一指数分布    D.服从同一离散分布",
-      "options": [],
-      "answer": "选 C。",
+      "stem": "【例 5】设随机变量 $(X_{1},X_{2},\\cdots,X_{n})$ 相互独立, $S_{n}=X_{1}+X_{2}+\\cdots+X_{n}$ ,则根据列维-林德伯格中心极限定理,当n充分大时, $S_{n}$ 近似服从正态分布,只要 $(X_{1},X_{2},\\cdots,X_{n})$ （）.",
+      "options": [
+        {
+          "id": "opt-a",
+          "label": "A",
+          "content_md": "有相同的数学期望"
+        },
+        {
+          "id": "opt-b",
+          "label": "B",
+          "content_md": "有相同的方差"
+        },
+        {
+          "id": "opt-c",
+          "label": "C",
+          "content_md": "服从同一指数分布"
+        },
+        {
+          "id": "opt-d",
+          "label": "D",
+          "content_md": "服从同一离散分布"
+        }
+      ],
+      "answer": "C",
       "explanation": "列维-林德伯格定理的条件：**独立同分布 + 期望方差存在**。\nA、B 只保证同期望/同方差，不保证同分布，✗；D\"同一离散分布\"的方差可能不存在（如重尾离散分布），✗；\nC 同一指数分布：独立同分布且期望方差都存在，✓。选 C。\n\n视频讲解：[没咋了概率救命 #5 · 例 5 · 15:50](https://www.bilibili.com/video/BV18cUfBqEM3/?t=950)",
       "source": "没咋了概率救命课 第5章 例 5",
       "type": "single_choice",
@@ -2133,13 +2492,36 @@
       ],
       "category_path": "概率统计 / 没咋了概率论讲义题库 / 第5章 数理统计部分",
       "serial": 5,
-      "correct_labels": []
+      "correct_labels": [
+        "C"
+      ]
     },
     {
       "id": 99000124,
-      "stem": "【例 6】设 $X_{1}, X_{2}, \\cdots, X_{n}, \\cdots$ 为独立同分布的随机变量序列,且均服从参数为 $\\lambda (\\lambda > 1)$ 的指数分布,记 $\\Phi(x)$ 为标准正态分布函数,则有（）.\n\n$$\n\\text { A. } \\lim _ {n \\rightarrow \\infty} P \\left\\{\\frac {\\sum_ {i = 1} ^ {n} X _ {i} - n \\lambda}{\\lambda \\sqrt {n}} \\leq x \\right\\} = \\Phi (x)\n$$\n\n$$\n\\lim _ {n \\rightarrow \\infty} P \\left\\{\\frac {\\lambda \\sum_ {i = 1} ^ {n} X _ {i} - n}{\\sqrt {n}} \\leq x \\right\\} = \\Phi (x)\n$$\n\n$$\n\\lim _ {n \\rightarrow \\infty} P \\left\\{\\frac {\\sum_ {i = 1} ^ {n} X _ {i} - n \\lambda}{\\sqrt {n \\lambda}} \\leq x \\right\\} = \\Phi (x)\n$$\n\n$$\n\\lim _ {n \\rightarrow \\infty} P \\left\\{\\frac {\\sum_ {i = 1} ^ {n} X _ {i} - \\lambda}{\\sqrt {n} \\lambda} \\leq x \\right\\} = \\Phi (x)\n$$",
-      "options": [],
-      "answer": "选 B。",
+      "stem": "【例 6】设 $X_{1}, X_{2}, \\cdots, X_{n}, \\cdots$ 为独立同分布的随机变量序列,且均服从参数为 $\\lambda (\\lambda > 1)$ 的指数分布,记 $\\Phi(x)$ 为标准正态分布函数,则有（）.",
+      "options": [
+        {
+          "id": "opt-a",
+          "label": "A",
+          "content_md": "$$\n\\lim _ {n \\rightarrow \\infty} P \\left\\{\\frac {\\sum_ {i = 1} ^ {n} X _ {i} - n \\lambda}{\\lambda \\sqrt {n}} \\leq x \\right\\} = \\Phi (x)\n$$"
+        },
+        {
+          "id": "opt-b",
+          "label": "B",
+          "content_md": "$$\n\\lim _ {n \\rightarrow \\infty} P \\left\\{\\frac {\\lambda \\sum_ {i = 1} ^ {n} X _ {i} - n}{\\sqrt {n}} \\leq x \\right\\} = \\Phi (x)\n$$"
+        },
+        {
+          "id": "opt-c",
+          "label": "C",
+          "content_md": "$$\n\\lim _ {n \\rightarrow \\infty} P \\left\\{\\frac {\\sum_ {i = 1} ^ {n} X _ {i} - n \\lambda}{\\sqrt {n \\lambda}} \\leq x \\right\\} = \\Phi (x)\n$$"
+        },
+        {
+          "id": "opt-d",
+          "label": "D",
+          "content_md": "$$\n\\lim _ {n \\rightarrow \\infty} P \\left\\{\\frac {\\sum_ {i = 1} ^ {n} X _ {i} - \\lambda}{\\sqrt {n} \\lambda} \\leq x \\right\\} = \\Phi (x)\n$$"
+        }
+      ],
+      "answer": "B",
       "explanation": "$X\\sim E(\\lambda)$：$E(X)=\\dfrac{1}{\\lambda}$，$D(X)=\\dfrac{1}{\\lambda^{2}}$。标准化的中心极限定理形式：\n$$\\frac{\\sum X_{i}-n\\cdot\\frac{1}{\\lambda}}{\\sqrt{n}\\cdot\\frac{1}{\\lambda}}=\\frac{\\lambda\\sum X_{i}-n}{\\sqrt{n}}\\xrightarrow{d}N(0,1),$$\n即 B。分子 $\\lambda\\sum X_{i}-n$ 恰是 \"$n\\mu=n\\cdot\\tfrac{1}{\\lambda}$ 移项乘 $\\lambda$\" 的结果；A、C、D 的期望/标准差搭配都不对。\n\n视频讲解：[没咋了概率救命 #5 · 例 6 · 18:00](https://www.bilibili.com/video/BV18cUfBqEM3/?t=1080)",
       "source": "没咋了概率救命课 第5章 例 6",
       "type": "single_choice",
@@ -2150,7 +2532,9 @@
       ],
       "category_path": "概率统计 / 没咋了概率论讲义题库 / 第5章 数理统计部分",
       "serial": 6,
-      "correct_labels": []
+      "correct_labels": [
+        "B"
+      ]
     },
     {
       "id": 99000125,
@@ -2188,9 +2572,30 @@
     },
     {
       "id": 99000127,
-      "stem": "【例 9】（2012）设 $X_{1}, X_{2}, X_{3}, X_{4}$ 为来自总体 $N(1, \\sigma^{2})(\\sigma > 0)$ 的简单随机样本，则统计量 $\\frac{X_{1} - X_{2}}{|X_{3} + X_{4} - 2|}$ 的分布为（）\nA. $N(0,1)$ B. $t(1)$ C. $\\chi^{2}(1)$ D. $F(1,1)$",
-      "options": [],
-      "answer": "选 B。",
+      "stem": "【例 9】（2012）设 $X_{1}, X_{2}, X_{3}, X_{4}$ 为来自总体 $N(1, \\sigma^{2})(\\sigma > 0)$ 的简单随机样本，则统计量 $\\frac{X_{1} - X_{2}}{|X_{3} + X_{4} - 2|}$ 的分布为（）",
+      "options": [
+        {
+          "id": "opt-a",
+          "label": "A",
+          "content_md": "$N(0,1)$"
+        },
+        {
+          "id": "opt-b",
+          "label": "B",
+          "content_md": "$t(1)$"
+        },
+        {
+          "id": "opt-c",
+          "label": "C",
+          "content_md": "$\\chi^{2}(1)$"
+        },
+        {
+          "id": "opt-d",
+          "label": "D",
+          "content_md": "$F(1,1)$"
+        }
+      ],
+      "answer": "B",
       "explanation": "分子分母各自标准化，凑 t 分布三件套（N(0,1)、$\\chi^{2}$、根号、独立）：\n- $X_{1}-X_{2}\\sim N(0,2\\sigma^{2})\\Rightarrow\\dfrac{X_{1}-X_{2}}{\\sqrt{2}\\sigma}\\sim N(0,1)$；\n- $X_{3}+X_{4}-2\\sim N(0,2\\sigma^{2})\\Rightarrow\\dfrac{(X_{3}+X_{4}-2)^{2}}{2\\sigma^{2}}\\sim\\chi^{2}(1)$；\n- 由样本独立性，分子与分母独立。\n$$\\frac{X_{1}-X_{2}}{|X_{3}+X_{4}-2|}=\\frac{\\frac{X_{1}-X_{2}}{\\sqrt{2}\\sigma}}{\\sqrt{\\frac{(X_{3}+X_{4}-2)^{2}}{2\\sigma^{2}}}}\\sim\\frac{N(0,1)}{\\sqrt{\\chi^{2}(1)/1}}\\sim t(1).$$\n选 B。（分母是 $\\chi^{2}(1)$ 开平方，自由度 $1$。）\n\n视频讲解：[没咋了概率救命 #5 · 例 9 · 32:50](https://www.bilibili.com/video/BV18cUfBqEM3/?t=1970)",
       "source": "没咋了概率救命课 第5章 例 9",
       "type": "single_choice",
@@ -2201,7 +2606,9 @@
       ],
       "category_path": "概率统计 / 没咋了概率论讲义题库 / 第5章 数理统计部分",
       "serial": 9,
-      "correct_labels": []
+      "correct_labels": [
+        "B"
+      ]
     },
     {
       "id": 99000128,
@@ -2239,9 +2646,30 @@
     },
     {
       "id": 99000130,
-      "stem": "【例 12】（2003）设随机变量 $X \\sim t(n)(n > 1)$ , $Y = \\frac{1}{X^{2}}$ , 则（）\nA. $Y \\sim \\chi^{2}(n)$ B. $Y \\sim \\chi^{2}(n-1)$ C. $Y \\sim F(n,1)$ D. $Y \\sim F(1,n)$",
-      "options": [],
-      "answer": "选 C。",
+      "stem": "【例 12】（2003）设随机变量 $X \\sim t(n)(n > 1)$ , $Y = \\frac{1}{X^{2}}$ , 则（）",
+      "options": [
+        {
+          "id": "opt-a",
+          "label": "A",
+          "content_md": "$Y \\sim \\chi^{2}(n)$"
+        },
+        {
+          "id": "opt-b",
+          "label": "B",
+          "content_md": "$Y \\sim \\chi^{2}(n-1)$"
+        },
+        {
+          "id": "opt-c",
+          "label": "C",
+          "content_md": "$Y \\sim F(n,1)$"
+        },
+        {
+          "id": "opt-d",
+          "label": "D",
+          "content_md": "$Y \\sim F(1,n)$"
+        }
+      ],
+      "answer": "C",
       "explanation": "$X\\sim t(n)\\iff X=\\dfrac{U}{\\sqrt{V/n}}$（$U\\sim N(0,1)$，$V\\sim\\chi^{2}(n)$）。\n则 $X^{2}=\\dfrac{U^{2}/1}{V/n}\\sim F(1,n)$，取倒数并用 $\\dfrac{1}{F(1,n)}\\sim F(n,1)$：\n$$Y=\\frac{1}{X^{2}}\\sim F(n,1).$$\n选 C。（恒等式：$t^{2}(n)\\sim F(1,n)$，倒数翻转自由度。）\n\n视频讲解：[没咋了概率救命 #5 · 例 12 · 40:00](https://www.bilibili.com/video/BV18cUfBqEM3/?t=2400)",
       "source": "没咋了概率救命课 第5章 例 12",
       "type": "single_choice",
@@ -2252,13 +2680,36 @@
       ],
       "category_path": "概率统计 / 没咋了概率论讲义题库 / 第5章 数理统计部分",
       "serial": 12,
-      "correct_labels": []
+      "correct_labels": [
+        "C"
+      ]
     },
     {
       "id": 99000131,
-      "stem": "【例 13】设随机变量 $X \\sim N(0,1)$ , $Y \\sim \\chi^{2}(1)$ ，给定 $\\alpha(0 < \\alpha < 1)$ ，数 $U_{\\alpha}$ 满足 $P\\{X > U_{\\alpha}\\} = \\alpha$ ，数 $\\chi_{\\alpha}^{2}(1)$ 满足 $P\\left\\{Y > \\chi_{\\alpha}^{2}(1)\\right\\} = \\alpha$ ，则 $\\chi_{0.05}^{2}(1) = (\\quad)$ A. $U_{0.025}$ B. $U_{0.025}^{2}$ C. $U_{0.05}$ D. $U_{0.05}^{2}$",
-      "options": [],
-      "answer": "选 B。",
+      "stem": "【例 13】设随机变量 $X \\sim N(0,1)$ , $Y \\sim \\chi^{2}(1)$ ，给定 $\\alpha(0 < \\alpha < 1)$ ，数 $U_{\\alpha}$ 满足 $P\\{X > U_{\\alpha}\\} = \\alpha$ ，数 $\\chi_{\\alpha}^{2}(1)$ 满足 $P\\left\\{Y > \\chi_{\\alpha}^{2}(1)\\right\\} = \\alpha$ ，则 $\\chi_{0.05}^{2}(1) = (\\quad)$",
+      "options": [
+        {
+          "id": "opt-a",
+          "label": "A",
+          "content_md": "$U_{0.025}$"
+        },
+        {
+          "id": "opt-b",
+          "label": "B",
+          "content_md": "$U_{0.025}^{2}$"
+        },
+        {
+          "id": "opt-c",
+          "label": "C",
+          "content_md": "$U_{0.05}$"
+        },
+        {
+          "id": "opt-d",
+          "label": "D",
+          "content_md": "$U_{0.05}^{2}$"
+        }
+      ],
+      "answer": "B",
       "explanation": "$Y=X^{2}$ 把卡方与正态的上侧分位点挂上钩：\n$$P\\{Y>\\chi_{\\alpha}^{2}(1)\\}=\\alpha\\iff P\\{|X|>\\sqrt{\\chi_{\\alpha}^{2}(1)}\\}=\\alpha\n\\iff 2P\\{X>\\sqrt{\\chi_{\\alpha}^{2}(1)}\\}=\\alpha,$$\n即 $\\sqrt{\\chi_{\\alpha}^{2}(1)}=U_{\\frac{\\alpha}{2}}$（注意 $\\alpha$ 被平摊到两侧）。取 $\\alpha=0.05$：\n$$\\chi_{0.05}^{2}(1)=U_{0.025}^{2},$$\n选 B。\n\n视频讲解：[没咋了概率救命 #5 · 例 13 · 51:00](https://www.bilibili.com/video/BV18cUfBqEM3/?t=3060)",
       "source": "没咋了概率救命课 第5章 例 13",
       "type": "single_choice",
@@ -2269,7 +2720,9 @@
       ],
       "category_path": "概率统计 / 没咋了概率论讲义题库 / 第5章 数理统计部分",
       "serial": 13,
-      "correct_labels": []
+      "correct_labels": [
+        "B"
+      ]
     },
     {
       "id": 99000132,
@@ -2324,9 +2777,30 @@
     },
     {
       "id": 99000135,
-      "stem": "【例 17】（2023）设 $X_{1}, X_{2}, \\cdots, X_{n}$ 是来自正态总体 $N(\\mu_{1}, \\sigma^{2})$ 的简单随机样本， $Y_{1}, Y_{2}, \\cdots, Y_{m}$ 是来自正态总体 $N(\\mu_{2}, 2\\sigma^{2})$ 的简单随机样本，且两样本相互独立，记 $\\overline{X} = \\frac{1}{n} \\sum_{i=1}^{n} X_{i}, \\overline{Y} = \\frac{1}{m} \\sum_{i=1}^{m} Y_{i}, S_{1}^{2} = \\frac{1}{n-1} \\sum_{i=1}^{n} (X_{i} - \\overline{X})^{2}, S_{2}^{2} = \\frac{1}{m-1} \\sum_{i=1}^{m} (Y_{i} - \\overline{Y})^{2}$ ，则（）\n\nA. $\\frac{S_{1}^{2}}{S_{2}^{2}} \\sim F(n, m)$ B. $\\frac{S_{1}^{2}}{S_{2}^{2}} \\sim F(n-1, m-1)$ C. $\\frac{2S_{1}^{2}}{S_{2}^{2}} \\sim F(n, m)$ D. $\\frac{2S_{1}^{2}}{S_{2}^{2}} \\sim F(n-1, m-1)$",
-      "options": [],
-      "answer": "选 D。",
+      "stem": "【例 17】（2023）设 $X_{1}, X_{2}, \\cdots, X_{n}$ 是来自正态总体 $N(\\mu_{1}, \\sigma^{2})$ 的简单随机样本， $Y_{1}, Y_{2}, \\cdots, Y_{m}$ 是来自正态总体 $N(\\mu_{2}, 2\\sigma^{2})$ 的简单随机样本，且两样本相互独立，记 $\\overline{X} = \\frac{1}{n} \\sum_{i=1}^{n} X_{i}, \\overline{Y} = \\frac{1}{m} \\sum_{i=1}^{m} Y_{i}, S_{1}^{2} = \\frac{1}{n-1} \\sum_{i=1}^{n} (X_{i} - \\overline{X})^{2}, S_{2}^{2} = \\frac{1}{m-1} \\sum_{i=1}^{m} (Y_{i} - \\overline{Y})^{2}$ ，则（）",
+      "options": [
+        {
+          "id": "opt-a",
+          "label": "A",
+          "content_md": "$\\frac{S_{1}^{2}}{S_{2}^{2}} \\sim F(n, m)$"
+        },
+        {
+          "id": "opt-b",
+          "label": "B",
+          "content_md": "$\\frac{S_{1}^{2}}{S_{2}^{2}} \\sim F(n-1, m-1)$"
+        },
+        {
+          "id": "opt-c",
+          "label": "C",
+          "content_md": "$\\frac{2S_{1}^{2}}{S_{2}^{2}} \\sim F(n, m)$"
+        },
+        {
+          "id": "opt-d",
+          "label": "D",
+          "content_md": "$\\frac{2S_{1}^{2}}{S_{2}^{2}} \\sim F(n-1, m-1)$"
+        }
+      ],
+      "answer": "D",
       "explanation": "两总体方差不齐（$\\sigma^{2}$ 与 $2\\sigma^{2}$），F 的构造要**各自除以自己的真方差**：\n$$\\frac{(n-1)S_{1}^{2}}{\\sigma^{2}}\\sim\\chi^{2}(n-1),\\qquad \\frac{(m-1)S_{2}^{2}}{2\\sigma^{2}}\\sim\\chi^{2}(m-1),$$\n$$\\frac{\\chi^{2}(n-1)/(n-1)}{\\chi^{2}(m-1)/(m-1)}=\\frac{S_{1}^{2}/\\sigma^{2}}{S_{2}^{2}/(2\\sigma^{2})}=\\frac{2S_{1}^{2}}{S_{2}^{2}}\\sim F(n-1,m-1).$$\n选 D。（A、B 没处理方差比 2:1；C 自由度没减 1。）\n\n视频讲解：[没咋了概率救命 #5 · 例 17 · 1:11:35](https://www.bilibili.com/video/BV18cUfBqEM3/?t=4295)",
       "source": "没咋了概率救命课 第5章 例 17",
       "type": "single_choice",
@@ -2337,13 +2811,36 @@
       ],
       "category_path": "概率统计 / 没咋了概率论讲义题库 / 第5章 数理统计部分",
       "serial": 17,
-      "correct_labels": []
+      "correct_labels": [
+        "D"
+      ]
     },
     {
       "id": 99000136,
-      "stem": "【例 18】（余炳森 5 套卷）设总体 $(X,Y)\\sim N\\left(\\mu_{1},\\mu_{2};\\sigma_{1}^{2},\\sigma_{2}^{2};0\\right),\\left(X_{1},Y_{1}\\right),\\left(X_{2},Y_{2}\\right),\\cdots,\\left(X_{n},Y_{n}\\right)(n>1)$ 是来自总体 $(X,Y)$ 的简单随机样本，记 $\\overline{X}=\\frac{1}{n}\\sum_{i=1}^{n}X_{i},\\overline{Y}=\\frac{1}{n}\\sum_{i=1}^{n}Y_{i},S_{1}^{2}=\\frac{1}{n-1}\\sum_{i=1}^{n}(X_{i}-\\overline{X})^{2},S_{2}^{2}=\\frac{1}{n-1}\\sum_{i=1}^{n}(Y_{i}-\\overline{Y})^{2}$ ，则下列结论不正确的是（）\n\nA. $n\\overline{X}\\sim N\\left(n\\mu_{1},n\\sigma^{2}\\right)$ B. $\\frac{\\overline{X}-\\overline{Y}-\\left(\\mu_{1}-\\mu_{2}\\right)}{\\sqrt{\\frac{S_{1}^{2}+S_{2}^{2}}{n}}}\\sim t(2n-2)$ C. $\\frac{S_{1}^{2}}{S_{2}^{2}}\\sim F(n-1,n-1)$ D. $\\frac{(n-1)\\left(S_{1}^{2}+S_{2}^{2}\\right)}{\\sigma^{2}}\\sim\\chi^{2}(2n)$",
-      "options": [],
-      "answer": "选 D。",
+      "stem": "【例 18】（余炳森 5 套卷）设总体 $(X,Y)\\sim N\\left(\\mu_{1},\\mu_{2};\\sigma_{1}^{2},\\sigma_{2}^{2};0\\right),\\left(X_{1},Y_{1}\\right),\\left(X_{2},Y_{2}\\right),\\cdots,\\left(X_{n},Y_{n}\\right)(n>1)$ 是来自总体 $(X,Y)$ 的简单随机样本，记 $\\overline{X}=\\frac{1}{n}\\sum_{i=1}^{n}X_{i},\\overline{Y}=\\frac{1}{n}\\sum_{i=1}^{n}Y_{i},S_{1}^{2}=\\frac{1}{n-1}\\sum_{i=1}^{n}(X_{i}-\\overline{X})^{2},S_{2}^{2}=\\frac{1}{n-1}\\sum_{i=1}^{n}(Y_{i}-\\overline{Y})^{2}$ ，则下列结论不正确的是（）",
+      "options": [
+        {
+          "id": "opt-a",
+          "label": "A",
+          "content_md": "$n\\overline{X}\\sim N\\left(n\\mu_{1},n\\sigma^{2}\\right)$"
+        },
+        {
+          "id": "opt-b",
+          "label": "B",
+          "content_md": "$\\frac{\\overline{X}-\\overline{Y}-\\left(\\mu_{1}-\\mu_{2}\\right)}{\\sqrt{\\frac{S_{1}^{2}+S_{2}^{2}}{n}}}\\sim t(2n-2)$"
+        },
+        {
+          "id": "opt-c",
+          "label": "C",
+          "content_md": "$\\frac{S_{1}^{2}}{S_{2}^{2}}\\sim F(n-1,n-1)$"
+        },
+        {
+          "id": "opt-d",
+          "label": "D",
+          "content_md": "$\\frac{(n-1)\\left(S_{1}^{2}+S_{2}^{2}\\right)}{\\sigma^{2}}\\sim\\chi^{2}(2n)$"
+        }
+      ],
+      "answer": "D",
       "explanation": "$(X,Y)$ 二维正态 $\\rho=0\\Rightarrow X,Y$ 独立同方差 $\\sigma^{2}$。逐项验：\nA. $\\overline{X}\\sim N\\big(\\mu_{1},\\tfrac{\\sigma^{2}}{n}\\big)\\Rightarrow n\\overline{X}\\sim N(n\\mu_{1},n\\sigma^{2})$ ✓；\nB. 方差齐的两样本 t：合并方差 $S_{p}^{2}=\\dfrac{S_{1}^{2}+S_{2}^{2}}{2}$，$\\dfrac{\\overline{X}-\\overline{Y}-(\\mu_{1}-\\mu_{2})}{S_{p}\\sqrt{\\frac{2}{n}}}\\sim t(2n-2)$，而 $S_{p}\\sqrt{\\tfrac{2}{n}}=\\sqrt{\\dfrac{S_{1}^{2}+S_{2}^{2}}{n}}$ ✓；\nC. $\\dfrac{(n-1)S_{1}^{2}}{\\sigma^{2}}$ 与 $\\dfrac{(n-1)S_{2}^{2}}{\\sigma^{2}}$ 独立 $\\sim\\chi^{2}(n-1)$，相除 $\\dfrac{S_{1}^{2}}{S_{2}^{2}}\\sim F(n-1,n-1)$ ✓；\nD. $\\dfrac{(n-1)(S_{1}^{2}+S_{2}^{2})}{\\sigma^{2}}\\sim\\chi^{2}(n-1)+\\chi^{2}(n-1)=\\chi^{2}(2n-2)\\ne\\chi^{2}(2n)$，✗。\n选 D（不正确的是它）。\n\n视频讲解：[没咋了概率救命 #5 · 例 18 · 1:13:30](https://www.bilibili.com/video/BV18cUfBqEM3/?t=4410)",
       "source": "没咋了概率救命课 第5章 例 18",
       "type": "single_choice",
@@ -2354,7 +2851,9 @@
       ],
       "category_path": "概率统计 / 没咋了概率论讲义题库 / 第5章 数理统计部分",
       "serial": 18,
-      "correct_labels": []
+      "correct_labels": [
+        "D"
+      ]
     },
     {
       "id": 99000137,
@@ -2579,10 +3078,31 @@
     },
     {
       "id": 99000150,
-      "stem": "【例 1】（李六）设随机变量 X 在 $(0, \\theta) (\\theta > 0)$ 上服从均匀分布，其中 $\\theta$ 未知， $X_{1}, X_{2}, \\cdots, X_{n}$ 为总体 X 的简单随机样本， $\\hat{\\theta}$ 为 $\\theta$ 的最大似然估计量，若 $k\\hat{\\theta}$ 为 $\\theta$ 的无偏估计量，则 k = （）\nA. $\\frac{n}{n+1}$ B. $\\frac{n+1}{n}$ C. $\\frac{1}{n+1}$ D. $\\frac{1}{n}$",
-      "options": [],
-      "answer": "选 B（$k=\\dfrac{n+1}{n}$）。",
-      "explanation": "$U(0,\\theta)$ 的最大似然估计是 $\\hat{\\theta}=\\max\\{X_{1},\\dots,X_{n}\\}$，其分布函数为 $\\big(\\tfrac{t}{\\theta}\\big)^{n}$：\n$$E(\\hat{\\theta})=\\int_{0}^{\\theta}t\\cdot\\frac{nt^{n-1}}{\\theta^{n}}dt=\\frac{n}{n+1}\\theta.$$\n无偏要求 $kE(\\hat{\\theta})=\\theta\\Rightarrow k=\\dfrac{n+1}{n}$，选 B。（最大似然估计\"天生偏小\"，需乘 $\\tfrac{n+1}{n}$ 校正。）\n\n视频讲解：[没咋了概率救命 #6 · 例 1 · 4:00](https://www.bilibili.com/video/BV11BSsBTEM3/?t=240)",
+      "stem": "【例 1】（李六）设随机变量 X 在 $(0, \\theta) (\\theta > 0)$ 上服从均匀分布，其中 $\\theta$ 未知， $X_{1}, X_{2}, \\cdots, X_{n}$ 为总体 X 的简单随机样本， $\\hat{\\theta}$ 为 $\\theta$ 的最大似然估计量，若 $k\\hat{\\theta}$ 为 $\\theta$ 的无偏估计量，则 k = （）",
+      "options": [
+        {
+          "id": "opt-a",
+          "label": "A",
+          "content_md": "$\\frac{n}{n+1}$"
+        },
+        {
+          "id": "opt-b",
+          "label": "B",
+          "content_md": "$\\frac{n+1}{n}$"
+        },
+        {
+          "id": "opt-c",
+          "label": "C",
+          "content_md": "$\\frac{1}{n+1}$"
+        },
+        {
+          "id": "opt-d",
+          "label": "D",
+          "content_md": "$\\frac{1}{n}$"
+        }
+      ],
+      "answer": "B",
+      "explanation": "$U(0,\\theta)$ 的最大似然估计是 $\\hat{\\theta}=\\max\\{X_{1},\\dots,X_{n}\\}$，其分布函数为 $\\big(\\tfrac{t}{\\theta}\\big)^{n}$：\n$$E(\\hat{\\theta})=\\int_{0}^{\\theta}t\\cdot\\frac{nt^{n-1}}{\\theta^{n}}dt=\\frac{n}{n+1}\\theta.$$\n无偏要求 $kE(\\hat{\\theta})=\\theta\\Rightarrow k=\\dfrac{n+1}{n}$，选 B。（最大似然估计\"天生偏小\"，需乘 $\\tfrac{n+1}{n}$ 校正。）\n\n**答案**：（$k=\\dfrac{n+1}{n}$）\n\n视频讲解：[没咋了概率救命 #6 · 例 1 · 4:00](https://www.bilibili.com/video/BV11BSsBTEM3/?t=240)",
       "source": "没咋了概率救命课 第6章 例 1",
       "type": "single_choice",
       "is_core": false,
@@ -2592,7 +3112,9 @@
       ],
       "category_path": "概率统计 / 没咋了概率论讲义题库 / 第6章 数一专项内容",
       "serial": 1,
-      "correct_labels": []
+      "correct_labels": [
+        "B"
+      ]
     },
     {
       "id": 99000151,
@@ -2630,9 +3152,30 @@
     },
     {
       "id": 99000153,
-      "stem": "【例 4】（2005）设一批零件长度服从正态分布 $N\\left(\\mu,\\sigma^{2}\\right)$ ，其中 $\\mu,\\sigma^{2}$ 均未知，现从中随机抽取16个零件，测得样本均值 $\\bar{x}=20(cm)$ ，样本标准差 $S=1(cm)$ ，则 $\\mu$ 的置信度为0.90的置信区间为（）\n\nA. $\\left(20-\\frac{1}{4}t_{0.05}(16),20+\\frac{1}{4}t_{0.05}(16)\\right)$ B. $\\left(20-\\frac{1}{4}t_{0.1}(16),20+\\frac{1}{4}t_{0.1}(16)\\right)$ C. $\\left(20-\\frac{1}{4}t_{0.05}(15),20+\\frac{1}{4}t_{0.05}(15)\\right)$ D. $\\left(20-\\frac{1}{4}t_{0.1}(15),20+\\frac{1}{4}t_{0.1}(15)\\right)$",
-      "options": [],
-      "answer": "选 C。",
+      "stem": "【例 4】（2005）设一批零件长度服从正态分布 $N\\left(\\mu,\\sigma^{2}\\right)$ ，其中 $\\mu,\\sigma^{2}$ 均未知，现从中随机抽取16个零件，测得样本均值 $\\bar{x}=20(cm)$ ，样本标准差 $S=1(cm)$ ，则 $\\mu$ 的置信度为0.90的置信区间为（）",
+      "options": [
+        {
+          "id": "opt-a",
+          "label": "A",
+          "content_md": "$\\left(20-\\frac{1}{4}t_{0.05}(16),20+\\frac{1}{4}t_{0.05}(16)\\right)$"
+        },
+        {
+          "id": "opt-b",
+          "label": "B",
+          "content_md": "$\\left(20-\\frac{1}{4}t_{0.1}(16),20+\\frac{1}{4}t_{0.1}(16)\\right)$"
+        },
+        {
+          "id": "opt-c",
+          "label": "C",
+          "content_md": "$\\left(20-\\frac{1}{4}t_{0.05}(15),20+\\frac{1}{4}t_{0.05}(15)\\right)$"
+        },
+        {
+          "id": "opt-d",
+          "label": "D",
+          "content_md": "$\\left(20-\\frac{1}{4}t_{0.1}(15),20+\\frac{1}{4}t_{0.1}(15)\\right)$"
+        }
+      ],
+      "answer": "C",
       "explanation": "\"$\\sigma^{2}$ 未知估 $\\mu$\" 用 t 区间：\n$$\\Big(\\bar{x}-t_{\\frac{\\alpha}{2}}(n-1)\\frac{S}{\\sqrt{n}},\\ \\bar{x}+t_{\\frac{\\alpha}{2}}(n-1)\\frac{S}{\\sqrt{n}}\\Big).$$\n代入 $n=16,\\ \\bar{x}=20,\\ S=1,\\ 1-\\alpha=0.90\\Rightarrow\\alpha=0.10,\\ \\tfrac{\\alpha}{2}=0.05$：\n$$\\Big(20-\\frac{1}{4}t_{0.05}(15),\\ 20+\\frac{1}{4}t_{0.05}(15)\\Big),$$\n选 C。（两个易错点：自由度是 $n-1=15$；双侧置信度 $0.90$ 对应分位点 $t_{0.05}$ 而非 $t_{0.10}$。）\n\n视频讲解：[没咋了概率救命 #6 · 例 4 · 23:30](https://www.bilibili.com/video/BV11BSsBTEM3/?t=1410)",
       "source": "没咋了概率救命课 第6章 例 4",
       "type": "single_choice",
@@ -2643,7 +3186,9 @@
       ],
       "category_path": "概率统计 / 没咋了概率论讲义题库 / 第6章 数一专项内容",
       "serial": 4,
-      "correct_labels": []
+      "correct_labels": [
+        "C"
+      ]
     },
     {
       "id": 99000154,
@@ -2698,9 +3243,30 @@
     },
     {
       "id": 99000157,
-      "stem": "【例 8】（2018）设 $X_{1}, X_{2}, \\cdots, X_{n}$ 是来自正态总体 $N\\left(\\mu, \\sigma^{2}\\right)$ 的简单随机样本，据此样本检测假设： $H_{0}:\\mu=\\mu_{0},H_{1}:\\mu\\neq\\mu_{0}$ ，则（）\nA.如果在检验水平 $\\alpha=0.05$ 下拒绝 $H_{0}$ ，则在检验水平 $\\alpha=0.01$ 下必拒绝 $H_{0}$ B. 如果在检验水平 $\\alpha=0.05$ 下拒绝 $H_{0}$ ，则在检验水平 $\\alpha=0.01$ 下必接受 $H_{0}$ C. 如果在检验水平 $\\alpha=0.05$ 下接受 $H_{0}$ ，则在检验水平 $\\alpha=0.01$ 下必拒绝 $H_{0}$ D. 如果在检验水平 $\\alpha=0.05$ 下接受 $H_{0}$ ，则在检验水平 $\\alpha=0.01$ 下必接受 $H_{0}$",
-      "options": [],
-      "answer": "选 D。",
+      "stem": "【例 8】（2018）设 $X_{1}, X_{2}, \\cdots, X_{n}$ 是来自正态总体 $N\\left(\\mu, \\sigma^{2}\\right)$ 的简单随机样本，据此样本检测假设： $H_{0}:\\mu=\\mu_{0},H_{1}:\\mu\\neq\\mu_{0}$ ，则（）",
+      "options": [
+        {
+          "id": "opt-a",
+          "label": "A",
+          "content_md": "如果在检验水平 $\\alpha=0.05$ 下拒绝 $H_{0}$ ，则在检验水平 $\\alpha=0.01$ 下必拒绝 $H_{0}$"
+        },
+        {
+          "id": "opt-b",
+          "label": "B",
+          "content_md": "如果在检验水平 $\\alpha=0.05$ 下拒绝 $H_{0}$ ，则在检验水平 $\\alpha=0.01$ 下必接受 $H_{0}$"
+        },
+        {
+          "id": "opt-c",
+          "label": "C",
+          "content_md": "如果在检验水平 $\\alpha=0.05$ 下接受 $H_{0}$ ，则在检验水平 $\\alpha=0.01$ 下必拒绝 $H_{0}$"
+        },
+        {
+          "id": "opt-d",
+          "label": "D",
+          "content_md": "如果在检验水平 $\\alpha=0.05$ 下接受 $H_{0}$ ，则在检验水平 $\\alpha=0.01$ 下必接受 $H_{0}$"
+        }
+      ],
+      "answer": "D",
       "explanation": "显著性水平越小，拒绝域越小（$W_{0.01}\\subset W_{0.05}$）：\n- 在 $\\alpha=0.05$ 下拒绝：样本落在大的拒绝域里，是否落在小拒绝域**不确定** → A、B 都错；\n- 在 $\\alpha=0.05$ 下接受：样本在大的拒绝域之外，当然也在小的拒绝域之外 → 在 $\\alpha=0.01$ 下**必接受** ✓。\n选 D。（直观：0.01 更\"保守\"，0.05 都不肯拒绝，0.01 更不会拒绝。）\n\n视频讲解：[没咋了概率救命 #6 · 例 8 · 43:00](https://www.bilibili.com/video/BV11BSsBTEM3/?t=2580)",
       "source": "没咋了概率救命课 第6章 例 8",
       "type": "single_choice",
@@ -2711,13 +3277,36 @@
       ],
       "category_path": "概率统计 / 没咋了概率论讲义题库 / 第6章 数一专项内容",
       "serial": 8,
-      "correct_labels": []
+      "correct_labels": [
+        "D"
+      ]
     },
     {
       "id": 99000158,
-      "stem": "【例9】(2021)设 $X_{1}, X_{2}, \\cdots, X_{16}$ 是来自正态总体 $N(\\mu, 4)$ 的简单随机样本，考虑假设检验问题： $H_{0}: \\mu \\leq 10$ ， $H_{1}: \\mu > 10$ ，若该检验问题的拒绝域为 $W = \\left\\{\\overline{X} > 11\\right\\}$ ，则 $\\mu = 11.5$ 时，该检验犯第二类错误的概率为（）\n\nA. $1 - \\Phi(0.5)$ B. $1 - \\Phi(1)$ C. $1 - \\Phi(1.5)$ D. $1 - \\Phi(2)$",
-      "options": [],
-      "answer": "选 B。",
+      "stem": "【例9】(2021)设 $X_{1}, X_{2}, \\cdots, X_{16}$ 是来自正态总体 $N(\\mu, 4)$ 的简单随机样本，考虑假设检验问题： $H_{0}: \\mu \\leq 10$ ， $H_{1}: \\mu > 10$ ，若该检验问题的拒绝域为 $W = \\left\\{\\overline{X} > 11\\right\\}$ ，则 $\\mu = 11.5$ 时，该检验犯第二类错误的概率为（）",
+      "options": [
+        {
+          "id": "opt-a",
+          "label": "A",
+          "content_md": "$1 - \\Phi(0.5)$"
+        },
+        {
+          "id": "opt-b",
+          "label": "B",
+          "content_md": "$1 - \\Phi(1)$"
+        },
+        {
+          "id": "opt-c",
+          "label": "C",
+          "content_md": "$1 - \\Phi(1.5)$"
+        },
+        {
+          "id": "opt-d",
+          "label": "D",
+          "content_md": "$1 - \\Phi(2)$"
+        }
+      ],
+      "answer": "B",
       "explanation": "第二类错误 = $H_{0}$ 假却接受 = 观测值**没落进拒绝域**：\n$$P\\{\\text{第二类}\\mid\\mu=11.5\\}=P\\{\\overline{X}\\le11\\mid\\mu=11.5\\}.$$\n$n=16,\\ \\sigma=2\\Rightarrow\\overline{X}\\sim N\\big(11.5,\\ (\\tfrac{2}{4})^{2}\\big)$，标准差 $\\tfrac{1}{2}$：\n$$P\\{\\overline{X}\\le11\\}=\\Phi\\Big(\\frac{11-11.5}{1/2}\\Big)=\\Phi(-1)=1-\\Phi(1),$$\n选 B。\n\n视频讲解：[没咋了概率救命 #6 · 例 9 · 47:30](https://www.bilibili.com/video/BV11BSsBTEM3/?t=2850)",
       "source": "没咋了概率救命课 第6章 例 9",
       "type": "single_choice",
@@ -2728,13 +3317,36 @@
       ],
       "category_path": "概率统计 / 没咋了概率论讲义题库 / 第6章 数一专项内容",
       "serial": 9,
-      "correct_labels": []
+      "correct_labels": [
+        "B"
+      ]
     },
     {
       "id": 99000159,
-      "stem": "【例 10】（2025）设 $X_{1}, X_{2}, \\cdots, X_{n}$ 为来自正态总体 $N(\\mu, 2)$ 的简单随机样本，记 $\\overline{X} = \\frac{1}{n} \\sum_{i=1}^{n} X_{i}$ ， $\\overline{x}$ 为 $\\overline{X}$ 的观察值， $Z_{\\alpha}$ 表示标准正态分布的上侧 $\\alpha$ 分位数，假设检验问题： $H_{0}: \\mu \\leq 1$ ， $H_{1}: \\mu > 1$ 的显著性水平为 $\\alpha$ 的检验的拒绝域为（）\n\nA. $\\left\\{(x_{1}, x_{2}, \\cdots, x_{n}) \\mid \\overline{x} > 1 + \\frac{2}{n} Z_{\\alpha}\\right\\}$ B. $\\left\\{(x_{1}, x_{2}, \\cdots, x_{n}) \\mid \\overline{x} > 1 + \\frac{\\sqrt{2}}{n} Z_{\\alpha}\\right\\}$ C. $\\left\\{(x_{1}, x_{2}, \\cdots, x_{n}) \\mid \\overline{x} > 1 + \\frac{2}{\\sqrt{n}} Z_{\\alpha}\\right\\}$ D. $\\left\\{(x_{1}, x_{2}, \\cdots, x_{n}) \\mid \\overline{x} > 1 + \\sqrt{\\frac{2}{n}} Z_{\\alpha}\\right\\}$\n\nTo 数一小伙伴：完结撒花\\_ $(\\geq \\nabla \\leq \\rfloor \\angle)$",
-      "options": [],
-      "answer": "选 D。",
+      "stem": "【例 10】（2025）设 $X_{1}, X_{2}, \\cdots, X_{n}$ 为来自正态总体 $N(\\mu, 2)$ 的简单随机样本，记 $\\overline{X} = \\frac{1}{n} \\sum_{i=1}^{n} X_{i}$ ， $\\overline{x}$ 为 $\\overline{X}$ 的观察值， $Z_{\\alpha}$ 表示标准正态分布的上侧 $\\alpha$ 分位数，假设检验问题： $H_{0}: \\mu \\leq 1$ ， $H_{1}: \\mu > 1$ 的显著性水平为 $\\alpha$ 的检验的拒绝域为（）",
+      "options": [
+        {
+          "id": "opt-a",
+          "label": "A",
+          "content_md": "$\\left\\{(x_{1}, x_{2}, \\cdots, x_{n}) \\mid \\overline{x} > 1 + \\frac{2}{n} Z_{\\alpha}\\right\\}$"
+        },
+        {
+          "id": "opt-b",
+          "label": "B",
+          "content_md": "$\\left\\{(x_{1}, x_{2}, \\cdots, x_{n}) \\mid \\overline{x} > 1 + \\frac{\\sqrt{2}}{n} Z_{\\alpha}\\right\\}$"
+        },
+        {
+          "id": "opt-c",
+          "label": "C",
+          "content_md": "$\\left\\{(x_{1}, x_{2}, \\cdots, x_{n}) \\mid \\overline{x} > 1 + \\frac{2}{\\sqrt{n}} Z_{\\alpha}\\right\\}$"
+        },
+        {
+          "id": "opt-d",
+          "label": "D",
+          "content_md": "$\\left\\{(x_{1}, x_{2}, \\cdots, x_{n}) \\mid \\overline{x} > 1 + \\sqrt{\\frac{2}{n}} Z_{\\alpha}\\right\\}$\n\nTo 数一小伙伴：完结撒花\\_ $(\\geq \\nabla \\leq \\rfloor \\angle)$"
+        }
+      ],
+      "answer": "D",
       "explanation": "右边检验在边界 $\\mu=1$ 处定拒绝域：$\\overline{X}\\sim N\\big(1,\\tfrac{2}{n}\\big)$，标准化\n$$\\frac{\\overline{X}-1}{\\sqrt{2}/\\sqrt{n}}\\sim N(0,1),$$\n显著性水平 $\\alpha$ 要求 $P\\{\\overline{X}>c\\}=\\alpha\\Rightarrow c=1+Z_{\\alpha}\\dfrac{\\sqrt{2}}{\\sqrt{n}}=1+\\sqrt{\\dfrac{2}{n}}\\,Z_{\\alpha}$。\n拒绝域 $=\\Big\\{\\overline{x}>1+\\sqrt{\\tfrac{2}{n}}Z_{\\alpha}\\Big\\}$，选 D。\n（$\\sigma^{2}=2$ 别丢根号：$\\sigma=\\sqrt{2}$，标准误是 $\\sqrt{2}/\\sqrt{n}$。）\n\n视频讲解：[没咋了概率救命 #6 · 例 10 · 49:30](https://www.bilibili.com/video/BV11BSsBTEM3/?t=2970)",
       "source": "没咋了概率救命课 第6章 例 10",
       "type": "single_choice",
@@ -2745,7 +3357,9 @@
       ],
       "category_path": "概率统计 / 没咋了概率论讲义题库 / 第6章 数一专项内容",
       "serial": 10,
-      "correct_labels": []
+      "correct_labels": [
+        "D"
+      ]
     }
   ],
   "metadata": {

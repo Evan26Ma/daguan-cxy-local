@@ -33,6 +33,28 @@ function localCategory(id, name, parentId, questionCount, children = []) {
   };
 }
 
+/** 选择题必须带可点选项与对得上的 correct_labels，否则前端渲染不出选项也无法判题。 */
+function assertChoiceShape(question, file) {
+  const type = String(question.type || "");
+  if (type !== "single_choice" && type !== "multiple_choice") return;
+  const labels = new Set(
+    (question.options || []).map((option) => String(option?.label || "").trim().toUpperCase()).filter(Boolean),
+  );
+  const answers = (Array.isArray(question.correct_labels) ? question.correct_labels : [])
+    .map((label) => String(label).trim().toUpperCase());
+  if (!labels.size) throw new Error(`本地题库 ${file} 的选择题 ${question.id} 缺少选项`);
+  if (!answers.length) throw new Error(`本地题库 ${file} 的选择题 ${question.id} 缺少正确选项标记`);
+  for (const answer of answers) {
+    if (!labels.has(answer)) throw new Error(`本地题库 ${file} 的选择题 ${question.id} 正确答案 ${answer} 不在选项里`);
+  }
+  if (type === "single_choice" && answers.length !== 1) {
+    throw new Error(`本地题库 ${file} 的单选题 ${question.id} 应有且仅有 1 个正确选项`);
+  }
+  if (type === "multiple_choice" && answers.length < 2) {
+    throw new Error(`本地题库 ${file} 的多选题 ${question.id} 至少需要 2 个正确选项`);
+  }
+}
+
 /** Merge repository-local question banks into a freshly downloaded or local catalog. */
 export async function mergeLocalQuestionBanks(dataDir, overlayDir = dataDir) {
   const overlayRoot = path.join(overlayDir, "local_question_banks");
@@ -59,6 +81,7 @@ export async function mergeLocalQuestionBanks(dataDir, overlayDir = dataDir) {
     const present = ids.filter((id) => Object.hasOwn(idIndex, id));
     if (present.length === ids.length) continue;
     if (present.length) throw new Error(`本地题库 ${file} 只合并了一部分（${present.length}/${ids.length}），已停止以避免重复计数`);
+    for (const question of overlay.questions) assertChoiceShape(question, file);
 
     const shardName = overlay.shard || "概率统计";
     const shardMeta = manifest.shards?.[shardName];

@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "total": 6889,
+  "total": 7119,
   "types": {
-    "subjective": 4981,
-    "single_choice": 1904,
-    "multiple_choice": 4
+    "subjective": 5147,
+    "single_choice": 1966,
+    "multiple_choice": 6
   },
   "shards": {
     "高等数学": {
@@ -17,7 +17,7 @@
     },
     "概率统计": {
       "file": "shards/概率统计.json",
-      "count": 316
+      "count": 546
     },
     "历年真题": {
       "file": "shards/历年真题.json",

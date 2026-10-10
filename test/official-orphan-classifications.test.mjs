@@ -1,9 +1,13 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { applyLocalClassifications } from "../local-server/official-question-bank.mjs";
 
 const data = name => JSON.parse(readFileSync(new URL(`../web/data/${name}`, import.meta.url), "utf8"));
+// 本地题库 overlay 的题量（救命课 + 百宝书等），总题数 = 官网题数 + 本地题库。
+const localBankTotal = readdirSync(new URL("../web/data/local_question_banks/", import.meta.url))
+  .filter(name => name.endsWith(".json"))
+  .reduce((sum, name) => sum + data(`local_question_banks/${name}`).questions.length, 0);
 const config = data("official-orphan-classifications.json");
 const index = data("id_index.json");
 const shards = new Map();
@@ -52,7 +56,7 @@ test("generated catalog indexes every reviewed question without duplicating its 
   const categoryQuestions = data("category_questions.json");
   const searchIndex = data("search_index.json");
   const cache = new Map();
-  assert.equal(manifest.total, manifest.source_total + 159);
+  assert.equal(manifest.total, manifest.source_total + localBankTotal);
   assert.equal(manifest.shards["未分类"].count, 0);
   assert.equal(categoryQuestions.orphan?.length || 0, 0);
   assert.equal(Object.keys(idIndex).length, manifest.total);

@@ -49,6 +49,24 @@ for (const meta of Object.values(manifest.shards || {})) {
     if (ids.has(String(question.id))) throw new Error(`重复题号: ${question.id}`);
     ids.add(String(question.id));
     questionCount += 1;
+    // 选择题必须有可点选项与对得上的 correct_labels，否则前端渲染不出选项、无法判题。
+    if (question.type === "single_choice" || question.type === "multiple_choice") {
+      const labels = new Set((question.options || [])
+        .map(option => String(option?.label || "").trim().toUpperCase()).filter(Boolean));
+      const answers = (Array.isArray(question.correct_labels) ? question.correct_labels : [])
+        .map(label => String(label).trim().toUpperCase());
+      if (!labels.size) throw new Error(`选择题缺少可选项: ${question.id}`);
+      if (!answers.length) throw new Error(`选择题缺少正确选项标记: ${question.id}`);
+      for (const answer of answers) {
+        if (!labels.has(answer)) throw new Error(`选择题正确答案不在选项里: ${question.id} ${answer}`);
+      }
+      if (question.type === "single_choice" && answers.length !== 1) {
+        throw new Error(`单选题正确选项数不为 1: ${question.id}`);
+      }
+      if (question.type === "multiple_choice" && answers.length < 2) {
+        throw new Error(`多选题正确选项少于 2 个: ${question.id}`);
+      }
+    }
     const text = JSON.stringify(question);
     // 原生解析图片已外置为 assets/<sha256>.<ext>：按引用里的真实扩展名核对文件，
     // 远程 question-assets/<hash> 仍按历史的 .png 命名查本地缓存。

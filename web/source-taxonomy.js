@@ -30,6 +30,7 @@
         { id: 'liyongle', label: '李永乐', emoji: '📘' },
         { id: 'lizhengyuan', label: '李正元', emoji: '📙' },
         { id: 'meizhale', label: '没咋了', emoji: '🎓' },
+        { id: 'hulu', label: '你的葫芦', emoji: '🍐' },
         { id: 't880', label: '880题', emoji: '8️⃣' },
         { id: 't660', label: '660题', emoji: '6️⃣' },
         { id: 't900', label: '900题', emoji: '9️⃣' },
@@ -68,6 +69,7 @@
         { id: 'lzy_other', system: 'lizhengyuan', label: '李正元讲义' },
 
         { id: 'mzl_prob', system: 'meizhale', label: '概率救命课' },
+        { id: 'hulu_bao', system: 'hulu', label: '概率统计百宝书' },
 
         { id: 'b880', system: 't880', label: '880题' },
         { id: 'b660', system: 't660', label: '660题' },
@@ -132,6 +134,9 @@
 
         // 没咋了
         { system: 'meizhale', book: 'mzl_prob', re: /没咋了|概率救命课/ },
+
+        // 你的葫芦：概率统计百宝书（2027，题目版权与配套讲解均属该创作者）
+        { system: 'hulu', book: 'hulu_bao', re: /百宝书|你的葫芦/ },
 
         // 李正元
         { system: 'lizhengyuan', book: 'lzy_example', re: /李正元\s*例/ },
