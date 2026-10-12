@@ -22,8 +22,14 @@ cleanup() {
   trap - EXIT
   if [[ -n "$DEVICE" ]]; then
     xcrun simctl spawn "$DEVICE" log show --last 5m --style compact \
-      --predicate 'process == "DaguanPad" OR process == "com.apple.WebKit.WebContent"' \
+      --info --debug --predicate 'process == "DaguanPad" OR process CONTAINS "WebKit" OR process == "SpringBoard" OR process == "runningboardd" OR process == "ReportCrash" OR eventMessage CONTAINS "DaguanPad"' \
       > "$OUT/simulator.log" 2>&1 || true
+    mkdir -p "$OUT/crashes"
+    for crash_root in "$HOME/Library/Logs/DiagnosticReports" "$HOME/Library/Developer/CoreSimulator/Devices/$DEVICE/data/Library/Logs/CrashReporter"; do
+      if [[ -d "$crash_root" ]]; then
+        find "$crash_root" -type f -name '*DaguanPad*' -exec cp {} "$OUT/crashes/" \; || true
+      fi
+    done
     xcrun simctl terminate "$DEVICE" "$BUNDLE_ID" >/dev/null 2>&1 || true
     xcrun simctl shutdown "$DEVICE" >> "$OUT/cleanup.log" 2>&1 || true
     xcrun simctl delete "$DEVICE" >> "$OUT/cleanup.log" 2>&1 || true
@@ -89,13 +95,31 @@ xcrun simctl bootstatus "$DEVICE" -b > "$OUT/boot.log" 2>&1
 xcrun simctl install "$DEVICE" "$APP" > "$OUT/install.log" 2>&1
 run_phase() {
   local phase="$1" container='' result='' attempt
-  xcrun simctl launch "$DEVICE" "$BUNDLE_ID" --daguan-smoke "--phase=$phase" "--marker=$MARKER" \
+  xcrun simctl launch --stdout="$OUT/$phase-stdout.log" --stderr="$OUT/$phase-stderr.log" \
+    "$DEVICE" "$BUNDLE_ID" --daguan-smoke "--phase=$phase" "--marker=$MARKER" \
     > "$OUT/$phase-launch.log" 2>&1
   # Native watchdog writes at 120s: cold CI WebKit startup has taken 63s.
   # Allow 30s more for scheduling/collection, checking atomic JSON on 75 polls.
   for ((attempt = 0; attempt < 75; attempt++)); do
     container="$(xcrun simctl get_app_container "$DEVICE" "$BUNDLE_ID" data 2>> "$OUT/$phase-container.log" || true)"
     result="$container/Documents/smoke-result.json"
+    printf '%s poll=%s container=%s\n' "$(date -u +%FT%TZ)" "$attempt" "$container" >> "$OUT/$phase-polls.log"
+    if [[ -f "$container/Documents/smoke-progress.json" ]]; then
+      cp "$container/Documents/smoke-progress.json" "$OUT/$phase-progress.json"
+    fi
+    if [[ "$attempt" == 10 || "$attempt" == 50 ]]; then
+      ps -axo pid,ppid,state,etime,command > "$OUT/$phase-processes-$attempt.log"
+      local app_pid
+      app_pid="$(python3 - "$OUT/$phase-launch.log" <<'PY'
+import pathlib, re, sys
+match = re.search(r': (\d+)\s*$', pathlib.Path(sys.argv[1]).read_text())
+print(match.group(1) if match else '')
+PY
+)"
+      if [[ -n "$app_pid" ]]; then
+        sample "$app_pid" 3 1 -file "$OUT/$phase-sample-$attempt.txt" >/dev/null 2>&1 || true
+      fi
+    fi
     if [[ -n "$container" && -f "$result" ]] && python3 - "$result" "$phase" "$MARKER" <<'PY'
 import json, sys
 try:

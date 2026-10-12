@@ -387,6 +387,13 @@ final class DaguanViewController: UIViewController, WKScriptMessageHandler, WKNa
         guard smokeEnabled, !smokeFinished else { return }
         smokeStages.append(["stage": stage, "elapsedSeconds": ProcessInfo.processInfo.systemUptime - smokeStartTime])
         NSLog("Daguan smoke stage: %@", stage)
+        do {
+            let documents = try FileManager.default.url(for: .documentDirectory, in: .userDomainMask,
+                                                        appropriateFor: nil, create: true)
+            let progress: [String: Any] = ["phase": smokeArgument("phase"), "marker": smokeArgument("marker"), "stages": smokeStages]
+            try JSONSerialization.data(withJSONObject: progress, options: [.prettyPrinted, .sortedKeys])
+                .write(to: documents.appendingPathComponent("smoke-progress.json"), options: .atomic)
+        } catch { NSLog("Daguan smoke stage write failed: %@", error.localizedDescription) }
     }
 
     private func finishSmoke(_ result: [String: Any]) {
