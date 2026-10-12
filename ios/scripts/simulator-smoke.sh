@@ -107,6 +107,10 @@ if value.get('ok') is not True:
     raise SystemExit('WKWebView smoke reported failure')
 if not value.get('questionText') or not value.get('stemText') or not value.get('domText'):
     raise SystemExit('Smoke result lacks real rendered DOM evidence')
+stages = [entry['stage'] for entry in value.get('stages', [])]
+required = ['viewDidLoad', 'configure-ready', 'initial-load-requested', 'navigation-started', 'navigation-finished']
+if any(stage not in stages for stage in required):
+    raise SystemExit('Smoke result lacks native configure/navigation stage evidence')
 PY
       return
     fi

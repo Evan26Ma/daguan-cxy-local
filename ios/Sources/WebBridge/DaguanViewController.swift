@@ -20,6 +20,8 @@ final class DaguanViewController: UIViewController, WKScriptMessageHandler, WKNa
     private var smokeStarted = false
     private var smokeFinished = false
     private var smokeTimeout: Task<Void, Never>?
+    private var smokeStages: [[String: Any]] = []
+    private let smokeStartTime = ProcessInfo.processInfo.systemUptime
     private var smokeEnabled: Bool { ProcessInfo.processInfo.arguments.contains("--daguan-smoke") }
     private func smokeArgument(_ name: String) -> String {
         ProcessInfo.processInfo.arguments.first { $0.hasPrefix("--\(name)=") }.map { String($0.dropFirst(name.count + 3)) } ?? ""
@@ -35,6 +37,7 @@ final class DaguanViewController: UIViewController, WKScriptMessageHandler, WKNa
         view.backgroundColor = .systemBackground
 #if DEBUG && targetEnvironment(simulator)
         if smokeEnabled {
+            recordSmokeStage("viewDidLoad")
             smokeTimeout = Task { [weak self] in
                 do { try await Task.sleep(nanoseconds: 45_000_000_000) } catch { return }
                 self?.finishSmoke(["ok": false, "error": "App/WKWebView smoke exceeded 45 seconds"])
@@ -92,7 +95,17 @@ final class DaguanViewController: UIViewController, WKScriptMessageHandler, WKNa
                     self.webView.evaluateJavaScript("window.DaguanIOS?.flush?.().catch(() => {});", completionHandler: nil)
                 }
             }
-            webView.load(URLRequest(url: URL(string: "daguan://app/index.html?ui=new")!))
+            let initialURL = URL(string: "daguan://app/index.html?ui=new")!
+            // WebKit may expose the provisional URL before the policy callback.
+            // Authorize this native load without attempting to flush an unloaded bridge.
+            permittedDocumentURL = initialURL
+#if DEBUG && targetEnvironment(simulator)
+            recordSmokeStage("configure-ready")
+#endif
+            webView.load(URLRequest(url: initialURL))
+#if DEBUG && targetEnvironment(simulator)
+            recordSmokeStage("initial-load-requested")
+#endif
         } catch { showFailure(error.localizedDescription) }
     }
 
@@ -322,8 +335,15 @@ final class DaguanViewController: UIViewController, WKScriptMessageHandler, WKNa
         }
     }
 
+    func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
+#if DEBUG && targetEnvironment(simulator)
+        recordSmokeStage("navigation-started")
+#endif
+    }
+
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
 #if DEBUG && targetEnvironment(simulator)
+        recordSmokeStage("navigation-finished")
         guard smokeEnabled, !smokeStarted, !smokeFinished else { return }
         smokeStarted = true
         Task {
@@ -362,6 +382,12 @@ final class DaguanViewController: UIViewController, WKScriptMessageHandler, WKNa
     }
 
 #if DEBUG && targetEnvironment(simulator)
+    private func recordSmokeStage(_ stage: String) {
+        guard smokeEnabled, !smokeFinished else { return }
+        smokeStages.append(["stage": stage, "elapsedSeconds": ProcessInfo.processInfo.systemUptime - smokeStartTime])
+        NSLog("Daguan smoke stage: %@", stage)
+    }
+
     private func finishSmoke(_ result: [String: Any]) {
         guard smokeEnabled, !smokeFinished else { return }
         smokeFinished = true
@@ -370,6 +396,7 @@ final class DaguanViewController: UIViewController, WKScriptMessageHandler, WKNa
         output["phase"] = smokeArgument("phase")
         output["marker"] = smokeArgument("marker")
         output["url"] = webView?.url?.absoluteString ?? ""
+        output["stages"] = smokeStages
         output["timestamp"] = ISO8601DateFormatter().string(from: Date())
         do {
             let documents = try FileManager.default.url(for: .documentDirectory, in: .userDomainMask,

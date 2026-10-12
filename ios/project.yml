@@ -42,6 +42,8 @@ targets:
       path: Resources/Info.plist
       properties:
         CFBundleDisplayName: 大观园
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         UILaunchScreen: {}
         UIApplicationSupportsIndirectInputEvents: true
         UIApplicationSceneManifest:
