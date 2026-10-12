@@ -19,13 +19,27 @@
 
 Swift XCTest 共 31 项：Storage 13 项，AI parser 6 项，AI router 12 项。覆盖 revision、损坏文件保护、批注、活动和历史、备份合并、KV 重启、UTF-8 分块、思考过滤、Keychain 隔离、模型测试、视觉上下文、聊天历史上限、失败与取消、配置变更竞态等。
 
-首次云端 run [38260632064](https://github.com/Evan26Ma/daguan-cxy-local/actions/runs/38260632064) 对独立分支 commit `3aefd931a766315d12dea71d87e9390071edd230` 执行，使用 macOS-15 / Xcode 16.4 / iOS SDK 18.5。31 项 XCTest 全部通过；模拟器 `BUILD SUCCEEDED` 和 arm64 设备 `ARCHIVE SUCCEEDED`，产出 unsigned IPA，应用版本 0.1.0、最低 iPadOS 16.0。没有个人签名或真实 iPad 安装结果。
+首次云端 run [38260632064](https://github.com/Evan26Ma/daguan-cxy-local/actions/runs/38260632064) 对独立分支 commit `3aefd931a766315d12dea71d87e9390071edd230` 执行，使用 macOS-15 / Xcode 16.4 / iOS SDK 18.5。31 项 XCTest 全部通过；模拟器 `BUILD SUCCEEDED` 和 arm64 设备 `ARCHIVE SUCCEEDED`，产出 unsigned IPA，最低 iPadOS 16.0；首次包核验发现 Info.plist 使用了 XcodeGen 默认版本 1.0，后续已显式设置为 0.1.0。没有个人签名或真实 iPad 安装结果。
 
 首次下载核验发现 Mac 默认 zip 未给中文分片文件名设置 UTF-8 flag。已改为 Python ZipFile 创建标准 UTF-8 IPA，并添加 CRC/文件名检查；旧 `3aefd93` 包不作为最终推荐安装包。后续候选还增加 DEBUG-only iPad 模拟器实际启动与冷重启保存检查，结果以对应云端运行及下载核验为准。
 
+## 实际启动排错记录
+
+- run 38263271851 暴露首次导航被误判为重载，已在原生 load 前授权一次性初始 URL；随后 run 38264575440 确认导航允许，但云端 WebKit 冷启动约 62 秒超过原 45 秒测试限时。DEBUG 测试限时调整为 120 秒，未改变生产加载策略。
+- run 38266010816 和 38268101681 使用 SDK 同版本 iOS 18.5 运行环境。后者控制台与 `.ips` 明确显示 `DYLD Library missing: /usr/lib/swift/libswiftWebKit.dylib`，应用尚未进入 viewDidLoad 就退出。原因对应 [WebKit bug 293831](https://bugs.webkit.org/show_bug.cgi?id=293831)，影响较低 deployment target 使用 Swift WebKit overlay 的 18.4/18.5 模拟器；云端测试改用已修复的 iOS 18.6 运行环境，保留应用最低 iPadOS 16.0。
+- 启动诊断仅在 DEBUG 模拟器条件编译，逐阶段原子保存进度并收集控制台、进程和崩溃证据。生产包不包含测试运行入口。
+
+## 实际 WKWebView 验收（已执行）
+
+[run 38269386161](https://github.com/Evan26Ma/daguan-cxy-local/actions/runs/38269386161) 构建 commit `35733489e668855b2d2ebf0eaf859ec28f3961c7`，使用 iOS 18.6 iPad mini A17 Pro 模拟器。真实新版页面加载、document-start 桥注入、daguan 资源协议、CSS、图片解码、7,119 条搜索索引、题号 129 的公式和题干 DOM 均通过。写入阶段 19 项、冷重启读取阶段 22 项检查通过；revision 从 0 增至 3，终止进程后重新启动读到 revision 3，收藏与批注同时在磁盘、前端缓存和题目界面恢复。初次 navigation-finished 约 5.90 秒，冷重启约 1.19 秒。测试资源及数据都在新建并销毁的隔离模拟器中。
+
+该证据覆盖真实 WKWebView 启动和已确认保存数据的进程重启恢复，不等于实机签名、飞行模式、触控、系统分享或全部功能验收。
+
+同一 run 全部成功，设备 arm64 archive 成功，最终 `DaguanPad-unsigned.ipa` 下载后核验：429,557,224 字节（约 409.7 MiB），应用版本 0.1.0/build 1，iPad family 2，最低系统 16.0，嵌入 DaguanCore.framework。ZIP CRC、无重复条目、中文文件名 UTF-8 标记及 3,436 个随包资源 SHA-256 全部通过，没有签名 provisioning profile。IPA SHA-256：`f4558560ea8567e1515ab6121272d688cdd275b2b3c154eb48f95a4aa874997a`。缺图报告仍为 41 张、42 个题号，completeOffline=false。
+
 ## 尚待原生验收的限制
 
-- WKURLSchemeHandler、document-start 注入、非标准 URL origin、原生桥和系统文件选择/分享需 Mac/iPad 验证。
+- 系统文件选择/分享仍需真实 iPad 验证。
 - 飞行模式冷启动、内存占用、横竖屏/分屏、键盘、已确认数据保存、强制结束与同标识升级需实机证据。
 - 普通 native 请求取消为协作式；取消不会撤回已完成的学习数据写入。
 - 原生存储按单文件原子写入，状态、活动和历史导入不是跨文件事务。磁盘错误可能造成部分完成，需要保留备份并重试；不能宣称整份恢复具有全局原子性。

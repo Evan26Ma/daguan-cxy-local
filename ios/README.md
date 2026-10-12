@@ -2,7 +2,7 @@
 
 此目录包含 Swift/WKWebView 移植工程。网页复用仓库当前新版界面；题库随包，学习记录保存到 iOS 应用沙盒，联网 AI 由原生 URLSession 请求，密钥保存到 Keychain。
 
-**当前状态：已通过云端 macOS/Xcode 编译，31 项原生测试通过，已生成供个人重签的 unsigned IPA。** 首次构建见 [Actions 38260632064](https://github.com/Evan26Ma/daguan-cxy-local/actions/runs/38260632064)。尚未进行个人签名或真实 iPad 安装验收；编译和核心测试不能替代设备使用验证。
+**当前状态：31 项原生测试、云端 macOS/Xcode 编译及真实 iPad 模拟器 WKWebView 启动/冷重启恢复检查通过。** 候选构建见 [Actions 38269386161](https://github.com/Evan26Ma/daguan-cxy-local/actions/runs/38269386161)，源码 commit `3573348`。unsigned IPA 用于个人重签；尚未进行个人签名或真实 iPad 安装验收，实机键盘、分屏、Files 与用户 AI 服务仍待验证。首次 `3aefd93` 包存在中文 ZIP 路径标记和版本字段问题，已修正，不推荐安装旧包。
 
 ## 构建
 
