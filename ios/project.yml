@@ -1,0 +1,64 @@
+name: DaguanPad
+options:
+  bundleIdPrefix: fun.kaoyangogogo
+  deploymentTarget:
+    iOS: '16.0'
+  xcodeVersion: '16.0'
+settings:
+  base:
+    SWIFT_VERSION: '5.0'
+    DEVELOPMENT_TEAM: ''
+targets:
+  DaguanCore:
+    type: framework
+    platform: iOS
+    sources:
+      - Sources/Storage
+      - Sources/AI
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: fun.kaoyangogogo.DaguanCore
+        SKIP_INSTALL: YES
+  DaguanPad:
+    type: application
+    platform: iOS
+    sources:
+      - Sources/App
+      - Sources/WebBridge
+      - path: Resources/Web
+        type: folder
+        buildPhase: resources
+    dependencies:
+      - target: DaguanCore
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: fun.kaoyangogogo.DaguanPad
+        TARGETED_DEVICE_FAMILY: '2'
+        CODE_SIGN_STYLE: Automatic
+        MARKETING_VERSION: '0.1.0'
+        CURRENT_PROJECT_VERSION: '1'
+    info:
+      path: Resources/Info.plist
+      properties:
+        CFBundleDisplayName: 大观园
+        UILaunchScreen: {}
+        UIApplicationSupportsIndirectInputEvents: true
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        NSAppTransportSecurity:
+          NSAllowsLocalNetworking: true
+schemes:
+  DaguanPad:
+    build:
+      targets:
+        DaguanPad: all
+    run:
+      config: Debug
+    archive:
+      config: Release

@@ -1,0 +1,60 @@
+name: iPad build verification
+on:
+  push:
+    branches:
+      - codex/ipad-native
+    paths:
+      - 'ios/**'
+      - 'test/ios-*.test.mjs'
+      - '.github/workflows/ios-build.yml'
+  workflow_dispatch:
+    inputs:
+      device_ipa:
+        description: Also package an unsigned device IPA for personal signing
+        type: boolean
+        default: false
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify web adapter and resource packaging
+        run: node --test test/ios-bridge.test.mjs test/ios-packaging.test.mjs
+      - name: Install project generator
+        run: brew install xcodegen
+      - name: Test core and build simulator app
+        run: bash ios/build.sh simulator
+      - name: Build unsigned device IPA
+        if: github.event_name == 'push' || inputs.device_ipa
+        run: bash ios/build.sh device
+      - name: Upload resource diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: DaguanPad-resource-diagnostics
+          path: |
+            ios/Resources/Web/resource-manifest.json
+            ios/Resources/Web/missing-assets.json
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Upload simulator app
+        uses: actions/upload-artifact@v4
+        with:
+          name: DaguanPad-simulator
+          path: ios/build/DerivedData/Build/Products/Debug-iphonesimulator/DaguanPad.app
+          if-no-files-found: error
+          retention-days: 7
+      - name: Upload unsigned IPA
+        if: github.event_name == 'push' || inputs.device_ipa
+        uses: actions/upload-artifact@v4
+        with:
+          name: DaguanPad-unsigned
+          path: ios/build/DaguanPad-unsigned.ipa
+          if-no-files-found: error
+          retention-days: 7

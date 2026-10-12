@@ -1,0 +1,23 @@
+/* Capability controls are selected by concrete IDs in bridge.js; never hide AI settings. */
+html[data-platform="ios"] [data-ios-unsupported="true"],
+html[data-platform="ios"] #btn-switch-legacy,
+html[data-platform="ios"] #desktop-storage-settings,
+html[data-platform="ios"] #preview-banner,
+html[data-platform="ios"] #dlg-preview-access {
+  display: none !important;
+}
+html[data-platform="ios"] { -webkit-text-size-adjust: 100%; }
+html[data-platform="ios"] .app-topbar { padding-top: max(var(--spacing-s, 8px), env(safe-area-inset-top)); }
+html[data-platform="ios"] .app-statusbar { padding-bottom: max(var(--spacing-xs, 4px), env(safe-area-inset-bottom)); }
+html[data-platform="ios"] button, html[data-platform="ios"] a { touch-action: manipulation; }
+#ios-persistence-status {
+  position: fixed; z-index: 10000; bottom: calc(36px + env(safe-area-inset-bottom));
+  left: max(12px, env(safe-area-inset-left)); right: max(12px, env(safe-area-inset-right));
+  padding: 12px 16px; border: 1px solid var(--color-border, #9A7746); border-radius: 8px;
+  background: var(--color-surface, #FFFEFA); color: var(--color-text, #202124);
+  display: flex; gap: 12px; align-items: center; justify-content: space-between;
+}
+#ios-persistence-status[hidden] { display: none; }
+#ios-persistence-status[data-error="true"] { border-color: #C83F32; }
+#ios-persistence-status button { flex-shrink: 0; min-height: 44px; }
+html[data-platform="ios"] img[data-ios-missing="true"] { min-width: 100px; min-height: 44px; }

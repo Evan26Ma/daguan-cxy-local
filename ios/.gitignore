@@ -1,0 +1,10 @@
+Resources/Web/
+Resources/Info.plist
+*.xcodeproj/
+*.xcworkspace/
+.build/
+build/
+DerivedData/
+*.ipa
+*.xcarchive
+.DS_Store
