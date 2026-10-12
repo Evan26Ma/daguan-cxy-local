@@ -47,7 +47,10 @@ trap 'exit 143' TERM
 xcrun simctl list devices available --json > "$OUT/available-devices.json"
 xcrun simctl list runtimes --json > "$OUT/runtimes.json"
 xcrun simctl list devicetypes --json > "$OUT/device-types.json"
-# Select an available iPad/runtime pair, then create our own device. Never boot,
+SMOKE_SDK_VERSION="$(xcrun --sdk iphonesimulator --show-sdk-version)"
+export SMOKE_SDK_VERSION
+printf '%s\n' "$SMOKE_SDK_VERSION" > "$OUT/sdk-version.txt"
+# Select an SDK-compatible iPad/runtime pair, then create our own device. Never boot,
 # install into, erase or delete the runner's existing simulators.
 python3 - <<'PY' > "$OUT/selection.txt"
 import json, os, pathlib
@@ -68,7 +71,12 @@ for runtime, devices in json.loads((out / 'available-devices.json').read_text())
             candidates.append((version, kind, runtime))
 if not candidates:
     raise SystemExit('No available iPad iOS simulator/runtime pair found')
-_, kind, runtime = sorted(candidates)[-1]
+sdk = tuple(map(int, os.environ['SMOKE_SDK_VERSION'].strip().split('.')))
+compatible = [pair for pair in candidates if pair[0][0] == sdk[0]]
+if not compatible:
+    raise SystemExit(f'No available iPad runtime matching simulator SDK major {sdk[0]}')
+exact = [pair for pair in compatible if pair[0][:2] == sdk[:2]]
+_, kind, runtime = sorted(exact or compatible)[-1]
 print(kind)
 print(runtime)
 PY
@@ -83,9 +91,9 @@ run_phase() {
   local phase="$1" container='' result='' attempt
   xcrun simctl launch "$DEVICE" "$BUNDLE_ID" --daguan-smoke "--phase=$phase" "--marker=$MARKER" \
     > "$OUT/$phase-launch.log" 2>&1
-  # Native watchdog writes at 45s, leaving a final 15s for simulator scheduling
-  # and host artifact collection. Atomic JSON is checked on each of 30 polls.
-  for ((attempt = 0; attempt < 30; attempt++)); do
+  # Native watchdog writes at 120s: cold CI WebKit startup has taken 63s.
+  # Allow 30s more for scheduling/collection, checking atomic JSON on 75 polls.
+  for ((attempt = 0; attempt < 75; attempt++)); do
     container="$(xcrun simctl get_app_container "$DEVICE" "$BUNDLE_ID" data 2>> "$OUT/$phase-container.log" || true)"
     result="$container/Documents/smoke-result.json"
     if [[ -n "$container" && -f "$result" ]] && python3 - "$result" "$phase" "$MARKER" <<'PY'

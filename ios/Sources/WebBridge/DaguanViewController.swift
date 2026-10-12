@@ -39,8 +39,9 @@ final class DaguanViewController: UIViewController, WKScriptMessageHandler, WKNa
         if smokeEnabled {
             recordSmokeStage("viewDidLoad")
             smokeTimeout = Task { [weak self] in
-                do { try await Task.sleep(nanoseconds: 45_000_000_000) } catch { return }
-                self?.finishSmoke(["ok": false, "error": "App/WKWebView smoke exceeded 45 seconds"])
+                // Cold CI WebKit auxiliary processes have taken 63s to launch.
+                do { try await Task.sleep(nanoseconds: 120_000_000_000) } catch { return }
+                self?.finishSmoke(["ok": false, "error": "App/WKWebView smoke exceeded 120 seconds"])
             }
         }
 #endif
