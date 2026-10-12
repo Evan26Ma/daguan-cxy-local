@@ -81,8 +81,11 @@ sdk = tuple(map(int, os.environ['SMOKE_SDK_VERSION'].strip().split('.')))
 compatible = [pair for pair in candidates if pair[0][0] == sdk[0]]
 if not compatible:
     raise SystemExit(f'No available iPad runtime matching simulator SDK major {sdk[0]}')
+# WebKit bug 293831: iOS 18.4/18.5 omit libswiftWebKit for older deployment targets.
+# The 18.6 runtime fixes the loader failure without changing the app's iPadOS 16 target.
+fixed = [pair for pair in compatible if pair[0][:2] >= (18, 6)] if sdk[0] == 18 else []
 exact = [pair for pair in compatible if pair[0][:2] == sdk[:2]]
-_, kind, runtime = sorted(exact or compatible)[-1]
+_, kind, runtime = sorted(fixed or exact or compatible)[-1]
 print(kind)
 print(runtime)
 PY
