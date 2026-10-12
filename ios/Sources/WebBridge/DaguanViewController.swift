@@ -16,6 +16,15 @@ final class DaguanViewController: UIViewController, WKScriptMessageHandler, WKNa
     private var bridgeSource = ""
     private var refreshingSnapshot = false
     private var permittedDocumentURL: URL?
+#if DEBUG && targetEnvironment(simulator)
+    private var smokeStarted = false
+    private var smokeFinished = false
+    private var smokeTimeout: Task<Void, Never>?
+    private var smokeEnabled: Bool { ProcessInfo.processInfo.arguments.contains("--daguan-smoke") }
+    private func smokeArgument(_ name: String) -> String {
+        ProcessInfo.processInfo.arguments.first { $0.hasPrefix("--\(name)=") }.map { String($0.dropFirst(name.count + 3)) } ?? ""
+    }
+#endif
 
     deinit {
         if let backgroundObserver { NotificationCenter.default.removeObserver(backgroundObserver) }
@@ -24,6 +33,14 @@ final class DaguanViewController: UIViewController, WKScriptMessageHandler, WKNa
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
+#if DEBUG && targetEnvironment(simulator)
+        if smokeEnabled {
+            smokeTimeout = Task { [weak self] in
+                do { try await Task.sleep(nanoseconds: 45_000_000_000) } catch { return }
+                self?.finishSmoke(["ok": false, "error": "App/WKWebView smoke exceeded 45 seconds"])
+            }
+        }
+#endif
         Task { await configure() }
     }
 
@@ -305,7 +322,166 @@ final class DaguanViewController: UIViewController, WKScriptMessageHandler, WKNa
         }
     }
 
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+#if DEBUG && targetEnvironment(simulator)
+        guard smokeEnabled, !smokeStarted, !smokeFinished else { return }
+        smokeStarted = true
+        Task {
+            do {
+                // Keep the explicit Any? type: the async WebKit overload returns an optional.
+                let value: Any? = try await webView.callAsyncJavaScript(Self.smokeJavaScript,
+                    arguments: ["phase": smokeArgument("phase"), "marker": smokeArgument("marker")],
+                    in: nil, contentWorld: .page)
+                guard let json = value as? String,
+                      let data = json.data(using: .utf8),
+                      let result = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+                    throw BridgeError.message("Smoke JavaScript did not return a JSON object string")
+                }
+                finishSmoke(result)
+            } catch { finishSmoke(["ok": false, "error": "callAsyncJavaScript: \(error.localizedDescription)"]) }
+        }
+#endif
+    }
+
+    func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+#if DEBUG && targetEnvironment(simulator)
+        finishSmoke(["ok": false, "error": "didFail: \(error.localizedDescription)"])
+#endif
+    }
+
+    func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
+#if DEBUG && targetEnvironment(simulator)
+        finishSmoke(["ok": false, "error": "didFailProvisionalNavigation: \(error.localizedDescription)"])
+#endif
+    }
+
+    func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {
+#if DEBUG && targetEnvironment(simulator)
+        finishSmoke(["ok": false, "error": "WKWebView content process terminated"])
+#endif
+    }
+
+#if DEBUG && targetEnvironment(simulator)
+    private func finishSmoke(_ result: [String: Any]) {
+        guard smokeEnabled, !smokeFinished else { return }
+        smokeFinished = true
+        smokeTimeout?.cancel()
+        var output = result
+        output["phase"] = smokeArgument("phase")
+        output["marker"] = smokeArgument("marker")
+        output["url"] = webView?.url?.absoluteString ?? ""
+        output["timestamp"] = ISO8601DateFormatter().string(from: Date())
+        do {
+            let documents = try FileManager.default.url(for: .documentDirectory, in: .userDomainMask,
+                                                        appropriateFor: nil, create: true)
+            let data = try JSONSerialization.data(withJSONObject: output, options: [.prettyPrinted, .sortedKeys])
+            try data.write(to: documents.appendingPathComponent("smoke-result.json"), options: .atomic)
+            NSLog("Daguan smoke result: %@", String(decoding: data, as: UTF8.self))
+        } catch { NSLog("Daguan smoke artifact write failed: %@", error.localizedDescription) }
+    }
+
+    // Runs inside the real main-frame page, using its production fetch bridge and UI modules.
+    private static let smokeJavaScript = #"""
+    const report = { ok: false, checks: [], phase, marker };
+    let step = 'arguments';
+    const check = (condition, message) => { if (!condition) throw new Error(message); report.checks.push(message); };
+    const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
+    const json = async (path, init) => {
+        const response = await fetch(path, init);
+        if (!response.ok) throw new Error(`${path}: HTTP ${response.status}: ${(await response.text()).slice(0, 300)}`);
+        return response.json();
+    };
+    try {
+        check(['write', 'read'].includes(phase) && /^daguan-smoke-[a-zA-Z0-9-]+$/.test(marker), 'valid isolated smoke arguments');
+        step = 'DOM and application startup';
+        const startupDeadline = Date.now() + 20000;
+        while (!(document.readyState !== 'loading' && window.App && window.DaguanIOS &&
+                 window.DaguanNewData && window.DataService && window.AppState?.manifest?.shards &&
+                 Object.keys(window.AppState.idIndex || {}).length && window.AppState.searchIndex?.length &&
+                 window.StateSync?.hydrated && window.StateSync.available && document.querySelector('#app-main .home-content'))) {
+            if (Date.now() >= startupDeadline) throw new Error('DOM/App/DaguanIOS/DaguanNewData/state hydration not ready within 20s');
+            await wait(100);
+        }
+        check(location.protocol === 'daguan:' && location.host === 'app', 'real daguan://app page');
+        report.startupText = document.querySelector('#app-main').innerText.slice(0, 1500);
+        check(report.startupText.trim().length > 0, 'home DOM contains rendered text');
+        check(document.documentElement.dataset.platform === 'ios', 'iOS platform mounted');
+        const scripts = [...document.scripts].filter(script => script.src).map(script => new URL(script.src));
+        check(scripts.every(url => url.protocol === 'daguan:' && url.host === 'app'), 'page scripts are bundled local resources');
+        check(['new-data.js', 'app-new.js'].every(name => scripts.some(url => url.pathname === '/' + name)), 'actual new-data and App scripts present');
+        check([...document.styleSheets].some(sheet => sheet.href?.includes('styles-new.css')) &&
+              getComputedStyle(document.querySelector('.app-container')).display === 'flex', 'bundled stylesheet applied by WebKit');
+        const logo = document.querySelector('.brand-mark');
+        check(logo?.complete && logo.naturalWidth > 0, 'bundled image decoded by WebKit');
+        step = 'native API and bundled JSON';
+        let state = await json('./api/state');
+        check(Number.isSafeInteger(state.revision) && state.revision >= 0, 'native API state revision fetched');
+        const index = await json('./data/id_index.json');
+        const search = await json('./data/search_index.json');
+        check(Array.isArray(search) && search.length > 0, 'search_index JSON fetched and parsed');
+        const qid = Object.keys(index).find(id => /^\d+$/.test(id));
+        check(!!qid && AppState.idIndex[qid] === index[qid], 'valid question selected from actual id_index');
+        report.questionID = qid;
+        report.searchCount = search.length;
+        report.revisionBefore = state.revision;
+        if (phase === 'read') {
+            check(state.favorites.includes(qid) && state.progress[qid]?.favorite === true, 'favorite restored from native disk after cold launch');
+            check(state.annotations[qid]?.markdown === marker, 'annotation marker restored from native disk after cold launch');
+            check(StorageService.isFavorite(qid), 'hydrated frontend favorite restored');
+            check(StorageService.getAnnotation(qid).content === marker, 'hydrated frontend annotation restored');
+        }
+        step = 'actual question and DOM rendering';
+        const question = await DataService.getQuestion(qid);
+        check(String(question?.id) === qid && String(question.stem || question.question || '').trim().length > 0, 'actual question shard loaded through DataService');
+        await App.openQuestionFromList(qid);
+        const rendered = document.querySelector('#question-content .question-wrapper');
+        check(rendered?.dataset.questionId === qid, 'actual question rendered into DOM');
+        report.questionText = rendered.innerText.slice(0, 2000);
+        report.stemText = rendered.querySelector('.question-stem')?.innerText.slice(0, 1500) || '';
+        check(report.stemText.trim().length > 0, 'rendered question stem contains text');
+        // Rendering records a visit/seen state. Drain those writes before direct API mutations.
+        await StateSync.ensureFlushed();
+        if (phase === 'write') {
+            step = 'revision-checked favorite and annotation writes';
+            const patch = async (suffix, fields) => {
+                for (let attempt = 0; attempt < 3; attempt++) {
+                    const current = await json('./api/state');
+                    const response = await fetch(`./api/state/questions/${qid}${suffix}`, {
+                        method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ ...fields, revision: current.revision })
+                    });
+                    if (response.status === 409 && attempt < 2) { await wait(100); continue; }
+                    const result = await response.json();
+                    check(response.ok && result.ok === true && result.state?.revision === current.revision + 1,
+                          `native PATCH ${suffix || 'favorite'} advances revision`);
+                    return result.state;
+                }
+            };
+            await patch('', { favorite: true });
+            await patch('/annotation', { markdown: marker });
+        }
+        step = 'durable state verification';
+        state = await json('./api/state');
+        check(state.favorites.includes(qid) && state.progress[qid]?.favorite === true, 'native favorite verified');
+        check(state.annotations[qid]?.markdown === marker, 'native annotation marker verified');
+        if (phase === 'read') check(rendered.querySelector('[data-shortcut-hint="favorite"]')?.classList.contains('active'), 'restored favorite visible on question DOM');
+        await DaguanIOS.flush();
+        check(!DaguanIOS.persistence.dirty && !DaguanIOS.persistence.error, 'frontend cache acknowledged durable by native store');
+        report.revisionAfter = state.revision;
+        report.ok = true;
+    } catch (error) {
+        report.error = `${step}: ${error.stack || error.message || error}`;
+    }
+    report.domText = document.body?.innerText.slice(0, 3000) || '';
+    report.readyState = document.readyState;
+    return JSON.stringify(report);
+    """#
+#endif
+
     private func showFailure(_ text: String) {
+#if DEBUG && targetEnvironment(simulator)
+        finishSmoke(["ok": false, "error": "configure: \(text)"])
+#endif
         let label = UILabel()
         label.text = "大观园启动失败\n\n\(text)\n\n请保留现有应用数据，不要通过卸载修复。"
         label.numberOfLines = 0

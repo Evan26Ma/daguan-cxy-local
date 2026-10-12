@@ -1,6 +1,6 @@
 # iPad 移植候选验证记录
 
-日期：2026-10-12。基线 HEAD 为 `ad14926c7c600e012488bfffea6f48b614c170e6`，实际前端来自现有 `codex/service-startup-recovery` 工作区（含原有未提交桌面改动）。本次仅新增 `ios/`、`test/ios-*.test.mjs` 与手动 iOS 工作流，没有修改或暂存原有文件，没有提交、推送、公开发布或安装应用。
+日期：2026-10-12。初次 Windows 开发验证使用 `codex/service-startup-recovery` 工作区。用户随后授权独立分支推送和云端构建；从干净基线 `ad14926c7c600e012488bfffea6f48b614c170e6` 创建 `codex/ipad-native`，只提交 iPad 相关文件。云端使用已提交前端和资源，未混入桌面未提交改动；main 和公开 Release 未变，未安装真实设备。
 
 ## 已执行
 
@@ -15,11 +15,13 @@
 - 15 个 Swift 文件（Sources、Tests 和 Package.swift）通过 tree-sitter 语法解析，0 语法错误；这不等于 Swift 编译或类型检查。已有活动、历史和手账相关 Node 契约测试另运行 14 项，全部通过。
 - 构建脚本通过 `bash -n`；针对新增原生容器和核心做静态复核，修正 Swift 语言模式、重载快照覆盖、处理器持有循环、流式事件顺序、陈旧 IPA 条目、过期模型测试结果和原生请求取消等问题。
 
-## 已编写但未执行
+## 云端原生编译与测试（已执行）
 
 Swift XCTest 共 31 项：Storage 13 项，AI parser 6 项，AI router 12 项。覆盖 revision、损坏文件保护、批注、活动和历史、备份合并、KV 重启、UTF-8 分块、思考过滤、Keychain 隔离、模型测试、视觉上下文、聊天历史上限、失败与取消、配置变更竞态等。
 
-当前电脑没有 Swift 编译器、Xcode/macOS 或已安装的 WSL 发行版。**上述 Swift 源码未编译，31 项 XCTest 未执行；没有模拟器、设备构建、签名或 iPad 实机结果，没有可交付的安装 IPA。** 静态语法检查与代码复核不能证明类型检查、链接、框架嵌入和系统生命周期正确。
+首次云端 run [38260632064](https://github.com/Evan26Ma/daguan-cxy-local/actions/runs/38260632064) 对独立分支 commit `3aefd931a766315d12dea71d87e9390071edd230` 执行，使用 macOS-15 / Xcode 16.4 / iOS SDK 18.5。31 项 XCTest 全部通过；模拟器 `BUILD SUCCEEDED` 和 arm64 设备 `ARCHIVE SUCCEEDED`，产出 unsigned IPA，应用版本 0.1.0、最低 iPadOS 16.0。没有个人签名或真实 iPad 安装结果。
+
+首次下载核验发现 Mac 默认 zip 未给中文分片文件名设置 UTF-8 flag。已改为 Python ZipFile 创建标准 UTF-8 IPA，并添加 CRC/文件名检查；旧 `3aefd93` 包不作为最终推荐安装包。后续候选还增加 DEBUG-only iPad 模拟器实际启动与冷重启保存检查，结果以对应云端运行及下载核验为准。
 
 ## 尚待原生验收的限制
 
@@ -29,6 +31,6 @@ Swift XCTest 共 31 项：Storage 13 项，AI parser 6 项，AI router 12 项。
 - 原生存储按单文件原子写入，状态、活动和历史导入不是跨文件事务。磁盘错误可能造成部分完成，需要保留备份并重试；不能宣称整份恢复具有全局原子性。
 - 首版限制单应用场景，避免多个原生 store 实例同时写同一沙盒；没有提供跨进程写锁。
 - 学习备份不包含 AI 密钥和聊天历史。视频和 AI 需要网络，图形增强接口明确不可用。
-- macOS 手动工作流已写入本地，但没有推送、运行或产生远端构建资产。
+- 工作流已在专用分支实际运行并产出 Actions 资产，没有修改 main 或创建公开 Release。
 
 Mac 上的入口为 `bash ios/build.sh simulator`、`bash ios/build.sh device`；源码和安装流程见 `README.md`。原生技术验证未通过前，本候选保持开发状态。

@@ -2,7 +2,7 @@
 
 此目录包含 Swift/WKWebView 移植工程。网页复用仓库当前新版界面；题库随包，学习记录保存到 iOS 应用沙盒，联网 AI 由原生 URLSession 请求，密钥保存到 Keychain。
 
-**当前状态：源码候选，尚无经 macOS/Xcode 编译、签名或 iPad 实机验证的 IPA。** Windows 上的桥协议与资源打包测试不能代替 WebKit 或原生存储验收。完整的技术验证门槛仍须在 Mac 上通过，验证失败时先调整容器，再扩大应用功能。
+**当前状态：已通过云端 macOS/Xcode 编译，31 项原生测试通过，已生成供个人重签的 unsigned IPA。** 首次构建见 [Actions 38260632064](https://github.com/Evan26Ma/daguan-cxy-local/actions/runs/38260632064)。尚未进行个人签名或真实 iPad 安装验收；编译和核心测试不能替代设备使用验证。
 
 ## 构建
 
@@ -16,7 +16,7 @@ bash ios/build.sh device
 
 模拟器命令先生成题库资源和 Xcode 工程，运行 `swift test`，再编译模拟器应用。device 命令生成 `ios/build/DaguanPad-unsigned.ipa`，它是待签名输入，不能直接安装。生成物均不入库。
 
-`.github/workflows/ios-build.yml` 提供手动运行的 macOS 构建入口；本次未推送或运行 GitHub Actions。工作流不会公开 Release，产物保留 7 天。运行前必须将明确的候选提交推到正确远端，这仍是独立的外部操作。
+`.github/workflows/ios-build.yml` 在 `codex/ipad-native` 分支推送相关文件时自动构建，也保留手动入口。工作流已实际运行，不公开 Release；Actions 产物保留 7 天，下载后的 IPA 可本地保留。
 
 ## 自签与安装
 

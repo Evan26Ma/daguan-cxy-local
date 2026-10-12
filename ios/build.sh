@@ -25,9 +25,7 @@ case "$MODE" in
     mkdir -p "$IOS_ROOT/build/Payload"
     rm -rf "$IOS_ROOT/build/Payload/DaguanPad.app"
     cp -R "$IOS_ROOT/build/DaguanPad.xcarchive/Products/Applications/DaguanPad.app" "$IOS_ROOT/build/Payload/"
-    rm -f "$IOS_ROOT/build/DaguanPad-unsigned.new.ipa"
-    (cd "$IOS_ROOT/build" && zip -q -r DaguanPad-unsigned.new.ipa Payload)
-    mv "$IOS_ROOT/build/DaguanPad-unsigned.new.ipa" "$IOS_ROOT/build/DaguanPad-unsigned.ipa"
+    python3 "$IOS_ROOT/scripts/package-ipa.py" "$IOS_ROOT/build"
     ;;
   *) printf '%s\n' 'Usage: bash ios/build.sh [simulator|device]' >&2; exit 1 ;;
 esac
