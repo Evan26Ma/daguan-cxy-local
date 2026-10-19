@@ -30,7 +30,20 @@
 
 Windows x64 使用锁定依赖与官方 Electron 44.4.5 构建。Electron ZIP 的 SHA-256 已与 npm 校验清单及官方 GitHub Release digest 对上：`11c395820a5aaa8ebcc0686b476d0ac98a730274ebfbdc8cf5538a7c2815cb5d`。
 
-安装器、Squirrel 更新资产、包内校验及打包程序验证结果在完成后补充。当前此段不代表版本已经公开。
+Windows x64 资产由提交 `4fdfa692ace9357eaf8a68615c3f24370baa6ac7` 构建；后续提交只补充本页验收记录，不改变产品文件。首轮依赖安装跳过生命周期脚本造成 Squirrel 缺少 7-Zip，执行锁定依赖的 `npm rebuild electron-winstaller` 后重新完整构建成功。
+
+- 3,467 个包内产品文件与构建源码逐字节一致，6 个题库分片内容一致；包内版本为 `1.0.15`，题库为 7,119 题。
+- `RELEASES` 的 nupkg 文件名、大小和 SHA-1 验证通过；三个资产均有 SHA-256 sidecar。
+- 包内未包含个人数据、实例锁、本机备份、报告、`.agents` 或 `.codex` 开发配置；新增打包排除及 Electron 契约专项 23/23 通过。
+- 实际打包 `DaguanMath.exe` 使用 F 盘独立数据与 profile 启动，完成选色后直接进入题库、刷新保留颜色、桌面“切换版本”按钮往返新旧界面，以及收藏写入后保留；页面错误为 0。初次实包脚本直接跳转版本触发既有偏好重定向，校正为真实桌面按钮后验证通过。测试进程和隔离数据已清理。
+
+| 资产 | 字节数 | SHA-256 |
+| --- | ---: | --- |
+| `DaguanMathDesktop-Setup.exe` | 576619520 | `46f1214c79292d2e6742d5020a4ddbda3e7d40e45e9ad9480084606359855f55` |
+| `DaguanMathDesktop-1.0.15-full.nupkg` | 576037350 | `46f6bdf6c028792b22bcaf30e881c43963feecc764260540bcbc4d3fc0421401` |
+| `RELEASES` | 89 | `43c008e86e721d839d39bbfa4930652406f2ad1a4c2db5185d5b8852b2a6219a` |
+
+公开发行以 [GitHub Release v1.0.15](https://github.com/Evan26Ma/daguan-cxy-local/releases/tag/v1.0.15) 状态为准。
 
 ## 验证边界
 
