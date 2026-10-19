@@ -5,7 +5,7 @@
 
 // ========== 离线缓存注册（与 app2.js 一致） ==========
 if ("serviceWorker" in navigator && location.protocol !== "file:" && location.protocol !== "https:") {
-    navigator.serviceWorker.register("./service-worker.js?v=164").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=167").catch(() => {});
 }
 
 // ========== 全局状态 ==========
@@ -716,7 +716,7 @@ class UIRenderer {
     static renderThemeSettings() {
         const saved = StorageService.getUIAppearance();
         AppState.appearanceDraft = { ...saved };
-        return `<section class="card appearance-settings" aria-labelledby="appearance-title"><h2 id="appearance-title" class="text-section-title">新版外观</h2><p class="text-helper">只影响新版页面，旧版外观设置保持独立。</p>
+        return `<section class="card appearance-settings" aria-labelledby="appearance-title"><h2 id="appearance-title" class="text-section-title">新版外观</h2><p class="text-helper">只影响新版页面，旧版外观设置保持独立。颜色可实时预览，点击“应用”或切换页面后保存；“取消”撤销未保存的颜色。</p>
             <div class="theme-presets">${UI_THEMES.map(theme => `<button type="button" class="theme-preset" data-theme-preset="${theme.id}" aria-pressed="${saved.theme === theme.id}"><span class="theme-swatch" style="--swatch-brand:${theme.brand};--swatch-app:${theme.app};--swatch-reading:${theme.reading}"></span><span>${theme.name}</span></button>`).join('')}</div>
             <div class="custom-colors"><h3>自定义品牌色</h3>${[['brand','品牌色'],['app','应用底色'],['reading','阅读面'],['accent','次强调色']].map(([key,label]) => `<label>${label}<input type="color" data-appearance-color="${key}" value="${saved[key] || UI_THEMES[0][key]}"></label>`).join('')}</div>
             <fieldset class="font-scale-settings"><legend>界面字号</legend><p class="text-helper">放大题目、答案和界面文字；选择后自动保存，只影响这台设备的新版界面。</p><div class="font-scale-choices">${UI_FONT_SCALES.map(scale => `<button type="button" class="font-scale-choice" data-font-scale="${scale}" aria-pressed="${saved.fontScale === scale}">${Math.round(scale * 100)}%</button>`).join('')}</div></fieldset>
@@ -2766,6 +2766,20 @@ class App {
         catch (error) { toast(error.message || '清空失败'); }
     }
 
+    static saveAppearanceBeforeLeavingSettings() {
+        if (AppState.currentView !== 'settings' || !AppState.appearanceDraft) return true;
+        try {
+            const saved = StorageService.getUIAppearance();
+            const draft = AppState.appearanceDraft;
+            if (Object.keys(draft).some(key => draft[key] !== saved[key])) StorageService.saveUIAppearance(draft);
+            AppState.appearanceDraft = null;
+            return true;
+        } catch (error) {
+            toast(`外观尚未保存：${error.message || '保存失败，请重试'}`);
+            return false;
+        }
+    }
+
     static async navigate(view) {
         // 手机端抽屉导航：选择页面后自动关闭
         if (AppState.ui.navOpen) this.toggleNav();
@@ -2773,6 +2787,8 @@ class App {
 
         // 重复点击当前页面不重绘（复习页切标签由 showReview 直接刷新）
         if (AppState.currentView === view) return;
+
+        if (!this.saveAppearanceBeforeLeavingSettings()) return;
 
         // 离开做题/笔记页前保存未提交的编辑；失败留在当前页
         if (AppState.currentView === 'question' || AppState.currentView === 'notes') {
@@ -2844,6 +2860,7 @@ class App {
     }
 
     static showHome() {
+        if (!this.saveAppearanceBeforeLeavingSettings()) return;
         AppState.currentView = 'home';
         UIRenderer.renderHome();
     }
@@ -2931,6 +2948,7 @@ class App {
     }
 
     static async openGlobalSearch() {
+        if (!this.saveAppearanceBeforeLeavingSettings()) return;
         if (AppState.currentView === 'question') {
             if (!await this.ensureSavedBeforeLeavingQuestion()) return;
         }
@@ -3051,6 +3069,7 @@ class App {
     }
 
     static showLibrary(categoryId = null) {
+        if (!this.saveAppearanceBeforeLeavingSettings()) return;
         if (AppState.currentView === 'library') UIRenderer.saveDirectoryState();
         const saved = UIRenderer.readDirectoryState();
         const category = [categoryId, AppState.currentCategory?.id, saved.lastCategory, AppState.categories?.categories?.[0]?.id]

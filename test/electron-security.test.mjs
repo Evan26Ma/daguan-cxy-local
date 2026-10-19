@@ -191,7 +191,7 @@ test("Squirrel shell identity is stable across app startup and preference change
 });
 test("date-revision browser package workflow does not run for desktop SemVer releases", () => {
   const workflow = fs.readFileSync(path.join(ROOT, ".github", "workflows", "windows-release.yml"), "utf8");
-  assert.match(workflow, /tags:\s*\r?\n\s*-\s*"v\?\?\?\?\.\?\?\.\?\?-r\*"/);
+  assert.ok(workflow.includes('      - "v[0-9][0-9][0-9][0-9].[0-9][0-9].[0-9][0-9]-r*"'));
   assert.doesNotMatch(workflow, /-\s*"v\*"/);
 });
 test("Squirrel firstrun enters the app while install/update/uninstall hooks exit promptly", () => {

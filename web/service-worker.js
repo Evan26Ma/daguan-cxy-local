@@ -1,4 +1,4 @@
-const CACHE = "daguan-shell-v164";
+const CACHE = "daguan-shell-v167";
 const SHELL = [
   "./",
   "./landing.html",
@@ -16,12 +16,12 @@ const SHELL = [
   "./legacy.html",
   "./legacy.css?v=96",
   "./guides.css?v=2",
-  "./app-legacy.js?v=121",
+  "./app-legacy.js?v=122",
   "./styles.css?v=89",
-  "./app2.js?v=95",
+  "./app2.js?v=96",
   "./styles-new.css?v=126",
   "./source-taxonomy.js?v=1",
-  "./app-new.js?v=153",
+  "./app-new.js?v=155",
   "./study-report.css?v=1",
   "./study-report.js?v=1",
   "./study-activity-client.js?v=2",
