@@ -26,7 +26,22 @@
 
 ## 打包与发布
 
-构建与校验信息待打包完成后补充。
+Windows x64 使用锁定依赖（Electron Forge 7.11.2、Electron 44.4.5）构建。Electron ZIP 使用本机缓存 `electron-v44.4.5-win32-x64.zip`，SHA-256 `11c395820a5aaa8ebcc0686b476d0ac98a730274ebfbdc8cf5538a7c2815cb5d`，与 v1.0.15 构建记录一致。
+
+- 包内 `package.json` 版本为 `1.0.16`；题库 7,599 题、3,318 个题图文件；6 个分片已改为 ASCII 文件名 `shard-01.json` 至 `shard-06.json`，`manifest.json` 引用一致。
+- 包内「线性代数 → 线代严选题」为 376 题，七章计数 40/75/31/73/64/71/22；14 道新题均在 `id_index.json` 中。
+- `resources/app` 共 3,510 个文件、约 505 MiB；未包含 `.agents`、`.codex`、`test`、`docs`、`reports`、个人数据或实例锁。
+- `RELEASES` 的 nupkg 文件名、大小 576,244,912 与 SHA-1 `b7de15a8d1933bf878cb91213a295373c4758181` 核验通过。
+- 实际打包的 `DaguanMath.exe` 使用 F 盘隔离数据目录与 profile 启动，进入“线性代数 → 线代严选题”显示 376 题，切换“严选”范围后全库 1,361 题、线性代数 376 题，页面脚本错误为 0。
+- 定向安全扫描覆盖本次改动的同步、服务和测试文件，0 条命中；项目级门禁仍报告主工作区既有文件的高/中危问题，本版未处理这些历史项，也不据此声明项目整体安全。
+
+| 资产 | 字节数 | SHA-256 |
+| --- | ---: | --- |
+| `DaguanMathDesktop-Setup.exe` | 576836096 | `c960c5f8495280d35ba79405299e59ace95838529bf4e462ba91e612b83a4f48` |
+| `DaguanMathDesktop-1.0.16-full.nupkg` | 576244912 | `6275cebc3773aa3f66d198868d5fecc56f042c1b96f3fafc4898b83571e62fe0` |
+| `RELEASES` | 89 | `352208c17c0f1b8dbbc66e0fafa6f04f94eb4468b744038df61163e8fb4e2e35` |
+
+公开发行以 [GitHub Release v1.0.16](https://github.com/Evan26Ma/daguan-cxy-local/releases/tag/v1.0.16) 状态为准。
 
 ## 使用边界
 
