@@ -616,7 +616,7 @@ async function serveStatic(requestPath, res, bankId = null) {
     catch {
       if (!bankRoot || !staticPath.startsWith("/assets/")) throw new Error("resource missing");
       const assetName = path.basename(staticPath);
-      if (!/^[0-9a-f]{64}\.png$/.test(assetName)) throw new Error("resource missing");
+      if (!/^[0-9a-f]{64}\.(png|jpe?g|webp|gif)$/.test(assetName)) throw new Error("resource missing");
       file = path.join(WEB_ROOT, "data", "assets", assetName);
       try { await fs.access(file); }
       catch {

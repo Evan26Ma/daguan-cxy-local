@@ -10,8 +10,10 @@ const localBankTotal = readdirSync(new URL("../web/data/local_question_banks/", 
   .reduce((sum, name) => sum + data(`local_question_banks/${name}`).questions.length, 0);
 const config = data("official-orphan-classifications.json");
 const index = data("id_index.json");
+// 官网会下架旧题；配置里保留的历史题号如果已不在题库，就不再参与当前目录。
+const activeAssignments = Object.keys(config.assignments).filter(id => index[id]);
 const shards = new Map();
-const original = Object.keys(config.assignments).map(id => {
+const original = activeAssignments.map(id => {
   const name = index[id];
   if (!shards.has(name)) shards.set(name, data(`shards/${name}.json`));
   const question = shards.get(name).find(item => String(item.id) === id);
@@ -22,12 +24,13 @@ const categories = data("categories.json").filter(category => category.id !== "o
 categories.find(category => category.id === 2500).children =
   categories.find(category => category.id === 2500).children.filter(category => category.id !== 9900100);
 
-test("all 492 reviewed official orphans receive stable local categories without changing their content", () => {
+test("all active reviewed official orphans receive stable local categories without changing their content", () => {
   const snapshot = { questions: original, categories, total: original.length };
   const result = applyLocalClassifications(snapshot, config);
   assert.equal(Object.keys(config.assignments).length, 492);
-  assert.equal(result.questions.length, 492);
-  assert.equal(new Set(result.questions.map(question => question.id)).size, 492);
+  assert.equal(activeAssignments.length, 491);
+  assert.equal(result.questions.length, 491);
+  assert.equal(new Set(result.questions.map(question => question.id)).size, 491);
   assert.equal(result.questions.filter(question => question.category_id == null).length, 0);
   assert.equal(result.questions.filter(question => question.category_ids.length > 1).length, 19);
   assert.deepEqual(result.questions.map(question => [question.id, question.stem, question.answer, question.source]),
@@ -61,7 +64,7 @@ test("generated catalog indexes every reviewed question without duplicating its 
   assert.equal(categoryQuestions.orphan?.length || 0, 0);
   assert.equal(Object.keys(idIndex).length, manifest.total);
   assert.equal(new Set(searchIndex.map(question => question.id)).size, manifest.total);
-  for (const id of Object.keys(config.assignments)) {
+  for (const id of activeAssignments) {
     const shardName = idIndex[id];
     assert.ok(shardName && shardName !== "未分类", `题目 ${id} 未进入分片`);
     if (!cache.has(shardName)) cache.set(shardName, data(`shards/${shardName}.json`));

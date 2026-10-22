@@ -17,6 +17,19 @@ test("desktop question bank updates atomically and keeps the last good version o
   globalThis.fetch = async url => {
     if (!online) throw new Error("offline");
     const target = new URL(url);
+    if (target.pathname === "/api/question-lists/linear-algebra-selected-20261018") {
+      return new Response(JSON.stringify({ code: 0, data: { id: "linear-algebra-selected-20261018",
+        name: "线代严选题", revision: 1, item_count: 0, is_official: true, status: "published",
+        definition_kind: "explicit" } }), { status: 200, headers: { "Content-Type": "application/json" } });
+    }
+    if (target.pathname.endsWith("/directory")) {
+      return new Response(JSON.stringify({ code: 0, data: { total: 0, roots: [{ id: "1", label: "线性代数",
+        category_id: 1, question_count: 0, children: [] }] } }), { status: 200, headers: { "Content-Type": "application/json" } });
+    }
+    if (target.pathname.endsWith("/items")) {
+      return new Response(JSON.stringify({ code: 0, data: { items: [], total: 0, page: 1, per_page: 200 } }),
+        { status: 200, headers: { "Content-Type": "application/json" } });
+    }
     const value = target.pathname === "/api/categories" ? categories :
       { code: 0, data: { items: [question], total: 1, total_pages: 1, page: 1 } };
     return new Response(JSON.stringify(value), { status: 200, headers: { "Content-Type": "application/json" } });

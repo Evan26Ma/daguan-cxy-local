@@ -38,6 +38,17 @@ function stubOfficialFetch(questions = OFFICIAL_QUESTIONS) {
   globalThis.fetch = async url => {
     const target = new URL(url);
     if (target.pathname === "/api/categories") return jsonResponse(CATEGORIES);
+    if (target.pathname === "/api/question-lists/linear-algebra-selected-20261018") {
+      return jsonResponse({ code: 0, data: { id: "linear-algebra-selected-20261018", name: "线代严选题",
+        revision: 1, item_count: 0, is_official: true, status: "published", definition_kind: "explicit" } });
+    }
+    if (target.pathname.endsWith("/directory")) {
+      return jsonResponse({ code: 0, data: { total: 0, roots: [{ id: "1", label: "线性代数", category_id: 1,
+        question_count: 0, children: [] }] } });
+    }
+    if (target.pathname.endsWith("/items")) {
+      return jsonResponse({ code: 0, data: { items: [], total: 0, page: 1, per_page: 200 } });
+    }
     const page = Number(target.searchParams.get("page") || 1);
     const perPage = Number(target.searchParams.get("per_page") || 200);
     const total = questions.length;

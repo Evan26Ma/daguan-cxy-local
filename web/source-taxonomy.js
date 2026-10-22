@@ -163,11 +163,13 @@
         { system: 't880', book: 'b880', re: /第[一二三四五六七八九十]+章\s*数[一二三]\s*[ABC]\s*[类组]|数[一二三]\s*第[一二三四五六七八九十]+章\s*[ABC]\s*[类组]/ },
 
         // 模拟卷
+        // 2026-10 官网新增的套卷系列：来源里只写卷名，没有“模拟/模考”字样。
+        { system: 'mock', book: 'mock_other', re: /线代王|押题王|余五|哈基米德|方浩|合工大|Beyond|超越/ },
         { system: 'mock', book: 'mock_zhang8', re: /张八卷|八套卷/ },
-        { system: 'mock', book: 'mock_li6', re: /李六卷|六套卷/ },
+        { system: 'mock', book: 'mock_li6', re: /李六卷|李六.*套/ },
         { system: 'mock', book: 'mock_lyf', re: /LYF/i },
         { system: 'mock', book: 'mock_euclid', re: /Euclid/i },
-        { system: 'mock', book: 'mock_other', re: /模拟|模考|第[一二三四五六七八九十]+套/ },
+        { system: 'mock', book: 'mock_other', re: /模拟|模考|第[一二三四五六七八九十]+套|套卷/ },
     ];
 
     const MARKER_RE = /[（(]\s*(?:重点|选做|经典题|版本二|仅数三)\s*[)）]/g;

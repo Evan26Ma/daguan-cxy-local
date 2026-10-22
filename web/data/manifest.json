@@ -1,40 +1,49 @@
 {
   "version": 1,
-  "total": 7119,
+  "total": 7599,
   "types": {
-    "subjective": 5147,
-    "single_choice": 1966,
-    "multiple_choice": 6
+    "subjective": 5410,
+    "single_choice": 2184,
+    "multiple_choice": 5
   },
   "shards": {
     "高等数学": {
       "file": "shards/高等数学.json",
-      "count": 3453
+      "count": 3451
     },
     "线性代数": {
       "file": "shards/线性代数.json",
-      "count": 803
+      "count": 832
     },
     "概率统计": {
       "file": "shards/概率统计.json",
-      "count": 546
+      "count": 547
     },
     "历年真题": {
       "file": "shards/历年真题.json",
-      "count": 1774
+      "count": 1771
     },
     "模拟哥专区": {
       "file": "shards/模拟哥专区.json",
-      "count": 543
+      "count": 998
     },
     "未分类": {
       "file": "shards/未分类.json",
       "count": 0
     }
   },
-  "asset_count": 1243,
+  "asset_count": 2851,
   "asset_base": "./data/assets/",
-  "synced_at": "2026-10-03T15:04:42.095Z",
+  "synced_at": "2026-10-22T12:29:01.418Z",
   "source": "https://www.cxyonly.fans/math",
-  "source_total": 6730
+  "source_total": 7210,
+  "collections": [
+    {
+      "id": "linear-algebra-selected-20261018",
+      "name": "线代严选题",
+      "question_count": 376,
+      "unmatched": 0
+    }
+  ],
+  "stripped_answer_images": 1688
 }

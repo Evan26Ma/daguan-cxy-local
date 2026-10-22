@@ -1,4 +1,4 @@
-const CACHE = "daguan-shell-v167";
+const CACHE = "daguan-shell-v168";
 const SHELL = [
   "./",
   "./landing.html",
