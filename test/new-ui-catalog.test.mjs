@@ -121,6 +121,50 @@ test("新版目录题数随严选和真题范围变化", async () => {
   assert.equal(ui.UIRenderer.scopeCountForNode(node), 1);
 });
 
+test("严选范围只保留题单入口并隐藏 0 题分类", () => {
+  const ui = loadNewUI();
+  const state = ui.AppState;
+  const renderer = ui.UIRenderer;
+  state.chapterScope = "core";
+  renderer.scopeQuestionIdsCache.set("core", new Set(["1", "2", "3", "9"]));
+  const original = { id: 2, name: "原有章节", question_count: 2, questions: [{ id: 1 }, { id: 2 }], children: [] };
+  const empty = { id: 3, name: "线性方程组", question_count: 0, questions: [], children: [] };
+  const other = { id: 4, name: "其他题", question_count: 1, questions: [{ id: 9 }], children: [] };
+  const collection = { id: 7000000, name: "线代严选题", collection_id: "list",
+    question_count: 3, questions: [{ id: 1 }, { id: 2 }, { id: 3 }], children: [] };
+  const linear = { id: 1, name: "线性代数", question_count: 4,
+    questions: [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 9 }], children: [original, empty, other, collection] };
+  const probability = { id: 601, name: "概率统计", question_count: 0, questions: [], children: [] };
+  state.categories = { categories: [linear, probability] };
+
+  const visible = renderer.visibleCatalogNodes(linear.children, 1);
+  assert.deepEqual(Array.from(visible, node => node.name), ["其他题", "线代严选题"]);
+  assert.equal(renderer.visibleDirectoryNode(linear, original).id, 1, "隐藏的原章节回退到科目");
+  assert.deepEqual(Array.from(renderer.visibleCatalogNodes([linear, probability], 0), node => node.name),
+    ["线性代数", "概率统计"], "科目根仍可进入");
+
+  const columns = renderer.catalogColumns(linear, original);
+  assert.deepEqual(Array.from(columns[1].items, item => item.node.name), ["其他题", "线代严选题"]);
+
+  state.chapterScope = "all";
+  assert.deepEqual(Array.from(renderer.visibleCatalogNodes(linear.children, 1), node => node.name),
+    ["原有章节", "线性方程组", "其他题", "线代严选题"], "完整范围保持原目录");
+});
+
+test("v1.0.16 题库版本没有 collection_id 时仍按 manifest 识别题单", () => {
+  const ui = loadNewUI();
+  const state = ui.AppState;
+  const renderer = ui.UIRenderer;
+  state.chapterScope = "core";
+  state.manifest = { collections: [{ id: "list", name: "线代严选题", question_count: 2 }] };
+  renderer.scopeQuestionIdsCache.set("core", new Set(["1", "2"]));
+  const original = { id: 2, name: "原有章节", question_count: 2, questions: [{ id: 1 }, { id: 2 }], children: [] };
+  const collection = { id: 7000000, name: "线代严选题", question_count: 2,
+    questions: [{ id: 1 }, { id: 2 }], children: [] };
+  const visible = renderer.visibleCatalogNodes([original, collection], 1);
+  assert.deepEqual(Array.from(visible, node => node.name), ["线代严选题"]);
+});
+
 test("进入同一小节时严选与真题得到不同题目队列", async () => {
   const ui = loadNewUI();
   ui.AppState.filters = { sources: [], years: [], types: [], lecturers: [] };

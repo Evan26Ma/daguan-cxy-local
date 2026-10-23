@@ -98,6 +98,7 @@ test("official list becomes a read-only directory under linear algebra with orig
   addCollectionCategories(result, [collection]);
   const root = result.categories[0].children.find(category => category.id === 7000000);
   assert.equal(root.name, "线代严选题");
+  assert.equal(root.collection_id, "linear-algebra-selected-20261018");
   assert.equal(root.question_count, 2);
   assert.deepEqual(result.categoryQuestions["7000000"], [102, 101]);
   assert.deepEqual(result.categoryQuestions["7000010"], [102]);

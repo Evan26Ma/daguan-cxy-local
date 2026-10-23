@@ -5,7 +5,7 @@
 
 // ========== 离线缓存注册（与 app2.js 一致） ==========
 if ("serviceWorker" in navigator && location.protocol !== "file:" && location.protocol !== "https:") {
-    navigator.serviceWorker.register("./service-worker.js?v=168").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=169").catch(() => {});
 }
 
 // ========== 全局状态 ==========
@@ -448,6 +448,54 @@ class UIRenderer {
         const ids = this.scopeQuestionIdsCache.get(AppState.chapterScope);
         return entries.reduce((count, entry) => count + Number(ids.has(String(entry.id))), 0);
     }
+
+    // 兼容 v1.0.16 已自动更新的题库版本：旧 categories.json 没有 collection_id，
+    // 但 manifest.collections 已带题单名，仍能识别题单入口。
+    static isCollectionNode(node) {
+        if (!node) return false;
+        if (node.collection_id) return true;
+        const collections = AppState.manifest?.collections || [];
+        return Number(node.id) >= 7000000 && collections.some(collection => String(collection.name) === String(node.name));
+    }
+
+    // 目录只展示当前范围真实有题的节点。题单（collection_id）与原章节指向同一批题时，
+    // 只保留题单入口，避免严选范围下同一批题目挂出两条路径。
+    static visibleCatalogNodes(nodes, depth = 0) {
+        const list = nodes || [];
+        if (AppState.chapterScope === 'all') return list;
+        const ids = this.scopeQuestionIdsCache.get(AppState.chapterScope);
+        if (!ids) return list;
+        const scoped = node => (node?.questions || []).filter(entry => ids.has(String(entry.id)));
+        // 科目根保持可见：没有当前范围题目的科目仍可从首页进入后切换范围。
+        if (depth === 0) return list;
+        const visible = list.filter(node => this.scopeCountForNode(node) > 0);
+        const collections = visible.filter(node => this.isCollectionNode(node));
+        if (!collections.length) return visible;
+        const covered = new Set();
+        for (const collection of collections) {
+            for (const entry of scoped(collection)) covered.add(String(entry.id));
+        }
+        if (!covered.size) return visible;
+        return visible.filter(node => {
+            if (this.isCollectionNode(node)) return true;
+            const entries = scoped(node);
+            return !entries.length || !entries.every(entry => covered.has(String(entry.id)));
+        });
+    }
+
+    static visibleDirectoryNode(category, node) {
+        if (!node || AppState.chapterScope === 'all' || !this.scopeQuestionIdsCache.has(AppState.chapterScope)) return node;
+        let current = node;
+        while (current) {
+            const path = this.pathToNode(category, current.id) || [category];
+            if (path.length <= 1) return current;
+            const parent = path[path.length - 2];
+            const siblings = this.visibleCatalogNodes(parent.children || [], path.length - 1);
+            if (siblings.some(item => String(item.id) === String(current.id))) return current;
+            current = parent;
+        }
+        return category;
+    }
     static lastPositionTrail() {
         const position = StorageService.getLearningPosition();
         const category = position && this.findCategoryById(position.categoryId);
@@ -771,18 +819,21 @@ class UIRenderer {
     // 因此同名章节也能各自保持选中态和恢复位置。
     static catalogColumns(category, activeNode = null) {
         const roots = AppState.categories?.categories || [];
+        activeNode = this.visibleDirectoryNode(category, activeNode) || activeNode;
         const activePath = activeNode ? (this.pathToNode(category, activeNode.id) || [category]) : [category];
         const columns = [];
         let nodes = roots;
         let parent = null;
         for (let depth = 0; ; depth += 1) {
-            const selected = activePath[depth] || null;
+            const visibleNodes = this.visibleCatalogNodes(nodes, depth);
+            const selected = activePath[depth] && visibleNodes.some(node => String(node.id) === String(activePath[depth].id))
+                ? activePath[depth] : null;
             columns.push({
                 depth,
                 parent,
-                nodes,
+                nodes: visibleNodes,
                 selectedId: selected ? String(selected.id) : null,
-                items: nodes.map(node => ({
+                items: visibleNodes.map(node => ({
                     node,
                     selected: !!selected && String(node.id) === String(selected.id),
                     hasChildren: !!(node.children || []).length,
@@ -829,6 +880,8 @@ class UIRenderer {
         const contentEl = document.getElementById('library-content');
         if (!contentEl) return;
         const category = AppState.currentCategory;
+        node = this.visibleDirectoryNode(category, node) || node;
+        if (String(AppState.directoryNodeId) !== String(node.id)) AppState.directoryNodeId = String(node.id);
         const path = this.pathToNode(category, node.id) || [category, node];
         AppState.directoryPathIds = path.map(part => String(part.id));
         const crumbs = path.map((part, index) => `<button type="button" class="breadcrumb-part" data-node-id="${escapeHtml(String(part.id))}" aria-current="${index === path.length - 1 ? 'page' : 'false'}">${escapeHtml(part.name || part.title || '')}</button>`);
@@ -926,34 +979,38 @@ class UIRenderer {
         const host = document.getElementById('chapter-picker');
         if (!host) return;
         const roots = AppState.categories?.categories || [];
-        let nodes = roots;
+        let selectedIds = AppState.chapterPickerPath || [];
         let path = [];
-        const selectedIds = AppState.chapterPickerPath || [];
+        let cursor = roots;
+        for (let depth = 0; depth < selectedIds.length; depth += 1) {
+            const visible = this.visibleCatalogNodes(cursor, depth);
+            const selected = visible.find(node => String(node.id) === String(selectedIds[depth]));
+            if (!selected) break;
+            path.push(selected);
+            cursor = selected.children || [];
+        }
+        if (path.length !== selectedIds.length) {
+            selectedIds = path.map(node => String(node.id));
+            AppState.chapterPickerPath = selectedIds;
+        }
+        let nodes = roots;
         const columns = [];
         for (let depth = 0; depth <= selectedIds.length; depth += 1) {
             const selectedId = selectedIds[depth];
-            columns.push(`<div class="chapter-picker-column" role="listbox" aria-label="${depth ? escapeHtml(path.at(-1)?.name || '章节') + '下级' : '科目'}">${nodes.map(node => {
+            const visibleNodes = this.visibleCatalogNodes(nodes, depth);
+            columns.push(`<div class="chapter-picker-column" role="listbox" aria-label="${depth ? escapeHtml(path.at(-1)?.name || '章节') + '下级' : '科目'}">${visibleNodes.map(node => {
                 const selected = String(node.id) === String(selectedId);
                 const children = node.children || [];
                 const hasBranch = children.length > 0;
                 const count = this.scopeCountForNode(node);
                 return `<button type="button" class="chapter-picker-item${selected ? ' active' : ''}${hasBranch ? ' has-children' : ''}" role="option" aria-selected="${selected}" aria-expanded="${hasBranch ? selected : 'false'}" data-picker-id="${escapeHtml(String(node.id))}" data-picker-depth="${depth}"><span>${escapeHtml(node.name || node.title || '')}</span><small>${count} 题</small>${hasBranch ? '<span aria-hidden="true">›</span>' : ''}</button>`;
             }).join('')}${path.at(-1) && this.scopeCountForNode(path.at(-1), true) ? `<button type="button" class="chapter-picker-item direct-picker-item" data-picker-direct="${escapeHtml(String(path.at(-1).id))}" data-picker-depth="${depth}"><span>本级直属题</span><small>${this.scopeCountForNode(path.at(-1), true)} 题</small></button>` : ''}</div>`);
-            const selectedNode = nodes.find(node => String(node.id) === String(selectedId));
+            const selectedNode = visibleNodes.find(node => String(node.id) === String(selectedId));
             if (!selectedNode || !selectedNode.children?.length) break;
-            path.push(selectedNode);
             nodes = selectedNode.children;
         }
-        const pathNodes = [];
-        let cursor = roots;
-        for (const id of selectedIds) {
-            const node = cursor.find(item => String(item.id) === String(id));
-            if (!node) break;
-            pathNodes.push(node);
-            cursor = node.children || [];
-        }
         const backDisabled = selectedIds.length ? '' : 'disabled aria-disabled="true"';
-        host.innerHTML = `<div class="chapter-picker-backdrop" data-picker-close></div><section class="chapter-picker-dialog" role="dialog" aria-modal="true" aria-label="选择小节"><header><div><p>章节导航</p><h2>${escapeHtml(pathNodes.at(-1)?.name || '选择小节')}</h2></div><button type="button" class="btn btn-text" data-picker-close aria-label="关闭章节导航">关闭</button></header><div class="chapter-picker-controls">${this.scopeButtons()}</div><nav class="chapter-picker-path" aria-label="当前目录路径"><button type="button" data-picker-path="0">科目</button>${pathNodes.map((node, index) => `<span aria-hidden="true">›</span><button type="button" data-picker-path="${index + 1}" aria-current="${index === pathNodes.length - 1 ? 'page' : 'false'}">${escapeHtml(node.name || node.title || '')}</button>`).join('')}</nav><div class="chapter-picker-columns">${columns.join('')}</div><footer><button type="button" class="btn btn-secondary" data-picker-back ${backDisabled}>上一级</button><p class="chapter-picker-feedback" role="status" aria-live="polite">目录题数按当前范围统计；详细筛选进入章节后生效。</p></footer></section>`;
+        host.innerHTML = `<div class="chapter-picker-backdrop" data-picker-close></div><section class="chapter-picker-dialog" role="dialog" aria-modal="true" aria-label="选择小节"><header><div><p>章节导航</p><h2>${escapeHtml(path.at(-1)?.name || '选择小节')}</h2></div><button type="button" class="btn btn-text" data-picker-close aria-label="关闭章节导航">关闭</button></header><div class="chapter-picker-controls">${this.scopeButtons()}</div><nav class="chapter-picker-path" aria-label="当前目录路径"><button type="button" data-picker-path="0">科目</button>${path.map((node, index) => `<span aria-hidden="true">›</span><button type="button" data-picker-path="${index + 1}" aria-current="${index === path.length - 1 ? 'page' : 'false'}">${escapeHtml(node.name || node.title || '')}</button>`).join('')}</nav><div class="chapter-picker-columns">${columns.join('')}</div><footer><button type="button" class="btn btn-secondary" data-picker-back ${backDisabled}>上一级</button><p class="chapter-picker-feedback" role="status" aria-live="polite">目录题数按当前范围统计；详细筛选进入章节后生效。</p></footer></section>`;
         host.querySelectorAll('[data-picker-id]').forEach(button => button.addEventListener('click', () => App.selectPickerNode(button.dataset.pickerId, Number(button.dataset.pickerDepth))));
         host.querySelectorAll('[data-picker-direct]').forEach(button => button.addEventListener('click', () => App.startDirectFromPicker(button.dataset.pickerDirect)));
         host.querySelectorAll('[data-picker-path]').forEach(button => button.addEventListener('click', () => { AppState.chapterPickerPath = AppState.chapterPickerPath.slice(0, Number(button.dataset.pickerPath)); this.renderChapterPicker(); }));

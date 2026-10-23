@@ -312,13 +312,12 @@ export function addCollectionCategories(result, collections) {
       }
     }
     const localRoot = { id: collectionId, name: String(metadata.name), parent_id: Number(parent.id),
-      question_count: 0, direct_count: 0, children: [] };
+      collection_id: metadata.id, question_count: 0, direct_count: 0, children: [] };
     registerDirectory(rootDirectory, 0, localRoot);
     const localNodeById = new Map([[collectionId, localRoot]]);
     for (const { local } of directoryById.values()) localNodeById.set(local.id, local);
     const position = new Map(items.map((item, index) => [String(item.question_id), index]));
     const direct = new Map([...localNodeById.keys()].map(id => [id, new Set()]));
-    const ordered = items.map(item => String(item.question_id)).sort((left, right) => position.get(left) - position.get(right));
     let unmatched = 0;
     for (const item of items) {
       const question = questionById.get(String(item.question_id));
