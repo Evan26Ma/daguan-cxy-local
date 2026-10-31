@@ -51,7 +51,7 @@
 ---
 
 > **Windows 桌面版（推荐）：**普通用户从百度网盘下载，桌面版会在后台检查更新，下载后等你确认重启。
-> [⬇️ 下载桌面版 `DaguanMathDesktop-Setup.exe`（提取码 dgy1）](https://pan.baidu.com/netdisk/share?surl=VrW0Z-ThDSM7f_xx7uCUZw) · [📖 Windows 安装教程](docs/Windows新手安装与配置.md)
+> [⬇️ 下载桌面版 `DaguanMathDesktop-Setup.exe`（提取码 dgy1）](https://pan.baidu.com/netdisk/share?surl=OT4FPpTVYtuDIAV54CKpnA) · [📖 Windows 安装教程](docs/Windows新手安装与配置.md)
 
 一个在自己电脑上运行的大观园数学题库增强版：题目更适合连续刷，学习进度保存在本机，可选同步官网进度，也可选连接 AI 助教。普通 Windows 用户安装桌面版即可开始学习，不需要安装 Node.js 或使用命令行。
 
@@ -88,7 +88,7 @@ AI 能力取决于你配置的服务：普通文本模型不能自动获得视�
 
 #### 普通用户（推荐）
 
-普通用户可从[百度网盘下载桌面安装器 `DaguanMathDesktop-Setup.exe`](https://pan.baidu.com/netdisk/share?surl=VrW0Z-ThDSM7f_xx7uCUZw)（提取码 `dgy1`）并运行。桌面版使用系统托盘管理窗口和共享服务，默认不开机启动；关闭窗口会缩到托盘。浏览器安装包已停止维护；现有用户可参阅[迁移说明](docs/百度网盘下载与引导页配置.md)。
+普通用户可从[百度网盘下载桌面安装器 `DaguanMathDesktop-Setup.exe`](https://pan.baidu.com/netdisk/share?surl=OT4FPpTVYtuDIAV54CKpnA)（提取码 `dgy1`）并运行。桌面版使用系统托盘管理窗口和共享服务，默认不开机启动；关闭窗口会缩到托盘。浏览器安装包已停止维护；现有用户可参阅[迁移说明](docs/百度网盘下载与引导页配置.md)。
 
 当前公开桌面版 v1.0.3 尚未签名，Windows 可能显示 SmartScreen 警告。[v1.0.3 Release](https://github.com/Evan26Ma/daguan-cxy-local/releases/tag/v1.0.3) 中 `DaguanMathDesktop-Setup.exe` 的 SHA-256 为 `5bd38b60cc08aac401cb337cd9198b7e8d4ae797cc142a997e06e2a99f7cd412`；百度网盘分享中的文件可能仍是旧版，是否已替换为 v1.0.3 须按实际下载文件校验。其他版本以各自 Release 的校验值为准。不要下载 GitHub 自动生成的 `Source code` 压缩包。首次安装建议阅读 [Windows 新手安装与配置教程](docs/Windows新手安装与配置.md)；维护者更换网盘地址请看[百度网盘下载与引导页配置](docs/百度网盘下载与引导页配置.md)。
 

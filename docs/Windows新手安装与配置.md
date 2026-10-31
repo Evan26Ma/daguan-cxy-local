@@ -4,7 +4,7 @@
 
 ## 先看结论：推荐下载桌面版
 
-[⬇️ 百度网盘下载 Windows 桌面版（推荐）](https://pan.baidu.com/netdisk/share?surl=VrW0Z-ThDSM7f_xx7uCUZw)　提取码：`dgy1`
+[⬇️ 百度网盘下载 Windows 桌面版（推荐）](https://pan.baidu.com/netdisk/share?surl=OT4FPpTVYtuDIAV54CKpnA)　提取码：`dgy1`
 
 浏览器安装包已停止维护。已经安装它的用户请按下文迁移到桌面版；两版使用同一份本机学习记录。
 
