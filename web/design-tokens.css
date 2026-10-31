@@ -1,46 +1,80 @@
+/* ==========================================================================
+   本地大观园 · 设计令牌（清爽学习工具）
+   中性暖灰画布 + 白色面板 + 细线分隔；统一无衬线；橙色只做点缀。
+   ========================================================================== */
 :root {
-  --dg-paper: #fafaf7;
-  --dg-ink: #191919;
-  --dg-orange: #f97316;
+  --dg-paper: #f6f6f4;
+  --dg-ink: #1c1b19;
+  --dg-orange: #f06a12;
   --dg-orange-ink: #c2410c;
-  --font-family-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
-  --font-family-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+
+  /* 字体：全站统一无衬线 */
+  --font-family-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei UI", "Microsoft YaHei", "Noto Sans CJK SC", "Source Han Sans SC", sans-serif;
+  --font-family-reading: var(--font-family-ui);
+  --font-family-mono: "SFMono-Regular", "Cascadia Mono", Consolas, "Liberation Mono", monospace;
+
+  /* 中性色 */
   --color-canvas: var(--dg-paper);
   --color-surface: #ffffff;
   --color-surface-elevated: #ffffff;
-  --color-surface-subtle: #f0f0e9;
+  --color-surface-subtle: #f3f3f0;
+  --color-surface-sunken: #ecece8;
   --color-foreground: var(--dg-ink);
-  --color-foreground-muted: #65655d;
-  --color-foreground-subtle: #74746b;
+  --color-foreground-muted: #62605a;
+  --color-foreground-subtle: #8a877f;
   --color-foreground-inverse: #ffffff;
-  --color-border: #dcdcd3;
-  --color-border-subtle: #eaeae3;
-  --color-border-strong: #b3b3a6;
+  --color-border: #e4e3de;
+  --color-border-subtle: #efeeea;
+  --color-border-strong: #cac8c0;
+
+  /* 品牌（活力橙） */
   --color-brand: var(--dg-orange);
-  --color-brand-hover: #f56640;
-  --color-on-brand: #191919;
+  --color-brand-hover: #db5c0a;
+  --color-on-brand: #ffffff;
   --color-brand-text: var(--dg-orange-ink);
-  --color-brand-soft: #fdf0e0;
-  --color-success: #316b4c;
-  --color-success-foreground: #245138;
-  --color-success-soft: #eaf2e9;
-  --color-warning: #85561b;
-  --color-warning-soft: #f9efd9;
-  --color-danger: #ac3936;
-  --color-danger-soft: #faeae6;
-  --color-backdrop: #19191966;
-  --state-hover-bg: #efefe7;
-  --shadow-panel: 0 8px 24px -18px #24241833;
-  --shadow-overlay: 0 24px 72px #19191926;
-  --radius-control: 5px;
-  --radius-card: 8px;
-  --radius-overlay: 12px;
-  --shell-sidebar-width: 228px;
-  --shell-sidebar-collapsed-width: 76px;
-  --shell-topbar-height: 76px;
-  --ai-drawer-width: 380px;
-  --learning-reading-rail: 900px;
-  --motion-fast: 180ms;
+  --color-brand-soft: #fff1e7;
+
+  /* 语义色 */
+  --color-success: #17803d;
+  --color-success-foreground: #166534;
+  --color-success-soft: #e8f5ec;
+  --color-info: #2563eb;
+  --color-info-soft: #eaf1fe;
+  --color-warning: #b45309;
+  --color-warning-soft: #fdf3e2;
+  --color-danger: #d23a2f;
+  --color-danger-soft: #fdecea;
+  --color-backdrop: #1c1b1959;
+  --state-hover-bg: #f1f0ec;
+
+  /* 阴影 */
+  --shadow-xs: 0 1px 2px #1c1b190d;
+  --shadow-panel: 0 1px 2px #1c1b190a;
+  --shadow-raised: 0 6px 20px -8px #1c1b1929, 0 1px 3px #1c1b190d;
+  --shadow-overlay: 0 24px 64px -12px #1c1b1940, 0 4px 12px #1c1b1914;
+
+  /* 圆角 */
+  --radius-sm: 6px;
+  --radius-control: 8px;
+  --radius-card: 12px;
+  --radius-overlay: 16px;
+  --radius-pill: 999px;
+
+  /* 布局 */
+  --shell-sidebar-width: 236px;
+  --shell-sidebar-collapsed-width: 68px;
+  --shell-topbar-height: 60px;
+  --ai-drawer-width: 400px;
+  --learning-reading-rail: 820px;
+  --content-max: 1080px;
+  --motion-fast: 160ms;
+  --ease: cubic-bezier(.2, .7, .2, 1);
+
+  /* 阅读 */
+  --question-number-ink: #a8a59c;
+  --question-rule: var(--color-border-subtle);
+
+  /* 别名：保留给 app2.js 内联样式与旧组件 */
   --ui: var(--font-family-ui);
   --sans: var(--font-family-ui);
   --mono: var(--font-family-mono);
@@ -62,74 +96,72 @@
   --radius: var(--radius-card);
   color-scheme: light;
 }
+
 html[data-theme="official-dark"] {
-  --color-canvas: #191c19;
-  --color-surface: #222620;
-  --color-surface-elevated: #2c3129;
-  --color-surface-subtle: #2b3028;
-  --color-foreground: #f2f0e7;
-  --color-foreground-muted: #bbbfb0;
-  --color-foreground-subtle: #a4aa99;
-  --color-foreground-inverse: #191919;
-  --color-border: #41473b;
-  --color-border-subtle: #363c31;
-  --color-border-strong: #737b67;
-  --color-brand: #fb923c;
-  --color-brand-hover: #ffa94d;
-  --color-brand-text: #fdba74;
-  --color-brand-soft: #3f2a12;
-  --color-success: #9dcea8;
-  --color-success-foreground: #b7dec0;
-  --color-success-soft: #293e2e;
-  --color-warning: #e8c18a;
-  --color-warning-soft: #433721;
-  --color-danger: #f29b8c;
-  --color-danger-soft: #442c29;
-  --state-hover-bg: #30362b;
-  --color-backdrop: #080a08a6;
-  --shadow-overlay: 0 24px 72px #00000066;
+  --color-canvas: #151514;
+  --color-surface: #1d1d1b;
+  --color-surface-elevated: #242422;
+  --color-surface-subtle: #242422;
+  --color-surface-sunken: #121211;
+  --color-foreground: #ecebe6;
+  --color-foreground-muted: #aaa89f;
+  --color-foreground-subtle: #86847c;
+  --color-foreground-inverse: #151514;
+  --color-border: #32322e;
+  --color-border-subtle: #292926;
+  --color-border-strong: #4b4a44;
+  --color-brand: #fb8a3c;
+  --color-brand-hover: #ff9d55;
+  --color-on-brand: #1a0f06;
+  --color-brand-text: #fdab70;
+  --color-brand-soft: #38230f;
+  --color-success: #5fcf8a;
+  --color-success-foreground: #86dfa5;
+  --color-success-soft: #173322;
+  --color-info: #7aa7ff;
+  --color-info-soft: #1a2640;
+  --color-warning: #f0b35a;
+  --color-warning-soft: #3a2c14;
+  --color-danger: #ff8a7d;
+  --color-danger-soft: #3d1f1b;
+  --state-hover-bg: #272725;
+  --color-backdrop: #000000a6;
+  --shadow-xs: 0 1px 2px #0000004d;
+  --shadow-panel: 0 1px 2px #00000040;
+  --shadow-raised: 0 8px 22px -8px #00000099;
+  --shadow-overlay: 0 24px 64px -12px #000000b3;
+  --question-number-ink: #5b5952;
+  --question-rule: #2b2b28;
   color-scheme: dark;
 }
+
 html[data-theme="eye-care"] {
   --color-canvas: #eeeadf;
-  --color-surface: #f8f4e9;
-  --color-surface-elevated: #fcf8ee;
-  --color-surface-subtle: #e9e4d5;
-  --color-foreground: #322d23;
-  --color-foreground-muted: #696150;
-  --color-foreground-subtle: #756b57;
-  --color-border: #d1c7b3;
-  --color-border-subtle: #e0d7c6;
-  --color-border-strong: #a7997e;
-  --color-brand: #c2410c;
-  --color-brand-hover: #e68861;
-  --color-brand-text: #9a3412;
-  --color-brand-soft: #efdfcc;
-  --state-hover-bg: #e9e0cd;
-}
-html[data-theme="custom"] {
-  --color-canvas: var(--custom-bg-color, #fafaf7);
-  --color-surface: color-mix(in srgb, var(--custom-bg-color, #fafaf7) 8%, #ffffff);
-  --color-surface-elevated: #ffffff;
-  --color-surface-subtle: color-mix(in srgb, var(--custom-bg-color, #fafaf7) 18%, #f0f0e9);
-  --color-border: color-mix(in srgb, var(--custom-bg-color, #fafaf7) 28%, #bcbcb2);
-  --color-border-subtle: color-mix(in srgb, var(--custom-bg-color, #fafaf7) 15%, #e4e4db);
+  --color-surface: #f9f5ea;
+  --color-surface-elevated: #fcf9f0;
+  --color-surface-subtle: #f1ebdc;
+  --color-surface-sunken: #e7e0cf;
+  --color-foreground: #2f2a20;
+  --color-foreground-muted: #665d4b;
+  --color-foreground-subtle: #857a64;
+  --color-border: #ddd3bf;
+  --color-border-subtle: #e8e0cf;
+  --color-border-strong: #bfb298;
+  --color-brand: #c8520f;
+  --color-brand-hover: #b0470c;
+  --color-brand-text: #9a3a0c;
+  --color-brand-soft: #f3e2cc;
+  --state-hover-bg: #ede5d3;
+  --question-number-ink: #b3a585;
+  --question-rule: #e5dccb;
 }
 
-/* ==== 题册编辑风：全书卷衬线与大题号 ==== */
-:root {
-  --font-family-serif: "Songti SC", "SimSun", "NSimSun", "Noto Serif CJK SC", "Source Han Serif SC", "Noto Serif SC", serif;
-  --question-number-ink: #d5d5c9;
-  --question-rule: var(--color-border-subtle);
-}
-html[data-theme="official-dark"] {
-  --question-number-ink: #454c3f;
-  --question-rule: #363c31;
-}
-html[data-theme="eye-care"] {
-  --question-number-ink: #c6b998;
-  --question-rule: #e0d7c6;
-}
 html[data-theme="custom"] {
-  --question-number-ink: color-mix(in srgb, var(--custom-bg-color, #fafaf7) 42%, #b3b3a6);
+  --color-canvas: var(--custom-bg-color, #f6f6f4);
+  --color-surface: color-mix(in srgb, var(--custom-bg-color, #f6f6f4) 6%, #ffffff);
+  --color-surface-elevated: #ffffff;
+  --color-surface-subtle: color-mix(in srgb, var(--custom-bg-color, #f6f6f4) 18%, #f3f3f0);
+  --color-border: color-mix(in srgb, var(--custom-bg-color, #f6f6f4) 26%, #d6d5ce);
+  --color-border-subtle: color-mix(in srgb, var(--custom-bg-color, #f6f6f4) 14%, #e9e8e3);
+  --question-number-ink: color-mix(in srgb, var(--custom-bg-color, #f6f6f4) 40%, #a8a59c);
 }

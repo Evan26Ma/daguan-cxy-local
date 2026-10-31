@@ -106,5 +106,11 @@ await writeFile(join(dataDir, "manifest.json"), JSON.stringify(manifest, null, 2
 await mergeLocalQuestionBanks(dataDir, dataDir);
 await downloadAssets(hashes);
 
+// 真题题号 + 全文搜索索引（web/data/exam_index.json、search_v2.json）
+const { buildExamIndex } = await import("./build-exam-index.mjs");
+await writeFile(join(dataDir, "exam_index.json"), JSON.stringify(await buildExamIndex(dataDir)));
+const { buildSearchIndex } = await import("./build-search-index.mjs");
+await writeFile(join(dataDir, "search_v2.json"), JSON.stringify(await buildSearchIndex(dataDir)));
+
 const mergedManifest = JSON.parse(await readFile(join(dataDir, "manifest.json"), "utf8"));
 console.log(`题库同步完成：${mergedManifest.total} 题，${hashes.size} 张题图`);

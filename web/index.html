@@ -5,12 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>学习空间 · 本地大观园</title>
   <meta name="description" content="非官方本地数学学习空间：章节练习、错题复习与个人学习记录。" />
-  <meta name="theme-color" content="#fafaf7" />
+  <meta name="theme-color" content="#f6f6f4" />
   <link rel="icon" type="image/svg+xml" href="./assets/landing/local-mark.svg" />
-  <link rel="stylesheet" href="./design-tokens.css?v=2" />
+  <link rel="stylesheet" href="./design-tokens.css?v=3" />
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="stylesheet" href="./vendor/katex.min.css" />
-  <link rel="stylesheet" href="./styles.css?v=68" />
+  <link rel="stylesheet" href="./styles.css?v=70" />
   <script>
     (() => {
       if (location.search.includes("purge=1")) {
@@ -51,6 +51,7 @@
     <symbol id="icon-star" viewBox="0 0 24 24"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-2.9-5.6 2.9 1.1-6.2L3 9.6l6.2-.9L12 3Z" /></symbol>
     <symbol id="icon-chart" viewBox="0 0 24 24"><path d="M4 19V5M4 19h16" /><path d="m7 15 3-4 3 2 4-6" /></symbol>
     <symbol id="icon-book" viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2V5Z" /><path d="M4 19a2 2 0 0 1 2-2h13M9 7h6" /></symbol>
+    <symbol id="icon-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4.5 4.5" /></symbol>
     <symbol id="icon-grid" viewBox="0 0 24 24"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z" /></symbol>
     <symbol id="icon-gauge" viewBox="0 0 24 24"><path d="M4 13a8 8 0 1 1 16 0" /><path d="m12 13 3-3M5 18h14" /></symbol>
     <symbol id="icon-file" viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6z" /><path d="M14 3v5h4M9 13h6M9 17h6" /></symbol>
@@ -147,6 +148,9 @@
             <button type="button" class="btn ghost" id="btn-prev-section" title="上一小节">上一节</button>
             <button type="button" class="btn primary" id="btn-next-section" title="下一小节">下一节</button>
           </div>
+          <button type="button" class="btn ghost topbar-search-trigger" id="btn-search-top" title="搜索题目（Ctrl K 或 /）" aria-label="搜索题目">
+            <svg class="ui-icon"><use href="#icon-search"></use></svg><span>搜索</span><kbd class="shortcut-hint">Ctrl K</kbd>
+          </button>
           <button type="button" class="btn ghost topbar-filter-trigger" id="btn-adv-filter-top" title="按题源、章节、知识点、题型等条件筛选">
             <svg class="ui-icon"><use href="#icon-grid"></use></svg><span>详细筛选</span>
           </button>
@@ -206,7 +210,7 @@
 
         <section class="catalog-view hidden" id="view-catalog" aria-label="数学题库">
           <div class="page-heading"><h1>每一章，都是新视角<span class="orange-period">。</span></h1><p class="page-description">展开目录，选择一个小节。从你最想弄懂的地方开始。</p></div>
-          <div class="chapter-head"><div class="catalog-toolbar"><label class="search-field"><svg class="ui-icon"><use href="#icon-grid"></use></svg><input id="search" type="search" aria-label="搜索题号、来源或题干" placeholder="搜索题号、来源或题干…" autocomplete="off" /></label><button type="button" class="btn" id="btn-adv-filter">详细筛选 <svg class="ui-icon"><use href="#icon-grid"></use></svg></button></div></div>
+          <div class="chapter-head"><div class="catalog-toolbar"><label class="search-field"><svg class="ui-icon"><use href="#icon-search"></use></svg><input id="search" type="search" aria-label="搜索题目" placeholder="搜题干、知识点、来源，或输入 21 数三 7…" autocomplete="off" /></label><button type="button" class="btn" id="btn-adv-filter">详细筛选 <svg class="ui-icon"><use href="#icon-grid"></use></svg></button></div></div>
           <div class="catalog-scopes"><div class="scope-toggle" role="group" aria-label="题库范围"><button type="button" class="scope-btn active" data-scope="all">完整题库</button><button type="button" class="scope-btn" data-scope="core">严选</button><button type="button" class="scope-btn" data-scope="real">真题</button></div><div class="tool-row"><label class="check"><input type="checkbox" id="filter-core" /> 仅严选</label><label class="check"><input type="checkbox" id="filter-todo" /> 未掌握</label></div></div>
           <nav class="cat-tree" id="cat-tree" aria-label="分类"></nav>
         </section>
@@ -273,9 +277,27 @@
           </div>
         </section>
 
-        <section class="search-view hidden" id="view-search">
-          <h2>搜索结果 <span class="muted" id="search-count"></span></h2>
-          <div id="search-results"></div>
+        <section class="search-view hidden" id="view-search" aria-label="搜索题目">
+          <div class="search-head">
+            <label class="search-field search-field--lg"><svg class="ui-icon" aria-hidden="true"><use href="#icon-search"></use></svg><input id="search-q" type="search" aria-label="搜索题目" placeholder="题干、知识点、来源，或 21 数三 7 / 2020数三 / #562" autocomplete="off" enterkeyhint="search" /></label>
+            <div class="search-examples" id="search-examples" aria-label="搜索示例">
+              <span class="muted">试试</span>
+              <button type="button" class="search-chip" data-q="2020数三">2020数三</button>
+              <button type="button" class="search-chip" data-q="21 数三 7">21 数三 7</button>
+              <button type="button" class="search-chip" data-q="特征值 相似">特征值 相似</button>
+              <button type="button" class="search-chip" data-q="洛必达">洛必达</button>
+              <button type="button" class="search-chip" data-q="lim x->0 sinx/x">lim x-&gt;0 sinx/x</button>
+              <button type="button" class="search-chip" data-q="#562">#562</button>
+            </div>
+          </div>
+          <div class="search-summary" id="search-summary" hidden>
+            <h2 class="search-title"><span id="search-title-text">搜索结果</span> <span class="muted" id="search-count"></span></h2>
+            <p class="search-note muted" id="search-note"></p>
+            <div class="search-actions"><button type="button" class="btn primary" id="btn-search-practice">练习这些题</button></div>
+          </div>
+          <div id="search-direct"></div>
+          <div id="search-results" role="list"></div>
+          <div class="search-more-wrap"><button type="button" class="btn" id="btn-search-more" hidden>再显示 40 题</button></div>
         </section>
         <section class="feature-view hidden" id="view-feature" aria-live="polite"></section>
       </main>
@@ -706,7 +728,7 @@
       <legend>品牌橙</legend>
       <div class="accent-choice-grid" role="radiogroup" aria-label="品牌橙色">
         <button type="button" class="accent-choice" data-accent-choice="vibrant" role="radio" aria-checked="true">
-          <span class="accent-swatch" style="background:#f97316" aria-hidden="true"></span>
+          <span class="accent-swatch" style="background:#f06a12" aria-hidden="true"></span>
           <strong>活力橙</strong><small>明亮友好（默认）</small>
         </button>
         <button type="button" class="accent-choice" data-accent-choice="classic" role="radio" aria-checked="false">
@@ -764,6 +786,7 @@
 
   <script defer src="./vendor/marked.min.js"></script>
   <script defer src="./vendor/katex.min.js"></script>
-    <script defer src="./app2.js?v=53"></script>
+    <script defer src="./search-core.js?v=1"></script>
+    <script defer src="./app2.js?v=54"></script>
 </body>
 </html>

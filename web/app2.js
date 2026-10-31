@@ -57,7 +57,7 @@
     categories: [],
     catQuestions: {},
     idIndex: {},
-    searchIndex: null,
+    searchReturn: null,
     shards: new Map(),
     queue: [],
     index: 0,
@@ -111,6 +111,14 @@
     feature: $("#view-feature"),
     homeCards: $("#home-cards"),
     search: $("#search"),
+    searchInput: $("#search-q"),
+    searchExamples: $("#search-examples"),
+    searchSummary: $("#search-summary"),
+    searchTitle: $("#search-title-text"),
+    searchNote: $("#search-note"),
+    searchPractice: $("#btn-search-practice"),
+    searchDirect: $("#search-direct"),
+    searchMore: $("#btn-search-more"),
     searchResults: $("#search-results"),
     searchCount: $("#search-count"),
     listMode: $("#list-mode"),
@@ -2199,6 +2207,8 @@
   }
 
   async function openCategory(catId, startId = null, { silent = false } = {}) {
+    state.searchReturn = null;
+    updateBrowseBack();
     await ensureIndexes();
     const trail = findCat(catId) || [];
     const node = trail[trail.length - 1];
@@ -2236,6 +2246,8 @@
     els.crumb.textContent = title + " · 加载中…";
     let qs = await loadQueueQuestions(ids);
     qs = filterQuestions(qs);
+    const examOrder = trail[0]?.name === "历年真题" ? await examOrderForCategory(node.id).catch(() => null) : null;
+    if (examOrder) qs = qs.slice().sort((a, b) => (examOrder.get(Number(a.id)) ?? 999) - (examOrder.get(Number(b.id)) ?? 999));
     if (!qs.length) {
       if (!silent) toast("当前题库范围下没有可用题目");
       return false;
@@ -2252,6 +2264,8 @@
   }
 
   async function openSpecial(kind) {
+    state.searchReturn = null;
+    updateBrowseBack();
     await ensureIndexes();
     state.specialQueue = kind;
     state.currentCatId = null;
@@ -2874,65 +2888,377 @@
     toast("已展开当前页答案");
   }
 
+  // ---------------------------------------------------------------------------
+  // Search (search-core.js does parsing/ranking; this block loads data and renders)
+  // ---------------------------------------------------------------------------
+  const EXAM_FIX_KEY = "daguan_exam_no_fix_v1";
+  const SEARCH_PAGE = 40;
+  const search = { index: null, loading: null, examIndex: null, examLoading: null, result: null, shown: 0, query: "", seq: 0 };
+
+  function loadExamFixes() {
+    try { return JSON.parse(localStorage.getItem(EXAM_FIX_KEY) || "{}") || {}; } catch { return {}; }
+  }
+  function saveExamFix(paperKey, no, id) {
+    const fixes = loadExamFixes();
+    fixes[paperKey] = { ...(fixes[paperKey] || {}), [String(no)]: Number(id) };
+    try { localStorage.setItem(EXAM_FIX_KEY, JSON.stringify(fixes)); } catch {}
+    return fixes;
+  }
+
+  async function ensureExamIndex() {
+    if (search.examIndex) return search.examIndex;
+    if (!search.examLoading) {
+      search.examLoading = fetchJSON(`${DATA}/exam_index.json`)
+        .then((data) => (search.examIndex = data))
+        .catch(() => (search.examIndex = { papers: [], dups: {} }));
+    }
+    return search.examLoading;
+  }
+
   async function ensureSearchIndex() {
-    if (state.searchIndex) return state.searchIndex;
-    state.searchIndex = await fetchJSON(`${DATA}/search_index.json`);
-    return state.searchIndex;
+    if (search.index) return search.index;
+    if (!search.loading) {
+      search.loading = Promise.all([fetchJSON(`${DATA}/search_v2.json`), ensureExamIndex()]).then(([data, exam]) => {
+        const S = window.DaguanSearch;
+        search.index = S.createIndex(data, null);
+        S.setExamIndex(search.index, exam, loadExamFixes());
+        return search.index;
+      });
+      search.loading.catch(() => { search.loading = null; });
+    }
+    return search.loading;
+  }
+
+  // Exam-number order for a 历年真题 paper category (used when opening it from the catalog).
+  async function examOrderForCategory(catId) {
+    const exam = await ensureExamIndex();
+    const paper = (exam.papers || []).find((p) => String(p.cat) === String(catId));
+    if (!paper) return null;
+    const fixes = loadExamFixes()[paper.key];
+    const items = paper.items.map(([no, id]) => ({ no, id: Number(id) }));
+    if (fixes) {
+      for (const [no, id] of Object.entries(fixes)) {
+        const t = items.find((x) => x.id === Number(id));
+        const o = items.find((x) => x.no === Number(no));
+        if (t && o && t !== o) o.no = t.no;
+        if (t) t.no = Number(no);
+      }
+    }
+    return new Map(items.map((x) => [x.id, x.no]));
+  }
+
+  function examLabel(entry) {
+    if (!entry) return "";
+    const fuzzy = entry.c === 0 ? "≈" : "";
+    return `${entry.year} ${entry.exam} ${fuzzy}第 ${entry.no} 题`;
+  }
+
+  function openSearch(prefill) {
+    if (state.focusMode) exitFocusMode();
+    if (state.chapterMenuOpen) closeChapterMenu({ restoreFocus: false });
+    setView("search");
+    setNavActive(null);
+    els.crumb.textContent = "搜索题目";
+    const input = els.searchInput;
+    if (prefill != null) input.value = prefill;
+    input.focus();
+    input.select?.();
+    ensureSearchIndex().catch(() => {});
+    if (input.value.trim()) runSearch(input.value);
+    else renderSearchEmpty();
+  }
+
+  function renderSearchEmpty() {
+    els.searchSummary.hidden = true;
+    els.searchExamples.hidden = false;
+    els.searchDirect.innerHTML = "";
+    els.searchResults.innerHTML = "";
+    els.searchMore.hidden = true;
   }
 
   async function runSearch(q) {
-    const query = q.trim();
+    const query = String(q || "").trim();
+    search.query = query;
+    if (els.searchInput.value !== q) els.searchInput.value = q;
     if (!query) {
-      setView(state.queue.length ? "browse" : "home");
+      if (state.view === "search") renderSearchEmpty();
       return;
     }
-    const idx = await ensureSearchIndex();
-    const ql = query.toLowerCase();
-    const asNum = /^\d+$/.test(query) ? Number(query) : null;
-    const hits = [];
-    for (const item of idx) {
-      if (asNum != null && Number(item.id) === asNum) {
-        hits.unshift(item);
-        continue;
+    if (state.view !== "search") {
+      if (state.focusMode) exitFocusMode();
+      setView("search");
+      setNavActive(null);
+    }
+    const seq = ++search.seq;
+    els.searchExamples.hidden = true;
+    let index;
+    try {
+      if (!search.index) {
+        els.searchSummary.hidden = false;
+        els.searchTitle.textContent = "正在载入搜索索引…";
+        els.searchCount.textContent = "";
+        els.searchNote.textContent = "";
       }
-      const blob = `${item.id} ${item.source || ""} ${item.path || ""} ${item.stem || ""}`.toLowerCase();
-      if (blob.includes(ql)) hits.push(item);
-      if (hits.length >= 80) break;
-    }
-    setView("search");
-    els.searchCount.textContent = `(${hits.length})`;
-    els.searchResults.innerHTML = "";
-    if (!hits.length) {
-      els.searchResults.innerHTML = `<p class="muted">没有匹配结果</p>`;
+      index = await ensureSearchIndex();
+    } catch (err) {
+      els.searchSummary.hidden = false;
+      els.searchTitle.textContent = "搜索索引加载失败";
+      els.searchNote.textContent = "请先运行 npm run build:search 生成 web/data/search_v2.json。";
       return;
     }
-    for (const h of hits) {
-      const b = document.createElement("button");
-      b.type = "button";
-      b.className = "search-item";
-      b.innerHTML = `
-        <label class="pick-check" title="勾选导出">
-          <input type="checkbox" data-pick-id="${h.id}" ${isPicked(h.id) ? "checked" : ""} />
-        </label>
-        <div class="s-top">
-          <span>#${h.id}</span>
-          <span>${escapeHtml(h.source || "")}</span>
-          <span>${escapeHtml(TYPE_LABEL[h.type] || h.type || "")}</span>
-          <span>${escapeHtml(h.path || "")}</span>
-        </div>
-        <div class="s-stem">${escapeHtml(stripMd(h.stem || ""))}</div>`;
-      b.querySelector(".pick-check").addEventListener("click", (e) => e.stopPropagation());
-      b.querySelector("[data-pick-id]").addEventListener("change", (e) => {
-        setPicked(h.id, e.target.checked);
-      });
-      b.addEventListener("click", async () => {
-        const top = (h.path || "未分类").split(" / ")[0];
-        const cat = state.categories.find((c) => c.name === top) || state.categories[0];
-        const catId = findCatIdByPath(h.path) || (cat && cat.id);
-        await openCategory(catId, h.id);
-      });
-      els.searchResults.appendChild(b);
+    if (seq !== search.seq) return;
+    const result = window.DaguanSearch.search(index, query);
+    search.result = result;
+    search.shown = 0;
+    try { history.replaceState(history.state, "", `${location.pathname}?q=${encodeURIComponent(query)}${location.hash}`); } catch {}
+    renderSearchResult(index, result);
+  }
+
+  function renderSearchResult(index, result) {
+    const { parsed } = result;
+    els.searchDirect.innerHTML = "";
+    els.searchResults.innerHTML = "";
+    els.searchSummary.hidden = false;
+    els.searchPractice.hidden = !result.hits.length;
+    let title = "";
+    let note = "";
+    if (result.mode === "paper") {
+      const p = result.paper;
+      title = `${p.year} ${p.exam}`;
+      const inferred = p.items.some((it) => it.c === 0);
+      note = parsed.terms.length || parsed.numberTerms.length
+        ? `按题号排列，只显示含“${[...parsed.terms.map((t) => t.raw), ...parsed.numberTerms].join(" ")}”的题`
+        : `整卷 ${p.items.length} 题，按题号排列`;
+      if (inferred) note += "。标 ≈ 的题号是推断的，可能与原卷相差一两题";
+      if (result.image) note += "。另有原卷图片版可对照";
+    } else if (result.mode === "text") {
+      title = `“${parsed.raw}”`;
+      if (result.paperMissing) note = `${result.paperMissing.year} ${result.paperMissing.exam} 没有整卷题号，下面是题库中标注该年份的题`;
+      else if (result.partial) note = "没有同时包含全部关键词的题，下面是部分匹配的结果";
+      else note = "按相关度排序：题源/知识点命中 > 题干 > 答案 > 解析";
+      const aliases = parsed.terms.filter((t) => t.alias).map((t) => `${t.alias} → ${t.raw}`);
+      if (aliases.length) note += `（拼音：${aliases.join("，")}）`;
+    } else if (result.mode === "id") {
+      title = `题号 #${parsed.id}`;
+    } else if (result.paperMissing) {
+      title = `${result.paperMissing.year} ${result.paperMissing.exam}`;
+      note = "题库里没有这一年的真题";
+    } else {
+      title = `“${parsed.raw}”`;
     }
+    els.searchTitle.textContent = title;
+    els.searchCount.textContent = result.total ? `${result.total} 题` : "";
+    els.searchNote.textContent = note;
+
+    // Direct hits: "21 数三 7" or a question id.
+    if (result.direct) renderDirectHit(index, result);
+    else if (result.idHit != null && index.byId.has(Number(result.idHit))) renderIdHit(index, result.idHit, result.mode === "id");
+
+    if (!result.hits.length && !result.direct && result.idHit == null) {
+      if (!result.paperMissing) els.searchNote.textContent = "";
+      els.searchPractice.hidden = true;
+      els.searchResults.innerHTML = `<div class="search-empty"><p>没有找到匹配的题目。</p><p class="muted">可以试试更短的关键词、去掉一个词，或按“年份 数一/二/三 题号”查真题，例如 21 数三 7。</p></div>`;
+      els.searchMore.hidden = true;
+      return;
+    }
+    renderMoreResults(index);
+  }
+
+  function renderMoreResults(index) {
+    const result = search.result;
+    if (!result) return;
+    const slice = result.hits.slice(search.shown, search.shown + SEARCH_PAGE);
+    const frag = document.createDocumentFragment();
+    for (const hit of slice) {
+      const node = searchItemNode(index, hit, result);
+      if (node) frag.appendChild(node);
+    }
+    const added = [...frag.querySelectorAll(".s-stem")];
+    els.searchResults.appendChild(frag);
+    requestAnimationFrame(() => added.forEach((el) => el.classList.toggle("is-clamped", el.scrollHeight > el.clientHeight + 2)));
+    search.shown += slice.length;
+    const left = result.hits.length - search.shown;
+    els.searchMore.hidden = left <= 0;
+    els.searchMore.textContent = `再显示 ${Math.min(SEARCH_PAGE, left)} 题（还有 ${left} 题）`;
+  }
+
+  function highlightTerms(root, terms) {
+    const words = terms.map((t) => t.raw).filter((w) => w && /[一-龥]|^[a-z]{3,}$/i.test(w));
+    if (!words.length) return;
+    const re = new RegExp(words.map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|"), "gi");
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+      acceptNode: (n) => (n.parentElement && n.parentElement.closest(".katex, mark") ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT),
+    });
+    const nodes = [];
+    while (walker.nextNode()) nodes.push(walker.currentNode);
+    for (const node of nodes) {
+      const text = node.nodeValue;
+      re.lastIndex = 0;
+      if (!re.test(text)) continue;
+      re.lastIndex = 0;
+      const frag = document.createDocumentFragment();
+      let last = 0;
+      text.replace(re, (m, offset) => {
+        frag.appendChild(document.createTextNode(text.slice(last, offset)));
+        const mark = document.createElement("mark");
+        mark.textContent = m;
+        frag.appendChild(mark);
+        last = offset + m.length;
+        return m;
+      });
+      frag.appendChild(document.createTextNode(text.slice(last)));
+      node.parentNode.replaceChild(frag, node);
+    }
+  }
+
+  function masteryDot(id) {
+    const p = progressOf(id);
+    if (p.mastery === "mastered") return `<span class="s-state s-state--done" title="已掌握">已掌握</span>`;
+    if (p.error_prone) return `<span class="s-state s-state--warn" title="易错">易错</span>`;
+    if (p.mastery === "learning") return `<span class="s-state" title="学习中">学习中</span>`;
+    if (p.seen) return `<span class="s-state s-state--seen" title="看过">看过</span>`;
+    return "";
+  }
+
+  function searchItemNode(index, hit, result) {
+    const doc = index.byId.get(Number(hit.id));
+    if (!doc) return null;
+    const el = document.createElement("article");
+    el.className = "search-item";
+    el.setAttribute("role", "listitem");
+    el.tabIndex = 0;
+    el.dataset.id = String(doc.id);
+    const paperMode = result.mode === "paper";
+    const exams = index.examNos.get(Number(doc.id)) || [];
+    const examTags = paperMode ? "" : exams.slice(0, 3).map((e) => `<span class="s-exam${e.c === 0 ? " is-fuzzy" : ""}">${escapeHtml(examLabel(e))}</span>`).join("");
+    const directNo = result.direct && !result.direct.missing ? result.direct.no : null;
+    const offerFix = paperMode && directNo != null && result.direct.c !== 1 && result.direct.c !== 2 && Number(doc.id) !== Number(result.direct.id);
+    const numberCell = paperMode
+      ? `<div class="s-no${hit.c === 0 ? " is-fuzzy" : ""}" title="${hit.c === 0 ? "推断题号，可能有偏差" : hit.c === 2 ? "你修正过的题号" : "原卷题号"}"><span>${hit.c === 0 ? "≈" : ""}${hit.no}</span></div>`
+      : "";
+    const sn = result.mode === "text" && hit.inExplOnly ? window.DaguanSearch.snippet(doc, result.parsed.terms) : null;
+    el.innerHTML = `
+      ${numberCell}
+      <div class="s-body">
+        <div class="s-top">
+          ${examTags}
+          <span class="s-src">${escapeHtml(doc.src || "")}</span>
+          <span>${escapeHtml(TYPE_LABEL[doc.type] || doc.type || "")}</span>
+          <span class="s-path">${escapeHtml(String(doc.path || "").split("、")[0])}</span>
+          <span class="s-id">#${doc.id}</span>
+          ${masteryDot(doc.id)}
+        </div>
+        <div class="s-stem rendered"></div>
+        ${sn ? `<div class="s-snippet"><span>解析提到</span> ${escapeHtml(sn.text).split(escapeHtml(sn.term)).join(`<mark>${escapeHtml(sn.term)}</mark>`)}</div>` : ""}
+        ${offerFix ? `<button type="button" class="btn ghost s-fix" data-fix-id="${doc.id}">这才是第 ${directNo} 题</button>` : ""}
+      </div>
+      <label class="pick-check" title="勾选导出"><input type="checkbox" data-pick-id="${doc.id}" ${isPicked(doc.id) ? "checked" : ""} aria-label="勾选 #${doc.id} 用于导出" /></label>`;
+    const stemEl = el.querySelector(".s-stem");
+    stemEl.innerHTML = renderMarkdown(doc.stem || "");
+    if (result.mode === "text") highlightTerms(stemEl, result.parsed.terms);
+    el.querySelector(".pick-check").addEventListener("click", (e) => e.stopPropagation());
+    el.querySelector("[data-pick-id]").addEventListener("change", (e) => setPicked(doc.id, e.target.checked));
+    el.querySelector(".s-fix")?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      applyExamFix(result.direct.key, directNo, doc.id);
+    });
+    const open = () => openSearchHit(doc.id);
+    el.addEventListener("click", (e) => {
+      if (e.target.closest("a, button, input, label")) return;
+      open();
+    });
+    el.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); open(); }
+      if (e.key === "ArrowDown") { e.preventDefault(); el.nextElementSibling?.focus(); }
+      if (e.key === "ArrowUp") { e.preventDefault(); (el.previousElementSibling || els.searchInput).focus(); }
+    });
+    if (directNo != null && hit.no === directNo) el.classList.add("is-target");
+    return el;
+  }
+
+  function renderDirectHit(index, result) {
+    const d = result.direct;
+    const box = document.createElement("section");
+    box.className = "search-direct";
+    if (d.missing) {
+      box.innerHTML = `<p class="search-direct-miss">${escapeHtml(d.key.replace(/-new$/, ""))} 只有 ${d.max} 题，没有第 ${d.no} 题。下面是整卷。</p>`;
+      els.searchDirect.appendChild(box);
+      return;
+    }
+    const doc = index.byId.get(Number(d.id));
+    if (!doc) return;
+    const p = result.paper;
+    const status = d.c === 1 ? `<span class="s-exact">原卷题号</span>` : d.c === 2 ? `<span class="s-exact">你已确认</span>` : `<span class="s-fuzzy-note">≈ 推断题号，可能差一两题。不对的话在下方整卷里点“这才是第 ${d.no} 题”。</span>`;
+    box.innerHTML = `
+      <header class="search-direct-head">
+        <div><span class="search-direct-kicker">直达</span><h3>${p.year} ${escapeHtml(p.exam)} · 第 ${d.no} 题</h3></div>
+        <div class="search-direct-actions">
+          ${d.image ? `<button type="button" class="btn ghost" data-open-id="${d.image.id}">看原卷图片</button>` : ""}
+          <button type="button" class="btn primary" data-open-id="${doc.id}">做这道题</button>
+        </div>
+      </header>
+      <div class="search-direct-meta">${status}<span>${escapeHtml(doc.src)}</span><span>${escapeHtml(TYPE_LABEL[doc.type] || "")}</span><span>#${doc.id}</span>${masteryDot(doc.id)}</div>
+      <div class="search-direct-stem rendered"></div>`;
+    box.querySelector(".search-direct-stem").innerHTML = renderMarkdown(doc.stem || "");
+    box.querySelectorAll("[data-open-id]").forEach((b) => b.addEventListener("click", () => openSearchHit(Number(b.dataset.openId), b.dataset.openId == String(d.image?.id) ? "image" : null)));
+    els.searchDirect.appendChild(box);
+  }
+
+  function renderIdHit(index, id, only) {
+    const doc = index.byId.get(Number(id));
+    const box = document.createElement("section");
+    box.className = "search-direct search-direct--id";
+    box.innerHTML = `
+      <header class="search-direct-head">
+        <div><span class="search-direct-kicker">${only ? "题号" : "也可能是题号"}</span><h3>#${doc.id} · ${escapeHtml(doc.src || TYPE_LABEL[doc.type] || "")}</h3></div>
+        <div class="search-direct-actions"><button type="button" class="btn primary" data-open-id="${doc.id}">打开这道题</button></div>
+      </header>
+      ${only ? `<div class="search-direct-stem rendered"></div>` : ""}`;
+    if (only) box.querySelector(".search-direct-stem").innerHTML = renderMarkdown(doc.stem || "");
+    box.querySelector("[data-open-id]").addEventListener("click", () => openSearchHit(doc.id, "id"));
+    els.searchDirect.appendChild(box);
+  }
+
+  async function applyExamFix(paperKey, no, id) {
+    const fixes = saveExamFix(paperKey, no, id);
+    const index = await ensureSearchIndex();
+    window.DaguanSearch.setExamIndex(index, search.examIndex, fixes);
+    toast(`已记住：${paperKey.replace(/-new$/, "")} 第 ${no} 题`);
+    runSearch(search.query);
+  }
+
+  // Open a hit as a practice queue built from the current results (in result order),
+  // so the browse "back" button returns to the search.
+  async function openSearchHit(id, kind) {
+    const result = search.result;
+    let ids = result ? result.hits.map((h) => Number(h.id)) : [];
+    if (kind === "image" && result?.image) ids = result.image.items.map((it) => it.id);
+    else if (kind === "id" || !ids.includes(Number(id))) ids = [Number(id), ...ids.filter((x) => x !== Number(id))];
+    await startSearchPractice(ids.slice(0, 400), id, kind === "image" ? `${result.image.year} ${result.image.exam} 原卷图片` : null);
+  }
+
+  async function startSearchPractice(ids, startId = null, titleOverride = null) {
+    await ensureIndexes();
+    if (!ids.length) return;
+    const qs = await loadQueueQuestions(ids);
+    if (!qs.length) { toast("没有可打开的题目"); return; }
+    const r = search.result;
+    const title = titleOverride || (r?.mode === "paper" ? `${r.paper.year} ${r.paper.exam}（按题号）` : `搜索：${search.query}`);
+    state.specialQueue = null;
+    state.currentCatId = null;
+    state.chapterPathIds = [];
+    state.crumb = title;
+    beginBrowse(qs, title, startId);
+    state.searchReturn = search.query;
+    updateBrowseBack();
+  }
+
+  function updateBrowseBack() {
+    const btn = $("#btn-browse-back");
+    if (!btn) return;
+    const label = state.searchReturn ? "返回搜索结果" : "返回学习首页";
+    btn.setAttribute("aria-label", label);
+    btn.title = label;
   }
 
   function stripMd(s) {
@@ -2959,6 +3285,8 @@
   }
 
   function goHome() {
+    state.searchReturn = null;
+    updateBrowseBack();
     if (state.focusMode) exitFocusMode();
     else if (state.mode === "single") applyMode("list");
     closeChapterMenu({ restoreFocus: false });
@@ -4726,7 +5054,17 @@
       if (document.visibilityState === "hidden") flushPersist();
       else refreshAiAfterResume();
     });
-    $("#btn-browse-back")?.addEventListener("click", goHome);
+    $("#btn-browse-back")?.addEventListener("click", () => {
+      if (state.searchReturn != null && state.view === "browse") {
+        if (state.focusMode) exitFocusMode();
+        const q = state.searchReturn;
+        state.searchReturn = null;
+        updateBrowseBack();
+        openSearch(q);
+        return;
+      }
+      goHome();
+    });
     $("#chapter-trigger")?.addEventListener("click", (event) => {
       event.stopPropagation();
       if (state.chapterMenuOpen) closeChapterMenu();
@@ -5316,11 +5654,50 @@
     });
 
     let searchTimer = null;
-    els.search.addEventListener("focus", () => prefetchUrl(`${DATA}/search_index.json`), { once: true });
+    // Catalog field hands off to the dedicated search view.
+    els.search.addEventListener("focus", () => ensureSearchIndex().catch(() => {}), { once: true });
     els.search.addEventListener("input", () => {
-      clearTimeout(searchTimer);
-      searchTimer = setTimeout(() => runSearch(els.search.value), 200);
+      const value = els.search.value;
+      els.search.value = "";
+      openSearch(value);
     });
+    els.searchInput.addEventListener("input", () => {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(() => runSearch(els.searchInput.value), 120);
+    });
+    els.searchInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        clearTimeout(searchTimer);
+        runSearch(els.searchInput.value).then(() => {
+          const r = search.result;
+          if (r?.direct && !r.direct.missing) openSearchHit(r.direct.id);
+          else if (r?.mode === "id" && r.idHit != null) openSearchHit(r.idHit, "id");
+        });
+      } else if (e.key === "ArrowDown") {
+        e.preventDefault();
+        (els.searchDirect.querySelector("button.primary") || els.searchResults.querySelector(".search-item"))?.focus();
+      } else if (e.key === "Escape" && els.searchInput.value) {
+        e.preventDefault();
+        els.searchInput.value = "";
+        runSearch("");
+      }
+    });
+    els.searchExamples.addEventListener("click", (e) => {
+      const chip = e.target.closest("[data-q]");
+      if (chip) { els.searchInput.value = chip.dataset.q; runSearch(chip.dataset.q); els.searchInput.focus(); }
+    });
+    els.searchMore.addEventListener("click", async () => renderMoreResults(await ensureSearchIndex()));
+    els.searchPractice.addEventListener("click", () => {
+      const r = search.result;
+      if (r?.hits.length) startSearchPractice(r.hits.map((h) => Number(h.id)).slice(0, 400), null);
+    });
+    $("#btn-search-top")?.addEventListener("click", () => openSearch());
+    document.addEventListener("keydown", (e) => {
+      const typing = e.target && (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA" || e.target.isContentEditable);
+      if ((e.ctrlKey || e.metaKey) && !e.altKey && e.key.toLowerCase() === "k") { e.preventDefault(); openSearch(); return; }
+      if (!typing && e.key === "/" && !e.ctrlKey && !e.metaKey) { e.preventDefault(); openSearch(); }
+    }, true);
 
     document.addEventListener("keydown", (e) => {
       if (document.body.classList.contains("print-preview")) return;
@@ -5431,7 +5808,9 @@
       renderHome();
       refreshHomeSyncCard();
       setView("home");
-      if (landingEntry === null) restoreLearningPosition();
+      const initialQuery = new URLSearchParams(location.search).get("q");
+      if (initialQuery && landingEntry === null) openSearch(initialQuery);
+      else if (landingEntry === null) restoreLearningPosition();
       refreshPickUI();
       if (landingEntry === null && !localStorage.getItem(TUTORIAL_SEEN_KEY)) {
         openSheet("dlg-welcome");

@@ -1,9 +1,9 @@
-const CACHE = "daguan-shell-v88";
+const CACHE = "daguan-shell-v89";
 const SHELL = [
   "./",
   "./landing.html",
   "./landing.css?v=7",
-  "./design-tokens.css?v=2",
+  "./design-tokens.css?v=3",
   "./landing.js?v=3",
   "./assets/landing/local-mark.svg",
   "./assets/landing/math-surface.svg",
@@ -12,8 +12,9 @@ const SHELL = [
   "./legacy.html",
   "./legacy.css?v=1",
   "./app-legacy.js?v=2",
-  "./styles.css?v=68",
-  "./app2.js?v=53",
+  "./styles.css?v=70",
+  "./search-core.js?v=1",
+  "./app2.js?v=54",
   "./vendor/marked.min.js",
   "./vendor/katex.min.js",
   "./vendor/katex.min.css",
