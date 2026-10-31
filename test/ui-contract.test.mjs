@@ -115,15 +115,38 @@ test("Service Worker 不预缓存首屏之外的大型索引和字体", () => {
   const legacyScript = html.match(/src="(\.\/app-legacy\.js\?v=\d+)"/)?.[1];
   assert.ok(legacyScript); assert.ok(sw.includes(JSON.stringify(legacyScript)));
   assert.match(sw, /"\.\/guides\.css\?v=2"/);
-  assert.match(sw, /"\.\/styles-new\.css\?v=126"/);
+  assert.match(sw, /"\.\/styles-new\.css\?v=127"/);
   assert.match(sw, /"\.\/source-taxonomy\.js\?v=1"/);
+  assert.match(sw, /"\.\/search-core\.js\?v=1"/);
   const newScript = newHtml.match(/src="(\.\/app-new\.js\?v=\d+)"/)?.[1];
   assert.ok(newScript); assert.ok(sw.includes(JSON.stringify(newScript)));
   assert.match(sw, /"\.\/assets\/math-mark\.svg"/);
   assert.match(sw, /"\.\/assets\/landing\/local-mark\.png"/);
-  assert.doesNotMatch(sw, /data\/(category_questions|id_index|search_index)\.json/);
+  assert.doesNotMatch(sw, /data\/(category_questions|id_index|search_index|search_v2|exam_index)\.json/);
   assert.match(sw, /pathname\.includes\("\/data\/"\)/);
   assert.doesNotMatch(sw, /vendor\/fonts\//);
+});
+
+test("全局搜索接入 v2 全文引擎（真题题号、拼音、高亮）", () => {
+  // 共享引擎先于主界面加载，两份数据索引只在搜索视图内懒加载。
+  const coreIndex = newHtml.indexOf("search-core.js?v=1");
+  const appIndex = newHtml.indexOf("app-new.js?v=");
+  assert.ok(coreIndex >= 0 && appIndex > coreIndex, "search-core.js 应在 app-new.js 之前加载");
+  assert.match(newApp, /window\.DaguanSearch\.search\(index, query\)/);
+  assert.match(newApp, /ensureSearchV2Index\(\)/);
+  assert.match(newApp, /data\/search_v2\.json/);
+  assert.match(newApp, /data\/exam_index\.json/);
+  // Ctrl K 与斜杠都能打开搜索。
+  assert.match(newApp, /toLowerCase\(\) === 'k'/);
+  assert.match(newApp, /pressed === '\/'/);
+  // 整卷按题号、直达卡片与命中高亮的渲染契约。
+  assert.match(newApp, /按题号排列/);
+  assert.match(newApp, /search-result-direct/);
+  assert.match(newApp, /search-result-no/);
+  assert.match(newCss, /\.search-result-no/);
+  assert.match(newCss, /\.search-result-direct/);
+  assert.match(newCss, /mark\.search-hit-term/);
+  assert.match(newCss, /\.search-chip/);
 });
 
 test("新版与旧版都监听本地服务状态事件并刷新共享学习记录", () => {
@@ -137,7 +160,7 @@ test("新版与旧版都监听本地服务状态事件并刷新共享学习记�
 });
 
 test("新版入口承载新版前端并与旧版共享版本选择", () => {
-  assert.match(newHtml, /styles-new\.css\?v=126/);
+  assert.match(newHtml, /styles-new\.css\?v=127/);
   assert.match(newHtml, /ui-version\.js\?v=106/);
   assert.match(newHtml, /ui-bootstrap\.js\?v=1/);
   assert.match(newHtml, /source-taxonomy\.js\?v=1/);

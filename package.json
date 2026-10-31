@@ -19,6 +19,8 @@
     "package:windows": "node scripts/build-windows-exe.mjs",
     "package:windows:release": "node scripts/package-windows-release.mjs",
     "sync:data": "node tools/sync-web-data.mjs",
+    "build:search": "node tools/build-exam-index.mjs && node tools/build-search-index.mjs",
+    "eval:exam-numbers": "node tools/eval-exam-index.mjs",
     "verify": "node tools/verify-web-data.mjs",
     "test": "node scripts/run-tests.mjs",
     "package:desktop:windows": "electron-forge make --platform win32 --arch x64",

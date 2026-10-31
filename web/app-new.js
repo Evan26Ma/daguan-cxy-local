@@ -5,7 +5,7 @@
 
 // ========== 离线缓存注册（与 app2.js 一致） ==========
 if ("serviceWorker" in navigator && location.protocol !== "file:" && location.protocol !== "https:") {
-    navigator.serviceWorker.register("./service-worker.js?v=169").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=170").catch(() => {});
 }
 
 // ========== 全局状态 ==========
@@ -32,6 +32,7 @@ const AppState = {
     globalSearchQuery: '',
     globalSearchScope: 'all',
     globalSearchRows: [],
+    globalSearchV2: null,
     globalSearchLimit: 40,
     globalSearchReturn: null,
     globalSearchScrollTop: 0,
@@ -401,6 +402,57 @@ function renderSearchResultStem(text) {
     const source = String(text || '');
     const hasMath = /(\$\$[\s\S]+?\$\$|\\\[[\s\S]+?\\\]|\\\([\s\S]+?\\\)|\$[^$\n]+?\$)/.test(source);
     return `<span class="search-result-stem${hasMath ? ' has-math' : ''}">${renderSafeSearchMarkdown(source)}</span>`;
+}
+
+// ========== 全文搜索 v2（web/search-core.js 提供解析与排序，数据为 data/search_v2.json + data/exam_index.json） ==========
+const searchV2 = { index: null, loading: null };
+
+function ensureSearchV2Index() {
+    if (searchV2.index) return Promise.resolve(searchV2.index);
+    if (!searchV2.loading) {
+        searchV2.loading = Promise.all([
+            fetch('./data/search_v2.json').then(r => r.ok ? r.json() : Promise.reject(new Error('search_v2.json 加载失败'))),
+            fetch('./data/exam_index.json').then(r => r.ok ? r.json() : null).catch(() => null),
+        ]).then(([data, exam]) => {
+            searchV2.index = window.DaguanSearch.createIndex(data, exam);
+            return searchV2.index;
+        });
+        searchV2.loading.catch(() => { searchV2.loading = null; });
+    }
+    return searchV2.loading;
+}
+
+// 在已渲染的结果里给命中词加 <mark>；跳过 KaTeX 渲染节点，避免破坏公式 DOM。
+function highlightSearchTermsIn(root, terms) {
+    const words = (terms || [])
+        .map(term => String(term.raw || ''))
+        .filter(word => word && /[一-龥]/.test(word) || /^[a-z]{3,}$/i.test(word));
+    if (!words.length || !root) return;
+    const re = new RegExp(words.map(word => word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'), 'gi');
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+        acceptNode: node => (node.parentElement && node.parentElement.closest('.katex, mark, .katex-display')) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT,
+    });
+    const nodes = [];
+    while (walker.nextNode()) nodes.push(walker.currentNode);
+    for (const node of nodes) {
+        const text = node.nodeValue;
+        re.lastIndex = 0;
+        if (!re.test(text)) continue;
+        re.lastIndex = 0;
+        const frag = document.createDocumentFragment();
+        let last = 0;
+        text.replace(re, (match, offset) => {
+            frag.appendChild(document.createTextNode(text.slice(last, offset)));
+            const mark = document.createElement('mark');
+            mark.className = 'search-hit-term';
+            mark.textContent = match;
+            frag.appendChild(mark);
+            last = offset + match.length;
+            return match;
+        });
+        frag.appendChild(document.createTextNode(text.slice(last)));
+        node.parentNode.replaceChild(frag, node);
+    }
 }
 
 // ========== UI 渲染器 ==========
@@ -2699,8 +2751,11 @@ class App {
             }
             const target = event.target;
             const editing = target?.closest?.('input, textarea, select, [contenteditable="true"], .annotation-panel, .ai-panel, .shortcut-settings-card') || target?.isContentEditable;
-            if (editing || event.ctrlKey || event.metaKey) return;
             const pressed = event.key && event.key !== 'Unidentified' ? event.key : SHORTCUT_CODE_FALLBACK[event.code] || event.code || '';
+            if ((event.ctrlKey || event.metaKey) && !event.altKey && !editing && String(pressed).toLowerCase() === 'k') {
+                event.preventDefault(); this.openGlobalSearch(); return;
+            }
+            if (editing || event.ctrlKey || event.metaKey) return;
             if (pressed === '/' && !event.altKey && !event.shiftKey) { event.preventDefault(); this.openGlobalSearch(); return; }
             if (AppState.currentView !== 'question' || AppState.questionMode !== 'single') return;
             if (pressed.toLowerCase() === 'g' && !event.altKey) {
@@ -3030,50 +3085,139 @@ class App {
         const main = document.getElementById('app-main');
         if (!main) return;
         const chapterScopeAllowed = !!AppState.globalSearchContext?.chapterId;
-        main.innerHTML = `<section class="global-search-page"><div class="global-search-heading"><div><p class="eyebrow">题库 · 本机索引</p><h1>搜索题目</h1><p class="text-helper">搜索 6,342 道题的题号、题干、来源和章节路径。</p></div>${AppState.globalSearchReturn ? `<button class="btn btn-secondary" type="button" onclick="App.returnToGlobalSearchOrigin()">${AppState.globalSearchReturn.questionId ? '返回原题' : '返回上一页'}</button>` : ''}</div><div class="global-search-controls"><input id="global-search-input" type="search" autocomplete="off" placeholder="题号、关键词或公式，例如 x^2" value="${escapeHtml(AppState.globalSearchQuery)}"><select id="global-search-scope" aria-label="搜索范围"><option value="all" ${AppState.globalSearchScope === 'all' ? 'selected' : ''}>全部题库</option><option value="subject" ${AppState.globalSearchScope === 'subject' ? 'selected' : ''} ${AppState.globalSearchContext?.categoryId ? '' : 'disabled'}>当前科目</option><option value="chapter" ${AppState.globalSearchScope === 'chapter' ? 'selected' : ''} ${chapterScopeAllowed ? '' : 'disabled'}>当前章节</option></select><button class="btn btn-primary" type="button" id="global-search-submit">搜索</button></div><div id="global-search-results" aria-live="polite"></div></section>`;
+        main.innerHTML = `<section class="global-search-page"><div class="global-search-heading"><div><p class="eyebrow">题库 · 本机索引</p><h1>搜索题目</h1><p class="text-helper">搜索 7,599 道题的题干、来源、解析和章节路径；真题支持「年份 + 数一/二/三 + 题号」，例如 21 数三 7。</p></div>${AppState.globalSearchReturn ? `<button class="btn btn-secondary" type="button" onclick="App.returnToGlobalSearchOrigin()">${AppState.globalSearchReturn.questionId ? '返回原题' : '返回上一页'}</button>` : ''}</div><div class="global-search-controls"><input id="global-search-input" type="search" autocomplete="off" placeholder="题号、关键词或公式，例如 x^2；真题可写 21 数三 7" value="${escapeHtml(AppState.globalSearchQuery)}"><select id="global-search-scope" aria-label="搜索范围"><option value="all" ${AppState.globalSearchScope === 'all' ? 'selected' : ''}>全部题库</option><option value="subject" ${AppState.globalSearchScope === 'subject' ? 'selected' : ''} ${AppState.globalSearchContext?.categoryId ? '' : 'disabled'}>当前科目</option><option value="chapter" ${AppState.globalSearchScope === 'chapter' ? 'selected' : ''} ${chapterScopeAllowed ? '' : 'disabled'}>当前章节</option></select><button class="btn btn-primary" type="button" id="global-search-submit">搜索</button></div><div id="global-search-results" aria-live="polite"></div></section>`;
         const input = document.getElementById('global-search-input');
         input.addEventListener('input', () => { AppState.globalSearchQuery = input.value; clearTimeout(this._globalSearchTimer); this._globalSearchTimer = setTimeout(() => this.updateGlobalSearchResults(), 120); });
         document.getElementById('global-search-scope').addEventListener('change', event => { AppState.globalSearchScope = event.target.value; this.updateGlobalSearchResults(); });
         document.getElementById('global-search-submit').addEventListener('click', () => this.updateGlobalSearchResults());
         input.addEventListener('keydown', event => { if (event.key === 'Enter') this.updateGlobalSearchResults(); });
+        document.getElementById('global-search-results').addEventListener('click', event => {
+            const chip = event.target.closest('[data-search-chip]');
+            if (!chip) return;
+            AppState.globalSearchQuery = chip.dataset.searchChip;
+            input.value = chip.dataset.searchChip;
+            input.focus();
+            this.updateGlobalSearchResults();
+        });
         this.updateGlobalSearchResults();
         if (AppState.globalSearchScrollTop) document.getElementById('global-search-results').scrollTop = AppState.globalSearchScrollTop;
     }
 
-    static updateGlobalSearchResults() {
+    static async updateGlobalSearchResults() {
         const host = document.getElementById('global-search-results');
         if (!host) return;
-        const query = this.normalizeSearchText(AppState.globalSearchQuery.trim());
-        if (!query) { host.innerHTML = '<p class="search-empty-hint">输入关键词开始搜索。可使用 x^2、\\frac{a}{b} 等常见公式写法。</p>'; return; }
-        const searchCategory = (AppState.categories?.categories || []).find(item => String(item.id) === String(AppState.globalSearchContext?.categoryId));
-        const searchChapter = searchCategory && UIRenderer.findNodeById(searchCategory, AppState.globalSearchContext?.chapterId);
-        const currentPath = searchCategory && searchChapter ? UIRenderer.pathToNode(searchCategory, searchChapter.id).map(node => node.name || node.title).filter(Boolean).join(' / ') : '';
-        const subjectName = searchCategory?.name || '';
-        const rows = AppState.searchIndex || [];
-        const matches = [];
-        for (const row of rows) {
-            const path = String(row.path || '');
-            if (AppState.globalSearchScope === 'subject' && (!subjectName || (path !== subjectName && !path.startsWith(`${subjectName} /`)))) continue;
-            if (AppState.globalSearchScope === 'chapter' && (!currentPath || (path !== currentPath && !path.startsWith(`${currentPath} /`)))) continue;
-            const indexed = row._searchText || (row._searchText = this.normalizeSearchText(`${row.id} ${row.stem || ''} ${row.source || ''} ${path}`));
-            if (indexed.includes(query)) matches.push(row);
+        const query = AppState.globalSearchQuery.trim();
+        if (!query) {
+            AppState.globalSearchRows = [];
+            AppState.globalSearchV2 = null;
+            host.innerHTML = `<p class="search-empty-hint">输入关键词、题号或公式开始搜索；真题可写「21 数三 7」，题号可写「#252」。</p><div class="search-chip-row"><span class="search-chip-label">试试</span><button type="button" class="search-chip" data-search-chip="2020数三">2020数三</button><button type="button" class="search-chip" data-search-chip="21 数三 7">21 数三 7</button><button type="button" class="search-chip" data-search-chip="特征值 相似">特征值 相似</button><button type="button" class="search-chip" data-search-chip="洛必达">洛必达</button><button type="button" class="search-chip" data-search-chip="lim x-&gt;0 sinx/x">lim x→0 sinx/x</button><button type="button" class="search-chip" data-search-chip="#252">#252</button></div>`;
+            return;
         }
-        AppState.globalSearchRows = matches;
+        const seq = this._globalSearchSeq = (this._globalSearchSeq || 0) + 1;
+        let index;
+        try {
+            index = await ensureSearchV2Index();
+        } catch (cause) {
+            console.warn('搜索索引加载失败', cause);
+            host.innerHTML = '<p class="search-empty-hint">搜索索引加载失败，请刷新页面重试。</p>';
+            return;
+        }
+        if (seq !== this._globalSearchSeq) return;
+        const result = window.DaguanSearch.search(index, query);
+        // 范围筛选只作用于文字搜索；整卷与题号直达是精确定位，不受范围限制。
+        let hits = result.hits;
+        if (result.mode === 'text' && AppState.globalSearchScope !== 'all') {
+            const searchCategory = (AppState.categories?.categories || []).find(item => String(item.id) === String(AppState.globalSearchContext?.categoryId));
+            const searchChapter = searchCategory && UIRenderer.findNodeById(searchCategory, AppState.globalSearchContext?.chapterId);
+            const currentPath = searchCategory && searchChapter ? UIRenderer.pathToNode(searchCategory, searchChapter.id).map(node => node.name || node.title).filter(Boolean).join(' / ') : '';
+            const subjectName = searchCategory?.name || '';
+            hits = hits.filter(hit => {
+                const path = String(index.byId.get(Number(hit.id))?.path || '');
+                if (AppState.globalSearchScope === 'subject') return !!subjectName && (path === subjectName || path.startsWith(`${subjectName} /`));
+                return !!currentPath && (path === currentPath || path.startsWith(`${currentPath} /`));
+            });
+        }
+        AppState.globalSearchRows = hits;
+        AppState.globalSearchV2 = {
+            query,
+            mode: result.mode,
+            paper: result.paper,
+            direct: result.direct,
+            idHit: result.idHit,
+            partial: result.partial,
+            paperMissing: result.paperMissing,
+            parsed: result.parsed,
+            scopeLimited: hits.length !== result.hits.length,
+        };
         AppState.globalSearchLimit = 40;
-        host.innerHTML = `<p class="search-result-summary">找到 ${matches.length} 道题${matches.length ? ' · 按题号排序' : ''}</p>${matches.length ? `<div class="global-search-results-list">${matches.slice(0, AppState.globalSearchLimit).map(row => `<button type="button" class="global-search-result" data-question-id="${escapeHtml(String(row.id))}"><span class="search-result-meta">题号 ${escapeHtml(String(row.id))} · ${escapeHtml(row.source || '未标注来源')}</span><span class="global-search-path">${escapeHtml(row.path || '')}</span>${renderSearchResultStem(row.stem || '')}</button>`).join('')}</div>${matches.length > AppState.globalSearchLimit ? '<button class="btn btn-secondary search-more" id="global-search-more">加载更多</button>' : ''}` : '<p class="search-empty-hint">没有找到匹配题目。</p>'}`;
-        host.querySelectorAll('[data-question-id]').forEach(button => button.addEventListener('click', () => this.openGlobalSearchResult(button.dataset.questionId)));
-        host.onscroll = () => { AppState.globalSearchScrollTop = host.scrollTop; };
-        host.querySelector('#global-search-more')?.addEventListener('click', () => { AppState.globalSearchLimit += 40; this.renderGlobalSearchResultsOnly(); });
+        this.renderGlobalSearchResultsOnly();
     }
 
     static renderGlobalSearchResultsOnly() {
         const host = document.getElementById('global-search-results');
         if (!host) return;
-        const rows = AppState.globalSearchRows;
-        host.innerHTML = `<p class="search-result-summary">找到 ${rows.length} 道题 · 已显示 ${Math.min(rows.length, AppState.globalSearchLimit)}</p><div class="global-search-results-list">${rows.slice(0, AppState.globalSearchLimit).map(row => `<button type="button" class="global-search-result" data-question-id="${escapeHtml(String(row.id))}"><span class="search-result-meta">题号 ${escapeHtml(String(row.id))} · ${escapeHtml(row.source || '未标注来源')}</span><span class="global-search-path">${escapeHtml(row.path || '')}</span>${renderSearchResultStem(row.stem || '')}</button>`).join('')}</div>${rows.length > AppState.globalSearchLimit ? '<button class="btn btn-secondary search-more" id="global-search-more">加载更多</button>' : ''}`;
+        const meta = AppState.globalSearchV2;
+        if (!meta) return;
+        const index = searchV2.index;
+        if (!index) return;
+        const rows = AppState.globalSearchRows || [];
+        const parts = [];
+        let summary = '';
+        if (meta.mode === 'paper') {
+            const p = meta.paper;
+            const filtered = !!(meta.parsed?.terms?.length || meta.parsed?.numberTerms?.length);
+            summary = `${p.year} ${p.exam} · ${filtered ? `${rows.length} 题命中关键词` : `整卷 ${rows.length} 题`}，按题号排列`;
+            if (p.items.some(item => item.c === 0)) summary += '（≈ 为推断题号，可能与原卷相差一两题）';
+        } else if (meta.mode === 'id') {
+            summary = `题号 #${meta.idHit}`;
+        } else if (meta.paperMissing) {
+            summary = `${meta.paperMissing.year} ${meta.paperMissing.exam} 没有整卷题号，以下是题库中标注该年份的题`;
+        } else {
+            summary = meta.partial ? `没有同时包含全部关键词的题，以下是部分匹配（${rows.length} 题）` : `找到 ${rows.length} 道题 · 按相关度排序`;
+            const aliases = (meta.parsed?.terms || []).filter(term => term.alias).map(term => `${term.alias} → ${term.raw}`);
+            if (aliases.length) summary += `（拼音：${aliases.join('，')}）`;
+            if (meta.scopeLimited) summary += ' · 已按当前范围过滤';
+        }
+        parts.push(`<p class="search-result-summary">${escapeHtml(summary)}</p>`);
+
+        const direct = meta.direct;
+        const directDoc = direct && !direct.missing ? index.byId.get(Number(direct.id)) : (meta.mode === 'id' ? index.byId.get(Number(meta.idHit)) : null);
+        if (directDoc) {
+            const heading = direct ? `${escapeHtml(String(meta.paper.year))} ${escapeHtml(meta.paper.exam)} · 第 ${direct.no} 题` : `题号 #${directDoc.id}`;
+            const status = direct
+                ? (direct.c === 1 ? '<span class="search-direct-exact">原卷题号</span>' : '<span class="search-direct-fuzzy">≈ 推断题号，可能有偏差</span>')
+                : '';
+            parts.push(`<section class="search-result-direct"><header class="search-result-direct-head"><div><p class="search-result-direct-kicker">直达</p><h2>${heading}</h2></div><button type="button" class="btn btn-primary" data-question-id="${escapeHtml(String(directDoc.id))}">做这道题</button></header><p class="search-result-meta">${status}<span>${escapeHtml(directDoc.src || directDoc.source || '未标注来源')}</span> · 题号 ${escapeHtml(String(directDoc.id))}</p>${renderSearchResultStem(directDoc.stem || '')}</section>`);
+        } else if (direct && direct.missing) {
+            parts.push(`<p class="search-empty-hint">${escapeHtml(String(direct.key || '').replace(/-new$/, ''))} 只有 ${direct.max} 题，没有第 ${direct.no} 题，下面是整卷。</p>`);
+        }
+
+        if (rows.length) {
+            const paperMode = meta.mode === 'paper';
+            const items = rows.slice(0, AppState.globalSearchLimit).map(hit => {
+                const doc = index.byId.get(Number(hit.id));
+                if (!doc) return '';
+                const badge = paperMode ? `<span class="search-result-no${hit.c === 0 ? ' is-fuzzy' : ''}">${hit.c === 0 ? '≈' : ''}${hit.no}</span>` : '';
+                const exams = (index.examNos.get(Number(doc.id)) || []).slice(0, 3)
+                    .map(entry => `<span class="search-result-exam${entry.c === 0 ? ' is-fuzzy' : ''}">${escapeHtml(String(entry.year))} ${escapeHtml(entry.exam)}${entry.c === 0 ? ' ≈' : ''} 第 ${entry.no} 题</span>`).join('');
+                const metaLine = `<span class="search-result-meta">${paperMode ? `原卷第 ${hit.no} 题 · ` : ''}题号 ${escapeHtml(String(doc.id))} · ${escapeHtml(doc.src || doc.source || '未标注来源')}</span>${exams}<span class="global-search-path">${escapeHtml(String(doc.path || '').split('、')[0])}</span>`;
+                // 命中只出现在解析里时，展示一段带高亮的解析摘要，让匹配原因可见。
+                const snippet = !paperMode && hit.inExplOnly ? window.DaguanSearch.snippet(doc, meta.parsed?.terms) : null;
+                const snippetHtml = snippet
+                    ? `<span class="search-result-snippet">解析提到 ${escapeHtml(snippet.text).split(escapeHtml(snippet.term)).join(`<mark class="search-hit-term">${escapeHtml(snippet.term)}</mark>`)}</span>`
+                    : '';
+                return `<button type="button" class="global-search-result${paperMode && direct && !direct.missing && hit.no === direct.no ? ' is-target' : ''}" data-question-id="${escapeHtml(String(doc.id))}">${badge}${metaLine}${renderSearchResultStem(doc.stem || '')}${snippetHtml}</button>`;
+            }).join('');
+            parts.push(`<div class="global-search-results-list">${items}</div>`);
+            if (rows.length > AppState.globalSearchLimit) parts.push('<button class="btn btn-secondary search-more" id="global-search-more">加载更多</button>');
+        } else if (!directDoc && !(direct && direct.missing)) {
+            parts.push('<p class="search-empty-hint">没有找到匹配题目。可以试试更短的关键词，或按「年份 数一/二/三 题号」查真题。</p>');
+        }
+        host.innerHTML = parts.join('');
         host.querySelectorAll('[data-question-id]').forEach(button => button.addEventListener('click', () => this.openGlobalSearchResult(button.dataset.questionId)));
         host.onscroll = () => { AppState.globalSearchScrollTop = host.scrollTop; };
         host.querySelector('#global-search-more')?.addEventListener('click', () => { AppState.globalSearchLimit += 40; this.renderGlobalSearchResultsOnly(); });
+        if (meta.mode === 'text') highlightSearchTermsIn(host, meta.parsed?.terms);
     }
 
     static async openGlobalSearchResult(questionId) {

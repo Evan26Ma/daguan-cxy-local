@@ -17,6 +17,7 @@ const required = [
   "assets/landing/math-surface.svg",
   "styles.css",
   "app2.js",
+  "search-core.js",
   "manifest.webmanifest",
   "service-worker.js",
   "vendor/marked.min.js",
@@ -27,6 +28,8 @@ const required = [
   "data/category_questions.json",
   "data/id_index.json",
   "data/search_index.json",
+  "data/search_v2.json",
+  "data/exam_index.json",
 ];
 for (const file of required) {
   await access(join(web, file));
@@ -90,7 +93,7 @@ for (const file of ["index.html", "legacy.html", "landing.html"]) {
     }
   }
 }
-for (const file of ["app2.js", "app-legacy.js", "ui-version.js", "styles.css", "legacy.css", "design-tokens.css", "landing.js", "landing.css", "manifest.webmanifest", "service-worker.js"]) {
+for (const file of ["app2.js", "app-legacy.js", "ui-version.js", "search-core.js", "styles.css", "legacy.css", "design-tokens.css", "landing.js", "landing.css", "manifest.webmanifest", "service-worker.js"]) {
   const text = await readFile(join(web, file), "utf8");
   // Bilibili links are explicit navigation, never fetched for offline rendering.
   const dependencies = text.replace(/https:\/\/www\.bilibili\.com\/video\//g, "");

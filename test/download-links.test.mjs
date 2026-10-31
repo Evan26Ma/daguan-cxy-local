@@ -19,7 +19,7 @@ test("普通用户入口只推荐桌面版，浏览器迁移包仅在归档说�
   }
   for (const file of ["README.md", "docs/Windows新手安装与配置.md", "docs/使用教程.md", "web/index.html", "web/landing.html", "web/legacy.html"]) {
     const source = fs.readFileSync(new URL(`../${file}`, import.meta.url), "utf8");
-    assert.match(source, /surl=VrW0Z-ThDSM7f_xx7uCUZw/, `${file}: desktop link`);
+    assert.match(source, /surl=OT4FPpTVYtuDIAV54CKpnA/, `${file}: desktop link`);
     assert.match(source, /dgy1/, `${file}: desktop code`);
   }
   for (const file of ["README.md", "docs/Windows新手安装与配置.md", "docs/使用教程.md", "web/landing.html"]) {

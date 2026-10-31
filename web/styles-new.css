@@ -3343,3 +3343,44 @@ html.native-titlebar-content-inset .app-container {
 
 /* Restore MathML cell spacing suppressed by the global padding reset. */
 .native-solution mtd { padding: revert; }
+
+/* ========== 全文搜索 v2（search-core.js）：题号徽标、真题标签、直达卡片、命中高亮 ========== */
+.search-result-no {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 30px;
+  padding: 2px 8px;
+  border: 1px solid var(--border-default);
+  border-radius: 7px;
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  font-size: calc(13px * var(--ui-font-scale, 1));
+  font-weight: 700;
+}
+.search-result-no.is-fuzzy { border-style: dashed; color: var(--text-secondary); }
+.global-search-result.is-target { border-color: var(--brand-orange); box-shadow: 0 0 0 2px color-mix(in srgb, var(--brand-orange) 18%, transparent); }
+.search-result-exam {
+  display: inline-block;
+  padding: 1px 7px;
+  border: 1px solid var(--border-default);
+  border-radius: 999px;
+  color: var(--text-secondary);
+  font-size: calc(12px * var(--ui-font-scale, 1));
+}
+.search-result-exam.is-fuzzy { border-style: dashed; }
+.search-result-direct { display: grid; gap: 8px; margin-bottom: 14px; padding: 16px 18px; border: 1px solid color-mix(in srgb, var(--brand-orange) 45%, var(--border-default)); border-radius: 12px; background: var(--bg-surface); }
+.search-result-direct-head { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+.search-result-direct-head h2 { margin: 2px 0 0; font-size: calc(19px * var(--ui-font-scale, 1)); }
+.search-result-direct-kicker { margin: 0; color: var(--brand-text-on-white); font-size: calc(12px * var(--ui-font-scale, 1)); font-weight: 700; letter-spacing: .08em; }
+.search-result-direct .search-result-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.search-result-direct .search-result-stem { max-height: none; }
+.search-result-direct-exact { color: var(--brand-text-on-white); font-weight: 700; }
+.search-result-direct-fuzzy { color: var(--text-secondary); }
+mark.search-hit-term { padding: 0 1px; border-radius: 3px; background: color-mix(in srgb, var(--brand-orange) 24%, transparent); color: inherit; }
+.search-chip-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; }
+.search-chip-label { color: var(--text-secondary); font-size: calc(13px * var(--ui-font-scale, 1)); }
+.search-chip { padding: 5px 12px; border: 1px solid var(--border-default); border-radius: 999px; background: var(--bg-surface); color: var(--text-primary); font: inherit; font-size: calc(13px * var(--ui-font-scale, 1)); cursor: pointer; }
+.search-chip:hover { border-color: var(--brand-orange); color: var(--brand-text-on-white); }
+.search-result-snippet { display: block; padding: 7px 10px; border-radius: 7px; background: color-mix(in srgb, var(--brand-orange) 6%, var(--bg-surface)); color: var(--text-secondary); font-size: calc(13px * var(--ui-font-scale, 1)); line-height: 1.6; }
+.search-result-snippet mark.search-hit-term { color: var(--text-primary); font-weight: 600; }
