@@ -5,7 +5,7 @@
 
 // ========== 离线缓存注册（与 app2.js 一致） ==========
 if ("serviceWorker" in navigator && location.protocol !== "file:" && location.protocol !== "https:") {
-    navigator.serviceWorker.register("./service-worker.js?v=171").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=172").catch(() => {});
 }
 
 // ========== 全局状态 ==========
@@ -3168,6 +3168,7 @@ class App {
             const filtered = !!(meta.parsed?.terms?.length || meta.parsed?.numberTerms?.length);
             summary = `${p.year} ${p.exam} · ${filtered ? `${rows.length} 题命中关键词` : `整卷 ${rows.length} 题`}，按题号排列`;
             if (p.items.some(item => item.c === 0)) summary += '（≈ 为推断题号，可能与原卷相差一两题）';
+            if (meta.image) summary += ` · 另有图片版 ${meta.image.items.length} 题（题号一致）`;
         } else if (meta.mode === 'id') {
             summary = `题号 #${meta.idHit}`;
         } else if (meta.paperMissing) {

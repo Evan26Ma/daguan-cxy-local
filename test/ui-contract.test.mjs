@@ -117,7 +117,7 @@ test("Service Worker 不预缓存首屏之外的大型索引和字体", () => {
   assert.match(sw, /"\.\/guides\.css\?v=2"/);
   assert.match(sw, /"\.\/styles-new\.css\?v=127"/);
   assert.match(sw, /"\.\/source-taxonomy\.js\?v=1"/);
-  assert.match(sw, /"\.\/search-core\.js\?v=1"/);
+  assert.match(sw, /"\.\/search-core\.js\?v=2"/);
   const newScript = newHtml.match(/src="(\.\/app-new\.js\?v=\d+)"/)?.[1];
   assert.ok(newScript); assert.ok(sw.includes(JSON.stringify(newScript)));
   assert.match(sw, /"\.\/assets\/math-mark\.svg"/);
@@ -129,7 +129,7 @@ test("Service Worker 不预缓存首屏之外的大型索引和字体", () => {
 
 test("全局搜索接入 v2 全文引擎（真题题号、拼音、高亮）", () => {
   // 共享引擎先于主界面加载，两份数据索引只在搜索视图内懒加载。
-  const coreIndex = newHtml.indexOf("search-core.js?v=1");
+  const coreIndex = newHtml.indexOf("search-core.js?v=2");
   const appIndex = newHtml.indexOf("app-new.js?v=");
   assert.ok(coreIndex >= 0 && appIndex > coreIndex, "search-core.js 应在 app-new.js 之前加载");
   assert.match(newApp, /window\.DaguanSearch\.search\(index, query\)/);

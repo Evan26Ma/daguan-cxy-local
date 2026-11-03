@@ -198,8 +198,9 @@
   function findPapers(index, year, exam) {
     const base = index.papers.get(`${year}${exam}`) || null;
     const text = index.papers.get(`${year}${exam}-new`) || null;
+    const img = index.papers.get(`${year}${exam}-img`) || null;
     // Prefer the text version for reading; keep the image version (exact numbers) alongside.
-    return { main: text || base, image: text && base ? base : null };
+    return { main: text || base, image: text && base ? base : img };
   }
 
   function matchTerm(doc, term) {
