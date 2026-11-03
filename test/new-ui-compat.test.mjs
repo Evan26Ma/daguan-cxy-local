@@ -234,23 +234,41 @@ test("外观初始化区分新装、既有空键和旧 light 偏好，旧版 key
     daguan_ui_appearance_new_v1: "{}",
     daguan_ui_appearance_old_v1: JSON.stringify({ theme: "blue" }),
   });
-  assert.equal(JSON.parse(existing.storage.get("daguan_ui_appearance_new_v1")).theme, "orange-white");
+  assert.equal(JSON.parse(existing.storage.get("daguan_ui_appearance_new_v1")).theme, "path-red");
   assert.equal(existing.storage.get("daguan_ui_appearance_old_v1"), JSON.stringify({ theme: "blue" }));
   existing.sandbox.window.DaguanVersions.migrate(existing.localStorage);
-  assert.equal(JSON.parse(existing.storage.get("daguan_ui_appearance_new_v1")).theme, "orange-white");
+  assert.equal(JSON.parse(existing.storage.get("daguan_ui_appearance_new_v1")).theme, "path-red");
   const light = createContext({ daguan_ui_appearance_new_v1: JSON.stringify({ theme: "light", reduceMotion: true }) });
-  assert.equal(JSON.parse(light.storage.get("daguan_ui_appearance_new_v1")).theme, "orange-white");
+  assert.equal(JSON.parse(light.storage.get("daguan_ui_appearance_new_v1")).theme, "path-red");
   assert.equal(JSON.parse(light.storage.get("daguan_ui_appearance_new_v1")).reduceMotion, true);
 });
 
-test("有旧版外观或学习痕迹的设备升级为橙白，且新旧外观键彼此独立", () => {
+test("有旧版外观或学习痕迹的设备升级为朱红奶白，且新旧外观键彼此独立", () => {
   const legacy = createContext({ daguan_ui_preferences_v1: JSON.stringify({ theme: "eye-care" }) });
   assert.deepEqual(JSON.parse(legacy.storage.get("daguan_ui_appearance_old_v1")), { theme: "eye-care" });
-  assert.equal(JSON.parse(legacy.storage.get("daguan_ui_appearance_new_v1")).theme, "orange-white");
+  assert.equal(JSON.parse(legacy.storage.get("daguan_ui_appearance_new_v1")).theme, "path-red");
   const learned = createContext({ daguan_local_progress_v1: JSON.stringify({ 12: { mastery: "mastered" } }) });
-  assert.equal(JSON.parse(learned.storage.get("daguan_ui_appearance_new_v1")).theme, "orange-white");
+  assert.equal(JSON.parse(learned.storage.get("daguan_ui_appearance_new_v1")).theme, "path-red");
   learned.sandbox.window.DaguanVersions.migrate(learned.localStorage);
-  assert.equal(JSON.parse(learned.storage.get("daguan_ui_appearance_new_v1")).theme, "orange-white");
+  assert.equal(JSON.parse(learned.storage.get("daguan_ui_appearance_new_v1")).theme, "path-red");
+});
+
+test("存量被种入的橙白默认一次性升级为朱红奶白，用户手选橙白不再被改写", () => {
+  const seeded = JSON.stringify({ theme: "orange-white", brand: "#FF6A1A", app: "#F5F6F8", reading: "#FFFFFF", accent: "#B83D00" });
+  const existing = createContext({ daguan_ui_appearance_new_v1: seeded });
+  assert.equal(JSON.parse(existing.storage.get("daguan_ui_appearance_new_v1")).theme, "path-red");
+  assert.equal(existing.storage.get("daguan_ui_appearance_default_pathred_v1"), "1");
+  existing.sandbox.window.DaguanVersions.migrate(existing.localStorage);
+  existing.localStorage.setItem("daguan_ui_appearance_new_v1", seeded);
+  existing.sandbox.window.DaguanVersions.migrate(existing.localStorage);
+  assert.equal(JSON.parse(existing.storage.get("daguan_ui_appearance_new_v1")).theme, "orange-white");
+  const custom = createContext({ daguan_ui_appearance_new_v1: JSON.stringify({ theme: "orange-white", brand: "#123456", app: "#F5F6F8", reading: "#FFFFFF", accent: "#B83D00" }) });
+  assert.equal(JSON.parse(custom.storage.get("daguan_ui_appearance_new_v1")).theme, "orange-white");
+  const extras = createContext({ daguan_ui_appearance_new_v1: JSON.stringify({ theme: "orange-white", brand: "#FF6A1A", app: "#F5F6F8", reading: "#FFFFFF", accent: "#B83D00", fontScale: 1.3, reduceMotion: true }) });
+  const upgraded = JSON.parse(extras.storage.get("daguan_ui_appearance_new_v1"));
+  assert.equal(upgraded.theme, "path-red");
+  assert.equal(upgraded.fontScale, 1.3);
+  assert.equal(upgraded.reduceMotion, true);
 });
 
 test("真实目录的混合节点区分 6 道直属题和 4 个子章，空节点无直属题", () => {

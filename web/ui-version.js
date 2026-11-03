@@ -9,6 +9,22 @@
   function readObject(storage, key) {
     try { const value = JSON.parse(storage.getItem(key)); return value && typeof value === "object" && !Array.isArray(value) ? value : {}; } catch { return {}; }
   }
+  // 默认主题已从“橙白”切换为“朱红奶白”。历史版本给老设备种入过整份橙白预设，
+  // 只升级四个颜色与旧预设完全一致（= 从未在设置里改过外观）的存量值；
+  // 打过本次标记后，用户再手动选回橙白不会被二次改写。
+  const defaultSwapKey = "daguan_ui_appearance_default_pathred_v1";
+  function upgradeSeededOrangeDefault(storage) {
+    if (storage.getItem(defaultSwapKey) !== null) return;
+    storage.setItem(defaultSwapKey, "1");
+    try {
+      const value = JSON.parse(storage.getItem(appearanceKeys.new));
+      if (value && typeof value === "object" && !Array.isArray(value) && value.theme === "orange-white"
+        && value.brand === orangeAppearance.brand && value.app === orangeAppearance.app
+        && value.reading === orangeAppearance.reading && value.accent === orangeAppearance.accent) {
+        storage.setItem(appearanceKeys.new, JSON.stringify({ ...value, ...freshAppearance }));
+      }
+    } catch {}
+  }
   function migrate(storage) {
     if (!storage) return;
     // Capture device history before this bootstrap creates any appearance keys.
@@ -21,16 +37,18 @@
     }
     const raw = storage.getItem(appearanceKeys.new);
     if (raw === null) {
-      let initial = hadDeviceHistory ? orangeAppearance : freshAppearance;
+      let initial = freshAppearance;
       try {
         const legacyNew = readObject(storage, "daguan_ui_appearance_new");
         if (Object.keys(legacyNew).length) {
-          const legacyTheme = legacyNew.theme === "light" ? "orange-white" : legacyNew.theme === "official-dark" ? "orange-night" : legacyNew.theme === "eye-care" ? "eye-care" : legacyNew.theme;
-          initial = { ...orangeAppearance, ...legacyNew, theme: legacyTheme || "orange-white" };
+          const legacyTheme = legacyNew.theme === "light" ? "path-red" : legacyNew.theme === "official-dark" ? "orange-night" : legacyNew.theme === "eye-care" ? "eye-care" : legacyNew.theme;
+          const legacyBase = legacyNew.theme === "light" ? freshAppearance : orangeAppearance;
+          initial = { ...legacyBase, ...legacyNew, theme: legacyTheme || "path-red" };
         }
       } catch {}
       storage.setItem(appearanceKeys.new, JSON.stringify(initial));
       storage.setItem(appearanceInitKey, hadDeviceHistory ? "existing-device" : "fresh-install");
+      upgradeSeededOrangeDefault(storage);
       return;
     }
     if (storage.getItem(appearanceInitKey) === null) storage.setItem(appearanceInitKey, "existing-device");
@@ -39,14 +57,15 @@
       if (value && typeof value === "object" && !Array.isArray(value)) {
         // Earlier bootstrap versions wrote {} or theme:light on existing installs.
         if (!Object.keys(value).length || value.theme === "light") {
-          storage.setItem(appearanceKeys.new, JSON.stringify({ ...orangeAppearance, reduceMotion: !!value.reduceMotion }));
+          storage.setItem(appearanceKeys.new, JSON.stringify({ ...freshAppearance, reduceMotion: !!value.reduceMotion }));
         } else if (value.theme === "official-dark") {
           storage.setItem(appearanceKeys.new, JSON.stringify({ ...orangeAppearance, theme: "orange-night" }));
         } else if (value.theme === "eye-care") {
           storage.setItem(appearanceKeys.new, JSON.stringify({ ...orangeAppearance, theme: "eye-care" }));
         }
       }
-    } catch { storage.setItem(appearanceKeys.new, JSON.stringify(hadDeviceHistory ? orangeAppearance : freshAppearance)); }
+    } catch { storage.setItem(appearanceKeys.new, JSON.stringify(freshAppearance)); }
+    upgradeSeededOrangeDefault(storage);
   }
   function selected(storage) { return storage.getItem(selectionKey) === "old" ? "old" : "new"; }
   function targetUrl(href, version, switching = false) {
