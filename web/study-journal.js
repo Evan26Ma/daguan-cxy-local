@@ -8,7 +8,7 @@
   root.DaguanStudyJournal = { create({ activity, openQuestion, locateQuestion, getQuestion, renderMarkdown, showHistory, showLibrary }) {
     let host, data, selected, end = '', tab = 'journal', token = 0, busy = false, signature = '';
     let groupsVisible = 20;
-    const opened = new Set();
+    const opened = new Set(), previews = new Set(), questionCounts = new Map();
     const notice = message => { if (host?.isConnected) host.querySelector('.journal-status').textContent = message; };
     function tabSelect(next) {
       tab = next;
@@ -55,15 +55,17 @@
       for (const detail of container.querySelectorAll('details')) {
         const index = Number(detail.dataset.journalGroup), key = `${day.day}:${index}`;
         const fill = () => {
-          if (detail.open) { opened.add(key); if (!detail.querySelector('.journal-questions').childElementCount) questionRows(detail.querySelector('.journal-questions'), day.groups[index], 0); }
+          if (detail.open) { opened.add(key); if (!detail.querySelector('.journal-questions').childElementCount) questionRows(detail.querySelector('.journal-questions'), day.groups[index], 0, key); }
           else opened.delete(key);
         };
         detail.addEventListener('toggle', fill);
         if (detail.open) fill();
       }
     }
-    function questionRows(container, group, start) {
-      for (const q of group.questions.slice(start, start + 30)) {
+    function questionRows(container, group, start, key) {
+      const count = Math.max(start + 30, questionCounts.get(key) || 30);
+      questionCounts.set(key, count);
+      for (const q of group.questions.slice(start, count)) {
         const location = locateQuestion(q.question_id, group.chapter_id);
         const row = document.createElement('article'); row.className = 'journal-question';
         row.innerHTML = `<div class="journal-question-heading"><strong>题号 ${esc(q.question_id)}</strong><span>${q.isNew ? '新题' : '复习'} · ${esc(q.result)}${q.conquered ? ' · 重做答对' : ''}</span></div><details class="journal-preview"><summary>查看题干</summary><div class="journal-stem text-helper">正在读取题干…</div></details><button type="button" class="btn btn-text btn-sm"${location ? '' : ' disabled'}>${location ? '回到这题' : '当前题库未收录'}</button>`;
@@ -73,8 +75,10 @@
           finally { if (button.isConnected) button.disabled = !location; }
         });
         let loaded = false;
-        row.querySelector('.journal-preview').addEventListener('toggle', async event => {
-          if (!event.currentTarget.open || loaded) return;
+        const preview = row.querySelector('.journal-preview'), previewKey = `${key}:${q.question_id}`;
+        const loadPreview = async () => {
+          if (preview.open) previews.add(previewKey); else previews.delete(previewKey);
+          if (!preview.open || loaded) return;
           loaded = true;
           const target = row.querySelector('.journal-stem');
           try {
@@ -83,12 +87,14 @@
             if (question) { target.classList.remove('text-helper'); target.innerHTML = renderMarkdown(question.stem || question.question || '暂无题干'); }
             else { target.textContent = '暂时无法读取题干，收起后展开可重试。'; loaded = false; }
           } catch { target.textContent = '题干读取失败，收起后展开可重试。'; loaded = false; }
-        });
+        };
+        preview.addEventListener('toggle', loadPreview);
         container.append(row);
+        if (previews.has(previewKey)) { preview.open = true; void loadPreview(); }
       }
-      if (group.questions.length > start + 30) {
+      if (group.questions.length > count) {
         const more = document.createElement('button'); more.className = 'btn btn-text'; more.type = 'button'; more.textContent = '显示更多题目';
-        more.addEventListener('click', () => { more.remove(); questionRows(container, group, start + 30); }); container.append(more);
+        more.addEventListener('click', () => { more.remove(); questionRows(container, group, count, key); }); container.append(more);
       }
     }
     async function refresh(requestedEnd = end, force = false, requestedDay) {
@@ -116,7 +122,7 @@
       }
     }
     function mount(main) {
-      if (host?.isConnected && main.contains(host)) { void refresh(); return; }
+      if (host?.isConnected && main.contains(host)) return refresh();
       token++; busy = false; signature = '';
       main.innerHTML = `<div class="home-content study-journal"><header class="journal-heading"><div><h1 class="text-page-title">学习记录</h1><p class="text-meta">一点一滴，写成自己的学习手账。</p></div><button class="btn btn-secondary" type="button" data-journal-history>浏览记录</button></header><div class="journal-tabs" role="tablist" aria-label="学习记录视图"><button type="button" id="journal-tab" role="tab" aria-selected="true" aria-controls="journal-panel" data-journal-tab="journal">我的学习手账</button><button type="button" id="badges-tab" role="tab" aria-selected="false" aria-controls="badges-panel" data-journal-tab="badges">成长印章</button></div><div class="journal-status-row"><p class="journal-status text-helper" role="status"></p><button type="button" class="btn btn-text btn-sm" data-journal-refresh>刷新</button></div><section id="journal-panel" role="tabpanel" aria-labelledby="journal-tab"><div class="journal-range"><h2 class="journal-range-title">最近七天</h2><div class="journal-range-actions"><button type="button" class="btn btn-secondary btn-sm" data-journal-prev disabled aria-label="前七天">上一周</button><button type="button" class="btn btn-secondary btn-sm" data-journal-today>最近七天</button><button type="button" class="btn btn-secondary btn-sm" data-journal-next disabled aria-label="后七天">下一周</button><label>跳至日期<input type="date" data-journal-date></label></div></div><div class="journal-week" aria-label="选择学习日"></div><div class="journal-layout"><section><div class="journal-story"><h2 class="journal-story-title">每一次练习，都值得记下。</h2><p class="journal-story-copy">正在读取学习足迹…</p></div><div class="journal-metrics" aria-label="所选日期的学习量"></div><h2 class="journal-day-heading">每日足迹</h2><div class="journal-logs"></div></section><aside class="journal-side" aria-label="成长进度"></aside></div></section><section id="badges-panel" role="tabpanel" aria-labelledby="badges-tab" hidden><div class="journal-badges-heading"><h2>每一枚印章，都有一段经历</h2><span class="journal-badge-count text-meta"></span></div><p class="journal-personal text-meta"></p><div class="journal-badges"></div></section><p class="journal-footnote text-helper"></p></div>`;
       host = main.querySelector('.study-journal');
@@ -143,7 +149,7 @@
         host.querySelector(`[data-journal-tab="${tab}"]`).focus();
       });
       if (data) paint(); else tabSelect(tab);
-      void refresh(end, true);
+      return refresh(end, true);
     }
     root.addEventListener('daguan:study-activity', () => { void refresh(); });
     return { mount, refresh };

@@ -5,7 +5,7 @@
 
 // ========== 离线缓存注册（与 app2.js 一致） ==========
 if ("serviceWorker" in navigator && location.protocol !== "file:" && location.protocol !== "https:") {
-    navigator.serviceWorker.register("./service-worker.js?v=172").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=175").catch(() => {});
 }
 
 // ========== 全局状态 ==========
@@ -24,6 +24,7 @@ const AppState = {
     questions: [],
     categories: null,
     reviewTab: 'mistakes', // review 页当前标签：mistakes / favorites / todo
+    questionReturn: null,
     selectedNoteId: null, // notes 页当前选中的批注题号或 '__memo__'
     manifest: null,
     catQuestions: {},
@@ -1253,6 +1254,11 @@ class UIRenderer {
         `;
     }
 
+    static renderQuestionReturn() {
+        const target = AppState.questionReturn;
+        return target ? `<button type="button" class="btn btn-secondary" onclick="App.returnToQuestionOrigin()"><span aria-hidden="true">← </span>返回${escapeHtml(target.label)}</button>` : '';
+    }
+
     static async renderQuestion(questionIndex = 0, options = {}) {
         // refresh：跨窗口/跨设备的自动刷新重绘。题目本身没变，跳过学习位置与已读写入，
         // 避免重绘再触发一轮状态同步（两个窗口会互相踢成循环）。
@@ -1282,6 +1288,7 @@ class UIRenderer {
             <div class="question-layout">
                 <div class="question-main">
                     <div class="question-header">
+                        ${this.renderQuestionReturn()}
                         <div class="breadcrumb-nav">
                             <a href="#" onclick="App.showHome(); return false;">首页</a>
                             <span class="breadcrumb-sep">/</span>
@@ -1479,7 +1486,7 @@ class UIRenderer {
         const pageStart = Math.floor(start / 20) * 20;
         const railTools = `<div class="question-rail-tools"><label class="sr-only">按题号定位</label><input type="search" inputmode="numeric" aria-label="按题号定位" placeholder="题号" value="${escapeHtml(AppState.questionRailQuery)}" oninput="App.filterQuestionIndex(this)" onkeydown="if(event.key==='Enter'){event.preventDefault();App.jumpByQuestionNumber(this.value)}"><div class="question-rail-filters"><button type="button" data-rail-filter="favorite" aria-pressed="${AppState.questionRailFilter === 'favorite'}" class="${AppState.questionRailFilter === 'favorite' ? 'active' : ''}" onclick="App.toggleQuestionRailFilter('favorite')">收藏</button><button type="button" data-rail-filter="error-prone" aria-pressed="${AppState.questionRailFilter === 'error-prone'}" class="${AppState.questionRailFilter === 'error-prone' ? 'active' : ''}" onclick="App.toggleQuestionRailFilter('error-prone')">易错</button><button type="button" data-rail-filter="learning" aria-pressed="${AppState.questionRailFilter === 'learning'}" class="${AppState.questionRailFilter === 'learning' ? 'active' : ''}" onclick="App.toggleQuestionRailFilter('learning')">学习中</button><button type="button" data-rail-filter="mastered" aria-pressed="${AppState.questionRailFilter === 'mastered'}" class="${AppState.questionRailFilter === 'mastered' ? 'active' : ''}" onclick="App.toggleQuestionRailFilter('mastered')">已掌握</button><button type="button" data-rail-filter="not_started" aria-pressed="${AppState.questionRailFilter === 'not_started'}" class="${AppState.questionRailFilter === 'not_started' ? 'active' : ''}" onclick="App.toggleQuestionRailFilter('not_started')">未开始</button></div></div>`;
         main.innerHTML = `<div class="multi-question-view">
-            <div class="question-header"><div class="breadcrumb-nav"><a href="#" onclick="App.showHome(); return false;">首页</a><span class="breadcrumb-sep">/</span><a href="#" onclick="App.showLibrary('${escapeHtml(AppState.currentCategory?.id || '')}'); return false;">${escapeHtml(AppState.currentCategory?.name || '题库')}</a><span class="breadcrumb-sep">/</span><span>${escapeHtml(AppState.currentChapter?.name || AppState.currentChapter?.title || '章节')}</span></div><div class="question-sequence">${total} 题 · 每段 20 题</div>${AppState.globalSearchReturn ? '<button type="button" class="btn btn-secondary" onclick="App.returnToGlobalSearch()">返回搜索</button>' : ''}</div>
+            <div class="question-header">${this.renderQuestionReturn()}<div class="breadcrumb-nav"><a href="#" onclick="App.showHome(); return false;">首页</a><span class="breadcrumb-sep">/</span><a href="#" onclick="App.showLibrary('${escapeHtml(AppState.currentCategory?.id || '')}'); return false;">${escapeHtml(AppState.currentCategory?.name || '题库')}</a><span class="breadcrumb-sep">/</span><span>${escapeHtml(AppState.currentChapter?.name || AppState.currentChapter?.title || '章节')}</span></div><div class="question-sequence">${total} 题 · 每段 20 题</div>${AppState.globalSearchReturn ? '<button type="button" class="btn btn-secondary" onclick="App.returnToGlobalSearch()">返回搜索</button>' : ''}</div>
             <div class="mode-toolbar"><span>连续做题 · 第 ${pageStart + 1}–${Math.min(pageStart + AppState.questions.length, total)} 题</span><div class="mode-toolbar-actions"><button type="button" class="mode-step-button" onclick="App.previousQuestion()">上一题</button><button type="button" class="mode-step-button" onclick="App.nextQuestion()">下一题</button><button type="button" class="mode-jump-button" onclick="App.promptJumpToQuestion()">跳题</button><div class="mode-switch"><button type="button" onclick="App.changeQuestionMode('single')">单题做题</button><button type="button" class="active" aria-pressed="true">连续做题</button></div><button type="button" class="mobile-question-index-btn" onclick="App.toggleQuestionDrawer()">题号目录</button></div></div>
             <div class="multi-reading-layout"><aside class="question-rail" aria-label="题号目录">${railTools}${rangeButtons}</aside><div class="multi-question-list">${cards}<div class="multi-page-nav"><button type="button" class="btn btn-secondary" ${start === 0 ? 'disabled' : ''} onclick="App.goToChapterQuestion(${Math.max(0, start - 1)})">上一段</button><button type="button" class="btn btn-secondary" ${start + AppState.questions.length >= total ? 'disabled' : ''} onclick="App.goToChapterQuestion(${Math.min(total - 1, start + AppState.questions.length)})">下一段</button></div></div></div>
             <div class="question-drawer-backdrop" onclick="App.toggleQuestionDrawer()"></div><aside class="question-drawer" aria-label="题号目录">${railTools}${rangeButtons}</aside>
@@ -2117,7 +2124,7 @@ class UIRenderer {
             getQuestion: id => DataService.getQuestion(id), renderMarkdown,
             showHistory: () => App.navigate('history'), showLibrary: () => App.navigate('library'),
         });
-        this.studyJournal.mount(document.getElementById('app-main'));
+        return this.studyJournal.mount(document.getElementById('app-main'));
     }
 
     static renderHistory() {
@@ -2892,6 +2899,44 @@ class App {
         }
     }
 
+    static captureQuestionOrigin() {
+        const view = AppState.currentView;
+        const label = view === 'review'
+            ? ({ mistakes: '易错题', favorites: '收藏', todo: '待掌握' })[AppState.reviewTab]
+            : ({ history: '历史', records: '学习记录', notes: '笔记' })[view];
+        if (!label) return null;
+        return {
+            view, label,
+            scrollTop: document.getElementById('app-main')?.scrollTop || 0,
+            reviewTab: AppState.reviewTab,
+            historyFilters: { ...AppState.historyFilters },
+            historyLimit: AppState.historyLimit
+        };
+    }
+
+    static async returnToQuestionOrigin() {
+        const target = AppState.questionReturn;
+        if (AppState.currentView !== 'question' || !target || this.returningToQuestionOrigin) return;
+        this.returningToQuestionOrigin = true;
+        try {
+            AppState.reviewTab = target.reviewTab;
+            AppState.historyFilters = { ...target.historyFilters };
+            AppState.historyLimit = target.historyLimit;
+            await this.navigate(target.view);
+            if (AppState.currentView !== target.view) return;
+            const restoreScroll = () => {
+                if (AppState.currentView === target.view) {
+                    const main = document.getElementById('app-main');
+                    if (main) main.scrollTop = target.scrollTop;
+                }
+            };
+            restoreScroll();
+            requestAnimationFrame(restoreScroll);
+        } finally {
+            this.returningToQuestionOrigin = false;
+        }
+    }
+
     static async navigate(view) {
         // 手机端抽屉导航：选择页面后自动关闭
         if (AppState.ui.navOpen) this.toggleNav();
@@ -2926,9 +2971,12 @@ class App {
                     }
                 }
                 this.abortAIStream();
+                AppState.modeSwitchToken += 1;
+                AppState.modeSwitchTarget = null;
             }
         }
 
+        AppState.questionReturn = null;
         AppState.currentView = view;
 
         document.querySelectorAll('.nav-item').forEach(item => {
@@ -2943,13 +2991,13 @@ class App {
                 this.showLibrary();
                 break;
             case 'review':
-                UIRenderer.renderReview(AppState.reviewTab || 'mistakes');
+                await UIRenderer.renderReview(AppState.reviewTab || 'mistakes');
                 break;
             case 'notes':
                 UIRenderer.renderNotes();
                 break;
             case 'records':
-                UIRenderer.renderRecords();
+                await UIRenderer.renderRecords();
                 break;
             case 'history':
                 await this.showHistory();
@@ -3490,6 +3538,10 @@ class App {
             resolvedIndex = Math.min(Math.max(Number(index) || 0, 0), entries.length - 1);
             resolvedId = null;
         }
+        if (AppState.currentView !== 'question') {
+            AppState.questionReturn = this.captureQuestionOrigin();
+            if (AppState.questionReturn) AppState.globalSearchReturn = null;
+        }
         chapter = filtered;
         AppState.currentChapter = chapter;
         AppState.chapterQuestionCount = entries.length;
@@ -3752,8 +3804,8 @@ class App {
 
     static showReview(tab) {
         AppState.reviewTab = tab;
-        this.navigate('review');
-        UIRenderer.renderReview(tab);
+        if (AppState.currentView === 'review') return UIRenderer.renderReview(tab);
+        return this.navigate('review');
     }
 
     // 从复习/笔记列表进入单题（不覆盖“继续学习”的章节位置）
@@ -3763,6 +3815,8 @@ class App {
             alert('未找到该题目，题库可能已更新');
             return;
         }
+        AppState.questionReturn = this.captureQuestionOrigin();
+        if (AppState.questionReturn) AppState.globalSearchReturn = null;
         AppState.currentCategory = null;
         AppState.currentChapter = null;
         AppState.questions = [question];
