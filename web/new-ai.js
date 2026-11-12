@@ -221,10 +221,14 @@ class AIViews {
         document.getElementById('ai-profile-select-new').disabled = AppState.aiBusy;
         const input = document.getElementById('ai-input');
         if (input) {
+            let composing = false;
+            input.addEventListener('compositionstart', () => { composing = true; });
+            input.addEventListener('compositionend', () => { composing = false; });
             input.addEventListener('input', () => {
                 if (question) StorageService.saveAIDraft(question.id, input.value);
             });
             input.addEventListener('keydown', (e) => {
+                if (e.isComposing || e.keyCode === 229 || composing) return;
                 if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); getApp().sendAIMessage(); }
             });
         }

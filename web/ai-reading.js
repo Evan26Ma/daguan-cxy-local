@@ -1,17 +1,83 @@
 // New UI only: disclosure controls and reading position never replace the chat DOM.
 (() => {
   const panelElement = () => document.getElementById('ai-panel');
+  let inputBinding;
+  const inputMetrics = ['width', 'boxSizing', 'fontFamily', 'fontSize', 'fontWeight', 'fontStyle', 'fontVariant', 'lineHeight',
+    'letterSpacing', 'wordSpacing', 'textIndent', 'textTransform', 'tabSize', 'whiteSpace', 'overflowWrap', 'wordBreak', 'direction',
+    'paddingTop', 'paddingBottom', 'paddingLeft', 'paddingRight', 'borderTopWidth', 'borderBottomWidth', 'borderLeftWidth', 'borderRightWidth'];
+  function stopInputFit(state) {
+    cancelAnimationFrame(state.frame);
+    state.resize.disconnect(); state.fonts.disconnect(); state.mirror.remove();
+    if (inputBinding === state) inputBinding = null;
+  }
+  function scheduleInputFit(state) {
+    if (state !== inputBinding || state.composing || state.frame) return;
+    state.frame = requestAnimationFrame(() => {
+      state.frame = 0;
+      if (!state.input.isConnected) { stopInputFit(state); return; }
+      if (state.composing) return;
+      const {input, mirror} = state;
+      if (state.refresh) {
+        // Only layout changes refresh metrics; typing uses this cached, isolated textarea.
+        const style = getComputedStyle(input);
+        if (!parseFloat(style.width)) return;
+        inputMetrics.forEach(name => { if (mirror.style[name] !== style[name]) mirror.style[name] = style[name]; });
+        mirror.wrap = input.wrap;
+        state.line = parseFloat(style.lineHeight) || 24;
+        state.padding = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
+        state.border = parseFloat(style.borderTopWidth) + parseFloat(style.borderBottomWidth);
+        state.borderBox = style.boxSizing === 'border-box';
+        state.refresh = false;
+      }
+      mirror.value = input.value || ' ';
+      const content = Math.max(state.line + state.padding, Math.min(mirror.scrollHeight, state.line * 5 + state.padding));
+      const height = `${content + (state.borderBox ? state.border : -state.padding)}px`;
+      if (input.style.height !== height) input.style.height = height;
+    });
+  }
+  // Programmatic value/width/font changes may refresh metrics; input events never do.
   function fitInput(panel = panelElement()) {
-    const input = panel?.querySelector('#ai-input');
-    if (!input || !input.isConnected) return;
-    input.style.height = 'auto';
-    const style = getComputedStyle(input), line = parseFloat(style.lineHeight) || 24;
-    const padding = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
-    input.style.height = `${Math.min(input.scrollHeight + 2, line * 5 + padding + 2)}px`;
-    const actions = panel.querySelector('.ai-reading-actions');
-    if (actions) actions.style.bottom = `${panel.querySelector('.ai-input-area').offsetHeight + 12}px`;
-    const menu = panel.querySelector('#ai-panel-settings');
-    if (menu) menu.style.top = `${panel.querySelector('.ai-header').offsetHeight + 4}px`;
+    if (!inputBinding || inputBinding.panel !== panel) return;
+    inputBinding.refresh = true;
+    scheduleInputFit(inputBinding);
+  }
+  function bindInput(panel) {
+    if (inputBinding) stopInputFit(inputBinding);
+    const input = panel.querySelector('#ai-input'), mirror = document.createElement('textarea');
+    mirror.tabIndex = -1; mirror.setAttribute('aria-hidden', 'true');
+    mirror.style.cssText = 'position:fixed;left:-10000px;top:0;height:0;min-height:0;max-height:none;visibility:hidden;contain:strict;overflow:hidden;resize:none;pointer-events:none;border-style:solid;';
+    document.body.appendChild(mirror);
+    const state = inputBinding = {panel, input, mirror, frame: 0, refresh: true, composing: false, width: 0};
+    input.addEventListener('input', () => scheduleInputFit(state));
+    input.addEventListener('compositionstart', () => {
+      state.composing = true;
+      cancelAnimationFrame(state.frame); state.frame = 0;
+    });
+    input.addEventListener('compositionend', () => { state.composing = false; scheduleInputFit(state); });
+    const actions = panel.querySelector('.ai-reading-actions'), menu = panel.querySelector('#ai-panel-settings');
+    // Floating controls follow actual box changes, independently of input measurement.
+    state.resize = new ResizeObserver(entries => {
+      if (!input.isConnected) { stopInputFit(state); return; }
+      entries.forEach(entry => {
+        if (entry.target === input) {
+          if (entry.contentRect.width !== state.width) { state.width = entry.contentRect.width; fitInput(panel); }
+          return;
+        }
+        const box = entry.borderBoxSize?.[0] || entry.borderBoxSize;
+        const height = box?.blockSize ?? entry.target.getBoundingClientRect().height;
+        const target = entry.target.classList.contains('ai-header') ? menu : actions;
+        const property = target === menu ? 'top' : 'bottom', value = `${height + (target === menu ? 4 : 12)}px`;
+        if (target && target.style[property] !== value) target.style[property] = value;
+      });
+    });
+    [input, panel.querySelector('.ai-header'), panel.querySelector('.ai-input-area')].forEach(element => state.resize.observe(element));
+    let scale = document.documentElement.style.getPropertyValue('--ui-font-scale');
+    state.fonts = new MutationObserver(() => {
+      const next = document.documentElement.style.getPropertyValue('--ui-font-scale');
+      if (scale !== next) { scale = next; fitInput(panel); }
+    });
+    state.fonts.observe(document.documentElement, {attributes: true, attributeFilter: ['style']});
+    fitInput(panel);
   }
   function syncLatest(panel) {
     const button = panel.querySelector('#ai-latest-btn');
@@ -156,7 +222,7 @@
       openBlockMenu(panel, block);
     });
     panel.querySelector('#ai-latest-btn').addEventListener('click', () => toLatest(panel));
-    panel.querySelector('#ai-input').addEventListener('input', () => fitInput(panel));
+    bindInput(panel);
     const menu = panel.querySelector('#ai-panel-settings'), settings = panel.querySelector('#ai-settings-btn');
     settings.addEventListener('click', () => {
       if (!menu.hidden) { closeSettings(panel, true); return; }
