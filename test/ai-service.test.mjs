@@ -110,6 +110,32 @@ test('旧历史只在读取与回送时过滤，用户文本和原文件保留',
   assert.equal(f.calls[0].messages[1].content,'解释 <think> 标签');
 });
 
+test('旧历史裁剪掉私密起始轮后，关闭隐私仍拒绝继承其内容的旧回复', async t => {
+  const f = await aiFixture(t);
+  await f.service.upsert({ id: f.profile.id, model: 'math-model' });
+  const marker = 'isolated-truncated-private-note';
+  const messages = [
+    { role: 'user', content: `题干\n\n本地批注：\n${marker}` },
+    { role: 'assistant', content: marker },
+    ...Array.from({ length: 200 }, (_, index) => [
+      { role: 'user', content: `旧公开问题 ${index}` },
+      { role: 'assistant', content: `继承的旧上下文 ${marker}` },
+    ]).flat(),
+  ].slice(-400);
+  assert.ok(messages.every(message => !message.content.includes('本地批注：')));
+  await f.store.writeAiHistory(`${f.profile.id}--q1`, { version: 1, messages });
+  for (let turn = 0; turn < 2; turn++) {
+    const parsed = events(await (await f.chat()).text());
+    assert.equal(parsed.at(-1).type, 'done');
+    assert.doesNotMatch(JSON.stringify(f.calls.at(-1)), new RegExp(marker));
+  }
+  assert.equal(f.calls[0].messages.length, 2);
+  assert.ok(f.calls[1].messages.some(message => message.role === 'assistant' && message.content === '解题步骤 $x<2$'));
+  const history = await f.service.conversation(f.profile.id, 'q1');
+  assert.equal(history.messages.length, 400);
+  assert.ok(history.messages.some(message => message.content.includes(marker)));
+});
+
 test('关闭流式时兼容误返 SSE 的上游，完整答案只发送一次', async t => {
   const f=await aiFixture(t); f.setMode('sse');
   await f.service.upsert({id:f.profile.id,model:'math-model',streaming:false});

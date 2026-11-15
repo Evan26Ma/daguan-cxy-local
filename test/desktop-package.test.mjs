@@ -12,7 +12,7 @@ test('shared sanitizer and extracted modules are bundled and match offline shell
   const sw = await fs.readFile(new URL('service-worker.js', web), 'utf8');
   const newer = await fs.readFile(new URL('index.html', web), 'utf8');
   const legacy = await fs.readFile(new URL('legacy.html', web), 'utf8');
-  for (const file of ['safe-render.js', 'new-data.js', 'new-state.js', 'new-ai.js', 'vendor/purify.min.js', 'vendor/DOMPurify-LICENSE']) {
+  for (const file of ['safe-render.js', 'ai-question-images.js', 'new-data.js', 'new-state.js', 'new-ai.js', 'vendor/purify.min.js', 'vendor/DOMPurify-LICENSE']) {
     assert.ok((await fs.stat(new URL(file, web))).size > 0);
     assert.ok(!forgeConfig.packagerConfig.ignore.some(pattern => pattern.test('/web/' + file)), file);
     if (file.endsWith('LICENSE')) continue;

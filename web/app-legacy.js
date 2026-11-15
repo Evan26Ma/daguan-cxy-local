@@ -2,7 +2,7 @@
   "use strict";
 
   if ("serviceWorker" in navigator && location.protocol !== "file:" && location.protocol !== "https:") {
-    navigator.serviceWorker.register("./service-worker.js?v=176").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=178").catch(() => {});
   }
 
   const DATA = "./data";
@@ -1871,7 +1871,7 @@ function videoExplanationMarkup(q) {
   }
 
   function refreshCardChrome(id) {
-    const card = els.qFeed?.querySelector(`.q-card[data-id="${id}"]`);
+    const card = els.qFeed?.querySelector(`.q-card[data-id="${CSS.escape(String(id))}"]`);
     if (!card) {
       updateBrowseProgress();
       return;
@@ -2117,8 +2117,16 @@ function videoExplanationMarkup(q) {
     for (const o of facet.options) {
       const lab = document.createElement("label");
       lab.className = o.depth ? "filter-option filter-option-sub" : "filter-option";
-      const checked = ((state.advFilter || {})[dim] || []).includes(o.name) ? " checked" : "";
-      lab.innerHTML = `<input type="checkbox" data-dim="${dim}" data-name="${o.name}"${checked} /><span>${o.label || o.name}</span><small>${o.count}</small>`;
+      const input = document.createElement("input");
+      input.type = "checkbox";
+      input.dataset.dim = dim;
+      input.dataset.name = o.name;
+      input.checked = ((state.advFilter || {})[dim] || []).includes(o.name);
+      const label = document.createElement("span");
+      label.textContent = o.label || o.name;
+      const count = document.createElement("small");
+      count.textContent = o.count;
+      lab.append(input, label, count);
       box.appendChild(lab);
     }
   }
@@ -2403,7 +2411,8 @@ function videoExplanationMarkup(q) {
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;");
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
   }
 
   function paintTree() {
@@ -2712,7 +2721,7 @@ function videoExplanationMarkup(q) {
           appendFeedPage();
         }
         requestAnimationFrame(() => {
-          const el = els.qFeed.querySelector(`.q-card[data-id="${startId}"]`);
+          const el = els.qFeed.querySelector(`.q-card[data-id="${CSS.escape(String(startId))}"]`);
           if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
         });
       } else {
@@ -2878,13 +2887,13 @@ function videoExplanationMarkup(q) {
     head.innerHTML = `
       <div class="q-card-index">
         <label class="pick-check" title="勾选导出">
-          <input type="checkbox" data-pick-id="${q.id}" ${picked ? "checked" : ""} />
+          <input type="checkbox" data-pick-id="${escapeHtml(q.id)}" ${picked ? "checked" : ""} />
         </label>
-        <span class="q-num">${index + 1}</span>
-        <span class="mastery-badge" data-mastery="${mastery}">${MASTERY_LABEL[mastery]}</span>
-        <button type="button" class="attention-mark ${p.error_prone ? "" : "hidden"}" data-error-toggle="${q.id}" aria-pressed="${p.error_prone === true}">易错</button>
+        <span class="q-num">${escapeHtml(index + 1)}</span>
+        <span class="mastery-badge" data-mastery="${escapeHtml(mastery)}">${escapeHtml(MASTERY_LABEL[mastery])}</span>
+        <button type="button" class="attention-mark ${p.error_prone ? "" : "hidden"}" data-error-toggle="${escapeHtml(q.id)}" aria-pressed="${p.error_prone === true}">易错</button>
       </div>
-      <div class="q-card-meta">${escapeHtml(q.source || "未知来源")} · ${escapeHtml(TYPE_LABEL[q.type] || q.type || "题目")} · #${q.id}</div>`;
+      <div class="q-card-meta">${escapeHtml(q.source || "未知来源")} · ${escapeHtml(TYPE_LABEL[q.type] || q.type || "题目")} · #${escapeHtml(q.id)}</div>`;
     head.querySelector("[data-pick-id]").addEventListener("change", (e) => {
       setPicked(q.id, e.target.checked);
     });
@@ -4755,22 +4764,8 @@ function videoExplanationMarkup(q) {
     };
   }
 
-  async function questionImages(q) {
-    if (!q) return [];
-    const source = `${q.stem || ""}\n${(q.options || []).map((o) => o.content_md || "").join("\n")}\n${q.answer || ""}\n${q.explanation || ""}`;
-    const refs = [...source.matchAll(/!\[[^\]]*\]\(([^)]+)\)|<img[^>]+src=["']([^"']+)["']/gi)].map((m) => m[1] || m[2]).filter(Boolean).slice(0, 4);
-    const out = [];
-    for (const ref of refs) {
-      try {
-        const response = await fetch(new URL(assetUrl(ref), location.href));
-        if (!response.ok) continue;
-        const blob = await response.blob();
-        if (blob.size > 2 * 1024 * 1024) continue;
-        const data = await new Promise((resolve) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = () => resolve(""); reader.readAsDataURL(blob); });
-        if (data) out.push(data);
-      } catch {}
-    }
-    return out;
+  async function questionImages(q, signal) {
+    return window.DaguanAIQuestionImages.collect({ question: q, assetUrl, fetch, location, signal });
   }
 
   function enhanceAiDiagrams(item, content) {
@@ -5115,7 +5110,7 @@ function videoExplanationMarkup(q) {
     };
     aiStreamStates.add(stream);
     syncAiServiceBusy();
-    const images = (state.aiProfiles.find((item) => item.id === state.aiProfileId)?.capabilities?.vision === "passed") ? await questionImages(q) : [];
+    const images = (state.aiProfiles.find((item) => item.id === state.aiProfileId)?.capabilities?.vision === "passed") ? await questionImages(q, controller.signal) : [];
     if (stream.disposed || state.aiQuestionId !== questionId) {
       aiStreamStates.delete(stream);
       syncAiServiceBusy();

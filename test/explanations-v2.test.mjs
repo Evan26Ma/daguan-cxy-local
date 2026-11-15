@@ -98,7 +98,7 @@ test('v2 解析按需加载、只在展开答案时进页面', () => {
   assert.ok(entry); assert.ok(sw.includes(JSON.stringify(entry)));
 
   // 插槽 + 惰性填充必须成对存在，且填充要走 UIRenderer（App 与 UIRenderer 是两个类）。
-  assert.match(app, /data-explanation-v2="\$\{escapeHtml\(String\(question\.id\)\)\}"/);
+  assert.match(app, /data-explanation-v2="\$\{this\.questionAttribute\(question\.id\)\}"/);
   assert.match(app, /static async fillExplanationV2\(root\)/);
   assert.match(app, /UIRenderer\.fillExplanationV2\(/);
   assert.doesNotMatch(app, /this\.fillExplanationV2\(/, 'App 里不能直接用 this 调 UIRenderer 的方法');

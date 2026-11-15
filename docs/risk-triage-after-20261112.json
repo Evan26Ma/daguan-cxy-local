@@ -1,0 +1,1631 @@
+{
+  "purpose": "Informational source-review evidence; not a gate policy, waiver, or clean verdict",
+  "source": "Mimosa native audit --deep --json --no-triage --no-ignore-comments",
+  "sourceSha256": "52a7e8c57071577d85a1504f87a17191524f8178694907347a4696bded595620",
+  "sourceRunStatus": "inconclusive",
+  "sourceCoverage": {
+    "schemaVersion": "mimosa-project-coverage/v1",
+    "status": "partial",
+    "source": {
+      "limit": 5000,
+      "selectedFiles": 59,
+      "parsedFiles": 59,
+      "truncated": false,
+      "omittedAtLeast": 0,
+      "readFailures": 0,
+      "parseFailures": 0
+    },
+    "engines": {
+      "source_inventory": {
+        "status": "completed"
+      },
+      "source_parsing": {
+        "status": "completed"
+      },
+      "project_graph": {
+        "status": "completed"
+      },
+      "project_model": {
+        "status": "partial",
+        "reasonCode": "project_model_incomplete"
+      },
+      "business_logic": {
+        "status": "partial",
+        "reasonCode": "project_model_incomplete"
+      },
+      "business_logic_evidence": {
+        "status": "completed"
+      },
+      "business_logic_investigation": {
+        "status": "completed"
+      },
+      "business_logic_llm_investigation": {
+        "status": "not_applicable",
+        "reasonCode": "glm_not_requested"
+      },
+      "builtin_rules": {
+        "status": "completed"
+      },
+      "semgrep": {
+        "status": "excluded",
+        "reasonCode": "explicitly_skipped"
+      },
+      "sca": {
+        "status": "completed",
+        "detail": "离线 advisory pack 匹配完成（快照 109e38787fd1…；命中 1，未定 0）"
+      },
+      "deep_semantic": {
+        "status": "excluded",
+        "reasonCode": "glm_not_requested"
+      },
+      "library_source": {
+        "status": "partial",
+        "reasonCode": "library_source_unavailable",
+        "detail": "未找到项目 venv/已装环境（库源码扫描需要已安装的依赖；设 MIMOSA_SITE_PACKAGES 或在项目 venv 内运行）"
+      },
+      "callgraph": {
+        "status": "partial",
+        "reasonCode": "callgraph_fact_partial",
+        "detail": "ambiguous-call-target,ir-module-partial,ir-module-unsupported"
+      },
+      "external_deep": {
+        "status": "not_applicable",
+        "reasonCode": "no_external_analyzer",
+        "detail": "ran=[] skipped=[codeql:requires-build-opt-in]"
+      },
+      "reachability": {
+        "status": "completed"
+      }
+    },
+    "issues": [
+      {
+        "stage": "project_model",
+        "code": "python_ast_unavailable",
+        "path": "work/lilin-six-v2/merge.py"
+      },
+      {
+        "stage": "project_model",
+        "code": "python_ast_unavailable",
+        "path": "work/lilin-six-v2/merge2.py"
+      },
+      {
+        "stage": "project_model",
+        "code": "python_ast_unavailable",
+        "path": "tools/annotate_questions.py"
+      },
+      {
+        "stage": "project_model",
+        "code": "python_ast_unavailable",
+        "path": "tools/import-prob-question-bank.py"
+      },
+      {
+        "stage": "project_model",
+        "code": "python_ast_unavailable",
+        "path": "tools/merge_agent_tags.py"
+      },
+      {
+        "stage": "project_model",
+        "code": "python_ast_unavailable",
+        "path": "tools/merge_luna_tags.py"
+      },
+      {
+        "stage": "project_model",
+        "code": "python_ast_unavailable",
+        "path": "tools/prep_chunks.py"
+      },
+      {
+        "stage": "project_model",
+        "code": "python_ast_unavailable",
+        "path": "test/browser-retirement-playwright.py"
+      },
+      {
+        "stage": "project_model",
+        "code": "python_ast_unavailable",
+        "path": "test/migration_browser_playwright.py"
+      },
+      {
+        "stage": "project_model",
+        "code": "python_ast_unavailable",
+        "path": "test/squirrel_update_e2e.py"
+      },
+      {
+        "stage": "project_model",
+        "code": "python_ast_unavailable",
+        "path": "scripts/render_math_diagram.py"
+      },
+      {
+        "stage": "project_model",
+        "code": "python_ast_unavailable",
+        "path": "scripts/zcode-pool.py"
+      },
+      {
+        "stage": "library_source",
+        "code": "library_source_unavailable",
+        "path": ".",
+        "detail": "未找到项目 venv/已装环境（库源码扫描需要已安装的依赖；设 MIMOSA_SITE_PACKAGES 或在项目 venv 内运行）"
+      },
+      {
+        "stage": "callgraph",
+        "code": "callgraph_fact_partial",
+        "path": ".",
+        "detail": "ambiguous-call-target,ir-module-partial,ir-module-unsupported"
+      }
+    ],
+    "issueCount": 14,
+    "issuesTruncated": false
+  },
+  "counts": {
+    "high": 40,
+    "medium": 123
+  },
+  "note": "Post-repair locations. Findings remain scanner allegations, not confirmed exploitable vulnerabilities. A partial report is not a clean verdict. CrossFile entries are not counted twice.",
+  "items": [
+    {
+      "collection": "files",
+      "file": "sync-extension/test/protocol.test.js",
+      "line": 35,
+      "severity": "high",
+      "ruleId": "mimosa.hardcoded-secret",
+      "kind": "sink",
+      "title": "硬编码凭据"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 231,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 262,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 284,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 695,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 918,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 970,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 1065,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 1131,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 1237,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 1308,
+      "severity": "medium",
+      "ruleId": "XSS-innerHTML---",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 1905,
+      "severity": "high",
+      "ruleId": "ssrf",
+      "kind": "predict",
+      "title": "fetchJSON 是 ssrf 入口"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 1924,
+      "severity": "high",
+      "ruleId": "ssrf",
+      "kind": "predict",
+      "title": "fetchJSON 是 ssrf 入口"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 1925,
+      "severity": "high",
+      "ruleId": "ssrf",
+      "kind": "predict",
+      "title": "fetchJSON 是 ssrf 入口"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 2006,
+      "severity": "high",
+      "ruleId": "ssrf",
+      "kind": "predict",
+      "title": "fetchJSON 是 ssrf 入口"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 2146,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 2168,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 2179,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 2304,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 2316,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 2512,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 2516,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 2760,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 2820,
+      "severity": "medium",
+      "ruleId": "xss",
+      "kind": "predict",
+      "title": "buildCard 是 xss 入口"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 2914,
+      "severity": "medium",
+      "ruleId": "xss",
+      "kind": "predict",
+      "title": "renderOptionsInto 是 xss 入口"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 2933,
+      "severity": "medium",
+      "ruleId": "xss",
+      "kind": "predict",
+      "title": "rebuildCardBody 经 1 跳到达 xss"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 3030,
+      "severity": "medium",
+      "ruleId": "xss",
+      "kind": "predict",
+      "title": "buildCard 是 xss 入口"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 3062,
+      "severity": "medium",
+      "ruleId": "xss",
+      "kind": "predict",
+      "title": "rebuildCardBody 经 1 跳到达 xss"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 3074,
+      "severity": "high",
+      "ruleId": "ssrf",
+      "kind": "predict",
+      "title": "remove 是 ssrf 入口"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 3074,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 3077,
+      "severity": "medium",
+      "ruleId": "xss",
+      "kind": "predict",
+      "title": "renderOptionsInto 是 xss 入口"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 3084,
+      "severity": "medium",
+      "ruleId": "xss",
+      "kind": "predict",
+      "title": "rebuildCardBody 经 1 跳到达 xss"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 3326,
+      "severity": "medium",
+      "ruleId": "xss",
+      "kind": "predict",
+      "title": "rebuildCardBody 经 1 跳到达 xss"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 3333,
+      "severity": "high",
+      "ruleId": "ssrf",
+      "kind": "predict",
+      "title": "fetchJSON 是 ssrf 入口"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 3507,
+      "severity": "high",
+      "ruleId": "ssrf",
+      "kind": "predict",
+      "title": "remove 是 ssrf 入口"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 3507,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 3635,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 3638,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 3665,
+      "severity": "high",
+      "ruleId": "ssrf",
+      "kind": "predict",
+      "title": "remove 是 ssrf 入口"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 3665,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 3668,
+      "severity": "high",
+      "ruleId": "ssrf",
+      "kind": "predict",
+      "title": "api 是 ssrf 入口"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 3668,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 3671,
+      "severity": "high",
+      "ruleId": "ssrf",
+      "kind": "predict",
+      "title": "api 是 ssrf 入口"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 3671,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 3677,
+      "severity": "high",
+      "ruleId": "ssrf",
+      "kind": "predict",
+      "title": "invoke 经 1 跳到达 ssrf"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 3679,
+      "severity": "high",
+      "ruleId": "ssrf",
+      "kind": "predict",
+      "title": "invoke 经 1 跳到达 ssrf"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 3683,
+      "severity": "high",
+      "ruleId": "ssrf",
+      "kind": "predict",
+      "title": "invoke 经 1 跳到达 ssrf"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 3684,
+      "severity": "high",
+      "ruleId": "ssrf",
+      "kind": "predict",
+      "title": "invoke 经 1 跳到达 ssrf"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 3685,
+      "severity": "high",
+      "ruleId": "ssrf",
+      "kind": "predict",
+      "title": "invoke 经 1 跳到达 ssrf"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 3712,
+      "severity": "high",
+      "ruleId": "ssrf",
+      "kind": "predict",
+      "title": "remove 是 ssrf 入口"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 3712,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 3781,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 3827,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 3855,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 3891,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 3901,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 3902,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 3955,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 3986,
+      "severity": "high",
+      "ruleId": "ssrf",
+      "kind": "predict",
+      "title": "localApi 是 ssrf 入口"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 3992,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 3995,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 3999,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 4001,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 4022,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 4045,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 4238,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 4472,
+      "severity": "high",
+      "ruleId": "ssrf",
+      "kind": "predict",
+      "title": "remove 是 ssrf 入口"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 4472,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 4557,
+      "severity": "medium",
+      "ruleId": "xss",
+      "kind": "predict",
+      "title": "openPrintPreview 是 xss 入口"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 4714,
+      "severity": "high",
+      "ruleId": "ssrf",
+      "kind": "predict",
+      "title": "merge 是 ssrf 入口"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 4714,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 4768,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 4781,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 4836,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 4982,
+      "severity": "high",
+      "ruleId": "ssrf",
+      "kind": "predict",
+      "title": "remove 是 ssrf 入口"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 4982,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 5007,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 5050,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 5087,
+      "severity": "medium",
+      "ruleId": "xss",
+      "kind": "predict",
+      "title": "renderAiMessage 是 xss 入口"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 5121,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 5139,
+      "severity": "medium",
+      "ruleId": "xss",
+      "kind": "predict",
+      "title": "renderAiMessage 是 xss 入口"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 5144,
+      "severity": "medium",
+      "ruleId": "xss",
+      "kind": "predict",
+      "title": "renderAiMessage 是 xss 入口"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 5503,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 5621,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 5673,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 5697,
+      "severity": "high",
+      "ruleId": "ssrf",
+      "kind": "predict",
+      "title": "remove 是 ssrf 入口"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 5697,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 5733,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 5818,
+      "severity": "high",
+      "ruleId": "ssrf",
+      "kind": "predict",
+      "title": "bindStreaming 是 ssrf 入口"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 5818,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 5831,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 5996,
+      "severity": "high",
+      "ruleId": "ssrf",
+      "kind": "predict",
+      "title": "fetchJSON 是 ssrf 入口"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 5997,
+      "severity": "high",
+      "ruleId": "ssrf",
+      "kind": "predict",
+      "title": "fetchJSON 是 ssrf 入口"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 5998,
+      "severity": "high",
+      "ruleId": "ssrf",
+      "kind": "predict",
+      "title": "fetchJSON 是 ssrf 入口"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app-legacy.js",
+      "line": 5999,
+      "severity": "high",
+      "ruleId": "ssrf",
+      "kind": "predict",
+      "title": "fetchJSON 是 ssrf 入口"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 220,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 251,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 273,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 681,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 927,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 959,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 1034,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 1133,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 1772,
+      "severity": "high",
+      "ruleId": "ssrf",
+      "kind": "predict",
+      "title": "fetchJSON 是 ssrf 入口"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 1791,
+      "severity": "high",
+      "ruleId": "ssrf",
+      "kind": "predict",
+      "title": "fetchJSON 是 ssrf 入口"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 1792,
+      "severity": "high",
+      "ruleId": "ssrf",
+      "kind": "predict",
+      "title": "fetchJSON 是 ssrf 入口"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 1946,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 1968,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 1979,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 2093,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 2105,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 2298,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 2302,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 2584,
+      "severity": "medium",
+      "ruleId": "xss",
+      "kind": "predict",
+      "title": "buildCard 是 xss 入口"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 2678,
+      "severity": "medium",
+      "ruleId": "xss",
+      "kind": "predict",
+      "title": "renderOptionsInto 是 xss 入口"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 2696,
+      "severity": "medium",
+      "ruleId": "xss",
+      "kind": "predict",
+      "title": "rebuildCardBody 经 1 跳到达 xss"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 2792,
+      "severity": "medium",
+      "ruleId": "xss",
+      "kind": "predict",
+      "title": "buildCard 是 xss 入口"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 2823,
+      "severity": "high",
+      "ruleId": "ssrf",
+      "kind": "predict",
+      "title": "remove 是 ssrf 入口"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 2823,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 2826,
+      "severity": "medium",
+      "ruleId": "xss",
+      "kind": "predict",
+      "title": "renderOptionsInto 是 xss 入口"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 2835,
+      "severity": "medium",
+      "ruleId": "xss",
+      "kind": "predict",
+      "title": "rebuildCardBody 经 1 跳到达 xss"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 3048,
+      "severity": "medium",
+      "ruleId": "xss",
+      "kind": "predict",
+      "title": "rebuildCardBody 经 1 跳到达 xss"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 3055,
+      "severity": "high",
+      "ruleId": "ssrf",
+      "kind": "predict",
+      "title": "fetchJSON 是 ssrf 入口"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 3387,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 3497,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 3507,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 3508,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 3561,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 3592,
+      "severity": "high",
+      "ruleId": "ssrf",
+      "kind": "predict",
+      "title": "localApi 是 ssrf 入口"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 3598,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 3607,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 3628,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 3651,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 3844,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 4075,
+      "severity": "high",
+      "ruleId": "ssrf",
+      "kind": "predict",
+      "title": "remove 是 ssrf 入口"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 4075,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 4160,
+      "severity": "medium",
+      "ruleId": "xss",
+      "kind": "predict",
+      "title": "openPrintPreview 是 xss 入口"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 4363,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 4366,
+      "severity": "medium",
+      "ruleId": "XSS-innerHTML---",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 4378,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 4433,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 4579,
+      "severity": "high",
+      "ruleId": "ssrf",
+      "kind": "predict",
+      "title": "remove 是 ssrf 入口"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 4579,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 4603,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 4644,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 4680,
+      "severity": "medium",
+      "ruleId": "xss",
+      "kind": "predict",
+      "title": "renderAiMessage 是 xss 入口"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 4711,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 4734,
+      "severity": "medium",
+      "ruleId": "xss",
+      "kind": "predict",
+      "title": "renderAiMessage 是 xss 入口"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 4782,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 4811,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 4823,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 5162,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 5289,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 5341,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 5399,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 5495,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 5508,
+      "severity": "high",
+      "ruleId": "ssrf",
+      "kind": "predict",
+      "title": "aiProfileAction 是 ssrf 入口"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 5666,
+      "severity": "high",
+      "ruleId": "ssrf",
+      "kind": "predict",
+      "title": "fetchJSON 是 ssrf 入口"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 5667,
+      "severity": "high",
+      "ruleId": "ssrf",
+      "kind": "predict",
+      "title": "fetchJSON 是 ssrf 入口"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 5668,
+      "severity": "high",
+      "ruleId": "ssrf",
+      "kind": "predict",
+      "title": "fetchJSON 是 ssrf 入口"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/app2.js",
+      "line": 5669,
+      "severity": "high",
+      "ruleId": "ssrf",
+      "kind": "predict",
+      "title": "fetchJSON 是 ssrf 入口"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/ai-question-images.js",
+      "line": 89,
+      "severity": "medium",
+      "ruleId": "XSS-innerHTML---",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    },
+    {
+      "collection": "reachable",
+      "file": "web/ai-question-images.js",
+      "line": 118,
+      "severity": "medium",
+      "ruleId": "SSRF---------server-side-request",
+      "kind": "crossfile",
+      "title": "疑似跨文件污点"
+    }
+  ]
+}

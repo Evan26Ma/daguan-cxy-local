@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import path from "node:path";
 import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
+import { replayableHistory, validateQuestionImages } from "./ai-context-policy.mjs";
 
 const PROFILE_VERSION = 1;
 const MAX_PROFILES = 12;
@@ -337,16 +338,18 @@ export function createAiService({ store }) {
     const questionId = String(object(payload.question).id || "unknown");
     const key = `${profileKey(profile.id)}--${profileKey(questionId)}`;
     const history = visibleHistory(object(await store.readAiHistory(key)));
-    const historyMessages = Array.isArray(history.messages) ? history.messages.filter((item) => item && (item.role === "user" || item.role === "assistant")).slice(-24) : [];
+    const includePrivate = payload.includePrivate === true;
+    const historyMessages = replayableHistory(history.messages, includePrivate, history.messages.length >= MAX_HISTORY_MESSAGES).slice(-24);
+    const images = validateQuestionImages(payload.images);
     const prompt = safeText(payload.prompt || "请讲解这道题。", 20_000);
-    const userMessage = `${contextText(payload.question, payload.includePrivate === true)}\n\n本次请求：${prompt}`;
+    const userMessage = `${contextText(payload.question, includePrivate)}\n\n本次请求：${prompt}`;
     const messages = [
       { role: "system", content: TUTOR_SYSTEM_PROMPT },
       ...historyMessages.map((item) => ({ role: item.role, content: item.content })),
       { role: "user", content: userMessage },
     ];
-    if (profile.capabilities?.vision === "passed" && Array.isArray(payload.images) && payload.images.length) {
-      messages[messages.length - 1].content = [{ type: "text", text: userMessage }, ...payload.images.slice(0, 4).map((url) => ({ type: "image_url", image_url: { url: safeText(url, 2_000_000) } }))];
+    if (profile.capabilities?.vision === "passed" && images.length) {
+      messages[messages.length - 1].content = [{ type: "text", text: userMessage }, ...images.map((url) => ({ type: "image_url", image_url: { url } }))];
     }
     const runId = randomUUID();
     const controller = new AbortController();
@@ -407,7 +410,7 @@ export function createAiService({ store }) {
       }
       if (controller.signal.aborted) throw controller.signal.reason;
       if (!answer.trim()) throw new Error("AI 服务未返回正式答案，请检查模型或重试");
-      const nextMessages = [...(Array.isArray(history.messages) ? history.messages : []), { role: "user", content: userMessage, at: new Date().toISOString() }, { role: "assistant", content: answer, at: new Date().toISOString() }].slice(-MAX_HISTORY_MESSAGES);
+      const nextMessages = [...(Array.isArray(history.messages) ? history.messages : []), { role: "user", content: userMessage, includePrivate, at: new Date().toISOString() }, { role: "assistant", content: answer, includePrivate, at: new Date().toISOString() }].slice(-MAX_HISTORY_MESSAGES);
       await store.writeAiHistory(key, { version: 1, profileId: profile.id, questionId, messages: nextMessages, updatedAt: new Date().toISOString() });
       writeSse(res, { type: "done", runId, message: { role: "assistant", content: answer } });
     } catch (error) {

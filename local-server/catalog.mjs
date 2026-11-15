@@ -4,6 +4,23 @@ import { randomUUID } from "node:crypto";
 import { mergeLocalQuestionBanks } from "../shared/local-question-banks.mjs";
 
 const SOURCE = "https://hsad.xyz/daguan-math";
+const WINDOWS_RESERVED = /^(?:con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)/i;
+
+// Manifest file names come from the network; resolve them against a fixed root
+// and reject every spelling Windows would trim or reinterpret as a path escape.
+export function catalogTarget(baseDir, value) {
+  if (typeof value !== "string" || !value || value.length > 240) throw new Error("官网题库文件名无效");
+  const parts = value.split("/");
+  if (parts.some((part) => !part || part === "." || part === ".." || /[\\:*?"<>|\x00-\x1f]/.test(part)
+    || /[. ]$/.test(part) || WINDOWS_RESERVED.test(part))) {
+    throw new Error(`官网题库文件名无效：${value}`);
+  }
+  if (path.extname(value).toLowerCase() !== ".json") throw new Error(`官网题库只同步 JSON 文件：${value}`);
+  const target = path.resolve(baseDir, ...parts);
+  const relative = path.relative(baseDir, target);
+  if (!relative || relative.startsWith("..") || path.isAbsolute(relative)) throw new Error(`官网题库文件名越界：${value}`);
+  return target;
+}
 
 async function fetchJson(url) {
   const response = await fetch(url);
@@ -23,11 +40,17 @@ export async function refreshCatalog(rootDir, progress = () => {}) {
     const manifest = await fetchJson(`${SOURCE}/data/manifest.json`);
     if (!manifest || !manifest.shards || !Number.isFinite(Number(manifest.total))) throw new Error("官网题库 manifest 无效");
     const required = ["categories.json", "category_questions.json", "id_index.json", "search_index.json"];
-    const files = [...required, ...Object.values(manifest.shards).map((meta) => meta.file)];
+    const shardFiles = Object.values(manifest.shards).map((meta) => {
+      if (!meta || typeof meta !== "object" || Array.isArray(meta)) throw new Error("官网题库 manifest 分片无效");
+      catalogTarget(stageDir, meta.file);
+      return meta.file;
+    });
+    const files = [...required, ...shardFiles];
+    for (const file of files) catalogTarget(stageDir, file);
     const seen = new Set();
     let completed = 0;
     for (const file of files) {
-      const target = path.join(stageDir, file);
+      const target = catalogTarget(stageDir, file);
       await fs.mkdir(path.dirname(target), { recursive: true });
       const value = await fetchJson(`${SOURCE}/data/${file}`);
       if (file.startsWith("shards/")) {
@@ -46,8 +69,8 @@ export async function refreshCatalog(rootDir, progress = () => {}) {
     await fs.writeFile(path.join(stageDir, "manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`);
     await mergeLocalQuestionBanks(stageDir, dataDir);
     for (const file of [...files, "manifest.json"]) {
-      const from = path.join(stageDir, file);
-      const to = path.join(dataDir, file);
+      const from = catalogTarget(stageDir, file);
+      const to = catalogTarget(dataDir, file);
       await fs.mkdir(path.dirname(to), { recursive: true });
       await fs.copyFile(from, to);
     }

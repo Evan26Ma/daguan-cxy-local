@@ -5,7 +5,7 @@
 
 // ========== 离线缓存注册（与 app2.js 一致） ==========
 if ("serviceWorker" in navigator && location.protocol !== "file:" && location.protocol !== "https:") {
-    navigator.serviceWorker.register("./service-worker.js?v=176").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=178").catch(() => {});
 }
 
 // ========== 全局状态 ==========
@@ -1254,6 +1254,11 @@ class UIRenderer {
         `;
     }
 
+    // 题目模板的双引号属性需要额外转义引号；动态回调参数只从 dataset 读取。
+    static questionAttribute(value) {
+        return escapeHtml(String(value)).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
     static renderQuestionReturn() {
         const target = AppState.questionReturn;
         return target ? `<button type="button" class="btn btn-secondary" onclick="App.returnToQuestionOrigin()"><span aria-hidden="true">← </span>返回${escapeHtml(target.label)}</button>` : '';
@@ -1292,30 +1297,29 @@ class UIRenderer {
                         <div class="breadcrumb-nav">
                             <a href="#" onclick="App.showHome(); return false;">首页</a>
                             <span class="breadcrumb-sep">/</span>
-                            <a href="#" onclick="App.showLibrary('${AppState.currentCategory?.id || ''}'); return false;">
-                                ${AppState.currentCategory?.name || '题库'}
+                            <a href="#" data-category-id="${this.questionAttribute(AppState.currentCategory?.id || '')}" onclick="App.showLibrary(this.dataset.categoryId); return false;">
+                                ${escapeHtml(AppState.currentCategory?.name || '题库')}
                             </a>
                             <span class="breadcrumb-sep">/</span>
-                            <span>${AppState.currentChapter?.name || AppState.currentChapter?.title || '章节'}</span>
+                            <span>${escapeHtml(AppState.currentChapter?.name || AppState.currentChapter?.title || '章节')}</span>
                         </div>
-                        <div class="question-sequence" data-question-id="${escapeHtml(String(question.id))}">
+                        <div class="question-sequence" data-question-id="${this.questionAttribute(question.id)}">
                             <span>第 ${questionIndex + 1} 题 / 共 ${AppState.chapterQuestionCount || AppState.questions.length} 题</span>
                             ${this.renderQuestionStatusBadges(mastery, isMistake)}
                         </div>
+                        ${AppState.currentCategory && AppState.currentChapter ? `<div class="mode-toolbar"><span>单题做题</span><div class="mode-toolbar-actions"><button type="button" class="mode-jump-button" data-shortcut-hint="jump" onclick="App.promptJumpToQuestion()">跳题</button><div class="mode-switch"><button type="button" class="active" aria-pressed="true">单题做题</button><button type="button" onclick="App.changeQuestionMode('multi')">连续做题</button></div></div></div>` : ''}
                         ${AppState.globalSearchReturn ? '<button type="button" class="btn btn-secondary" onclick="App.returnToGlobalSearch()">返回搜索</button>' : ''}
                     </div>
 
-                    ${AppState.currentCategory && AppState.currentChapter ? `<div class="mode-toolbar"><span>单题做题</span><div class="mode-toolbar-actions"><button type="button" class="mode-jump-button" data-shortcut-hint="jump" onclick="App.promptJumpToQuestion()">跳题</button><div class="mode-switch"><button type="button" class="active" aria-pressed="true">单题做题</button><button type="button" onclick="App.changeQuestionMode('multi')">连续做题</button></div></div></div>` : ''}
-
                     <div class="question-content" id="question-content">
-                        <div class="question-wrapper" data-question-id="${escapeHtml(String(question.id))}">
+                        <div class="question-wrapper" data-question-id="${this.questionAttribute(question.id)}">
                             <div class="question-meta-row">
                                 <div class="question-source">
-                                    ${question.source || ''} ${question.year ? question.year + '年' : ''}
+                                    ${escapeHtml(question.source || '')} ${question.year ? escapeHtml(question.year) + '年' : ''}
                                 </div>
                                 <div class="question-actions">
                                     <button class="action-btn ${isFav ? 'active' : ''}" data-shortcut-hint="favorite"
-                                        onclick="App.toggleFavorite('${question.id}')">
+                                        data-question-id="${this.questionAttribute(question.id)}" onclick="App.toggleFavorite(this.dataset.questionId)">
                                         <svg class="icon" viewBox="0 0 24 24">
                                             <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
                                         </svg>
@@ -1457,7 +1461,7 @@ class UIRenderer {
             const id = String(entry.id);
             const mastery = progress.progress[id]?.mastery || 'not_started';
             const flags = `${StorageService.isFavorite(id) ? ' favorite' : ''}${StorageService.isMistake(id) ? ' error-prone' : ''}${mastery !== 'not_started' ? ` ${mastery}` : ''}`;
-            return `<button type="button" class="question-rail-item${globalIndex === start + activeIndex ? ' current' : ''}${flags}" data-question-id="${escapeHtml(id)}" data-question-number="${globalIndex + 1}" data-mastery="${escapeHtml(mastery)}" aria-label="第 ${globalIndex + 1} 题，题号 ${escapeHtml(id)}，${masteryLabel(mastery)}${StorageService.isFavorite(id) ? '，已收藏' : ''}${StorageService.isMistake(id) ? '，易错' : ''}" onclick="App.goToChapterQuestion(${globalIndex})">${globalIndex + 1}</button>`;
+            return `<button type="button" class="question-rail-item${globalIndex === start + activeIndex ? ' current' : ''}${this.questionAttribute(flags)}" data-question-id="${this.questionAttribute(id)}" data-question-number="${globalIndex + 1}" data-mastery="${this.questionAttribute(mastery)}" aria-label="第 ${globalIndex + 1} 题，题号 ${this.questionAttribute(id)}，${masteryLabel(mastery)}${StorageService.isFavorite(id) ? '，已收藏' : ''}${StorageService.isMistake(id) ? '，易错' : ''}" onclick="App.goToChapterQuestion(${globalIndex})">${globalIndex + 1}</button>`;
         }).join('');
         const cards = AppState.questions.map((question, localIndex) => {
             const globalIndex = start + localIndex;
@@ -1472,21 +1476,21 @@ class UIRenderer {
                 statusControls: this.renderQuestionStatusControls(id, mastery, mistake, false)
             })
                 .replace(/ id="(?:question-options|answer-section)"/g, '');
-            return `<article class="multi-question-card${active ? ' active-question' : ''}" id="multi-question-${globalIndex}" data-question-id="${escapeHtml(id)}">
+            return `<article class="multi-question-card${active ? ' active-question' : ''}" id="multi-question-${globalIndex}" data-question-id="${this.questionAttribute(id)}">
                 <header class="multi-question-head"><div><span class="multi-question-number">第 ${globalIndex + 1} 题</span>${this.renderQuestionStatusBadges(mastery, mistake)}<span class="multi-question-id">题号 ${escapeHtml(id)}</span><span class="multi-question-source">${escapeHtml(question.source || '')}${question.year ? ` · ${escapeHtml(question.year)}年` : ''}</span></div>
                 <div class="multi-card-actions">
-                  <button type="button" class="action-btn${favorite ? ' active' : ''}" onclick="App.toggleQuestionFavorite('${escapeHtml(id)}')">收藏</button>
-                  <button type="button" class="action-btn" onclick="App.openQuestionAnnotation('${escapeHtml(id)}')">批注</button>
-                  <button type="button" class="action-btn" onclick="App.openQuestionAI('${escapeHtml(id)}')">AI 辅助</button>
+                  <button type="button" class="action-btn${favorite ? ' active' : ''}" data-question-id="${this.questionAttribute(id)}" onclick="App.toggleQuestionFavorite(this.dataset.questionId)">收藏</button>
+                  <button type="button" class="action-btn" data-question-id="${this.questionAttribute(id)}" onclick="App.openQuestionAnnotation(this.dataset.questionId)">批注</button>
+                  <button type="button" class="action-btn" data-question-id="${this.questionAttribute(id)}" onclick="App.openQuestionAI(this.dataset.questionId)">AI 辅助</button>
                 </div></header>
                 <div class="multi-question-reading">${stem}</div>
                 <div class="multi-question-status"><button type="button" class="expand-answer-btn" aria-expanded="false" onclick="App.toggleCardAnswer(${globalIndex}, this)">显示答案</button></div>
             </article>`;
         }).join('');
         const pageStart = Math.floor(start / 20) * 20;
-        const railTools = `<div class="question-rail-tools"><label class="sr-only">按题号定位</label><input type="search" inputmode="numeric" aria-label="按题号定位" placeholder="题号" value="${escapeHtml(AppState.questionRailQuery)}" oninput="App.filterQuestionIndex(this)" onkeydown="if(event.key==='Enter'){event.preventDefault();App.jumpByQuestionNumber(this.value)}"><div class="question-rail-filters"><button type="button" data-rail-filter="favorite" aria-pressed="${AppState.questionRailFilter === 'favorite'}" class="${AppState.questionRailFilter === 'favorite' ? 'active' : ''}" onclick="App.toggleQuestionRailFilter('favorite')">收藏</button><button type="button" data-rail-filter="error-prone" aria-pressed="${AppState.questionRailFilter === 'error-prone'}" class="${AppState.questionRailFilter === 'error-prone' ? 'active' : ''}" onclick="App.toggleQuestionRailFilter('error-prone')">易错</button><button type="button" data-rail-filter="learning" aria-pressed="${AppState.questionRailFilter === 'learning'}" class="${AppState.questionRailFilter === 'learning' ? 'active' : ''}" onclick="App.toggleQuestionRailFilter('learning')">学习中</button><button type="button" data-rail-filter="mastered" aria-pressed="${AppState.questionRailFilter === 'mastered'}" class="${AppState.questionRailFilter === 'mastered' ? 'active' : ''}" onclick="App.toggleQuestionRailFilter('mastered')">已掌握</button><button type="button" data-rail-filter="not_started" aria-pressed="${AppState.questionRailFilter === 'not_started'}" class="${AppState.questionRailFilter === 'not_started' ? 'active' : ''}" onclick="App.toggleQuestionRailFilter('not_started')">未开始</button></div></div>`;
+        const railTools = `<div class="question-rail-tools"><label class="sr-only">按题号定位</label><input type="search" inputmode="numeric" aria-label="按题号定位" placeholder="题号" value="${this.questionAttribute(AppState.questionRailQuery)}" oninput="App.filterQuestionIndex(this)" onkeydown="if(event.key==='Enter'){event.preventDefault();App.jumpByQuestionNumber(this.value)}"><div class="question-rail-filters"><button type="button" data-rail-filter="favorite" aria-pressed="${AppState.questionRailFilter === 'favorite'}" class="${AppState.questionRailFilter === 'favorite' ? 'active' : ''}" onclick="App.toggleQuestionRailFilter('favorite')">收藏</button><button type="button" data-rail-filter="error-prone" aria-pressed="${AppState.questionRailFilter === 'error-prone'}" class="${AppState.questionRailFilter === 'error-prone' ? 'active' : ''}" onclick="App.toggleQuestionRailFilter('error-prone')">易错</button><button type="button" data-rail-filter="learning" aria-pressed="${AppState.questionRailFilter === 'learning'}" class="${AppState.questionRailFilter === 'learning' ? 'active' : ''}" onclick="App.toggleQuestionRailFilter('learning')">学习中</button><button type="button" data-rail-filter="mastered" aria-pressed="${AppState.questionRailFilter === 'mastered'}" class="${AppState.questionRailFilter === 'mastered' ? 'active' : ''}" onclick="App.toggleQuestionRailFilter('mastered')">已掌握</button><button type="button" data-rail-filter="not_started" aria-pressed="${AppState.questionRailFilter === 'not_started'}" class="${AppState.questionRailFilter === 'not_started' ? 'active' : ''}" onclick="App.toggleQuestionRailFilter('not_started')">未开始</button></div></div>`;
         main.innerHTML = `<div class="multi-question-view">
-            <div class="question-header">${this.renderQuestionReturn()}<div class="breadcrumb-nav"><a href="#" onclick="App.showHome(); return false;">首页</a><span class="breadcrumb-sep">/</span><a href="#" onclick="App.showLibrary('${escapeHtml(AppState.currentCategory?.id || '')}'); return false;">${escapeHtml(AppState.currentCategory?.name || '题库')}</a><span class="breadcrumb-sep">/</span><span>${escapeHtml(AppState.currentChapter?.name || AppState.currentChapter?.title || '章节')}</span></div><div class="question-sequence">${total} 题 · 每段 20 题</div>${AppState.globalSearchReturn ? '<button type="button" class="btn btn-secondary" onclick="App.returnToGlobalSearch()">返回搜索</button>' : ''}</div>
+            <div class="question-header">${this.renderQuestionReturn()}<div class="breadcrumb-nav"><a href="#" onclick="App.showHome(); return false;">首页</a><span class="breadcrumb-sep">/</span><a href="#" data-category-id="${this.questionAttribute(AppState.currentCategory?.id || '')}" onclick="App.showLibrary(this.dataset.categoryId); return false;">${escapeHtml(AppState.currentCategory?.name || '题库')}</a><span class="breadcrumb-sep">/</span><span>${escapeHtml(AppState.currentChapter?.name || AppState.currentChapter?.title || '章节')}</span></div><div class="question-sequence">${total} 题 · 每段 20 题</div>${AppState.globalSearchReturn ? '<button type="button" class="btn btn-secondary" onclick="App.returnToGlobalSearch()">返回搜索</button>' : ''}</div>
             <div class="mode-toolbar"><span>连续做题 · 第 ${pageStart + 1}–${Math.min(pageStart + AppState.questions.length, total)} 题</span><div class="mode-toolbar-actions"><button type="button" class="mode-step-button" onclick="App.previousQuestion()">上一题</button><button type="button" class="mode-step-button" onclick="App.nextQuestion()">下一题</button><button type="button" class="mode-jump-button" onclick="App.promptJumpToQuestion()">跳题</button><div class="mode-switch"><button type="button" onclick="App.changeQuestionMode('single')">单题做题</button><button type="button" class="active" aria-pressed="true">连续做题</button></div><button type="button" class="mobile-question-index-btn" onclick="App.toggleQuestionDrawer()">题号目录</button></div></div>
             <div class="multi-reading-layout"><aside class="question-rail" aria-label="题号目录">${railTools}${rangeButtons}</aside><div class="multi-question-list">${cards}<div class="multi-page-nav"><button type="button" class="btn btn-secondary" ${start === 0 ? 'disabled' : ''} onclick="App.goToChapterQuestion(${Math.max(0, start - 1)})">上一段</button><button type="button" class="btn btn-secondary" ${start + AppState.questions.length >= total ? 'disabled' : ''} onclick="App.goToChapterQuestion(${Math.min(total - 1, start + AppState.questions.length)})">下一段</button></div></div></div>
             <div class="question-drawer-backdrop" onclick="App.toggleQuestionDrawer()"></div><aside class="question-drawer" aria-label="题号目录">${railTools}${rangeButtons}</aside>
@@ -1546,7 +1550,7 @@ class UIRenderer {
     }
 
     static renderQuestionStatusControls(questionId, mastery, mistake, showShortcutHints = true) {
-        const id = escapeHtml(String(questionId));
+        const id = this.questionAttribute(questionId);
         const normalizedMastery = ['not_started', 'learning', 'mastered'].includes(mastery) ? mastery : 'not_started';
         const choices = [
             ['not_started', '未开始', 'mastery1'],
@@ -1558,10 +1562,10 @@ class UIRenderer {
             <div class="question-mastery-choices">${choices.map(([value, label, shortcut]) => `
                 <button type="button" class="mastery-btn question-mastery-choice mastery-${value}${normalizedMastery === value ? ' active' : ''}"
                     data-mastery-choice="${value}" ${showShortcutHints ? `data-shortcut-hint="${shortcut}"` : ''} aria-label="掌握程度：${label}"
-                    aria-pressed="${normalizedMastery === value}" onclick="App.setQuestionMastery('${id}', '${value}')">${label}</button>
+                    aria-pressed="${normalizedMastery === value}" data-question-id="${id}" onclick="App.setQuestionMastery(this.dataset.questionId, this.dataset.masteryChoice)">${label}</button>
             `).join('')}</div>
             <button type="button" class="mastery-btn question-mistake-toggle${mistake ? ' active' : ''}"
-                ${showShortcutHints ? 'data-shortcut-hint="error"' : ''} aria-pressed="${mistake}" onclick="App.toggleQuestionMistake('${id}')">${mistake ? '✓ ' : ''}易错</button>
+                ${showShortcutHints ? 'data-shortcut-hint="error"' : ''} aria-pressed="${mistake}" data-question-id="${id}" onclick="App.toggleQuestionMistake(this.dataset.questionId)">${mistake ? '✓ ' : ''}易错</button>
         </div>`;
     }
 
@@ -1572,7 +1576,7 @@ class UIRenderer {
         if (question.image) {
             html += `
                 <div class="question-image">
-                    <img src="${assetUrl(question.image)}" alt="题目配图" loading="lazy" tabindex="0" role="button" title="点击放大图片">
+                    <img src="${this.questionAttribute(assetUrl(question.image))}" alt="题目配图" loading="lazy" tabindex="0" role="button" title="点击放大图片">
                 </div>
             `;
         }
@@ -1585,7 +1589,7 @@ class UIRenderer {
                 const content = isObj ? (opt.content_md || opt.content || opt.text || '') : opt;
                 const correct = Array.isArray(question.correct_labels) && question.correct_labels.includes(label);
                 html += `
-                        <div class="option-item" role="button" tabindex="0" aria-pressed="false" data-correct="${correct ? '1' : '0'}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}" onclick="${multi ? `App.selectQuestionOption('${escapeHtml(question.id)}', ${idx}, this)` : `App.selectOption(${idx})`}">
+                        <div class="option-item" role="button" tabindex="0" aria-pressed="false" data-correct="${correct ? '1' : '0'}" data-option-question-id="${this.questionAttribute(question.id)}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}" onclick="${multi ? `App.selectQuestionOption(this.dataset.optionQuestionId, ${idx}, this)` : `App.selectOption(${idx})`}">
                         <div class="option-label">${escapeHtml(label)}</div>
                         <div class="option-content">${renderMarkdown(content)}</div>
                     </div>
@@ -1609,7 +1613,7 @@ class UIRenderer {
                         ${nativeSolutionCaption(question)}
                     </div>
                 ` : `
-                    <div class="explanation-v2" data-explanation-v2="${escapeHtml(String(question.id))}" data-explanation-answer="${escapeHtml(String(question.answer || ''))}" hidden></div>
+                    <div class="explanation-v2" data-explanation-v2="${this.questionAttribute(question.id)}" data-explanation-answer="${this.questionAttribute(question.answer || '')}" hidden></div>
 
                     ${question.explanation ? `
                         <div class="explanation-section" data-original-explanation>

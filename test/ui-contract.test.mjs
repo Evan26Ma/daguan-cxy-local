@@ -115,7 +115,7 @@ test("Service Worker 不预缓存首屏之外的大型索引和字体", () => {
   const legacyScript = html.match(/src="(\.\/app-legacy\.js\?v=\d+)"/)?.[1];
   assert.ok(legacyScript); assert.ok(sw.includes(JSON.stringify(legacyScript)));
   assert.match(sw, /"\.\/guides\.css\?v=2"/);
-  assert.match(sw, /"\.\/styles-new\.css\?v=127"/);
+  assert.match(sw, /"\.\/styles-new\.css\?v=128"/);
   assert.match(sw, /"\.\/source-taxonomy\.js\?v=1"/);
   assert.match(sw, /"\.\/search-core\.js\?v=2"/);
   const newScript = newHtml.match(/src="(\.\/app-new\.js\?v=\d+)"/)?.[1];
@@ -160,7 +160,7 @@ test("新版与旧版都监听本地服务状态事件并刷新共享学习记�
 });
 
 test("新版入口承载新版前端并与旧版共享版本选择", () => {
-  assert.match(newHtml, /styles-new\.css\?v=127/);
+  assert.match(newHtml, /styles-new\.css\?v=128/);
   assert.match(newHtml, /ui-version\.js\?v=107/);
   assert.match(newHtml, /ui-bootstrap\.js\?v=1/);
   assert.match(newHtml, /source-taxonomy\.js\?v=1/);

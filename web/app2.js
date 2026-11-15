@@ -2,7 +2,7 @@
   "use strict";
 
   if ("serviceWorker" in navigator && location.protocol !== "file:") {
-    navigator.serviceWorker.register("./service-worker.js?v=176").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=178").catch(() => {});
   }
 
   const DATA = "./data";
@@ -1180,74 +1180,22 @@
     return src;
   }
 
-  function renderMarkdown(text) {
-    const raw = text || "";
-    const slots = [];
-    const protect = (s) => {
-      s = s.replace(/\$\$([\s\S]+?)\$\$/g, (_, m) => {
-        const i = slots.length;
-        slots.push({ display: true, tex: m });
-        return `%%MATH${i}%%`;
-      });
-      s = s.replace(/\\\[([\s\S]+?)\\\]/g, (_, m) => {
-        const i = slots.length;
-        slots.push({ display: true, tex: m });
-        return `%%MATH${i}%%`;
-      });
-      s = s.replace(/\\\(([\s\S]+?)\\\)/g, (_, m) => {
-        const i = slots.length;
-        slots.push({ display: false, tex: m });
-        return `%%MATH${i}%%`;
-      });
-      s = s.replace(/\$([^\$\n]+?)\$/g, (full, m, offset, whole) => {
-        if (whole[offset - 1] === "$" || whole[offset + full.length] === "$") return full;
-        const i = slots.length;
-        slots.push({ display: false, tex: m });
-        return `%%MATH${i}%%`;
-      });
-      return s;
-    };
+  const safeRender = window.DaguanSafeRender?.create({ assetUrl }) || {
+    markdown: value => escapeHtml(value ?? "").replace(/\n/g, "<br>"),
+    html: value => escapeHtml(value ?? ""),
+    svg: value => escapeHtml(value ?? ""),
+  };
+  function renderMarkdown(text) { return safeRender.markdown(text); }
 
-    let html;
-    try {
-      const src = protect(raw);
-      html =
-        typeof marked !== "undefined"
-          ? marked.parse(src, { breaks: true })
-          : src.replace(/</g, "&lt;").replace(/\n/g, "<br>");
-      html = html.replace(/%%MATH(\d+)%%/g, (_, idx) => {
-        const item = slots[Number(idx)];
-        if (!item || typeof katex === "undefined") {
-          return item ? (item.display ? `$$${item.tex}$$` : `$${item.tex}$`) : "";
-        }
-        try {
-          return katex.renderToString(item.tex, {
-            displayMode: item.display,
-            throwOnError: false,
-            strict: "ignore",
-          });
-        } catch {
-          return item.display ? `$$${item.tex}$$` : `$${item.tex}$`;
-        }
-      });
-    } catch {
-      html = raw.replace(/</g, "&lt;").replace(/\n/g, "<br>");
-    }
-
-    const div = document.createElement("div");
-    div.innerHTML = html;
-    div.querySelectorAll("img").forEach((img) => {
-      img.src = assetUrl(img.getAttribute("src") || "");
-      img.loading = "lazy";
-      img.decoding = "async";
-      img.alt = img.alt || "题目配图";
-      img.addEventListener("error", () => {
-        if (img.dataset.fallback) return;
-        img.dataset.fallback = "1";
-        img.src = "./assets/missing-image.svg";
-      }, { once: true });
-    });
-    return div.innerHTML;
+  function nativeSolutionBody(question) {
+    const fragment = question?.native_solution?.html;
+    if (typeof fragment !== "string" || !fragment.trim()) return "";
+    const source = question.native_solution.source || {};
+    const file = String(source.file ?? "").trim();
+    const detail = [file.endsWith("（原始图片）") ? file : source.document, source.label]
+      .map(value => String(value ?? "").trim()).filter(Boolean).join("/");
+    const caption = detail ? `<p class="native-solution-source">资料解析 · ${escapeHtml(detail)}</p>` : "";
+    return `${sanitizeAiHtml(fragment)}${caption}`;
   }
 
   function videoExplanationMarkup(q) {
@@ -1790,7 +1738,7 @@
   }
 
   function refreshCardChrome(id) {
-    const card = els.qFeed?.querySelector(`.q-card[data-id="${id}"]`);
+    const card = els.qFeed?.querySelector(`.q-card[data-id="${CSS.escape(String(id))}"]`);
     if (!card) {
       updateBrowseProgress();
       return;
@@ -1969,8 +1917,16 @@
     for (const o of facet.options) {
       const lab = document.createElement("label");
       lab.className = "filter-option";
-      const checked = ((state.advFilter || {})[dim] || []).includes(o.name) ? " checked" : "";
-      lab.innerHTML = `<input type="checkbox" data-dim="${dim}" data-name="${o.name}"${checked} /><span>${o.name}</span><small>${o.count}</small>`;
+      const input = document.createElement("input");
+      input.type = "checkbox";
+      input.dataset.dim = dim;
+      input.dataset.name = o.name;
+      input.checked = ((state.advFilter || {})[dim] || []).includes(o.name);
+      const label = document.createElement("span");
+      label.textContent = o.name;
+      const count = document.createElement("small");
+      count.textContent = o.count;
+      lab.append(input, label, count);
       box.appendChild(lab);
     }
   }
@@ -2247,7 +2203,8 @@
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;");
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
   }
 
   function paintTree() {
@@ -2549,7 +2506,7 @@
           appendFeedPage();
         }
         requestAnimationFrame(() => {
-          const el = els.qFeed.querySelector(`.q-card[data-id="${startId}"]`);
+          const el = els.qFeed.querySelector(`.q-card[data-id="${CSS.escape(String(startId))}"]`);
           if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
         });
       } else {
@@ -2694,13 +2651,13 @@
     head.innerHTML = `
       <div class="q-card-index">
         <label class="pick-check" title="勾选导出">
-          <input type="checkbox" data-pick-id="${q.id}" ${picked ? "checked" : ""} />
+          <input type="checkbox" data-pick-id="${escapeHtml(q.id)}" ${picked ? "checked" : ""} />
         </label>
-        <span class="q-num">${index + 1}</span>
-        <span class="mastery-badge" data-mastery="${mastery}">${MASTERY_LABEL[mastery]}</span>
-        <button type="button" class="attention-mark ${p.error_prone ? "" : "hidden"}" data-error-toggle="${q.id}" aria-pressed="${p.error_prone === true}">易错</button>
+        <span class="q-num">${escapeHtml(index + 1)}</span>
+        <span class="mastery-badge" data-mastery="${escapeHtml(mastery)}">${escapeHtml(MASTERY_LABEL[mastery])}</span>
+        <button type="button" class="attention-mark ${p.error_prone ? "" : "hidden"}" data-error-toggle="${escapeHtml(q.id)}" aria-pressed="${p.error_prone === true}">易错</button>
       </div>
-      <div class="q-card-meta">${escapeHtml(q.source || "未知来源")} · ${escapeHtml(TYPE_LABEL[q.type] || q.type || "题目")} · #${q.id}</div>`;
+      <div class="q-card-meta">${escapeHtml(q.source || "未知来源")} · ${escapeHtml(TYPE_LABEL[q.type] || q.type || "题目")} · #${escapeHtml(q.id)}</div>`;
     head.querySelector("[data-pick-id]").addEventListener("change", (e) => {
       setPicked(q.id, e.target.checked);
     });
@@ -2812,6 +2769,7 @@
     const answerBox = document.createElement("div");
     answerBox.className = "answer-box" + (ui.showAnswer ? "" : " hidden");
     if (ui.showAnswer) {
+      const nativeBody = nativeSolutionBody(q);
       answerBox.innerHTML = `
         <div class="answer-block">
           <h3>答案</h3>
@@ -2819,12 +2777,13 @@
         </div>
         <div class="answer-block">
           <h3>解析</h3>
-          <div class="md">${renderMarkdown(q.explanation || "（无解析）")}</div>
+          ${nativeBody ? `<div class="native-solution">${nativeBody}</div>` : `<div class="md">${renderMarkdown(q.explanation || "（无解析）")}</div>`}
         </div>
         ${videoExplanationMarkup(q)}`;
     }
 
     li.append(head, path, stem, ...(options ? [options] : []), actions, masteryRow, answerBox);
+    prepareNativeImageZoom(li);
     refreshFavoriteUI();
     return li;
   }
@@ -2937,7 +2896,11 @@
     els.answerBox.classList.toggle("hidden", !state.showAnswer);
     if (state.showAnswer) {
       els.qAnswer.innerHTML = renderMarkdown(q.answer || "（无答案）");
-      els.qExpl.innerHTML = renderMarkdown(q.explanation || "（无解析）");
+      const nativeBody = nativeSolutionBody(q);
+      els.qExpl.innerHTML = nativeBody
+        ? `<div class="native-solution">${nativeBody}</div>`
+        : renderMarkdown(q.explanation || "（无解析）");
+      prepareNativeImageZoom(els.qExpl);
       const videoLink = document.querySelector("#answer-box .answer-video-block");
       const videoMarkup = videoExplanationMarkup(q);
       if (videoMarkup) {
@@ -4070,7 +4033,10 @@
     if (withAnswers) {
       key = `<div class="print-key"><div class="print-key-row"><span class="print-lab">答</span><div class="md">${renderMarkdown(q.answer || "（无）")}</div></div>`;
       if (withExpl) {
-        key += `<div class="print-key-row"><span class="print-lab">析</span><div class="md">${renderMarkdown(q.explanation || "（无）")}</div></div>`;
+        const nativeBody = nativeSolutionBody(q);
+        key += nativeBody
+          ? `<div class="print-key-row"><span class="print-lab">析</span><div class="native-solution">${nativeBody}</div></div>`
+          : `<div class="print-key-row"><span class="print-lab">析</span><div class="md">${renderMarkdown(q.explanation || "（无）")}</div></div>`;
       }
       key += `</div>`;
     }
@@ -4393,36 +4359,11 @@
     };
   }
 
-  async function questionImages(q) {
-    if (!q) return [];
-    const source = `${q.stem || ""}\n${(q.options || []).map((o) => o.content_md || "").join("\n")}\n${q.answer || ""}\n${q.explanation || ""}`;
-    const refs = [...source.matchAll(/!\[[^\]]*\]\(([^)]+)\)|<img[^>]+src=["']([^"']+)["']/gi)].map((m) => m[1] || m[2]).filter(Boolean).slice(0, 4);
-    const out = [];
-    for (const ref of refs) {
-      try {
-        const response = await fetch(new URL(assetUrl(ref), location.href));
-        if (!response.ok) continue;
-        const blob = await response.blob();
-        if (blob.size > 2 * 1024 * 1024) continue;
-        const data = await new Promise((resolve) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = () => resolve(""); reader.readAsDataURL(blob); });
-        if (data) out.push(data);
-      } catch {}
-    }
-    return out;
+  async function questionImages(q, signal) {
+    return window.DaguanAIQuestionImages.collect({ question: q, assetUrl, fetch, location, signal });
   }
 
-  function sanitizeAiHtml(html) {
-    const wrap = document.createElement("div");
-    wrap.innerHTML = html;
-    wrap.querySelectorAll("script,iframe,object,embed,style,link,form,input,button,textarea,select").forEach((el) => el.remove());
-    wrap.querySelectorAll("*").forEach((el) => {
-      [...el.attributes].forEach((attr) => {
-        if (/^on/i.test(attr.name) || ["href", "src", "xlink:href"].includes(attr.name) && /^(javascript:|data:text\/html|vbscript:)/i.test(attr.value)) el.removeAttribute(attr.name);
-      });
-    });
-    wrap.querySelectorAll("img").forEach((img) => { img.removeAttribute("srcset"); img.loading = "lazy"; img.alt = img.alt || "AI生成图形"; });
-    return wrap.innerHTML;
-  }
+  function sanitizeAiHtml(html) { return safeRender.html(html); }
 
   function enhanceAiDiagrams(item, content) {
     const matches = [...String(content || "").matchAll(/```daguan-diagram\s*([\s\S]*?)```/gi)].slice(0, 2);
@@ -4438,7 +4379,7 @@
         .then((response) => response.ok ? response.json() : Promise.reject(new Error("图形生成失败")))
         .then((result) => {
           const status = figure.querySelector(".ai-diagram-status");
-          if (status) status.innerHTML = sanitizeAiHtml(result.svg || "图形生成失败");
+          if (status) status.innerHTML = safeRender.svg(result.svg || "图形生成失败");
         })
         .catch(() => { const status = figure.querySelector(".ai-diagram-status"); if (status) status.textContent = "图形暂时不可用，文字解答仍然保留。"; });
     }
@@ -4449,7 +4390,7 @@
     item.className = `ai-message ai-message-${role}`;
     const body = document.createElement("div");
     body.className = "ai-message-body md";
-    body.innerHTML = sanitizeAiHtml(renderMarkdown(content || (pending ? "正在思考…" : "")));
+    body.innerHTML = renderMarkdown(content || (pending ? "正在思考…" : ""));
     item.appendChild(body);
     if (role === "assistant" && !pending) enhanceAiDiagrams(item, content);
     if (role === "assistant" && !pending) {
@@ -4748,7 +4689,7 @@
       stream.timer = 0;
       if (stream.disposed || state.aiQuestionId !== questionId || document.visibilityState !== "visible") return;
       const body = pending.querySelector(".ai-message-body");
-      if (body) body.innerHTML = sanitizeAiHtml(renderMarkdown(stream.answer || "正在思考…"));
+      if (body) body.innerHTML = renderMarkdown(stream.answer || "正在思考…");
       els.aiMessages?.scrollTo({ top: els.aiMessages.scrollHeight });
     };
     const schedulePaint = () => {
@@ -4761,7 +4702,7 @@
       paintNow();
     };
     aiStreamStates.add(stream);
-    const images = (state.aiProfiles.find((item) => item.id === state.aiProfileId)?.capabilities?.vision === "passed") ? await questionImages(q) : [];
+    const images = (state.aiProfiles.find((item) => item.id === state.aiProfileId)?.capabilities?.vision === "passed") ? await questionImages(q, controller.signal) : [];
     if (stream.disposed || state.aiQuestionId !== questionId) {
       aiStreamStates.delete(stream);
       return;
@@ -4887,7 +4828,68 @@
     } catch (error) { result.textContent = error.message || String(error); }
   }
 
+  let nativeZoomSource = null;
+  function prepareNativeImageZoom(container) {
+    container.querySelectorAll(".native-solution img").forEach(image => {
+      image.tabIndex = 0;
+      image.setAttribute("role", "button");
+      image.setAttribute("aria-haspopup", "dialog");
+      image.setAttribute("aria-label", `${image.alt || "答案与解析图片"}，放大原图`);
+      image.title = "点击或按 Enter / 空格查看原图";
+    });
+  }
+
+  function openNativeImageZoom(source) {
+    let dialog = document.getElementById("question-image-zoom");
+    if (!dialog) {
+      dialog = document.createElement("dialog");
+      dialog.id = "question-image-zoom";
+      dialog.className = "question-image-zoom";
+      dialog.setAttribute("aria-labelledby", "legacy-image-zoom-title");
+      const header = document.createElement("div");
+      header.className = "image-zoom-header";
+      const title = document.createElement("strong");
+      title.id = "legacy-image-zoom-title";
+      title.textContent = "答案与解析原图";
+      const close = document.createElement("button");
+      close.type = "button";
+      close.className = "btn";
+      close.textContent = "关闭";
+      close.addEventListener("click", () => dialog.close());
+      header.append(title, close);
+      const stage = document.createElement("div");
+      stage.className = "image-zoom-stage";
+      stage.appendChild(document.createElement("img"));
+      dialog.append(header, stage);
+      dialog.addEventListener("keydown", event => event.stopPropagation());
+      dialog.addEventListener("close", () => {
+        if (nativeZoomSource?.isConnected) nativeZoomSource.focus({ preventScroll: true });
+        nativeZoomSource = null;
+      });
+      document.body.appendChild(dialog);
+    }
+    nativeZoomSource = source;
+    const image = dialog.querySelector("img");
+    image.alt = source.alt || "答案与解析原图";
+    image.src = source.currentSrc || source.src;
+    if (!dialog.open) dialog.showModal();
+  }
+
   function bindUI() {
+    document.addEventListener("click", event => {
+      const image = event.target.closest?.(".native-solution img");
+      if (!image) return;
+      event.preventDefault();
+      openNativeImageZoom(image);
+    });
+    document.addEventListener("keydown", event => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      const image = event.target.closest?.(".native-solution img");
+      if (!image) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      openNativeImageZoom(image);
+    });
     $("#preview-access-form")?.addEventListener("submit", unlockPreview);
     $("#btn-preview-lock")?.addEventListener("click", lockPreview);
     $("#btn-preview-open")?.addEventListener("click", openPreviewAccess);

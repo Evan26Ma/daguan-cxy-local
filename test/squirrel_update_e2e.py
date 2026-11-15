@@ -9,6 +9,7 @@ import socket
 import subprocess
 import threading
 import time
+import urllib.request
 from pathlib import Path
 
 from playwright.async_api import async_playwright
@@ -30,6 +31,36 @@ def free_port():
     with socket.socket() as probe:
         probe.bind(("127.0.0.1", 0))
         return probe.getsockname()[1]
+
+
+def _qa_service_endpoint(port):
+    if type(port) is not int or not 1 <= port <= 65535:
+        raise ValueError("QA service port must be an integer between 1 and 65535")
+    return f"http://127.0.0.1:{port}"
+
+
+class _NoQaRedirects(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        return None
+
+
+def _qa_service_opener():
+    # Ignore environment proxies and reject redirects, including loopback redirects.
+    return urllib.request.build_opener(urllib.request.ProxyHandler({}), _NoQaRedirects())
+
+
+def _open_qa_health(port, *, timeout=1):
+    endpoint = _qa_service_endpoint(port)
+    return _qa_service_opener().open(f"{endpoint}/api/health", timeout=timeout)
+
+
+def _open_qa_stop(port, *, timeout=5):
+    endpoint = _qa_service_endpoint(port)
+    request = urllib.request.Request(
+        f"{endpoint}/api/runtime/stop", data=b"{}", method="POST",
+        headers={"Origin": endpoint, "Content-Type": "application/json"},
+    )
+    return _qa_service_opener().open(request, timeout=timeout)
 
 
 class FeedHandler(http.server.BaseHTTPRequestHandler):
@@ -124,7 +155,7 @@ def stop_qa_application():
     owner_file = DATA_DIR / ".service-instance.json"
     try:
         owner = json.loads(owner_file.read_text(encoding="utf-8"))
-        endpoint = f"http://127.0.0.1:{owner['port']}"
+        endpoint = _qa_service_endpoint(owner["port"])
         request = subprocess.run([
             "curl.exe", "-sS", "-X", "POST", "-H", f"Origin: {endpoint}",
             "-H", "Content-Type: application/json", "--data", "{}", f"{endpoint}/api/runtime/stop",
@@ -151,12 +182,12 @@ def stop_qa_application():
             pass
 
 
-async def wait_for_health(endpoint, timeout=40):
-    import urllib.request
+async def wait_for_health(port, timeout=40):
+    endpoint = _qa_service_endpoint(port)
     deadline = time.time() + timeout
     while time.time() < deadline:
         try:
-            with urllib.request.urlopen(endpoint + "/api/health", timeout=1) as response:
+            with _open_qa_health(port, timeout=1) as response:
                 if response.status == 200:
                     return json.loads(response.read())
         except Exception:
@@ -228,16 +259,13 @@ async def main():
 
     # Close the Setup-launched first-run instance cleanly, then relaunch with a CDP port.
     try:
-        import urllib.request
         owner_file = DATA_DIR / ".service-instance.json"
         deadline = time.time() + 40
         while time.time() < deadline and not owner_file.exists():
             await asyncio.sleep(0.2)
         if owner_file.exists():
             owner = json.loads(owner_file.read_text(encoding="utf-8"))
-            endpoint = f"http://127.0.0.1:{owner['port']}"
-            request = urllib.request.Request(endpoint + "/api/runtime/stop", data=b"{}", method="POST", headers={"Origin": endpoint, "Content-Type": "application/json"})
-            with urllib.request.urlopen(request, timeout=5) as response:
+            with _open_qa_stop(owner["port"], timeout=5) as response:
                 assert response.status == 200
     except Exception as error:
         raise RuntimeError(f"Could not drain the setup-launched QA service: {error}")
@@ -326,7 +354,7 @@ async def main():
             update_button = page.locator('#daguan-desktop-bar [data-action="updates"]')
 
             owner = json.loads((DATA_DIR / ".service-instance.json").read_text(encoding="utf-8"))
-            service_url = f"http://127.0.0.1:{owner['port']}"
+            service_url = _qa_service_endpoint(owner["port"])
             browser = await playwright.chromium.launch(executable_path=CHROME, headless=True)
             browser_page = await browser.new_page()
             browser_errors = []
@@ -379,7 +407,7 @@ async def main():
             await wait_js(page, "window.__updateStates.includes('error')", 30)
             health_api = await playwright.request.new_context()
             try:
-                assert (await health_api.get(service_url + "/api/health")).ok
+                assert (await health_api.get(service_url + "/api/health", max_redirects=0)).ok
             finally:
                 await health_api.dispose()
             result["offlineUpdatesGraceful"] = True

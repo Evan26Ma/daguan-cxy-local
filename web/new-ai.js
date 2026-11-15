@@ -97,23 +97,9 @@ class AIService {
         };
     }
 
-    // 视觉档案才附带题目图片（≤4 张、每张 ≤2MB，dataURL）
-    static async questionImages(q) {
-        if (!q) return [];
-        const source = `${q.stem || q.question || ''}\n${(q.options || []).map(o => o.content_md || '').join('\n')}\n${q.answer || ''}\n${q.explanation || ''}`;
-        const refs = [...source.matchAll(/!\[[^\]]*\]\(([^)]+)\)|<img[^>]+src=["']([^"']+)["']/gi)].map(m => m[1] || m[2]).filter(Boolean).slice(0, 4);
-        const out = [];
-        for (const ref of refs) {
-            try {
-                const response = await fetch(new URL(assetUrl(ref), location.href));
-                if (!response.ok) continue;
-                const blob = await response.blob();
-                if (blob.size > 2 * 1024 * 1024) continue;
-                const data = await new Promise(resolve => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = () => resolve(''); reader.readAsDataURL(blob); });
-                if (data) out.push(data);
-            } catch {}
-        }
-        return out;
+    // 视觉档案只附带共享收集器校验过的本机题图。
+    static async questionImages(q, signal) {
+        return window.DaguanAIQuestionImages.collect({ question: q, assetUrl, fetch, location, signal });
     }
 
     // 按题隔离的聊天历史（保存在本地中控台，按 profile+question 分键）
@@ -163,7 +149,7 @@ class AIViews {
         panel.innerHTML = `
             <div class="ai-panel-resize" role="separator" tabindex="0" aria-label="调整 AI 面板宽度" aria-orientation="vertical"></div>
             <div class="ai-header">
-                <h3>AI 辅助</h3>
+                <h3 title="点击回答里的任意段落即可追问：这个是怎么来的 / 什么意思 / 什么知识点 / 你有什么想法">AI 辅助</h3>
                 <div class="ai-header-actions">
                 <button type="button" class="btn btn-text btn-sm" id="ai-expand-btn" aria-pressed="false">展开</button>
                 <button type="button" class="btn btn-text btn-sm" id="ai-settings-btn" aria-expanded="false" aria-controls="ai-panel-settings">设置</button>
@@ -193,7 +179,7 @@ class AIViews {
             </div>
 
             <nav class="ai-section-nav" id="ai-section-nav" aria-label="回答段落跳转" hidden></nav>
-            <div class="ai-messages" id="ai-messages"><div class="ai-empty"><strong>先问一个问题</strong><p>题目上下文已经准备好，选择上方提示或直接输入你的疑问。</p></div></div>
+            <div class="ai-messages" id="ai-messages"><div class="ai-empty"><strong>先问一个问题</strong><p>选择上方快捷提问或直接输入疑问；生成回答后，点击任意段落即可针对该段追问。</p></div></div>
             <div class="ai-reading-actions"><button type="button" class="btn btn-secondary btn-sm" id="ai-latest-btn" hidden>回到最新内容</button></div>
 
             <div class="ai-input-area">
@@ -347,7 +333,7 @@ class AIController {
         try {
             const includePrivate = document.getElementById('ai-include-private-new')?.checked === true;
             const profile = AIService.activeProfile();
-            const images = profile?.capabilities?.vision === 'passed' ? await AIService.questionImages(question) : [];
+            const images = profile?.capabilities?.vision === 'passed' ? await AIService.questionImages(question, controller.signal) : [];
             const response = await AIService.chatStream({ question, prompt: content, includePrivate, images, signal: controller.signal });
             AppState.aiRunId = response.headers.get('X-Daguan-Run-Id') || '';
             const reader = response.body?.getReader();

@@ -574,7 +574,8 @@ test("单题和多题渲染都提供三态直选、独立易错按钮和当前�
   StateSync.queueQuestion = (qid, patch) => queued.push({ qid: String(qid), patch: { ...patch } });
   const masteredHandler = masteryButtons[2].match(/\bonclick="([^"]+)"/)?.[1];
   assert.ok(masteredHandler, "掌握按钮应直接绑定到指定状态写入");
-  assert.match(masteredHandler, /App\.setQuestionMastery\('734', 'mastered'\)/);
+  assert.match(masteryButtons[2], /data-question-id="734"/);
+  assert.equal(masteredHandler, "App.setQuestionMastery(this.dataset.questionId, this.dataset.masteryChoice)");
   App.setQuestionMastery("734", "mastered");
   assert.equal(StorageService.getProgress().progress["734"].mastery, "mastered");
   assert.equal(StorageService.isMistake("734"), true, "直选状态不应改动易错标记");
@@ -597,7 +598,7 @@ test("单题和多题渲染都提供三态直选、独立易错按钮和当前�
   assert.match(multiButtons[2], /aria-pressed="true"/);
   const mistakeHandler = getStatusButtons(multiMarkup).find(tag => /\bclass="[^"]*question-mistake-toggle/.test(tag))?.match(/\bonclick="([^"]+)"/)?.[1];
   assert.ok(mistakeHandler, "多题卡易错按钮应独立绑定易错切换");
-  assert.match(mistakeHandler, /App\.toggleQuestionMistake\('734'\)/);
+  assert.equal(mistakeHandler, "App.toggleQuestionMistake(this.dataset.questionId)");
   await App.toggleQuestionMistake("734");
   assert.equal(StorageService.isMistake("734"), false);
   assert.equal(StorageService.getProgress().progress["734"].mastery, "mastered", "多题卡易错切换不应改动掌握状态");
