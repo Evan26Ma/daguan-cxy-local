@@ -158,3 +158,33 @@ test("合并本地题库：分类 ID 冲突与章节数量不符仍会被拦下"
     assert.deepEqual(await readJson(path.join(dir, "shards/概率统计.json")), [BASE_QUESTION]);
   });
 });
+
+test("合并本地模拟卷：同时更新科目与模拟卷根节点，重复执行不重复计数", async () => {
+  await withTempDir("daguan-local-mock-", async dir => {
+    await seedDataDir(dir);
+    const categories = await readJson(path.join(dir, "categories.json"));
+    categories.push({ id: 2500, name: "模拟卷", parent_id: null, question_count: 0, direct_count: 0,
+      children: [{ id: 2503, name: "数三", parent_id: 2500, question_count: 0, direct_count: 0, children: [] }] });
+    await writeJson(path.join(dir, "categories.json"), categories);
+    const manifest = await readJson(path.join(dir, "manifest.json"));
+    manifest.shards["模拟哥专区"] = { file: "shards/模拟哥专区.json", count: 0 };
+    await writeJson(path.join(dir, "manifest.json"), manifest);
+    await writeJson(path.join(dir, "shards/模拟哥专区.json"), []);
+    await writeJson(path.join(dir, "local_question_banks/mock.json"), {
+      ...overlayWith([overlayQuestion({ category_path: "模拟卷 / 数三 / 测试题库 / 第一套" })]),
+      parentCategoryId: 9910008,
+      fallbackParentCategoryId: 2503,
+      shard: "模拟哥专区",
+    });
+    assert.equal((await mergeLocalQuestionBanks(dir)).added, 1);
+    const next = await readJson(path.join(dir, "categories.json"));
+    const root = next.find(category => category.id === 2500);
+    assert.equal(root.question_count, 1);
+    assert.equal(root.children[0].question_count, 1);
+    assert.equal(root.children[0].children[0].parent_id, 2503);
+    const members = await readJson(path.join(dir, "category_questions.json"));
+    for (const id of [2500, 2503, 9900001, 9900002]) assert.deepEqual(members[id], [99000001]);
+    assert.equal((await mergeLocalQuestionBanks(dir)).added, 0);
+    assert.deepEqual(await readJson(path.join(dir, "category_questions.json")), members);
+  });
+});

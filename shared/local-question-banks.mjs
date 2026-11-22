@@ -22,6 +22,16 @@ function findCategory(categories, id) {
   return null;
 }
 
+function findCategoryPath(categories, id, ancestors = []) {
+  for (const category of categories) {
+    const current = [...ancestors, category];
+    if (Number(category.id) === Number(id)) return current;
+    const found = findCategoryPath(category.children || [], id, current);
+    if (found) return found;
+  }
+  return null;
+}
+
 function localCategory(id, name, parentId, questionCount, children = []) {
   return {
     id,
@@ -88,7 +98,11 @@ export async function mergeLocalQuestionBanks(dataDir, overlayDir = dataDir) {
     if (!shardMeta?.file) throw new Error(`本地题库 ${file} 指向的分片不存在：${shardName}`);
     const shardPath = path.join(dataDir, shardMeta.file);
     const shard = await readJson(shardPath);
-    const rootCategory = findCategory(categories, overlay.parentCategoryId);
+    const ancestors = findCategoryPath(categories, overlay.parentCategoryId)
+      || (overlay.fallbackParentCategoryId == null
+        ? null
+        : findCategoryPath(categories, overlay.fallbackParentCategoryId));
+    const rootCategory = ancestors?.at(-1);
     if (!rootCategory) throw new Error(`本地题库 ${file} 找不到父分类 ${overlay.parentCategoryId}`);
     if (findCategory(categories, overlay.rootCategory.id)) throw new Error(`分类 ID 已被占用：${overlay.rootCategory.id}`);
     for (const chapter of overlay.chapters) {
@@ -104,14 +118,14 @@ export async function mergeLocalQuestionBanks(dataDir, overlayDir = dataDir) {
     const localRoot = localCategory(
       overlay.rootCategory.id,
       overlay.rootCategory.name,
-      overlay.parentCategoryId,
+      rootCategory.id,
       overlay.questions.length,
       chapters,
     );
     rootCategory.children ||= [];
     rootCategory.children.push(localRoot);
-    rootCategory.question_count = Number(rootCategory.question_count || 0) + overlay.questions.length;
 
+    const categoryLineage = ancestors.map(category => category.id);
     const chapterIds = new Set(overlay.chapters.map((chapter) => Number(chapter.id)));
     const chapterCounts = new Map(overlay.chapters.map((chapter) => [Number(chapter.id), 0]));
     for (const question of overlay.questions) {
@@ -130,12 +144,15 @@ export async function mergeLocalQuestionBanks(dataDir, overlayDir = dataDir) {
         serial: question.serial ?? null,
         stem: question.stem || "",
       });
-      for (const targetCategoryId of [overlay.parentCategoryId, overlay.rootCategory.id, categoryId]) {
+      for (const targetCategoryId of [...categoryLineage, overlay.rootCategory.id, categoryId]) {
         const key = String(targetCategoryId);
         categoryQuestions[key] ||= [];
         categoryQuestions[key].push(question.id);
       }
       manifest.types[question.type] = Number(manifest.types[question.type] || 0) + 1;
+    }
+    for (const category of ancestors) {
+      category.question_count = categoryQuestions[String(category.id)]?.length || 0;
     }
     for (const chapter of chapters) {
       const actualCount = chapterCounts.get(Number(chapter.id));
