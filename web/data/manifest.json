@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "total": 7599,
+  "total": 7665,
   "types": {
-    "subjective": 5410,
-    "single_choice": 2184,
+    "subjective": 5446,
+    "single_choice": 2214,
     "multiple_choice": 5
   },
   "shards": {
@@ -25,14 +25,14 @@
     },
     "模拟哥专区": {
       "file": "shards/模拟哥专区.json",
-      "count": 998
+      "count": 1064
     },
     "未分类": {
       "file": "shards/未分类.json",
       "count": 0
     }
   },
-  "asset_count": 2851,
+  "asset_count": 3020,
   "asset_base": "./data/assets/",
   "synced_at": "2026-10-22T12:29:01.418Z",
   "source": "https://www.cxyonly.fans/math",
