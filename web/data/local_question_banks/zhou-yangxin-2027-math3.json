@@ -35,27 +35,27 @@
   "questions": [
     {
       "id": 99007001,
-      "stem": "![2027周洋鑫三套卷·数三·第1套·第1题](assets/51002d80804b9b4f5e2e6f5ab8513b0afc3fe98420ddf7f3673780d3b42fb392.png)",
+      "stem": "曲线 $y=\\frac{x^2}{x-1}-\\sqrt{x^2+2x+5}$ 在 $x\\to-\\infty$ 时的斜渐近线为",
       "options": [
         {
           "id": "opt-a",
           "label": "A",
-          "content_md": "见题图 A 项"
+          "content_md": "$y=2x-2$"
         },
         {
           "id": "opt-b",
           "label": "B",
-          "content_md": "见题图 B 项"
+          "content_md": "$y=-2x+2$"
         },
         {
           "id": "opt-c",
           "label": "C",
-          "content_md": "见题图 C 项"
+          "content_md": "$y=2x+1$"
         },
         {
           "id": "opt-d",
           "label": "D",
-          "content_md": "见题图 D 项"
+          "content_md": "$y=2x+2$"
         }
       ],
       "answer": "D",
@@ -125,27 +125,27 @@
     },
     {
       "id": 99007002,
-      "stem": "![2027周洋鑫三套卷·数三·第1套·第2题](assets/e7c09f6715dedcc782f8f83e8ef7e557e7b92d7e9af8f6fc951f60c44786e51e.png)",
+      "stem": "设函数\n\n$$\nf(x)=\\begin{cases}\n(x+1)e^{x-1}, & 0\\le x<1,\\\\\n-1, & x=1,\\\\\nx+1+\\ln x, & 1<x\\le 2,\n\\end{cases}\n\\qquad F(x)=\\int_0^x f(t)\\,\\mathrm{d}t,\n$$\n\n则",
       "options": [
         {
           "id": "opt-a",
           "label": "A",
-          "content_md": "见题图 A 项"
+          "content_md": "$F(x)$ 在 $[0,2]$ 上存在间断点。"
         },
         {
           "id": "opt-b",
           "label": "B",
-          "content_md": "见题图 B 项"
+          "content_md": "$F(x)$ 在 $[0,2]$ 上连续，但在 $x=1$ 处不可导。"
         },
         {
           "id": "opt-c",
           "label": "C",
-          "content_md": "见题图 C 项"
+          "content_md": "$F(x)$ 在 $(0,2)$ 上可导，且 $F'(1)=-1$。"
         },
         {
           "id": "opt-d",
           "label": "D",
-          "content_md": "见题图 D 项"
+          "content_md": "$F(x)$ 在 $(0,2)$ 上可导，且 $F'(1)=2$。"
         }
       ],
       "answer": "D",
@@ -232,27 +232,27 @@
     },
     {
       "id": 99007003,
-      "stem": "![2027周洋鑫三套卷·数三·第1套·第3题](assets/541224b262d580cf5a7aea104d96ed5102cc8cafbda0bb1b15760e0cf7ff4255.png)",
+      "stem": "设函数 $y=y(x)$ 满足 $y''+4y'+5y=0$，且 $y(0)=0$，$y'(0)=1$。若实数 $a$ 使反常积分\n\n$$\n\\int_0^{+\\infty}e^{ax}y(x)\\,\\mathrm{d}x=\\frac12,\n$$\n\n则 $a=$",
       "options": [
         {
           "id": "opt-a",
           "label": "A",
-          "content_md": "见题图 A 项"
+          "content_md": "$-1$"
         },
         {
           "id": "opt-b",
           "label": "B",
-          "content_md": "见题图 B 项"
+          "content_md": "$0$"
         },
         {
           "id": "opt-c",
           "label": "C",
-          "content_md": "见题图 C 项"
+          "content_md": "$1$"
         },
         {
           "id": "opt-d",
           "label": "D",
-          "content_md": "见题图 D 项"
+          "content_md": "$2$"
         }
       ],
       "answer": "C",
@@ -339,27 +339,27 @@
     },
     {
       "id": 99007004,
-      "stem": "![2027周洋鑫三套卷·数三·第1套·第4题](assets/ccbec0e1653de6b0a31be30e90da84c11cd212fd67a0b0d0137dc220a2e57a2e.png)",
+      "stem": "设函数\n\n$$\nf(x,y)=\\begin{cases}\ny^2\\sin\\frac{x}{y^2}, & y\\ne 0,\\\\\n0, & y=0,\n\\end{cases}\n$$\n\n在 $(0,0)$ 处",
       "options": [
         {
           "id": "opt-a",
           "label": "A",
-          "content_md": "见题图 A 项"
+          "content_md": "$f(x,y)$ 可微，但 $\\frac{\\partial f}{\\partial x}$ 不连续。"
         },
         {
           "id": "opt-b",
           "label": "B",
-          "content_md": "见题图 B 项"
+          "content_md": "$f(x,y)$ 可微，且 $\\frac{\\partial f}{\\partial x}$ 连续。"
         },
         {
           "id": "opt-c",
           "label": "C",
-          "content_md": "见题图 C 项"
+          "content_md": "$f(x,y)$ 不可微，但 $\\frac{\\partial f}{\\partial x}$ 连续。"
         },
         {
           "id": "opt-d",
           "label": "D",
-          "content_md": "见题图 D 项"
+          "content_md": "$f(x,y)$ 不可微，且 $\\frac{\\partial f}{\\partial x}$ 不连续。"
         }
       ],
       "answer": "A",
@@ -446,27 +446,27 @@
     },
     {
       "id": 99007005,
-      "stem": "![2027周洋鑫三套卷·数三·第1套·第5题](assets/cdb88516e27b3fcbcd9d58c43b7b36963c4a3319fda1f47da92a8af6cffadaf6.png)",
+      "stem": "设 $A$ 为三阶实对称矩阵，满足 $A^2-A-2E=O$，$\\operatorname{tr}(A)=0$，其中 $E$ 为三阶单位矩阵。若 $A$ 与 $A^2-tE$ 合同但不相似，则实数 $t$ 的取值范围为",
       "options": [
         {
           "id": "opt-a",
           "label": "A",
-          "content_md": "见题图 A 项"
+          "content_md": "$(1,4)$"
         },
         {
           "id": "opt-b",
           "label": "B",
-          "content_md": "见题图 B 项"
+          "content_md": "$(1,2)\\cup(2,4)$"
         },
         {
           "id": "opt-c",
           "label": "C",
-          "content_md": "见题图 C 项"
+          "content_md": "$(-\\infty,1)\\cup(4,+\\infty)$"
         },
         {
           "id": "opt-d",
           "label": "D",
-          "content_md": "见题图 D 项"
+          "content_md": "$(1,3)\\cup(3,4)$"
         }
       ],
       "answer": "B",
@@ -536,27 +536,27 @@
     },
     {
       "id": 99007006,
-      "stem": "![2027周洋鑫三套卷·数三·第1套·第6题](assets/c8ea57b84cb54007648fc1f4fd574f20e8ef29f1533c9654f8e1893a478d10ee.png)",
+      "stem": "考虑下列矩阵\n\n$$\n\\begin{gathered}\n(1)\\ \\begin{pmatrix}1&0&2\\\\0&3&4\\\\2&4&5\\end{pmatrix}\n\\qquad\n(2)\\ \\begin{pmatrix}3&2&-2\\\\-7&-1&7\\\\4&2&-3\\end{pmatrix}\n\\\\[6pt]\n(3)\\ \\begin{pmatrix}1&2&-1\\\\0&1&0\\\\-1&2&1\\end{pmatrix}\n\\qquad\n(4)\\ \\begin{pmatrix}-1&0&1\\\\-2&0&2\\\\3&0&-3\\end{pmatrix}\n\\end{gathered}\n$$\n\n其中能相似对角化的矩阵个数为",
       "options": [
         {
           "id": "opt-a",
           "label": "A",
-          "content_md": "见题图 A 项"
+          "content_md": "$1$"
         },
         {
           "id": "opt-b",
           "label": "B",
-          "content_md": "见题图 B 项"
+          "content_md": "$2$"
         },
         {
           "id": "opt-c",
           "label": "C",
-          "content_md": "见题图 C 项"
+          "content_md": "$3$"
         },
         {
           "id": "opt-d",
           "label": "D",
-          "content_md": "见题图 D 项"
+          "content_md": "$4$"
         }
       ],
       "answer": "C",
@@ -643,27 +643,27 @@
     },
     {
       "id": 99007007,
-      "stem": "![2027周洋鑫三套卷·数三·第1套·第7题](assets/68dce557e8ea0edd6acc744442a7f1d89c1279eb01c2ee950c1e7cecf98df104.png)",
+      "stem": "设 $A,B$ 为四阶实矩阵，$E$ 为四阶单位矩阵，且 $r(A-E)=r(B+E)=1$，则下列结论中不一定成立的是",
       "options": [
         {
           "id": "opt-a",
           "label": "A",
-          "content_md": "见题图 A 项"
+          "content_md": "$r(A+B)\\le 2$。"
         },
         {
           "id": "opt-b",
           "label": "B",
-          "content_md": "见题图 B 项"
+          "content_md": "$A$ 与 $B$ 至少有 2 个线性无关的公共特征向量。"
         },
         {
           "id": "opt-c",
           "label": "C",
-          "content_md": "见题图 C 项"
+          "content_md": "$r(AB+E)=3$。"
         },
         {
           "id": "opt-d",
           "label": "D",
-          "content_md": "见题图 D 项"
+          "content_md": "$A$ 与 $B$ 存在公共特征向量且对应的特征值不同。"
         }
       ],
       "answer": "C",
@@ -750,27 +750,27 @@
     },
     {
       "id": 99007008,
-      "stem": "![2027周洋鑫三套卷·数三·第1套·第8题](assets/4a2b20298bce85b0adea188344590634573a2ab784f1aba9a48e51dfe07cb810.png)",
+      "stem": "某检测装置每次试验输出一个随机读数 $X$，其概率密度为\n\n$$\nf(x)=\\begin{cases}\n\\frac{x}{2}, & 0<x<2,\\\\\n0, & \\text{其他}.\n\\end{cases}\n$$\n\n各次试验的读数相互独立且同分布。连续进行试验，当已获得的读数中既有小于 $1$ 的，又有大于 $\\sqrt{2}$ 的时停止。记 $Y$ 为停止时的试验次数，则 $P\\{Y\\le 3\\}=$",
       "options": [
         {
           "id": "opt-a",
           "label": "A",
-          "content_md": "见题图 A 项"
+          "content_md": "$\\frac{3}{32}$"
         },
         {
           "id": "opt-b",
           "label": "B",
-          "content_md": "见题图 B 项"
+          "content_md": "$\\frac{7}{32}$"
         },
         {
           "id": "opt-c",
           "label": "C",
-          "content_md": "见题图 C 项"
+          "content_md": "$\\frac{9}{32}$"
         },
         {
           "id": "opt-d",
           "label": "D",
-          "content_md": "见题图 D 项"
+          "content_md": "$\\frac{15}{32}$"
         }
       ],
       "answer": "D",
@@ -857,27 +857,27 @@
     },
     {
       "id": 99007009,
-      "stem": "![2027周洋鑫三套卷·数三·第1套·第9题](assets/7e16c81ac79838631dfe05ca690482dd9a2eafe9a7d8d2e5c99445e3a12124b6.png)",
+      "stem": "在二维随机变量 $(X,Y)$ 中，$X$ 的边缘概率密度为\n\n$$\nf_X(x)=\\begin{cases}\n2e^{-2x}, & x>0,\\\\\n0, & \\text{其他}.\n\\end{cases}\n$$\n\n在给定 $X=x$（$x>0$）的条件下，$Y$ 的条件概率密度为\n\n$$\nf_{Y\\mid X}(y\\mid x)=\\begin{cases}\ne^{-(y-x)}, & y>x,\\\\\n0, & \\text{其他}.\n\\end{cases}\n$$\n\n则协方差 $\\operatorname{Cov}(X,Y)=$",
       "options": [
         {
           "id": "opt-a",
           "label": "A",
-          "content_md": "见题图 A 项"
+          "content_md": "$0$"
         },
         {
           "id": "opt-b",
           "label": "B",
-          "content_md": "见题图 B 项"
+          "content_md": "$\\frac14$"
         },
         {
           "id": "opt-c",
           "label": "C",
-          "content_md": "见题图 C 项"
+          "content_md": "$\\frac34$"
         },
         {
           "id": "opt-d",
           "label": "D",
-          "content_md": "见题图 D 项"
+          "content_md": "$1$"
         }
       ],
       "answer": "B",
@@ -947,27 +947,27 @@
     },
     {
       "id": 99007010,
-      "stem": "![2027周洋鑫三套卷·数三·第1套·第10题](assets/c9d5566bfcb8ca2433ef43085411b68df574628ed4e5266511096bbe1d5436da.png)",
+      "stem": "某生产线生产的零件长度 $X$（单位为 mm）服从正态分布 $N(50,2^2)$，长度超过 54.66 mm 的零件称为超长件。随机抽取 200 个零件，假设各零件的长度相互独立。利用泊松定理，抽取的零件中至多有一个超长件的概率近似为（附标准正态分布函数 $\\Phi(2.33)\\approx 0.99$）",
       "options": [
         {
           "id": "opt-a",
           "label": "A",
-          "content_md": "见题图 A 项"
+          "content_md": "$e^{-2}$"
         },
         {
           "id": "opt-b",
           "label": "B",
-          "content_md": "见题图 B 项"
+          "content_md": "$2e^{-2}$"
         },
         {
           "id": "opt-c",
           "label": "C",
-          "content_md": "见题图 C 项"
+          "content_md": "$3e^{-2}$"
         },
         {
           "id": "opt-d",
           "label": "D",
-          "content_md": "见题图 D 项"
+          "content_md": "$1-3e^{-2}$"
         }
       ],
       "answer": "C",
@@ -1054,7 +1054,7 @@
     },
     {
       "id": 99007011,
-      "stem": "![2027周洋鑫三套卷·数三·第1套·第11题](assets/8ae5623f07ed23ddfbabd99bf25e4c4ec2fc31d8a0d0c50bbfe353ba764035f4.png)",
+      "stem": "差分方程 $\\Delta y_t-2y_t=3^{t+1}$ 的通解为 $y_t=\\underline{\\qquad}$。",
       "options": [],
       "answer": "$(C+t)3^t$",
       "explanation": "![2027周洋鑫三套卷·数三·第1套·第11题解析](assets/b31772c56072216d1e97d692a6bdb2f49066c8233d7e63fb566159ca50b2a34c.png)",
@@ -1121,7 +1121,7 @@
     },
     {
       "id": 99007012,
-      "stem": "![2027周洋鑫三套卷·数三·第1套·第12题](assets/f81de07ab7665fe78ce368bb58d845cb321c618ac9a7e086687d08b3a7c32c63.png)",
+      "stem": "设函数\n\n$$\nf(x)=\\lim_{n\\to\\infty}\\frac{(ax+b)e^{nx}+x^2-x+2}{1+e^{nx}},\n$$\n\n其中 $a,b$ 为常数。若 $f(x)$ 在 $x=0$ 处可导，则 $a+b=\\underline{\\qquad}$。",
       "options": [],
       "answer": "$1$",
       "explanation": "![2027周洋鑫三套卷·数三·第1套·第12题解析（1）](assets/5fb3fe64ec58b7f1baaa8b6d605d117a9ba70c44c18cdc64ffb35107ad1d3d2b.png)\n\n![2027周洋鑫三套卷·数三·第1套·第12题解析（2）](assets/ba73741ca616635e29674e784a2a4e4262d9aa7bebc6a8765bb0f569f88415e0.png)",
@@ -1205,7 +1205,7 @@
     },
     {
       "id": 99007013,
-      "stem": "![2027周洋鑫三套卷·数三·第1套·第13题](assets/b33a29b0d32c6d276494e7c3613e9ebf9ebaaa2c690d38fb737195718d9d4669.png)",
+      "stem": "当 $|x|<1$ 时，幂级数\n\n$$\n\\sum_{n=1}^{\\infty}\\frac{(-1)^{n-1}n}{(n+1)(n+2)}x^{n+2}\n$$\n\n的和函数为 $\\underline{\\qquad}$。",
       "options": [],
       "answer": "$(x+2)\\ln(1+x)-2x$",
       "explanation": "![2027周洋鑫三套卷·数三·第1套·第13题解析](assets/e5ca934360fec272b59e4c22e6c25c62bc2086f1eea8eb8da75ef6f2a2185397.png)",
@@ -1272,7 +1272,7 @@
     },
     {
       "id": 99007014,
-      "stem": "![2027周洋鑫三套卷·数三·第1套·第14题](assets/af53a8d626f9e95397ada4cfa8521b5c29fe623ee6201a88d193bc9e7ea765e3.png)",
+      "stem": "设函数 $f(u,v)$ 具有连续的一阶偏导数，且满足\n\n$$\n\\frac{\\partial f}{\\partial u}+2u\\frac{\\partial f}{\\partial v}=2uf(u,v)+2uv,\n\\qquad f(0,0)=1.\n$$\n\n令 $F(x)=f(x,x^2)$，则 $F(x)=\\underline{\\qquad}$。",
       "options": [],
       "answer": "$2e^{x^2}-x^2-1$",
       "explanation": "![2027周洋鑫三套卷·数三·第1套·第14题解析（1）](assets/3bdad466d36c2fafcdf18e5248e6a44c02c89c9b6d2db90ba32d06e63622ad1a.png)\n\n![2027周洋鑫三套卷·数三·第1套·第14题解析（2）](assets/527ba80653d1df70a78128db58573aa8b645da5b2aaa0b8f5c7ba3e023674f03.png)",
@@ -1356,7 +1356,7 @@
     },
     {
       "id": 99007015,
-      "stem": "![2027周洋鑫三套卷·数三·第1套·第15题](assets/1474331df61fb3416f768c6a554b651181edda8121fd5fe500f12f5cfe64f434.png)",
+      "stem": "设 $A,B$ 均为三阶矩阵，且 $A$ 不可逆。若 $AB+5B=O$，$r(B)=2$，则 $|A+6E|=\\underline{\\qquad}$。",
       "options": [],
       "answer": "$6$",
       "explanation": "![2027周洋鑫三套卷·数三·第1套·第15题解析](assets/53b2c3ede6ed33802738eec8c10414c80eb0ba3a30ca0604616ad2f66f3a63c1.png)",
@@ -1423,7 +1423,7 @@
     },
     {
       "id": 99007016,
-      "stem": "![2027周洋鑫三套卷·数三·第1套·第16题](assets/99502a739f0578fb07870d45aea7b64a1aeca493ad34d0a18e980461efea1e14.png)",
+      "stem": "设 $A,B,C$ 为三个两两独立的随机事件，且 $P(A)=\\frac12$，$P(B)=\\frac13$，$P(C)=\\frac14$，$P(ABC)=0$。已知 $A,B,C$ 中至少有一个事件发生，则其中恰有一个事件发生的条件概率为 $\\underline{\\qquad}$。",
       "options": [],
       "answer": "$\\frac{8}{17}$",
       "explanation": "![2027周洋鑫三套卷·数三·第1套·第16题解析](assets/70945b3b488b52b54cb26a1bc766e4313081d38f5328f8c6807d519d26e85862.png)",
@@ -1490,7 +1490,7 @@
     },
     {
       "id": 99007017,
-      "stem": "![2027周洋鑫三套卷·数三·第1套·第17题](assets/52ea43c52078209d292773c748eb1af26232f00c350e394fcd0a82782e4706ad.png)",
+      "stem": "求二元函数 $f(x,y)=x(x-y)^2+3x^5-5x^3$ 的极值。",
       "options": [],
       "answer": "答案与步骤见原书解析。",
       "explanation": "![2027周洋鑫三套卷·数三·第1套·第17题解析](assets/515c797efecda95d55e323451d19505afbf6263f2ceb55db3f694f8d772ef079.png)",
@@ -1557,7 +1557,7 @@
     },
     {
       "id": 99007018,
-      "stem": "![2027周洋鑫三套卷·数三·第1套·第18题](assets/49f8b78a714df29869b3294a1153bf24c5ee3883630248ace8bae6e6a9ddc7d1.png)",
+      "stem": "设 $a>0$，曲线弧 $C$ 的极坐标方程为 $r=\\frac{a}{1+\\cos\\theta}$，$-\\frac{\\pi}{2}\\le\\theta\\le\\frac{\\pi}{2}$。记曲线弧 $C$ 与其两端点的连线段围成的平面区域为 $D$。将区域 $D$ 绕极轴旋转一周，求所得旋转体的体积 $V$。",
       "options": [],
       "answer": "答案与步骤见原书解析。",
       "explanation": "![2027周洋鑫三套卷·数三·第1套·第18题解析（1）](assets/0096c18c359346c3de4e185c4bd3abe66a903660838c8feb9fa38a3674d284f1.png)\n\n![2027周洋鑫三套卷·数三·第1套·第18题解析（2）](assets/d5e80847dab227a7f31a46554b491c7676b23760c4c9434dc2a35d49ca240886.png)",
@@ -1641,7 +1641,7 @@
     },
     {
       "id": 99007019,
-      "stem": "![2027周洋鑫三套卷·数三·第1套·第19题](assets/f2731f4d3ccece1184b4bf0c34bf7075dd323e0ec90d85171c695bbf0b77f990.png)",
+      "stem": "设函数 $F(y)=\\int_0^y(1+u^2)e^{-u^2/2}\\,\\mathrm{d}u$，其在值域上的反函数记为 $y=f(x)$，并记 $a=F(1)$。\n\n（1）求曲线 $y=f(x)$ 在 $x=a$ 处的切线方程。\n\n（2）求曲线 $y=f(x)$ 的所有拐点。",
       "options": [],
       "answer": "答案与步骤见原书解析。",
       "explanation": "![2027周洋鑫三套卷·数三·第1套·第19题解析](assets/0016ab4d8d99ff8e970189820c7ed0299053afe453e1fc58738fe966c928c7c0.png)",
@@ -1708,7 +1708,7 @@
     },
     {
       "id": 99007020,
-      "stem": "![2027周洋鑫三套卷·数三·第1套·第20题](assets/a67213afede68af3160c30729ff68de5b8c8b56a5ab8fd4952df470425a6365a.png)",
+      "stem": "设平面区域 $D=\\{(x,y)\\mid 2\\le e^{x^2+y^2}+x^2y^2\\le 4\\}$，计算\n\n$$\nI=\\iint_D\\frac{x^2e^{x^2+y^2}+x^2y^2+xy}{x^2+y^2}\\,\\mathrm{d}x\\,\\mathrm{d}y.\n$$",
       "options": [],
       "answer": "答案与步骤见原书解析。",
       "explanation": "![2027周洋鑫三套卷·数三·第1套·第20题解析（1）](assets/8ca1873df60352c94dad6b640f2b81b5fe40043fa255b09bd60539412a2fee52.png)\n\n![2027周洋鑫三套卷·数三·第1套·第20题解析（2）](assets/5fe8d7caf1b42185b10b2707b37fe2932adaa5199cc49fad6d4087defb31fe07.png)",
@@ -1792,7 +1792,7 @@
     },
     {
       "id": 99007021,
-      "stem": "![2027周洋鑫三套卷·数三·第1套·第21题](assets/2d172b92356511f378663ca24ee3d10699a24001fadfe04e7afa42176586235e.png)",
+      "stem": "设 $A$ 为三阶实对称矩阵，$\\alpha$ 与 $A\\alpha$ 均为三维单位列向量，且 $\\alpha^{\\mathrm T}A\\alpha=0$，$A^3\\alpha=4A\\alpha$。记 $P=(\\alpha,A\\alpha,A^2\\alpha)$。\n\n（1）计算 $P^{\\mathrm T}P$，并求 $P^{-1}AP$。\n\n（2）求正交变换 $\\mathbf{x}=Q\\mathbf{y}$，将二次型 $f(\\mathbf{x})=\\mathbf{x}^{\\mathrm T}A\\mathbf{x}$ 化为标准形。",
       "options": [],
       "answer": "答案与步骤见原书解析。",
       "explanation": "![2027周洋鑫三套卷·数三·第1套·第21题解析（1）](assets/691105a53e460d245641b216c5ae7fd662ccc7116ba74bd72351649ac51e53cf.png)\n\n![2027周洋鑫三套卷·数三·第1套·第21题解析（2）](assets/ee14f89c629b55ba11c616d25858de262a3845a3836b28b4bfc5961768b1237d.png)",
@@ -1876,7 +1876,7 @@
     },
     {
       "id": 99007022,
-      "stem": "![2027周洋鑫三套卷·数三·第1套·第22题](assets/2d4bed094decde8734a1062b863afa6b6d5c3e264a793398c73808d44d26c4c2.png)",
+      "stem": "某自动投放装置将物件投放至传送带，物件落点相对于传送带中心线的横向偏移量记为 $X$，向右偏移为正，向左偏移为负。在给定工作模式下，假设 $X$ 的概率密度为\n\n$$\nf(x;\\theta)=\\begin{cases}\n\\frac{3x^2}{2\\theta^3}, & |x|\\le\\theta,\\\\\n0, & \\text{其他}.\n\\end{cases}\n$$\n\n其中未知参数 $\\theta>0$ 表示该装置落点横向偏移量的最大绝对值。为估计 $\\theta$，独立进行 $n$ 次投放试验，所得偏移量 $X_1,X_2,\\ldots,X_n$ 构成来自总体 $X$ 的简单随机样本。\n\n（1）求 $\\theta$ 的矩估计量 $\\hat{\\theta}_1$ 及最大似然估计量 $\\hat{\\theta}_2$。\n\n（2）求 $E(\\hat{\\theta}_2)$。",
       "options": [],
       "answer": "答案与步骤见原书解析。",
       "explanation": "![2027周洋鑫三套卷·数三·第1套·第22题解析（1）](assets/d700a60714c3773a83108f8f96d3984bb041d9a02c17192c1cffdc3a3dc4a2fb.png)\n\n![2027周洋鑫三套卷·数三·第1套·第22题解析（2）](assets/baa43c51d79fd554da2f39fffc68481a0d489d4d597443ce8810ea50e75fb3ff.png)",
@@ -1960,27 +1960,27 @@
     },
     {
       "id": 99007023,
-      "stem": "![2027周洋鑫三套卷·数三·第2套·第1题](assets/dfe8f4d061725efee3f66345c53869f1ae7d0474ce8edf6d85eeaab664200d1f.png)",
+      "stem": "已知函数 $f(x)=\\frac{\\ln(1-x)}{1+x}$ 在 $x=0$ 处的 3 次泰勒多项式为 $ax+bx^2+cx^3$，则",
       "options": [
         {
           "id": "opt-a",
           "label": "A",
-          "content_md": "见题图 A 项"
+          "content_md": "$a=-1,\\ b=\\frac12,\\ c=-\\frac76$。"
         },
         {
           "id": "opt-b",
           "label": "B",
-          "content_md": "见题图 B 项"
+          "content_md": "$a=-1,\\ b=-\\frac12,\\ c=\\frac76$。"
         },
         {
           "id": "opt-c",
           "label": "C",
-          "content_md": "见题图 C 项"
+          "content_md": "$a=-1,\\ b=\\frac12,\\ c=-\\frac56$。"
         },
         {
           "id": "opt-d",
           "label": "D",
-          "content_md": "见题图 D 项"
+          "content_md": "$a=-1,\\ b=-\\frac12,\\ c=\\frac56$。"
         }
       ],
       "answer": "C",
@@ -2050,27 +2050,27 @@
     },
     {
       "id": 99007024,
-      "stem": "![2027周洋鑫三套卷·数三·第2套·第2题](assets/6e4955abe7283feef7367aaa167d788b9b70ff7d50a01557c9df0282a4243cf5.png)",
+      "stem": "设函数\n\n$$\nf(x)=\\begin{cases}\n\\sec x, & -\\frac{\\pi}{2}<x\\le 0,\\\\\ne^{2x}+2x, & 0<x<\\frac{\\pi}{2},\n\\end{cases}\n$$\n\n则 $f(x)$ 在 $\\left(-\\frac{\\pi}{2},\\frac{\\pi}{2}\\right)$ 内的一个原函数为",
       "options": [
         {
           "id": "opt-a",
           "label": "A",
-          "content_md": "见题图 A 项"
+          "content_md": "$\\displaystyle F(x)=\\begin{cases} \\ln(\\sec x+\\tan x)+1, & x\\le 0,\\\\ \\frac12e^{2x}+x^2, & x>0. \\end{cases}$"
         },
         {
           "id": "opt-b",
           "label": "B",
-          "content_md": "见题图 B 项"
+          "content_md": "$\\displaystyle F(x)=\\begin{cases} \\ln(\\sec x+\\tan x), & x\\le 0,\\\\ \\frac12e^{2x}+x^2+\\frac12, & x>0. \\end{cases}$"
         },
         {
           "id": "opt-c",
           "label": "C",
-          "content_md": "见题图 C 项"
+          "content_md": "$\\displaystyle F(x)=\\begin{cases} \\ln(\\sec x-\\tan x)+1, & x\\le 0,\\\\ \\frac12e^{2x}+x^2+\\frac12, & x>0. \\end{cases}$"
         },
         {
           "id": "opt-d",
           "label": "D",
-          "content_md": "见题图 D 项"
+          "content_md": "$\\displaystyle F(x)=\\begin{cases} \\ln(\\sec x+\\tan x)+1, & x\\le 0,\\\\ \\frac12e^{2x}+x^2+\\frac12, & x>0. \\end{cases}$"
         }
       ],
       "answer": "D",
@@ -2157,27 +2157,27 @@
     },
     {
       "id": 99007025,
-      "stem": "![2027周洋鑫三套卷·数三·第2套·第3题](assets/c86c7f1a23abdf86b9192fb12e1f5ed3e91a3518d28fa5c730bda840eea1c281.png)",
+      "stem": "极限\n\n$$\n\\lim_{n\\to\\infty}\\frac{1}{n^3}\\sum_{i=1}^n\\sum_{j=1}^{n+1-i}\\frac{(i+j)(n+i)}{2n+i+j}=\n$$",
       "options": [
         {
           "id": "opt-a",
           "label": "A",
-          "content_md": "见题图 A 项"
+          "content_md": "$\\frac1{12}$"
         },
         {
           "id": "opt-b",
           "label": "B",
-          "content_md": "见题图 B 项"
+          "content_md": "$\\frac16$"
         },
         {
           "id": "opt-c",
           "label": "C",
-          "content_md": "见题图 C 项"
+          "content_md": "$\\frac13$"
         },
         {
           "id": "opt-d",
           "label": "D",
-          "content_md": "见题图 D 项"
+          "content_md": "$\\frac12$"
         }
       ],
       "answer": "B",
@@ -2247,27 +2247,27 @@
     },
     {
       "id": 99007026,
-      "stem": "![2027周洋鑫三套卷·数三·第2套·第4题](assets/fd15a683c3e5bba5fefe258b7990c4737a0c2daa6373e809ab1b99b973a4965e.png)",
+      "stem": "已知 $a_n=\\int_{-1}^1\\frac{x^{2n}}{1+e^x}\\,\\mathrm{d}x$，$n=0,1,2,\\ldots$，则 $\\sum_{n=0}^{\\infty}(-1)^na_n=$",
       "options": [
         {
           "id": "opt-a",
           "label": "A",
-          "content_md": "见题图 A 项"
+          "content_md": "$\\frac{\\pi}{8}$"
         },
         {
           "id": "opt-b",
           "label": "B",
-          "content_md": "见题图 B 项"
+          "content_md": "$\\frac{\\pi}{2}$"
         },
         {
           "id": "opt-c",
           "label": "C",
-          "content_md": "见题图 C 项"
+          "content_md": "$\\frac{\\pi}{4}$"
         },
         {
           "id": "opt-d",
           "label": "D",
-          "content_md": "见题图 D 项"
+          "content_md": "$1-\\frac{\\pi}{4}$"
         }
       ],
       "answer": "C",
@@ -2354,27 +2354,27 @@
     },
     {
       "id": 99007027,
-      "stem": "![2027周洋鑫三套卷·数三·第2套·第5题](assets/861bd27383c6fd6a2e514e6c46f6d1c4387d6aebf492329343b1d02eaba79c2d.png)",
+      "stem": "设 $A$ 为三阶实矩阵，满足 $A^2-4A+4E=O$，$A\\ne 2E$，其中 $E$ 为三阶单位矩阵，$A^*$ 为 $A$ 的伴随矩阵，则 $r(A^*-4E)=$",
       "options": [
         {
           "id": "opt-a",
           "label": "A",
-          "content_md": "见题图 A 项"
+          "content_md": "$0$"
         },
         {
           "id": "opt-b",
           "label": "B",
-          "content_md": "见题图 B 项"
+          "content_md": "$1$"
         },
         {
           "id": "opt-c",
           "label": "C",
-          "content_md": "见题图 C 项"
+          "content_md": "$2$"
         },
         {
           "id": "opt-d",
           "label": "D",
-          "content_md": "见题图 D 项"
+          "content_md": "$3$"
         }
       ],
       "answer": "B",
@@ -2461,27 +2461,27 @@
     },
     {
       "id": 99007028,
-      "stem": "![2027周洋鑫三套卷·数三·第2套·第6题](assets/0ef40a4547507ffe14f20577d9a9ba286095be8c75cbcab800fea07ef7d40de3.png)",
+      "stem": "设 $A$ 为三阶可逆矩阵，其伴随矩阵为 $A^*=(\\alpha_1,\\alpha_2,\\alpha_3)$。先将 $A$ 的第 2 行乘以 2，再将第 1 行的 $-1$ 倍加到第 2 行，得到矩阵 $B$，则 $B$ 的伴随矩阵为",
       "options": [
         {
           "id": "opt-a",
           "label": "A",
-          "content_md": "见题图 A 项"
+          "content_md": "$(2\\alpha_1,2\\alpha_1+\\alpha_2,2\\alpha_3)$"
         },
         {
           "id": "opt-b",
           "label": "B",
-          "content_md": "见题图 B 项"
+          "content_md": "$(2\\alpha_1+\\alpha_2,\\alpha_2,2\\alpha_3)$"
         },
         {
           "id": "opt-c",
           "label": "C",
-          "content_md": "见题图 C 项"
+          "content_md": "$(2\\alpha_1-\\alpha_2,\\alpha_2,2\\alpha_3)$"
         },
         {
           "id": "opt-d",
           "label": "D",
-          "content_md": "见题图 D 项"
+          "content_md": "$(\\alpha_1,2\\alpha_2-\\alpha_1,\\alpha_3)$"
         }
       ],
       "answer": "B",
@@ -2551,27 +2551,27 @@
     },
     {
       "id": 99007029,
-      "stem": "![2027周洋鑫三套卷·数三·第2套·第7题](assets/ebb6f80dfba98c41685fd2c64ee65ae3560969632aa90644c166acff5429482d.png)",
+      "stem": "设二次型 $f(x_1,x_2,x_3)=a(x_1^2+x_2^2)+2x_1x_2+(a-2)x_3^2$。若存在可逆线性变换，将 $f(x_1,x_2,x_3)$ 化为 $-f(y_1,y_2,y_3)$，则 $a=$",
       "options": [
         {
           "id": "opt-a",
           "label": "A",
-          "content_md": "见题图 A 项"
+          "content_md": "$-1$"
         },
         {
           "id": "opt-b",
           "label": "B",
-          "content_md": "见题图 B 项"
+          "content_md": "$0$"
         },
         {
           "id": "opt-c",
           "label": "C",
-          "content_md": "见题图 C 项"
+          "content_md": "$1$"
         },
         {
           "id": "opt-d",
           "label": "D",
-          "content_md": "见题图 D 项"
+          "content_md": "$2$"
         }
       ],
       "answer": "C",
@@ -2658,27 +2658,27 @@
     },
     {
       "id": 99007030,
-      "stem": "![2027周洋鑫三套卷·数三·第2套·第8题](assets/3715521fc4fae0b67361964576db1bd2a119e188344de4ff1c18fea9eb4c955e.png)",
+      "stem": "已知随机变量 $X_1$ 与 $X_2$ 相互独立且分别服从参数为 $\\lambda_1,\\lambda_2$ 的泊松分布，且 $P\\{X_1+X_2>0\\}=1-e^{-1}$，则 $E[(X_1+X_2)^2]=$",
       "options": [
         {
           "id": "opt-a",
           "label": "A",
-          "content_md": "见题图 A 项"
+          "content_md": "$1$"
         },
         {
           "id": "opt-b",
           "label": "B",
-          "content_md": "见题图 B 项"
+          "content_md": "$2$"
         },
         {
           "id": "opt-c",
           "label": "C",
-          "content_md": "见题图 C 项"
+          "content_md": "$3$"
         },
         {
           "id": "opt-d",
           "label": "D",
-          "content_md": "见题图 D 项"
+          "content_md": "$4$"
         }
       ],
       "answer": "B",
@@ -2748,27 +2748,27 @@
     },
     {
       "id": 99007031,
-      "stem": "![2027周洋鑫三套卷·数三·第2套·第9题](assets/b35e3091e10bb291dc084ab7813473f4106a240e448bf1782bbc720a14fce66a.png)",
+      "stem": "设随机变量 $X,Y$ 不相关，且方差均存在并大于零。已知 $X$ 与 $X+Y$ 的相关系数为 $\\frac1{\\sqrt{3}}$，则 $X+Y$ 与 $X-Y$ 的相关系数为",
       "options": [
         {
           "id": "opt-a",
           "label": "A",
-          "content_md": "见题图 A 项"
+          "content_md": "$-\\frac23$"
         },
         {
           "id": "opt-b",
           "label": "B",
-          "content_md": "见题图 B 项"
+          "content_md": "$-\\frac13$"
         },
         {
           "id": "opt-c",
           "label": "C",
-          "content_md": "见题图 C 项"
+          "content_md": "$\\frac13$"
         },
         {
           "id": "opt-d",
           "label": "D",
-          "content_md": "见题图 D 项"
+          "content_md": "$\\frac23$"
         }
       ],
       "answer": "B",
@@ -2838,27 +2838,27 @@
     },
     {
       "id": 99007032,
-      "stem": "![2027周洋鑫三套卷·数三·第2套·第10题](assets/a3de3e3c9f09317514c05dda3a9c148d9e50e6d5ffa5bdad9da639a11dc5defd.png)",
+      "stem": "设 $X_1,X_2,X_3,X_4$ 为来自正态总体 $N(0,\\sigma^2)$ 的简单随机样本，其中 $\\sigma^2>0$，$\\bar X,S^2$ 分别为样本均值与样本方差。记 $T=aS^2+4(1-a)\\bar X^2$。当 $D(T)$ 取得最小值时，$a=$",
       "options": [
         {
           "id": "opt-a",
           "label": "A",
-          "content_md": "见题图 A 项"
+          "content_md": "$\\frac14$"
         },
         {
           "id": "opt-b",
           "label": "B",
-          "content_md": "见题图 B 项"
+          "content_md": "$\\frac12$"
         },
         {
           "id": "opt-c",
           "label": "C",
-          "content_md": "见题图 C 项"
+          "content_md": "$\\frac34$"
         },
         {
           "id": "opt-d",
           "label": "D",
-          "content_md": "见题图 D 项"
+          "content_md": "$1$"
         }
       ],
       "answer": "C",
@@ -2928,7 +2928,7 @@
     },
     {
       "id": 99007033,
-      "stem": "![2027周洋鑫三套卷·数三·第2套·第11题](assets/b6afbfd638a6cfacad92fa5cb75a6b4b6b0276e935bf26ff2c462e8599e10f09.png)",
+      "stem": "设函数 $y=y(x)$ 由 $xe^y+\\sin(xy)+y-\\ln 2=0$ 确定，则 $y''(0)=\\underline{\\qquad}$。",
       "options": [],
       "answer": "$6(2+\\ln 2)$",
       "explanation": "![2027周洋鑫三套卷·数三·第2套·第11题解析](assets/1e67b153986dbb0e9caae43380389dbba6182088384b71ab7f9ed4aff24709d8.png)",
@@ -2995,7 +2995,7 @@
     },
     {
       "id": 99007034,
-      "stem": "![2027周洋鑫三套卷·数三·第2套·第12题](assets/f6d0f0ab6eaedd59d98d0db8581cd4f962ab1c18030bd192a7da3f54c2c4e8db.png)",
+      "stem": "设平面图形 $D$ 由曲线 $y=x^2-x$ 与直线 $y=0$，$x=0$，$x=2$ 围成，则将 $D$ 绕 $y$ 轴旋转一周所得旋转体的体积为 $\\underline{\\qquad}$。",
       "options": [],
       "answer": "$3\\pi$",
       "explanation": "![2027周洋鑫三套卷·数三·第2套·第12题解析（1）](assets/305fafb1bbe82a8fda9936c4e1f0158c1f06ad3f49912c18f2223632ebe8205f.png)\n\n![2027周洋鑫三套卷·数三·第2套·第12题解析（2）](assets/553e27f3538105197cb66199fb12b639d74c6de611dd2d5fe8e0514419277079.png)",
@@ -3079,7 +3079,7 @@
     },
     {
       "id": 99007035,
-      "stem": "![2027周洋鑫三套卷·数三·第2套·第13题](assets/4a21f9bcd04b409211574bdc98855e9793bbd144242f6f611550cb49fed4eaf3.png)",
+      "stem": "设 $f(x)$ 为连续函数，且满足 $f(x)f\\!\\left(\\frac1x\\right)=1$，则\n\n$$\n\\int_{1/2}^2\\frac{\\ln^2 x}{x[1+f^2(x)]}\\,\\mathrm{d}x=\\underline{\\qquad}.\n$$",
       "options": [],
       "answer": "$\\frac{1}{3}\\ln^3 2$",
       "explanation": "![2027周洋鑫三套卷·数三·第2套·第13题解析](assets/2529571ccebfbdd95370da7d10db6df7726ba2e8f7ab6593e49335ff115df340.png)",
@@ -3146,7 +3146,7 @@
     },
     {
       "id": 99007036,
-      "stem": "![2027周洋鑫三套卷·数三·第2套·第14题](assets/380e9c64a644a23e61ed30f034ae149613c149d43efbbfd970b1ccccf15b0197.png)",
+      "stem": "设二元函数 $f(x,y)=(x^2+y^2-4)e^{x+y}$，则 $f(x,y)$ 的极值点为 $\\underline{\\qquad}$。",
       "options": [],
       "answer": "$(1,1)$",
       "explanation": "![2027周洋鑫三套卷·数三·第2套·第14题解析（1）](assets/1fe0bb0c596268b5e7d12d36fbd73728f49c34318f9653e94bc913e64f659f08.png)\n\n![2027周洋鑫三套卷·数三·第2套·第14题解析（2）](assets/6fd3ac8968bbfc6ab7d5054fb5a39848b9081e4ac58a455d1cc32356889f0432.png)",
@@ -3230,7 +3230,7 @@
     },
     {
       "id": 99007037,
-      "stem": "![2027周洋鑫三套卷·数三·第2套·第15题](assets/f4c945eb06ae53fa9ac55109af9cac15821613b7737515386f7cfa71b27423d4.png)",
+      "stem": "设矩阵\n\n$$\nA=\\begin{pmatrix}\na&1&0\\\\\n1&a&1\\\\\n0&0&a-1\n\\end{pmatrix}.\n$$\n\n若存在非零三维列向量 $\\alpha$，满足 $A\\alpha=0$，且方程组 $A\\mathbf{x}=\\alpha$ 有解，则 $a=\\underline{\\qquad}$。",
       "options": [],
       "answer": "$1$",
       "explanation": "![2027周洋鑫三套卷·数三·第2套·第15题解析（1）](assets/958878bc156bc0fd665c50ef74486bf4da1a24e2bb7c37bdf0aa508c4eaf46b4.png)\n\n![2027周洋鑫三套卷·数三·第2套·第15题解析（2）](assets/3ddd7a1df2a65c24bd6b3b08a33dfcb3db5dbd94f19ca70544e4e7fae888973f.png)",
@@ -3314,7 +3314,7 @@
     },
     {
       "id": 99007038,
-      "stem": "![2027周洋鑫三套卷·数三·第2套·第16题](assets/516b5b68070170c99cdf432cf68b37bc78fe4947f698d47585240395700002e8.png)",
+      "stem": "设二维随机变量 $(X,Y)$ 的联合概率密度为\n\n$$\nf(x,y)=\\begin{cases}\n\\frac34(x+y), & 0<x<1,\\ x<y<2-x,\\\\\n0, & \\text{其他},\n\\end{cases}\n$$\n\n则条件概率 $P\\left\\{Y>1\\mid X=\\frac12\\right\\}=\\underline{\\qquad}$。",
       "options": [],
       "answer": "$\\frac{7}{12}$",
       "explanation": "![2027周洋鑫三套卷·数三·第2套·第16题解析](assets/8ca0568ec005d39ffcbdb8e533c2dfdbc26d6008dbc4dd9851acd0d1dff21a59.png)",
@@ -3381,7 +3381,7 @@
     },
     {
       "id": 99007039,
-      "stem": "![2027周洋鑫三套卷·数三·第2套·第17题](assets/f73c877cae5ab66d45e2817da7b3ac1dc2b913f66f497b14b2cf4cc9beda4cb4.png)",
+      "stem": "设 $f(x)$ 是定义在 $[0,+\\infty)$ 上的非负连续函数，且对任意 $x\\ge 0$，有\n\n$$\nf(x)\\int_0^x f(t)\\,\\mathrm{d}t=\\frac{x}{(x+1)(x^2+1)}.\n$$\n\n求 $\\int_0^1 f(x)\\,\\mathrm{d}x$。",
       "options": [],
       "answer": "答案与步骤见原书解析。",
       "explanation": "![2027周洋鑫三套卷·数三·第2套·第17题解析（1）](assets/bdc93264a6c7b88d69a609ad1bb7560cd26487420851fb1d28c582e07b9e6a60.png)\n\n![2027周洋鑫三套卷·数三·第2套·第17题解析（2）](assets/11d8765a6d24a572c098969ce2e3ddc6c62efd21bcd2b30a13c486f97707cbd2.png)",
@@ -3465,7 +3465,7 @@
     },
     {
       "id": 99007040,
-      "stem": "![2027周洋鑫三套卷·数三·第2套·第18题](assets/becd1c8de9457be0ebbde26c7958f4d3d00984c048946fb56b65c3eb34544d2d.png)",
+      "stem": "设函数 $z=f(x,y)$ 具有二阶连续偏导数，且满足\n\n$$\n\\frac{\\partial^2 f}{\\partial x^2}\n+4\\frac{\\partial^2 f}{\\partial x\\,\\partial y}\n+4\\frac{\\partial^2 f}{\\partial y^2}\n-2\\frac{\\partial f}{\\partial x}\n-4\\frac{\\partial f}{\\partial y}=0.\n$$\n\n记 $w(u,v)=e^{-u}f(u,v+2u)$。\n\n（1）证明 $\\frac{\\partial^2 w}{\\partial u^2}-w=0$。\n\n（2）若 $w(0,v)=v^2+1$，$\\left.\\frac{\\partial w}{\\partial u}\\right|_{u=0}=v^2-1$，求 $f(x,y)$ 的表达式。",
       "options": [],
       "answer": "答案与步骤见原书解析。",
       "explanation": "![2027周洋鑫三套卷·数三·第2套·第18题解析（1）](assets/7917592bd18174f8ae86606024418b5a3ad9ad7f1585c94c0a2fd97ee0ebabb1.png)\n\n![2027周洋鑫三套卷·数三·第2套·第18题解析（2）](assets/1eba8015aa163bc05b141b3dad33ae3e56291d16387532fe43b75e4dc593a3f7.png)",
@@ -3549,7 +3549,7 @@
     },
     {
       "id": 99007041,
-      "stem": "![2027周洋鑫三套卷·数三·第2套·第19题](assets/b22730b903f868a858d12a93b9002ea3f459d97d489719a2b25bcd81f2ca7174.png)",
+      "stem": "设第一象限内的平面区域 $D=\\{(x,y)\\mid 1\\le x^4+3x^2y^2+y^4\\le 16,\\ x\\le y\\le 2x\\}$，计算\n\n$$\nI=\\iint_D\\frac{1}{2x^2-2xy+y^2}\\,\\mathrm{d}x\\,\\mathrm{d}y.\n$$",
       "options": [],
       "answer": "答案与步骤见原书解析。",
       "explanation": "![2027周洋鑫三套卷·数三·第2套·第19题解析](assets/67c867a5aa96db2b7b8f6174408a63879c9e999b143ee50da8486eea4509d0d3.png)",
@@ -3616,7 +3616,7 @@
     },
     {
       "id": 99007042,
-      "stem": "![2027周洋鑫三套卷·数三·第2套·第20题](assets/01479617583f624090f98c4868983c5baffd0638da87fdfcef1205f8eead4670.png)",
+      "stem": "设函数 $f(x)$ 在 $[1,2]$ 上连续，在 $(1,2)$ 内二阶可导，且 $f(1)=1$，$f(2)=4$，$\\int_1^2\\frac{f(x)}{x^2}\\,\\mathrm{d}x=1$。证明以下结论。\n\n（1）存在两个不同的点 $\\eta_1,\\eta_2\\in(1,2)$，且 $\\eta_1<\\eta_2$，使 $\\eta_i f'(\\eta_i)=2f(\\eta_i)$，$i=1,2$。\n\n（2）存在 $\\xi\\in(\\eta_1,\\eta_2)$，使 $\\xi^2 f''(\\xi)=2f(\\xi)$。",
       "options": [],
       "answer": "答案与步骤见原书解析。",
       "explanation": "![2027周洋鑫三套卷·数三·第2套·第20题解析](assets/e87f4ef052a6e44f11e87414128adccb6846b7790d91c86811394c9663c56e66.png)",
@@ -3683,7 +3683,7 @@
     },
     {
       "id": 99007043,
-      "stem": "![2027周洋鑫三套卷·数三·第2套·第21题](assets/873825d84b5661bdbfc697b2e30c53792fb658341e3b06ae3087223a8abe6fea.png)",
+      "stem": "设二次型 $f(x_1,x_2,x_3)=\\frac12 x_1^2+3x_2^2+3x_3^2+2ax_2x_3$ 的矩阵为 $A$，其中 $a>0$，$|A|\\ge 0$。若二次型 $g(x_1,x_2,x_3)=\\mathbf{x}^{\\mathrm T}A^*\\mathbf{x}$ 可经过正交变换 $\\mathbf{x}=Q\\mathbf{y}$ 化为标准形 $y_1^2+2y_2^2+8y_3^2$。\n\n（1）求常数 $a$。\n\n（2）求一个正交矩阵 $Q$。\n\n（3）求 $\\max_{\\mathbf{x}\\ne 0}\\frac{f(x_1,x_2,x_3)}{\\mathbf{x}^{\\mathrm T}\\mathbf{x}}$。",
       "options": [],
       "answer": "答案与步骤见原书解析。",
       "explanation": "![2027周洋鑫三套卷·数三·第2套·第21题解析（1）](assets/6f808ecaf694fc40052e042d061c6b00ea6fb417a4058e68fcc7a7a23527ae32.png)\n\n![2027周洋鑫三套卷·数三·第2套·第21题解析（2）](assets/1e64bf738f01a90785897f746d2c948b0e3381db3c123bf5885f6872e991a76f.png)",
@@ -3767,7 +3767,7 @@
     },
     {
       "id": 99007044,
-      "stem": "![2027周洋鑫三套卷·数三·第2套·第22题](assets/712a7ba8138867633e339f72378a6cad63d38a4424d09b83de6d12f15d311f9c.png)",
+      "stem": "设随机变量 $X,Y$ 相互独立，且 $X\\sim U(0,1)$，$Y\\sim E(\\lambda)$，其中 $\\lambda>0$。记 $Z=\\frac{Y}{1+X}$。\n\n（1）求 $Z$ 的概率密度 $f_Z(z)$。\n\n（2）求 $Z$ 的数学期望与方差。\n\n（3）设 $Z_1,Z_2,\\ldots,Z_n$ 为来自总体 $Z$ 的简单随机样本，求参数 $\\lambda$ 的一阶矩估计。",
       "options": [],
       "answer": "答案与步骤见原书解析。",
       "explanation": "![2027周洋鑫三套卷·数三·第2套·第22题解析（1）](assets/efc4f530a5429225f03145573841e573c0a0e16f6922373481c3fe48373ecdb3.png)\n\n![2027周洋鑫三套卷·数三·第2套·第22题解析（2）](assets/0bf0f95ae694b5ddac599e5329496000fb4bf9566377a52bc65def1dac5d332f.png)",
@@ -3851,27 +3851,27 @@
     },
     {
       "id": 99007045,
-      "stem": "![2027周洋鑫三套卷·数三·第3套·第1题](assets/fd821f5ab8059163f4b84c4a8de93970c3cf0a96dc235bcff66144a656879f20.png)",
+      "stem": "函数\n\n$$\nf(x)=\\frac{\\ln|x|}{(x^2-1)\\left(1+e^{\\frac{x^2-1}{x-2}}\\right)}\n$$\n\n的第一类间断点的个数为",
       "options": [
         {
           "id": "opt-a",
           "label": "A",
-          "content_md": "见题图 A 项"
+          "content_md": "$1$"
         },
         {
           "id": "opt-b",
           "label": "B",
-          "content_md": "见题图 B 项"
+          "content_md": "$2$"
         },
         {
           "id": "opt-c",
           "label": "C",
-          "content_md": "见题图 C 项"
+          "content_md": "$3$"
         },
         {
           "id": "opt-d",
           "label": "D",
-          "content_md": "见题图 D 项"
+          "content_md": "$4$"
         }
       ],
       "answer": "C",
@@ -3941,27 +3941,27 @@
     },
     {
       "id": 99007046,
-      "stem": "![2027周洋鑫三套卷·数三·第3套·第2题](assets/0ebede5a170b8af95ac395796b105414c817a809b043cc503f5d3476dc661f33.png)",
+      "stem": "设\n\n$$\n\\begin{aligned}\nI_1 &= \\int_0^1\\frac{x^2}{1+x^2}\\,\\mathrm{d}x,\\\\\nI_2 &= \\int_0^1\\frac{(1-x)^2}{1+x^2}\\,\\mathrm{d}x,\\\\\nI_3 &= \\int_0^1\\frac{\\ln(1+x^2)}{1+x^2}\\,\\mathrm{d}x,\n\\end{aligned}\n$$\n\n则",
       "options": [
         {
           "id": "opt-a",
           "label": "A",
-          "content_md": "见题图 A 项"
+          "content_md": "$I_1>I_2>I_3$。"
         },
         {
           "id": "opt-b",
           "label": "B",
-          "content_md": "见题图 B 项"
+          "content_md": "$I_2>I_1>I_3$。"
         },
         {
           "id": "opt-c",
           "label": "C",
-          "content_md": "见题图 C 项"
+          "content_md": "$I_2>I_3>I_1$。"
         },
         {
           "id": "opt-d",
           "label": "D",
-          "content_md": "见题图 D 项"
+          "content_md": "$I_3>I_1>I_2$。"
         }
       ],
       "answer": "B",
@@ -4048,27 +4048,27 @@
     },
     {
       "id": 99007047,
-      "stem": "![2027周洋鑫三套卷·数三·第3套·第3题](assets/d78db4de0213a3f44ec2cefdd7359e513582188dac0ff5fac58e84b422b0b09e.png)",
+      "stem": "反常积分\n\n$$\n\\int_0^{+\\infty}\\frac{1-e^{-x}}{x^p(1+x)^q}\\,\\mathrm{d}x\n$$\n\n收敛的充分必要条件是",
       "options": [
         {
           "id": "opt-a",
           "label": "A",
-          "content_md": "见题图 A 项"
+          "content_md": "$p<1,\\ p+q>1$。"
         },
         {
           "id": "opt-b",
           "label": "B",
-          "content_md": "见题图 B 项"
+          "content_md": "$p<2,\\ p+q>1$。"
         },
         {
           "id": "opt-c",
           "label": "C",
-          "content_md": "见题图 C 项"
+          "content_md": "$p<2,\\ p+q>2$。"
         },
         {
           "id": "opt-d",
           "label": "D",
-          "content_md": "见题图 D 项"
+          "content_md": "$p\\le 2,\\ p+q\\ge 1$。"
         }
       ],
       "answer": "B",
@@ -4138,27 +4138,27 @@
     },
     {
       "id": 99007048,
-      "stem": "![2027周洋鑫三套卷·数三·第3套·第4题](assets/be2c64eec0fecd4d9b3d5ada407340f7f4ddfe7ba5c12ecc806af6dc79129182.png)",
+      "stem": "设函数\n\n$$\nf(x,y)=\\begin{cases}\n\\dfrac{xy\\sin(2x^2+y^2)}{x^2+y^2}, & x^2+y^2\\ne 0,\\\\\n0, & x^2+y^2=0,\n\\end{cases}\n$$\n\n则",
       "options": [
         {
           "id": "opt-a",
           "label": "A",
-          "content_md": "见题图 A 项"
+          "content_md": "$\\displaystyle \\left.\\frac{\\partial f}{\\partial x}\\right|_{(0,0)} =\\left.\\frac{\\partial f}{\\partial y}\\right|_{(0,0)}, \\quad\\text{且}\\quad \\left.\\frac{\\partial^2 f}{\\partial y\\,\\partial x}\\right|_{(0,0)} =\\left.\\frac{\\partial^2 f}{\\partial x\\,\\partial y}\\right|_{(0,0)}.$"
         },
         {
           "id": "opt-b",
           "label": "B",
-          "content_md": "见题图 B 项"
+          "content_md": "$\\displaystyle \\left.\\frac{\\partial f}{\\partial x}\\right|_{(0,0)} =\\left.\\frac{\\partial f}{\\partial y}\\right|_{(0,0)}, \\quad\\text{且}\\quad \\left.\\frac{\\partial^2 f}{\\partial y\\,\\partial x}\\right|_{(0,0)} \\ne\\left.\\frac{\\partial^2 f}{\\partial x\\,\\partial y}\\right|_{(0,0)}.$"
         },
         {
           "id": "opt-c",
           "label": "C",
-          "content_md": "见题图 C 项"
+          "content_md": "$\\displaystyle \\left.\\frac{\\partial f}{\\partial x}\\right|_{(0,0)} \\ne\\left.\\frac{\\partial f}{\\partial y}\\right|_{(0,0)}, \\quad\\text{且}\\quad \\left.\\frac{\\partial^2 f}{\\partial y\\,\\partial x}\\right|_{(0,0)} =\\left.\\frac{\\partial^2 f}{\\partial x\\,\\partial y}\\right|_{(0,0)}.$"
         },
         {
           "id": "opt-d",
           "label": "D",
-          "content_md": "见题图 D 项"
+          "content_md": "$\\displaystyle \\left.\\frac{\\partial f}{\\partial x}\\right|_{(0,0)} \\ne\\left.\\frac{\\partial f}{\\partial y}\\right|_{(0,0)}, \\quad\\text{且}\\quad \\left.\\frac{\\partial^2 f}{\\partial y\\,\\partial x}\\right|_{(0,0)} \\ne\\left.\\frac{\\partial^2 f}{\\partial x\\,\\partial y}\\right|_{(0,0)}.$"
         }
       ],
       "answer": "B",
@@ -4245,27 +4245,27 @@
     },
     {
       "id": 99007049,
-      "stem": "![2027周洋鑫三套卷·数三·第3套·第5题](assets/c12ad16012718af3ae7c8d7dc68230b1b96719e7e40c968a4c814e9651362bee.png)",
+      "stem": "设 $A$ 为三阶非零实矩阵，$A^*$ 为其伴随矩阵。已知 $(A^*)^{\\mathrm T}A^*=4AA^{\\mathrm T}$，则 $|A^*|=$",
       "options": [
         {
           "id": "opt-a",
           "label": "A",
-          "content_md": "见题图 A 项"
+          "content_md": "$0$"
         },
         {
           "id": "opt-b",
           "label": "B",
-          "content_md": "见题图 B 项"
+          "content_md": "$4$"
         },
         {
           "id": "opt-c",
           "label": "C",
-          "content_md": "见题图 C 项"
+          "content_md": "$16$"
         },
         {
           "id": "opt-d",
           "label": "D",
-          "content_md": "见题图 D 项"
+          "content_md": "$64$"
         }
       ],
       "answer": "D",
@@ -4335,27 +4335,27 @@
     },
     {
       "id": 99007050,
-      "stem": "![2027周洋鑫三套卷·数三·第3套·第6题](assets/796e1947a758784ff63f68dd77615168cb3b5ff8b574ae8996423249a07a0450.png)",
+      "stem": "设 $A$ 为三阶矩阵，$\\alpha_1,\\alpha_2,\\alpha_3$ 为其三个线性无关的特征向量，且对应的特征值依次为 $2,-3,2$。记 $A^*$ 为 $A$ 的伴随矩阵，则使\n\n$$\nP^{-1}A^*P=\\begin{pmatrix}\n4&0&0\\\\\n0&-6&0\\\\\n0&0&-6\n\\end{pmatrix}\n$$\n\n成立的可逆矩阵 $P$ 为",
       "options": [
         {
           "id": "opt-a",
           "label": "A",
-          "content_md": "见题图 A 项"
+          "content_md": "$(-\\alpha_2,\\alpha_1+\\alpha_3,2\\alpha_1+2\\alpha_3)$"
         },
         {
           "id": "opt-b",
           "label": "B",
-          "content_md": "见题图 B 项"
+          "content_md": "$(\\alpha_1+\\alpha_3,-\\alpha_2,2\\alpha_1-\\alpha_3)$"
         },
         {
           "id": "opt-c",
           "label": "C",
-          "content_md": "见题图 C 项"
+          "content_md": "$(-\\alpha_2,\\alpha_1+\\alpha_3,2\\alpha_1-\\alpha_3)$"
         },
         {
           "id": "opt-d",
           "label": "D",
-          "content_md": "见题图 D 项"
+          "content_md": "$(-\\alpha_2,\\alpha_1+\\alpha_2,2\\alpha_1-\\alpha_3)$"
         }
       ],
       "answer": "C",
@@ -4442,27 +4442,27 @@
     },
     {
       "id": 99007051,
-      "stem": "![2027周洋鑫三套卷·数三·第3套·第7题](assets/34704143fb26f224fd54326996d0c91b07313c29556644fe82e128e8d9a90c45.png)",
+      "stem": "设 $A,B$ 为三阶实矩阵，且 $A$ 经过若干次初等列变换化为 $B$，则",
       "options": [
         {
           "id": "opt-a",
           "label": "A",
-          "content_md": "见题图 A 项"
+          "content_md": "$r(A^2)=r(B^2)$。"
         },
         {
           "id": "opt-b",
           "label": "B",
-          "content_md": "见题图 B 项"
+          "content_md": "方程组 $A\\mathbf{x}=0$ 与 $B\\mathbf{x}=0$ 同解。"
         },
         {
           "id": "opt-c",
           "label": "C",
-          "content_md": "见题图 C 项"
+          "content_md": "$A+B$ 与 $A$ 的列向量组等价。"
         },
         {
           "id": "opt-d",
           "label": "D",
-          "content_md": "见题图 D 项"
+          "content_md": "$r\\!\\begin{pmatrix}A&B\\\\A&A+B\\end{pmatrix}=2r(A)$。"
         }
       ],
       "answer": "D",
@@ -4549,27 +4549,27 @@
     },
     {
       "id": 99007052,
-      "stem": "![2027周洋鑫三套卷·数三·第3套·第8题](assets/459035a9582b03fe9e4bba41553f36325091c320284a8cb496cf2936d1d76ade.png)",
+      "stem": "设随机变量 $X$ 的分布律为 $P\\{X=k\\}=p(1-p)^{k-1}$，$k=1,2,\\ldots$，其中 $0<p<1$。已知 $P\\{X\\ge 3\\}=\\frac49$，则 $P\\{X\\le 6\\mid X\\ge 4\\}=$",
       "options": [
         {
           "id": "opt-a",
           "label": "A",
-          "content_md": "见题图 A 项"
+          "content_md": "$\\frac13$"
         },
         {
           "id": "opt-b",
           "label": "B",
-          "content_md": "见题图 B 项"
+          "content_md": "$\\frac59$"
         },
         {
           "id": "opt-c",
           "label": "C",
-          "content_md": "见题图 C 项"
+          "content_md": "$\\frac8{27}$"
         },
         {
           "id": "opt-d",
           "label": "D",
-          "content_md": "见题图 D 项"
+          "content_md": "$\\frac{19}{27}$"
         }
       ],
       "answer": "D",
@@ -4656,27 +4656,27 @@
     },
     {
       "id": 99007053,
-      "stem": "![2027周洋鑫三套卷·数三·第3套·第9题](assets/80e66d257aaee89738d2956d4367bf7aba7584f5112b2f9e060a1b9e1c26d09f.png)",
+      "stem": "设随机变量 $X\\sim N(2,9)$，$Y\\sim B\\left(8,\\frac14\\right)$，且 $X+Y$ 与 $X-4Y$ 不相关，则 $D(X-2Y+3)=$",
       "options": [
         {
           "id": "opt-a",
           "label": "A",
-          "content_md": "见题图 A 项"
+          "content_md": "$8$"
         },
         {
           "id": "opt-b",
           "label": "B",
-          "content_md": "见题图 B 项"
+          "content_md": "$11$"
         },
         {
           "id": "opt-c",
           "label": "C",
-          "content_md": "见题图 C 项"
+          "content_md": "$14$"
         },
         {
           "id": "opt-d",
           "label": "D",
-          "content_md": "见题图 D 项"
+          "content_md": "$15$"
         }
       ],
       "answer": "B",
@@ -4746,27 +4746,27 @@
     },
     {
       "id": 99007054,
-      "stem": "![2027周洋鑫三套卷·数三·第3套·第10题](assets/0fba865d0114d67e66ec58811f6106abd9eb99942e8f200b79ca69d9ee8d4290.png)",
+      "stem": "设 $X_1,X_2$ 是来自总体 $N(0,1)$ 的简单随机样本，则统计量 $Z=\\left(\\frac{X_1+X_2}{X_1-X_2}\\right)^2$ 服从的分布为",
       "options": [
         {
           "id": "opt-a",
           "label": "A",
-          "content_md": "见题图 A 项"
+          "content_md": "$t(1)$"
         },
         {
           "id": "opt-b",
           "label": "B",
-          "content_md": "见题图 B 项"
+          "content_md": "$\\chi^2(1)$"
         },
         {
           "id": "opt-c",
           "label": "C",
-          "content_md": "见题图 C 项"
+          "content_md": "$F(1,1)$"
         },
         {
           "id": "opt-d",
           "label": "D",
-          "content_md": "见题图 D 项"
+          "content_md": "$F(2,2)$"
         }
       ],
       "answer": "C",
@@ -4853,7 +4853,7 @@
     },
     {
       "id": 99007055,
-      "stem": "![2027周洋鑫三套卷·数三·第3套·第11题](assets/35bcccebc32357210212a340193659594169cd73eb7859f8a86d17744b412de8.png)",
+      "stem": "$$\n\\lim_{n\\to\\infty}\n\\left[\\prod_{k=1}^n\\left(1+\\frac{(2k-1)^2}{4n^2}\\right)\\right]^{1/n}\n=\\underline{\\qquad}.\n$$",
       "options": [],
       "answer": "$2e^{\\frac{\\pi}{2}-2}$",
       "explanation": "![2027周洋鑫三套卷·数三·第3套·第11题解析（1）](assets/4055cbacbd506e7ce9a6a78e9283f5d044ee30d3d78eec8e2d89db2345be9c9d.png)\n\n![2027周洋鑫三套卷·数三·第3套·第11题解析（2）](assets/e1d4cce34a0514cf7317aaebf7d5f48d5f6637803b772c115e7aa4ecf3be2611.png)",
@@ -4937,7 +4937,7 @@
     },
     {
       "id": 99007056,
-      "stem": "![2027周洋鑫三套卷·数三·第3套·第12题](assets/b486f63ae7c5688e89e63fd2afa9c0996d86f39314efbd258ab60fe40be9ee94.png)",
+      "stem": "设 $f(x)=e^x\\sin 2x$，则 $f^{(3)}(0)=\\underline{\\qquad}$。",
       "options": [],
       "answer": "$-2$",
       "explanation": "![2027周洋鑫三套卷·数三·第3套·第12题解析](assets/41da7cf6e05b2020d6eccba4505e29bd0b907d631d2304c88643160a7df3a358.png)",
@@ -5004,7 +5004,7 @@
     },
     {
       "id": 99007057,
-      "stem": "![2027周洋鑫三套卷·数三·第3套·第13题](assets/78f9a9fb2629826f01408635e4715f401a61fef9ef6f09294db3f5c4488fd047.png)",
+      "stem": "设函数 $f(x)=e^x(x^2+ax)$。若 $(0,f(0))$ 是曲线 $y=f(x)$ 的一个拐点，则该曲线所有拐点横坐标之和为 $\\underline{\\qquad}$。",
       "options": [],
       "answer": "$-3$",
       "explanation": "![2027周洋鑫三套卷·数三·第3套·第13题解析](assets/fcc2cb7ca45293038ce2326784b0c9563f809f466b93046d4c1f664dc77b71a9.png)",
@@ -5071,7 +5071,7 @@
     },
     {
       "id": 99007058,
-      "stem": "![2027周洋鑫三套卷·数三·第3套·第14题](assets/018843037e841d0ad7ce80ade7c09b6d85e6193d25b840f41c27c69feb0f681b.png)",
+      "stem": "某企业生产并销售一种设备，产量为 $Q$ 件时，销售单价为 $P=50-Q$（万元/件），$0\\le Q\\le 50$。企业的固定成本为 100 万元，前 18 件设备每件的变动成本为 20 万元，超出 18 件的部分每件的变动成本降为 10 万元。假设生产的设备全部售出，则该企业可获得的最大利润为 $\\underline{\\qquad}$ 万元。",
       "options": [],
       "answer": "$125$",
       "explanation": "![2027周洋鑫三套卷·数三·第3套·第14题解析（1）](assets/ed82b0b351b63bdf51d697acd80e2b911402c82ddf36c0d963879a7a8cbeb3ab.png)\n\n![2027周洋鑫三套卷·数三·第3套·第14题解析（2）](assets/3973a10feecb8060f5f881a23da1a9bfd6997a831cb9e70304b1c3890c1bea41.png)",
@@ -5155,7 +5155,7 @@
     },
     {
       "id": 99007059,
-      "stem": "![2027周洋鑫三套卷·数三·第3套·第15题](assets/ef7cde037028b893f4b0c569abcd4caddbaa5f604fe335f7b78c8874c8849c01.png)",
+      "stem": "设 $A=(a_{ij})$ 为四阶矩阵，$E$ 为四阶单位矩阵，$A_{ij}$ 为元素 $a_{ij}$ 的代数余子式。已知 $r(A+E)=1$，$r(3E-A)=3$，则 $A_{11}+A_{22}+A_{33}+A_{44}=\\underline{\\qquad}$。",
       "options": [],
       "answer": "$8$",
       "explanation": "![2027周洋鑫三套卷·数三·第3套·第15题解析](assets/3b9b2e05b3a39173203264f4d87bc3bbe7a734a7975225765888a003a30e0f1a.png)",
@@ -5222,7 +5222,7 @@
     },
     {
       "id": 99007060,
-      "stem": "![2027周洋鑫三套卷·数三·第3套·第16题](assets/c0571f96c513af9fd7bef5869c2943d212b71e89fcb0d056ae5d8433ddd9f5d8.png)",
+      "stem": "设随机事件 $A,B,C$ 两两独立，且 $P(A)=P(C)=\\frac12$，$P(B)=\\frac13$，$P(AB\\mid C)=\\frac14$。则在 $A$ 发生的条件下，$B$ 与 $C$ 恰有一个发生的概率为 $\\underline{\\qquad}$。",
       "options": [],
       "answer": "$\\frac{1}{3}$",
       "explanation": "![2027周洋鑫三套卷·数三·第3套·第16题解析](assets/95fec2a789127cd14eac3a5bb2dc7fd374cb28586f15773c60f235b1c62574bb.png)",
@@ -5289,7 +5289,7 @@
     },
     {
       "id": 99007061,
-      "stem": "![2027周洋鑫三套卷·数三·第3套·第17题](assets/6012c13956c224c1556bc748fd79dfbab6e3fa2e1918e9ddb7383d5fe339c7f7.png)",
+      "stem": "设函数 $f(x)$ 在 $x=0$ 处可导，且 $\\lim_{x\\to 0}\\frac{f(x)-x-1}{x}=1$。若实数 $a,b$ 满足\n\n$$\n\\lim_{x\\to 0}\n\\frac{af\\left(\\sqrt{1+2x^2}-1\\right)-bf(\\cos x-1)-1}{x^2}=5,\n$$\n\n求 $a,b$ 的值。",
       "options": [],
       "answer": "答案与步骤见原书解析。",
       "explanation": "![2027周洋鑫三套卷·数三·第3套·第17题解析（1）](assets/fb9158fbda51e6b9221ae036dcf25586d93ba7dbc4d47d6217c68215a9dbcc85.png)\n\n![2027周洋鑫三套卷·数三·第3套·第17题解析（2）](assets/7935fe452352f94746287e8da6d5525baf698f6a2ea546c2867f291db6c56dbe.png)",
@@ -5373,7 +5373,7 @@
     },
     {
       "id": 99007062,
-      "stem": "![2027周洋鑫三套卷·数三·第3套·第18题](assets/3748dc097b38a5e2055e542d7ad9b8e2e1c11aa0c07c1a29909e8ac50c82fc5c.png)",
+      "stem": "设函数 $u_n(x)$ 在 $(-2,+\\infty)$ 上满足\n\n$$\n(x+2)u_n'(x)+u_n(x)=\\frac{2x^{n-1}}{(x+2)^{n+1}},\n\\qquad u_n(0)=0,\n$$\n\n其中 $n$ 为正整数。求函数项级数 $\\sum_{n=1}^{\\infty}u_n(x)$ 的收敛域及和函数。",
       "options": [],
       "answer": "答案与步骤见原书解析。",
       "explanation": "![2027周洋鑫三套卷·数三·第3套·第18题解析（1）](assets/346ec7261916fd15d8b3dcfa006128bd5b73b5a39313c0f5b316273ebd1bc576.png)\n\n![2027周洋鑫三套卷·数三·第3套·第18题解析（2）](assets/16b09dea249a9653c0c28c0e8ee103b7dfe76497870c72c862765c9de87dece4.png)",
@@ -5457,7 +5457,7 @@
     },
     {
       "id": 99007063,
-      "stem": "![2027周洋鑫三套卷·数三·第3套·第19题](assets/1da2796346e714d8f9dee912c785ba8e64e95936156318e8a851212f7bdd0db5.png)",
+      "stem": "设 $D=\\{(x,y)\\mid x\\ge 0,\\ y\\ge 0,\\ x^2+y^2\\le 4,\\ x+y\\ge 2\\}$，计算\n\n$$\nI=\\iint_D\\frac{(1+x^2+y^2)\\sin x\\cos y}{(x^2+y^2)^{3/2}\\sin(x+y)}\\,\\mathrm{d}x\\,\\mathrm{d}y.\n$$",
       "options": [],
       "answer": "答案与步骤见原书解析。",
       "explanation": "![2027周洋鑫三套卷·数三·第3套·第19题解析](assets/f8d1a96973a559aad67974d9002a831357f75d456e99f1ed26faa9eb3e73e664.png)",
@@ -5524,7 +5524,7 @@
     },
     {
       "id": 99007064,
-      "stem": "![2027周洋鑫三套卷·数三·第3套·第20题](assets/db1e0165937452b6dfa7d4ed89aaa4e4cc8e5b254427968251a0d59cb0690a20.png)",
+      "stem": "设平面有界区域 $D=\\{(x,y)\\mid x\\ge 0,\\ y\\ge 0,\\ x+y\\le 3\\}$。求实数 $k$ 的取值范围，使得对任意 $(x,y)\\in D$，均有\n\n$$\n(k-1)e^{x+y}\\le x^2+4xy+y^2\\le 3ke^{x+y}.\n$$",
       "options": [],
       "answer": "答案与步骤见原书解析。",
       "explanation": "![2027周洋鑫三套卷·数三·第3套·第20题解析（1）](assets/7b23402e9449e8d5c8fd442a6395c22e813655d619177e46e6ff091d57bd3d08.png)\n\n![2027周洋鑫三套卷·数三·第3套·第20题解析（2）](assets/9e9f3e3f76bc720fa756fadf5cd507d30b33e98bd271f8fc669c9a32e6e2a799.png)",
@@ -5608,7 +5608,7 @@
     },
     {
       "id": 99007065,
-      "stem": "![2027周洋鑫三套卷·数三·第3套·第21题](assets/54be0ed15cb093afe85074a645df6c701e7729e49eb672776d01900c174b997c.png)",
+      "stem": "设二次型 $f(x_1,x_2,x_3)=x_1^2+2x_1x_2+2x_2^2+2x_2x_3+tx_3^2$。已知对任意 $\\mathbf{x}=(x_1,x_2,x_3)^{\\mathrm T}$，均有 $f(\\mathbf{x})\\ge 0$，且存在非零向量 $\\mathbf{x}$，使 $f(\\mathbf{x})=0$。\n\n（1）求 $t$ 的值。\n\n（2）记二次型 $f$ 的矩阵为 $A$。求一个可逆线性变换 $\\mathbf{x}=P\\mathbf{y}$，将 $f$ 化为二次型\n\n$$\ng(y_1,y_2,y_3)=y_1^2+2y_2^2+2y_3^2+2y_1y_2+2y_1y_3.\n$$",
       "options": [],
       "answer": "答案与步骤见原书解析。",
       "explanation": "![2027周洋鑫三套卷·数三·第3套·第21题解析（1）](assets/2ba3e542e6f52278f933dec03a426c9068d2b2bf720275e0b3b6a0666bb0af36.png)\n\n![2027周洋鑫三套卷·数三·第3套·第21题解析（2）](assets/6de084598c2cd7224e9d6d08f107f2c0765d71745b0e111c6521fe25995b9db6.png)",
@@ -5692,7 +5692,7 @@
     },
     {
       "id": 99007066,
-      "stem": "![2027周洋鑫三套卷·数三·第3套·第22题](assets/7d609e4b7f468a292a15a4d3189eec22bcfa7e9320b45be55d1ac7fa108ac24c.png)",
+      "stem": "对两只元件同时进行寿命试验，设它们的寿命 $X,Y$ 相互独立，且均服从参数为 $\\lambda$ 的指数分布，其概率密度为\n\n$$\nf(x;\\lambda)=\\begin{cases}\n\\lambda e^{-\\lambda x}, & x>0,\\\\\n0, & \\text{其他},\n\\end{cases}\n$$\n\n其中 $\\lambda>0$ 为未知参数。记 $Z=|X-Y|$ 为两只元件失效的时间间隔。\n\n（1）求 $Z$ 的概率密度。\n\n（2）将上述试验独立重复 8 次，得到 $Z$ 的观测值为 $1,2,1,3,2,4,1,2$，求参数 $\\lambda$ 的矩估计值和最大似然估计值。",
       "options": [],
       "answer": "答案与步骤见原书解析。",
       "explanation": "![2027周洋鑫三套卷·数三·第3套·第22题解析（1）](assets/bfdcf6f8c433f8a3c650f58c5eb1a677c9d38aa75418b0db0b7f61ee51bb2574.png)\n\n![2027周洋鑫三套卷·数三·第3套·第22题解析（2）](assets/1e05066e6af9e1597e657707d65bdd3b893eeadb8fc9b0386bfab86fa8ee4582.png)",

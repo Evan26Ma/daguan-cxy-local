@@ -2793,8 +2793,23 @@ class App {
             if (action === 'help') { this.showShortcutHelp(); return; }
             if (action === 'escape') { if (AppState.ui.aiPanelOpen) this.toggleAI(); else if (AppState.ui.annotationPanelOpen) this.toggleAnnotation(); return; }
             if (action === 'focus') { document.body.classList.toggle('question-focus-mode'); return; }
-            if (action === 'copy' && q) { navigator.clipboard?.writeText(`# 题号 ${q.id}\n\n${q.stem || ''}\n\n答案：${q.answer || ''}`).then(() => toast('已复制本题 Markdown')).catch(() => toast('复制失败')); }
+            if (action === 'copy' && q) { navigator.clipboard?.writeText(this.questionMarkdown(q)).then(() => toast('已复制本题 Markdown')).catch(() => toast('复制失败')); }
         });
+    }
+
+    static questionMarkdown(question) {
+        const options = Array.isArray(question.options) ? question.options : [];
+        const optionLines = options.map((option, index) => {
+            const label = option?.label || String.fromCharCode(65 + index);
+            const content = typeof option === 'string' ? option : option?.content_md || option?.content || option?.text || '';
+            return (label + '. ' + content).trimEnd();
+        }).join('\n');
+        return [
+            '# 题号 ' + question.id,
+            String(question.stem || '').trim(),
+            optionLines,
+            '答案：' + (question.answer || ''),
+        ].filter(Boolean).join('\n\n');
     }
 
     static bindNavigation() {
