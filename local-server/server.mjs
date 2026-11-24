@@ -243,7 +243,11 @@ async function applyPush(previewId) {
 async function reconcilePreview(options = {}) {
   const catalogTask = startCatalogRefresh();
   while (catalogTask.status === "running") await new Promise((resolve) => setTimeout(resolve, 120));
-  if (catalogTask.status === "failed") throw new Error(`题库更新失败：${catalogTask.error}`);
+  // 镜像只负责更新题库副本，账号侧的差异对账不应被它阻断；把失败留在预览里提示，
+  // 而不是在拿到任何本地/远端状态之前直接抛错。
+  const refreshed = catalogTask.status === "completed"
+    ? catalogTask.result
+    : { ok: false, warning: `题库更新失败，本次按本地已有题库继续：${catalogTask.error}` };
   const local = await store.readState();
   const remote = await client.fetchRemoteSnapshot();
   await store.writeBackup("local-state-before-reconcile-preview", local);
@@ -267,7 +271,7 @@ async function reconcilePreview(options = {}) {
     plan,
     firstRepair,
     winner,
-    catalog: { ...(await catalogInfo()), refreshed: catalogTask.result },
+    catalog: { ...(await catalogInfo()), refreshed },
   };
   previews.set(previewId, value);
   return {

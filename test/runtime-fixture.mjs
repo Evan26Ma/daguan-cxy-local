@@ -7,13 +7,13 @@ import { once } from 'node:events';
 import { fileURLToPath } from 'node:url';
 
 export const root = fileURLToPath(new URL('../', import.meta.url));
-export async function serviceFixture(t, { corrupt = false } = {}) {
+export async function serviceFixture(t, { corrupt = false, env = {} } = {}) {
   const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'daguan-safety-'));
   const port = await unusedHttpPort();
   if (corrupt) await fs.writeFile(path.join(dir, 'state.json'), '{broken');
   const child = spawn(process.execPath, ['local-server/server.mjs'], {
     cwd: root, windowsHide: true,
-    env: { ...process.env, DAGUAN_DATA_DIR: dir, PORT: String(port), DAGUAN_OPEN_BROWSER: '0', DAGUAN_AUTO_UPDATE_BANK: '0' },
+    env: { ...process.env, DAGUAN_DATA_DIR: dir, PORT: String(port), DAGUAN_OPEN_BROWSER: '0', DAGUAN_AUTO_UPDATE_BANK: '0', ...env },
     stdio: ['ignore', 'pipe', 'pipe', 'ipc'],
   });
   let output = '';
