@@ -2,6 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
 import { mergeLocalQuestionBanks } from "../shared/local-question-banks.mjs";
+import { applyOfficialCategoryOrders, readOfficialMockOrders } from "./official-question-bank.mjs";
 
 const SOURCE = "https://hsad.xyz/daguan-math";
 const WINDOWS_RESERVED = /^(?:con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)/i;
@@ -68,6 +69,15 @@ export async function refreshCatalog(rootDir, progress = () => {}) {
     manifest.synced_at = new Date().toISOString();
     await fs.writeFile(path.join(stageDir, "manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`);
     await mergeLocalQuestionBanks(stageDir, dataDir);
+    const mockOrders = await readOfficialMockOrders(dataDir);
+    if (mockOrders) {
+      const [stageCategories, stageCategoryQuestions] = await Promise.all([
+        fs.readFile(path.join(stageDir, "categories.json"), "utf8").then(JSON.parse),
+        fs.readFile(path.join(stageDir, "category_questions.json"), "utf8").then(JSON.parse),
+      ]);
+      applyOfficialCategoryOrders(stageCategoryQuestions, mockOrders, stageCategories);
+      await fs.writeFile(path.join(stageDir, "category_questions.json"), JSON.stringify(stageCategoryQuestions));
+    }
     for (const file of [...files, "manifest.json"]) {
       const from = catalogTarget(stageDir, file);
       const to = catalogTarget(dataDir, file);

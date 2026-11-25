@@ -16,6 +16,7 @@ const fileByShard = new Map([
   ["未分类", "shards/未分类.json"],
 ]);
 const localClassificationsFile = "official-orphan-classifications.json";
+const officialMockOrdersFile = "official-mock-orders.json";
 // 官网分类接口自 2026-10 起只返回三个学科根；历年真题、模拟卷和部分新题型
 // 仍出现在题目的 category_name 里。同步时按题目自带的完整路径补回这些节点。
 const requiredRoots = new Map([[836, "历年真题"], [2500, "模拟卷"]]);
@@ -369,6 +370,107 @@ async function readLocalClassifications(overlayDir) {
   }
 }
 
+export async function readOfficialMockOrders(overlayDir) {
+  try {
+    return JSON.parse(await fs.readFile(path.join(overlayDir, officialMockOrdersFile), "utf8"));
+  } catch (error) {
+    if (error.code === "ENOENT") return null;
+    throw error;
+  }
+}
+
+const CN_DIGITS = new Map([["一", 1], ["二", 2], ["三", 3], ["四", 4], ["五", 5], ["六", 6], ["七", 7], ["八", 8], ["九", 9], ["十", 10]]);
+
+function mockChildSortKey(name) {
+  const value = String(name || "");
+  const yearMatch = /^(\d{2})/.exec(value);
+  const year = yearMatch ? Number(yearMatch[1]) : 0;
+  const setMatch = /(?:卷|第|六套|三套|十套)([一二三四五六七八九十\d]+)/.exec(value) || /([一二三四五六七八九十\d]+)$/.exec(value);
+  const token = setMatch ? setMatch[1] : "";
+  const setNo = /^\d+$/.test(token) ? Number(token) : (CN_DIGITS.get(token) || 999);
+  return { year, setNo, name: value };
+}
+
+function stableReorderIds(current, rank) {
+  const originalIndex = new Map(current.map((id, index) => [Number(id), index]));
+  return [...current].sort((left, right) => {
+    const a = Number(left);
+    const b = Number(right);
+    const ra = rank.has(a) ? rank.get(a) : Infinity;
+    const rb = rank.has(b) ? rank.get(b) : Infinity;
+    if (ra !== rb) return ra - rb;
+    return originalIndex.get(a) - originalIndex.get(b);
+  });
+}
+
+export function applyOfficialCategoryOrders(categoryQuestions, config, categories = null) {
+  if (!config || !categoryQuestions) return categoryQuestions;
+  if (config.version !== 1 || !config.orders || typeof config.orders !== "object" || Array.isArray(config.orders)) {
+    throw new Error("模拟卷题序配置格式不合法");
+  }
+  const equivalents = new Map();
+  if (config.equivalents && typeof config.equivalents === "object") {
+    for (const [primary, fallback] of Object.entries(config.equivalents)) {
+      if (Number.isInteger(Number(primary)) && Number.isInteger(Number(fallback))) {
+        equivalents.set(Number(primary), Number(fallback));
+      }
+    }
+  }
+  for (const [categoryId, orderedIds] of Object.entries(config.orders)) {
+    if (!Array.isArray(orderedIds)) continue;
+    const current = categoryQuestions[String(categoryId)];
+    if (!Array.isArray(current) || current.length <= 1) continue;
+    const presentSet = new Set(current.map(Number));
+    const rank = new Map();
+    orderedIds.forEach((rawId, index) => {
+      const id = Number(rawId);
+      if (presentSet.has(id)) {
+        if (!rank.has(id)) rank.set(id, index);
+      } else if (equivalents.has(id)) {
+        const fallbackId = equivalents.get(id);
+        if (presentSet.has(fallbackId) && !rank.has(fallbackId)) rank.set(fallbackId, index);
+      }
+    });
+    categoryQuestions[String(categoryId)] = stableReorderIds(current, rank);
+  }
+  if (Array.isArray(categories)) {
+    const reorderParents = (nodes) => {
+      let anyTouched = false;
+      for (const node of nodes || []) {
+        const children = Array.isArray(node?.children) ? node.children : [];
+        if (children.length) {
+          const touched = reorderParents(children);
+          if (touched) {
+            anyTouched = true;
+            const current = categoryQuestions[String(node.id)];
+            if (Array.isArray(current) && current.length > 1) {
+              const sortedChildren = [...children].sort((left, right) => {
+                const a = mockChildSortKey(left.name);
+                const b = mockChildSortKey(right.name);
+                return (b.year - a.year) || (a.setNo - b.setNo) || a.name.localeCompare(b.name, "zh-CN");
+              });
+              const rank = new Map();
+              let position = 0;
+              for (const child of sortedChildren) {
+                for (const id of categoryQuestions[String(child.id)] || []) {
+                  const num = Number(id);
+                  if (!rank.has(num)) rank.set(num, position++);
+                }
+              }
+              categoryQuestions[String(node.id)] = stableReorderIds(current, rank);
+            }
+          }
+        } else if (Object.hasOwn(config.orders, String(node.id))) {
+          anyTouched = true;
+        }
+      }
+      return anyTouched;
+    };
+    reorderParents(categories);
+  }
+  return categoryQuestions;
+}
+
 async function readLocalCategories(overlayDir) {
   try {
     return JSON.parse(await fs.readFile(path.join(overlayDir, "categories.json"), "utf8"));
@@ -701,6 +803,7 @@ export async function syncOfficialQuestionBank({ targetDir, overlayDir = targetD
   const snapshot = await applyPreviousCategories(classified, overlayDir);
   const result = buildCatalog(snapshot);
   addCollectionCategories(result, collectionSnapshot);
+  applyOfficialCategoryOrders(result.categoryQuestions, await readOfficialMockOrders(overlayDir), result.categories);
   const stage = await fs.mkdtemp(path.join(os.tmpdir(), "daguan-official-sync-"));
   try {
     for (const [name, file] of fileByShard) await writeJson(path.join(stage, file), result.shards[name]);

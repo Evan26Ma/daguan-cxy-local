@@ -40,6 +40,9 @@ export async function createQuestionBankUpdater({ dataDir, bundledDataDir, enabl
     const classifications = await fs.readFile(path.join(bundledDataDir, "official-orphan-classifications.json"))
       .catch(error => { if (error.code === "ENOENT") return Buffer.alloc(0); throw error; });
     digest.update(classifications);
+    const mockOrders = await fs.readFile(path.join(bundledDataDir, "official-mock-orders.json"))
+      .catch(error => { if (error.code === "ENOENT") return Buffer.alloc(0); throw error; });
+    digest.update(mockOrders);
     const overlayDir = path.join(bundledDataDir, "local_question_banks");
     const files = await fs.readdir(overlayDir).catch(() => []);
     for (const file of files.filter(name => name.endsWith(".json")).sort()) {
