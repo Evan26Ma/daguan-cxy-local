@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "total": 7665,
+  "total": 7853,
   "types": {
-    "subjective": 5446,
-    "single_choice": 2214,
+    "subjective": 5590,
+    "single_choice": 2258,
     "multiple_choice": 5
   },
   "shards": {
@@ -25,7 +25,7 @@
     },
     "模拟哥专区": {
       "file": "shards/模拟哥专区.json",
-      "count": 1064
+      "count": 1252
     },
     "未分类": {
       "file": "shards/未分类.json",
