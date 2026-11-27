@@ -108,6 +108,8 @@
         { system: 'contest', book: 'contest', re: /竞赛/ },
         // 郭伟的模考卷其实是模拟卷
         { system: 'mock', book: 'mock_other', re: /郭伟\s*模考/ },
+        // 本机导入模拟卷（张宇四套卷需排在「张宇」通用规则之前，猪狗冲刺100题归入模拟卷）
+        { system: 'mock', book: 'mock_other', re: /张宇四套卷|猪狗冲刺/ },
         // 不属于常见系列的零散讲义，先隔离出来
         { system: 'other', book: 'other', re: /线岱杨|郭伟|超越135/ },
         // 复习全书（红皮）= 二李（李永乐 + 李正元）合著，不在两位老师之间选边，自成体系

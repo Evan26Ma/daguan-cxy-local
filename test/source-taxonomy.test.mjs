@@ -109,6 +109,8 @@ test("classify：单来源样本", () => {
     ["25哈基米德三套数二卷三22", ["mock"], ["mock_other"]],
     ["2024合工大超越十套卷·数二·第1套·第1题", ["mock"], ["mock_other"]],
     ["25超越数二卷八10", ["mock"], ["mock_other"]],
+    ["2027张宇四套卷·数三·第1套·第1题", ["mock"], ["mock_other"]],
+    ["猪狗冲刺100题·例1", ["mock"], ["mock_other"]],
     ["某大学 2020 年数学一", ["exam"], ["exam_school"]],
     ["竞赛题 第一题", ["contest"], ["contest"]],
     ["25 版 强化 33", ["other"], ["other"]],
