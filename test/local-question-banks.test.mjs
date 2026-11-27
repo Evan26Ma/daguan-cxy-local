@@ -188,3 +188,78 @@ test("合并本地模拟卷：同时更新科目与模拟卷根节点，重复�
     assert.deepEqual(await readJson(path.join(dir, "category_questions.json")), members);
   });
 });
+
+test("合并本地多科目题库：公共题跨数一/数二/数三复用唯一题号且模拟卷根节点不重复计数", async () => {
+  await withTempDir("daguan-local-multi-placement-", async dir => {
+    await seedDataDir(dir);
+    const categories = await readJson(path.join(dir, "categories.json"));
+    categories.push({
+      id: 2500, name: "模拟卷", parent_id: null, question_count: 0, direct_count: 0,
+      children: [
+        { id: 2501, name: "数一", parent_id: 2500, question_count: 0, direct_count: 0, children: [] },
+        { id: 2502, name: "数二", parent_id: 2500, question_count: 0, direct_count: 0, children: [] },
+        { id: 2503, name: "数三", parent_id: 2500, question_count: 0, direct_count: 0, children: [] },
+      ],
+    });
+    await writeJson(path.join(dir, "categories.json"), categories);
+    const manifest = await readJson(path.join(dir, "manifest.json"));
+    manifest.shards["模拟哥专区"] = { file: "shards/模拟哥专区.json", count: 0 };
+    await writeJson(path.join(dir, "manifest.json"), manifest);
+    await writeJson(path.join(dir, "shards/模拟哥专区.json"), []);
+
+    await writeJson(path.join(dir, "local_question_banks/multi.json"), {
+      id: "multi-subject-mock",
+      shard: "模拟哥专区",
+      placements: [
+        {
+          parentCategoryId: 2501,
+          fallbackParentCategoryId: 9910005,
+          rootCategory: { id: 9900910, name: "猪狗冲刺100题" },
+          chapters: [{ id: 9900911, number: 1, name: "数一第1章", questionCount: 2 }],
+        },
+        {
+          parentCategoryId: 2502,
+          fallbackParentCategoryId: 9910003,
+          rootCategory: { id: 9900920, name: "猪狗冲刺100题" },
+          chapters: [{ id: 9900921, number: 1, name: "数二第1章", questionCount: 1 }],
+        },
+        {
+          parentCategoryId: 2503,
+          fallbackParentCategoryId: 9910008,
+          rootCategory: { id: 9900900, name: "猪狗冲刺100题" },
+          chapters: [{ id: 9900901, number: 1, name: "数三第1章", questionCount: 2 }],
+        },
+      ],
+      questions: [
+        overlayQuestion({ id: 99009001, category_id: 9900911, category_ids: [9900911, 9900921, 9900901], category_path: "模拟卷 / 数一 / 猪狗冲刺100题 / 数一第1章、模拟卷 / 数二 / 猪狗冲刺100题 / 数二第1章、模拟卷 / 数三 / 猪狗冲刺100题 / 数三第1章", serial: 1 }),
+        overlayQuestion({ id: 99009002, category_id: 9900911, category_ids: [9900911], category_path: "模拟卷 / 数一 / 猪狗冲刺100题 / 数一第1章", serial: 2 }),
+        overlayQuestion({ id: 99009003, category_id: 9900901, category_ids: [9900901], category_path: "模拟卷 / 数三 / 猪狗冲刺100题 / 数三第1章", serial: 3 }),
+      ],
+    });
+
+    const result = await mergeLocalQuestionBanks(dir);
+    assert.deepEqual(result, { added: 3, overlays: [{ file: "multi.json", added: 3, shard: "模拟哥专区" }] });
+
+    const next = await readJson(path.join(dir, "categories.json"));
+    const mockRoot = next.find(c => c.id === 2500);
+    assert.equal(mockRoot.question_count, 3);
+    assert.equal(mockRoot.children.find(c => c.id === 2501).question_count, 2);
+    assert.equal(mockRoot.children.find(c => c.id === 2502).question_count, 1);
+    assert.equal(mockRoot.children.find(c => c.id === 2503).question_count, 2);
+
+    const members = await readJson(path.join(dir, "category_questions.json"));
+    assert.deepEqual(members["2500"], [99009001, 99009002, 99009003]);
+    assert.deepEqual(members["2501"], [99009001, 99009002]);
+    assert.deepEqual(members["2502"], [99009001]);
+    assert.deepEqual(members["2503"], [99009001, 99009003]);
+    assert.deepEqual(members["9900910"], [99009001, 99009002]);
+    assert.deepEqual(members["9900920"], [99009001]);
+    assert.deepEqual(members["9900900"], [99009001, 99009003]);
+
+    const nextManifest = await readJson(path.join(dir, "manifest.json"));
+    assert.equal(nextManifest.total, 4);
+    assert.equal(nextManifest.shards["模拟哥专区"].count, 3);
+
+    assert.equal((await mergeLocalQuestionBanks(dir)).added, 0);
+  });
+});

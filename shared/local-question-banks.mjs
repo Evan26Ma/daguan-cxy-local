@@ -98,42 +98,109 @@ export async function mergeLocalQuestionBanks(dataDir, overlayDir = dataDir) {
     if (!shardMeta?.file) throw new Error(`本地题库 ${file} 指向的分片不存在：${shardName}`);
     const shardPath = path.join(dataDir, shardMeta.file);
     const shard = await readJson(shardPath);
-    const ancestors = findCategoryPath(categories, overlay.parentCategoryId)
-      || (overlay.fallbackParentCategoryId == null
-        ? null
-        : findCategoryPath(categories, overlay.fallbackParentCategoryId));
-    const rootCategory = ancestors?.at(-1);
-    if (!rootCategory) throw new Error(`本地题库 ${file} 找不到父分类 ${overlay.parentCategoryId}`);
-    if (findCategory(categories, overlay.rootCategory.id)) throw new Error(`分类 ID 已被占用：${overlay.rootCategory.id}`);
-    for (const chapter of overlay.chapters) {
-      if (findCategory(categories, chapter.id)) throw new Error(`分类 ID 已被占用：${chapter.id}`);
+
+    const rawPlacements = Array.isArray(overlay.placements) && overlay.placements.length
+      ? overlay.placements
+      : [{
+        parentCategoryId: overlay.parentCategoryId,
+        fallbackParentCategoryId: overlay.fallbackParentCategoryId,
+        rootCategory: overlay.rootCategory,
+        chapters: overlay.chapters,
+      }];
+
+    const reservedCategoryIds = new Set();
+    const resolvedPlacements = [];
+    const chapterInfo = new Map();
+    for (const [placementIndex, placement] of rawPlacements.entries()) {
+      const ancestors = findCategoryPath(categories, placement.parentCategoryId)
+        || (placement.fallbackParentCategoryId == null
+          ? null
+          : findCategoryPath(categories, placement.fallbackParentCategoryId));
+      const parentCategory = ancestors?.at(-1);
+      if (!parentCategory) throw new Error(`本地题库 ${file} 找不到父分类 ${placement.parentCategoryId}`);
+      const rootId = Number(placement.rootCategory?.id);
+      if (!Number.isInteger(rootId) || findCategory(categories, rootId) || reservedCategoryIds.has(rootId)) {
+        throw new Error(`分类 ID 已被占用：${placement.rootCategory?.id}`);
+      }
+      reservedCategoryIds.add(rootId);
+      const placementChapters = Array.isArray(placement.chapters) ? placement.chapters : [];
+      if (!placementChapters.length) throw new Error(`本地题库 ${file} 缺少章节定义`);
+      for (const chapter of placementChapters) {
+        const chapterId = Number(chapter.id);
+        if (!Number.isInteger(chapterId) || findCategory(categories, chapterId) || reservedCategoryIds.has(chapterId)) {
+          throw new Error(`分类 ID 已被占用：${chapter.id}`);
+        }
+        reservedCategoryIds.add(chapterId);
+        chapterInfo.set(chapterId, {
+          placementIndex,
+          chapter,
+          ancestors,
+          rootId,
+          count: 0,
+        });
+      }
+      resolvedPlacements.push({
+        placement,
+        ancestors,
+        parentCategory,
+        rootId,
+        uniqueIds: new Set(),
+      });
     }
 
-    const chapters = overlay.chapters.map((chapter) => localCategory(
-      chapter.id,
-      chapter.name,
-      overlay.rootCategory.id,
-      chapter.questionCount,
-    ));
-    const localRoot = localCategory(
-      overlay.rootCategory.id,
-      overlay.rootCategory.name,
-      rootCategory.id,
-      overlay.questions.length,
-      chapters,
-    );
-    rootCategory.children ||= [];
-    rootCategory.children.push(localRoot);
-
-    const categoryLineage = ancestors.map(category => category.id);
-    const chapterIds = new Set(overlay.chapters.map((chapter) => Number(chapter.id)));
-    const chapterCounts = new Map(overlay.chapters.map((chapter) => [Number(chapter.id), 0]));
+    const seenQuestionIds = new Set();
+    const questionChapterMap = new Map();
     for (const question of overlay.questions) {
       const id = String(question.id);
-      const categoryId = Number(question.category_id);
-      if (!chapterIds.has(categoryId)) throw new Error(`题目 ${id} 指向本地题库之外的分类：${categoryId}`);
-      chapterCounts.set(categoryId, chapterCounts.get(categoryId) + 1);
-      if (Object.hasOwn(idIndex, id)) throw new Error(`题号已存在：${id}`);
+      if (Object.hasOwn(idIndex, id) || seenQuestionIds.has(id)) throw new Error(`题号已存在：${id}`);
+      seenQuestionIds.add(id);
+      const rawChapterIds = Array.isArray(question.category_ids) && question.category_ids.length
+        ? question.category_ids
+        : [question.category_id];
+      const targetChapterIds = [...new Set(rawChapterIds.map(Number))];
+      if (question.category_id != null && !targetChapterIds.includes(Number(question.category_id))) {
+        targetChapterIds.unshift(Number(question.category_id));
+      }
+      if (!targetChapterIds.length) throw new Error(`题目 ${id} 缺少有效分类`);
+      for (const chapterId of targetChapterIds) {
+        const info = chapterInfo.get(chapterId);
+        if (!info) throw new Error(`题目 ${id} 指向本地题库之外的分类：${chapterId}`);
+        info.count += 1;
+        resolvedPlacements[info.placementIndex].uniqueIds.add(id);
+      }
+      questionChapterMap.set(id, targetChapterIds);
+    }
+
+    for (const info of chapterInfo.values()) {
+      if (info.count !== Number(info.chapter.questionCount)) {
+        throw new Error(`分类 ${info.chapter.name} 数量不匹配：声明 ${info.chapter.questionCount}，题目 ${info.count}`);
+      }
+    }
+
+    const touchedAncestors = new Map();
+    for (const entry of resolvedPlacements) {
+      const { placement, ancestors, parentCategory, rootId, uniqueIds } = entry;
+      const chapters = placement.chapters.map((chapter) => localCategory(
+        chapter.id,
+        chapter.name,
+        rootId,
+        chapter.questionCount,
+      ));
+      const localRoot = localCategory(
+        rootId,
+        placement.rootCategory.name,
+        parentCategory.id,
+        uniqueIds.size,
+        chapters,
+      );
+      parentCategory.children ||= [];
+      parentCategory.children.push(localRoot);
+      for (const ancestor of ancestors) touchedAncestors.set(String(ancestor.id), ancestor);
+    }
+
+    for (const question of overlay.questions) {
+      const id = String(question.id);
+      const targetChapterIds = questionChapterMap.get(id);
       shard.push(question);
       idIndex[id] = shardName;
       searchIndex.push({
@@ -144,21 +211,22 @@ export async function mergeLocalQuestionBanks(dataDir, overlayDir = dataDir) {
         serial: question.serial ?? null,
         stem: question.stem || "",
       });
-      for (const targetCategoryId of [...categoryLineage, overlay.rootCategory.id, categoryId]) {
+      const targetCategories = new Set();
+      for (const chapterId of targetChapterIds) {
+        const info = chapterInfo.get(chapterId);
+        for (const ancestor of info.ancestors) targetCategories.add(ancestor.id);
+        targetCategories.add(info.rootId);
+        targetCategories.add(chapterId);
+      }
+      for (const targetCategoryId of targetCategories) {
         const key = String(targetCategoryId);
         categoryQuestions[key] ||= [];
         categoryQuestions[key].push(question.id);
       }
       manifest.types[question.type] = Number(manifest.types[question.type] || 0) + 1;
     }
-    for (const category of ancestors) {
+    for (const category of touchedAncestors.values()) {
       category.question_count = categoryQuestions[String(category.id)]?.length || 0;
-    }
-    for (const chapter of chapters) {
-      const actualCount = chapterCounts.get(Number(chapter.id));
-      if (actualCount !== Number(chapter.question_count)) {
-        throw new Error(`分类 ${chapter.name} 数量不匹配：声明 ${chapter.question_count}，题目 ${actualCount}`);
-      }
     }
     shardMeta.count = shard.length;
     manifest.total = Number(manifest.total) + overlay.questions.length;
